@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /studentdashboard
+Disallow: /yogaadmin
+Disallow: /profile
+Disallow: /payment
+
+Sitemap: https://somawellness.in/sitemap.xml

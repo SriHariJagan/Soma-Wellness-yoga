@@ -1,0 +1,32 @@
+.btn {
+  position: fixed;
+  bottom: clamp(1.25rem, 3vw, 2.25rem);
+  right: clamp(1.25rem, 3vw, 2.25rem);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--color-text-inverse);
+  background: linear-gradient(135deg, var(--color-primary), #ff9b3d);
+  box-shadow:
+    0 8px 24px rgba(46,125,91, 0.4),
+    0 2px 6px rgba(34, 34, 34, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  z-index: var(--z-sticky);
+  will-change: transform;
+}
+
+.btn:hover {
+  box-shadow:
+    0 12px 32px rgba(46,125,91, 0.5),
+    0 2px 8px rgba(34, 34, 34, 0.16);
+}
+
+@media (max-width: 768px) {
+  .btn {
+    width: 44px;
+    height: 44px;
+  }
+}

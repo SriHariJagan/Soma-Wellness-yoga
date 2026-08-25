@@ -1,0 +1,45 @@
+{
+  "name": "yogaserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js",
+    "seed:services": "node seed-services.js",
+    "seed:backfill-email": "node scripts/backfill-notification-email.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "audit": "node scripts/security-audit.js",
+    "audit:json": "node scripts/security-audit.js --json",
+    "audit:ci": "node scripts/security-audit.js --fail-warn"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@bull-board/express": "^8.0.1",
+    "bcryptjs": "^3.0.3",
+    "bullmq": "^5.79.2",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dompurify": "^3.4.11",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.2.0",
+    "ioredis": "^5.11.1",
+    "jsdom": "^29.1.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.2",
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.3",
+    "razorpay": "^2.9.6",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.1",
+    "globals": "^17.7.0"
+  }
+}

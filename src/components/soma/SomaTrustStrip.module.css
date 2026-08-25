@@ -1,0 +1,43 @@
+.strip { 
+  background: #fff; 
+  border-top: 1px solid var(--soma-line-light); 
+  border-bottom: 1px solid var(--soma-line-light); 
+  padding: 28px 0; 
+  overflow:hidden;
+  position: relative;
+}
+.strip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+  pointer-events: none;
+}
+.inner { max-width:1440px; margin:0 auto; padding:0 clamp(20px,4vw,40px); position: relative; }
+.top { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+.eyebrow { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--soma-primary); }
+.press { display:flex; gap:12px; align-items:center; font-size:11px; color:var(--soma-warm-gray); flex-wrap:wrap; }
+.press span { font-weight:600; letter-spacing:0.08em; text-transform:uppercase; font-size:10px; }
+.press em { font-style:normal; font-family:var(--font-display); font-weight:600; color:var(--soma-forest); letter-spacing:0.02em; font-size:13px; }
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.card { 
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%); 
+  border:1px solid rgba(255,255,255,0.6); 
+  border-radius:16px; 
+  padding:18px; 
+  text-align:center;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 20px rgba(24,61,45,0.06), inset 0 1px 0 rgba(255,255,255,0.7);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(24,61,45,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.num { font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--soma-forest); line-height:1; }
+.label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--soma-primary); margin-top:6px; }
+.sub { font-size:11px; color:#5a6b63; margin-top:4px; line-height:1.4; }
+.badges { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; justify-content:center; }
+.badge { font-size:11px; font-weight:600; color:var(--soma-forest); background:var(--soma-soft-sage); border:1px solid rgba(46,125,91,0.12); padding:8px 12px; border-radius:9999px; }
+@media(max-width:900px){ .grid{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:560px){ .grid{grid-template-columns:1fr;} .top{flex-direction:column; align-items:flex-start;} }

@@ -1,0 +1,13 @@
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 4px 0 2px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(46,125,91, 0.10), rgba(46,125,91, 0.04));
+  color: var(--color-primary, #2E7D5B);
+  font-size: 34px;
+  flex-shrink: 0;
+}

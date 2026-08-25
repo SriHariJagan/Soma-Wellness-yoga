@@ -1,0 +1,45 @@
+.section { 
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  padding: 40px 0; 
+  background:var(--soma-ivory); 
+  border-top:1px solid var(--soma-line-light); 
+  border-bottom:1px solid var(--soma-line-light);
+  position: relative;
+  overflow: hidden;
+}
+.inner { max-width:1440px; margin:0 auto; padding:0 clamp(20px,4vw,40px); position: relative; width: 100%; }
+.card { 
+  display:grid; 
+  grid-template-columns:1.1fr 0.9fr; 
+  gap:20px; 
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%); 
+  border:1px solid rgba(255,255,255,0.6); 
+  border-radius:20px; 
+  padding:24px; 
+  align-items:center; 
+  box-shadow:0 12px 36px rgba(24,61,45,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  pointer-events: none;
+}
+.eyebrow { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--soma-primary); }
+.title { font-family:var(--font-display); font-size:26px; font-weight:300; line-height:0.95; color:var(--soma-forest); margin-top:8px; }
+.title em { font-style:italic; font-weight:400; color:var(--soma-primary); }
+.list { margin-top:12px; display:flex; flex-direction:column; gap:8px; font-size:13px; color:#5a6b63; }
+.list strong { color:var(--soma-forest); }
+.right { display:grid; grid-template-columns:1fr; gap:12px; }
+.metric { background:var(--soma-cream); border:1px solid var(--soma-line-light); border-radius:14px; padding:14px; text-align:center; }
+.metric span { font-family:var(--font-display); font-size:28px; font-weight:600; color:var(--soma-forest); line-height:1; display:block; }
+.metric em { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--soma-primary); font-style:normal; display:block; margin-top:4px; }
+.metric p { font-size:11px; color:#5a6b63; margin-top:4px; }
+@media(max-width:860px){ .card{grid-template-columns:1fr;} }

@@ -1,0 +1,155 @@
+.hero {
+  position: relative;
+  height: 88vh;
+  min-height: 580px;
+  background: radial-gradient(120% 120% at 30% 0%, #2a2a2a 0%, #1a1a1a 45%, #0f0f0f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  background: url("/images/training/teacher-hero.webp") top/cover no-repeat;
+  opacity: 0.26;
+  transform: scale(1.05);
+  animation: thKenBurns 26s ease-in-out infinite alternate;
+}
+
+@keyframes thKenBurns {
+  from { transform: scale(1.05) translate(0, 0); }
+  to { transform: scale(1.18) translate(2%, -2%); }
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 60% at 50% 40%, transparent 0%, rgba(15, 15, 15, 0.5) 100%),
+    linear-gradient(to bottom, transparent 50%, rgba(15, 15, 15, 0.92) 100%);
+}
+
+.mesh {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(35% 35% at 75% 30%, rgba(46,125,91, 0.28) 0%, transparent 60%),
+    radial-gradient(30% 30% at 20% 25%, rgba(255, 170, 80, 0.22) 0%, transparent 60%),
+    radial-gradient(40% 40% at 50% 90%, rgba(46,125,91, 0.18) 0%, transparent 60%);
+  background-size: 200% 200%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  pointer-events: none;
+}
+.orbA {
+  width: 320px;
+  height: 320px;
+  top: 12%;
+  right: 8%;
+  background: radial-gradient(circle, rgba(46,125,91, 0.4), transparent 70%);
+}
+.orbB {
+  width: 260px;
+  height: 260px;
+  bottom: 8%;
+  left: 8%;
+  background: radial-gradient(circle, rgba(255, 180, 90, 0.3), transparent 70%);
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(46,125,91, 0.45), transparent);
+  z-index: 2;
+}
+
+.overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  padding-top: calc(var(--header-height) + var(--topbar-height) + var(--space-12));
+}
+
+.content {
+  max-width: 820px;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #ffd9ad;
+  background: rgba(46,125,91, 0.12);
+  border: 1px solid rgba(46,125,91, 0.3);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(8px);
+  margin-bottom: var(--space-6);
+}
+
+.eyebrowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  font-weight: 800;
+  background: linear-gradient(120deg, #ffffff 0%, #ffe6cc 55%, var(--color-primary) 110%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.08;
+  margin-bottom: var(--space-6);
+}
+
+.desc {
+  font-size: var(--text-lg);
+  line-height: 1.7;
+  margin-bottom: var(--space-3);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.desc strong {
+  color: #ffd9ad;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    height: auto;
+    padding: var(--space-12) 0;
+    min-height: 460px;
+  }
+  .desc {
+    font-size: var(--text-base);
+  }
+}

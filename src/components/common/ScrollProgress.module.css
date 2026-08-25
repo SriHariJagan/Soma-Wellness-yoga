@@ -1,0 +1,12 @@
+.bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  transform-origin: 0%;
+  background: linear-gradient(90deg, #2E7D5B 0%, #81B29A 50%, #F4B400 100%);
+  z-index: 9999;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar { transition: none; }
+}

@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: pragya-yoga-api
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+      - "127.0.0.1:5000:5000"
+
+    volumes:
+      - uploads_data:/app/server/uploads
+
+volumes:
+  uploads_data:

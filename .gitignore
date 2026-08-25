@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+*.err
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.vercel
+
+# Environment files
+.env
+.env.local
+.env.production
+server/.env
+server/.env.local
+
+# Vite cache
+.vite/
+
+# Test coverage (if added)
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+server/uploads
+
+server.err
+200 Hr YTTC Details.docx
+200 Hr YTTC Details.pdf
+
+

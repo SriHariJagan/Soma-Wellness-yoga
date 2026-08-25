@@ -1,0 +1,93 @@
+.refBox {
+  position: relative;
+  background:
+    radial-gradient(120% 130% at 50% -20%, rgba(46,125,91, 0.12) 0%, transparent 55%),
+    #ffffff;
+  border-radius: var(--radius-2xl);
+  padding: 28px 24px;
+  text-align: center;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.refLabel {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.refCode {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 12px 0;
+  display: inline-block;
+  padding: 8px 22px;
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--color-primary-light);
+}
+
+.refSub {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  max-width: 280px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.shareRow {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.refStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.refStat {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  padding: 16px 10px;
+  text-align: center;
+  transition: transform var(--transition-base), box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.refStat:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-border);
+}
+
+.refStatNum {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.refStatLbl {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}

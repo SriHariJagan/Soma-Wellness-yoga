@@ -1,0 +1,85 @@
+.features {
+  background: var(--color-bg-secondary);
+  padding: var(--space-20) var(--space-6);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.features::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url("/images/lotus-pattern.svg") repeat;
+  opacity: 0.03;
+  z-index: 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--space-10);
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-md);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--color-text-inverse);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-base);
+  text-align: center;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.icon {
+  width: 52px;
+  height: 52px;
+  display: block;
+  margin: 0 auto var(--space-4);
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--space-3);
+}
+
+.cardDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .sectionTitle {
+    font-size: var(--text-2xl);
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

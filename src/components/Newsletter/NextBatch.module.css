@@ -1,0 +1,115 @@
+.nextBatch {
+  background: var(--color-bg-primary);
+  padding: var(--space-20) var(--space-6);
+  position: relative;
+  overflow: hidden;
+}
+
+.nextBatch::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url("/images/lotus-pattern.svg") repeat;
+  opacity: 0.03;
+  z-index: 0;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  gap: var(--space-8);
+}
+
+.details {
+  flex: 1;
+  min-width: 280px;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--space-6);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--space-6);
+}
+
+.list li {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+}
+
+.list li strong {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+.cta {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 600;
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 14px rgba(46,125,91, 0.35);
+}
+
+.cta:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(46,125,91, 0.45);
+}
+
+.promo {
+  flex: 1;
+  min-width: 280px;
+  text-align: center;
+}
+
+.promoTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--space-4);
+}
+
+.promoDesc {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: 1.6;
+}
+
+.image {
+  max-width: 100%;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+}

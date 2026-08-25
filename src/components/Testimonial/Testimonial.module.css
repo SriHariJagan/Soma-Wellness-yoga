@@ -1,0 +1,433 @@
+.section {
+  padding: var(--space-20) 0;
+  background: var(--color-bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.section::before {
+  content: "";
+  position: absolute;
+  top: 8%;
+  left: -6%;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(46,125,91, 0.07), transparent 70%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+.header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto var(--space-12);
+}
+
+.headerLabel {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+}
+
+.headerTitle {
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  color: var(--color-dark);
+}
+
+.headerTitle em {
+  color: var(--color-primary);
+  font-style: normal;
+}
+
+.headerSub {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  max-width: var(--container-xl);
+  margin: 0 auto var(--space-8);
+  padding: 0 var(--space-6);
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: var(--color-text-inverse);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-border);
+}
+
+.cardActive {
+  border-color: var(--color-primary);
+  box-shadow: 0 6px 26px rgba(46,125,91, 0.18);
+}
+
+.cardThumb {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.cardThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.card:hover .cardThumbImg {
+  transform: scale(1.05);
+}
+
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(34, 34, 34, 0.7) 0%, transparent 50%);
+}
+
+.cardBadge {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-inverse);
+  background: rgba(34, 34, 34, 0.5);
+  backdrop-filter: blur(4px);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.cardPlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 54px;
+  height: 54px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
+  transition: background var(--transition-base), color var(--transition-base),
+    transform var(--transition-spring), box-shadow var(--transition-base);
+  z-index: 2;
+}
+
+/* Pulsing ring around the play button */
+.cardPlay::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-full);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.card:hover .cardPlay {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: var(--shadow-glow-strong);
+}
+
+.card:hover .cardPlay::before {
+  opacity: 1;
+  animation: playPulse 1.6s ease-out infinite;
+}
+
+@keyframes playPulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.cardPlay svg {
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+}
+
+.cardThumbFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-3);
+  z-index: 1;
+}
+
+.cardThumbTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-inverse);
+}
+
+.cardBody {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cardStars {
+  display: flex;
+  gap: 2px;
+}
+
+.cardStar {
+  color: #f59e0b;
+  font-size: var(--text-sm);
+}
+
+.cardQuote {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+.cardAuthor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.cardAuthorAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cardAuthorAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardAuthorName {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.cardAuthorSub {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ── Navigation ── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-12);
+}
+
+.navBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-inverse);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--color-dark);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.navBtn:hover {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+.navDots {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.navDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.navDot.active {
+  background: var(--color-primary);
+  width: 24px;
+  border-radius: var(--radius-full);
+}
+
+/* ── Trust Stats ── */
+.trust {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-8);
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
+  flex-wrap: wrap;
+}
+
+.trustItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.trustIcon {
+  font-size: 24px;
+}
+
+.trustNum {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.trustLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ── Modal ── */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(34, 34, 34, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--space-4);
+}
+
+.modalInner {
+  background: var(--color-dark);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  max-width: 560px;
+  width: 100%;
+  position: relative;
+  box-shadow: var(--shadow-xl);
+}
+
+.modalInnerShort {
+  max-width: 400px;
+}
+
+.modalClose {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(34, 34, 34, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modalClose:hover {
+  background: var(--color-primary);
+}
+
+.modalVideo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+}
+
+.modalVideoShort {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border: none;
+  max-height: 80vh;
+}
+
+.modalInfo {
+  padding: var(--space-4);
+  background: var(--color-dark);
+}
+
+.modalName {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-inverse);
+}
+
+.modalRole {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .trust {
+    gap: var(--space-6);
+  }
+}

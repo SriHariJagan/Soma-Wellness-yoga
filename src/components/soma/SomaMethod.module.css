@@ -1,0 +1,145 @@
+.section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: clamp(64px, 8vw, 112px) 0;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(60% 60% at 50% 0%, rgba(129,178,154,0.08) 0%, transparent 60%),
+    radial-gradient(40% 40% at 80% 90%, rgba(244,180,0,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+.inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 40px);
+  position: relative;
+  width: 100%;
+}
+.header { text-align: center; max-width: 760px; margin: 0 auto 48px; }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--soma-primary);
+  margin-bottom: 14px;
+}
+.eyebrow::before {
+  content: ""; width: 20px; height: 1px; background: var(--soma-primary); opacity: 0.45;
+}
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4.2vw, 48px);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--soma-forest);
+}
+.title span { color: var(--soma-sage); font-weight: 300; margin: 0 4px; opacity: 0.6; }
+.title em { font-style: italic; font-weight: 400; color: var(--soma-primary); }
+.sub { margin-top: 14px; font-size: 15px; line-height: 1.6; color: #5a6b63; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 20px;
+  padding: 28px 22px 24px;
+  overflow: hidden;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(24,61,45,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  pointer-events: none;
+}
+.card:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 100%);
+  border-color: var(--soma-line);
+  box-shadow: 0 16px 40px rgba(24,61,45,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+  transform: translateY(-6px) rotate(0.3deg);
+}
+.card::after {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  border: 1px solid rgba(46,125,91,0.06);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.num {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--soma-gold);
+}
+.word {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 0.95;
+  color: var(--soma-forest);
+  letter-spacing: -0.02em;
+}
+.desc {
+  margin-top: 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #5a6b63;
+}
+.arrow {
+  display: inline-flex;
+  margin-top: 18px;
+  width: 28px; height: 28px;
+  align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--soma-line-strong);
+  font-size: 12px;
+  color: var(--soma-forest);
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+.card:hover .arrow { background: var(--soma-forest); color: #fff; border-color: var(--soma-forest); }
+
+.journey {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 36px;
+  opacity: 0.5;
+}
+.journeyLine { width: 40px; height: 1px; background: var(--soma-line-strong); }
+.journeyDot { width: 6px; height: 6px; border-radius: 50%; background: var(--soma-sage); }
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { padding: 24px 18px; }
+  .word { font-size: 26px; }
+}

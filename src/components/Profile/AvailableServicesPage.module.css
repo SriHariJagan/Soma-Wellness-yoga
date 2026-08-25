@@ -1,0 +1,343 @@
+/* ── Available Services Page ── */
+
+.controls {
+  margin-bottom: 18px;
+}
+
+.searchWrap {
+  position: relative;
+  max-width: 460px;
+  width: 100%;
+}
+
+.searchWrap .ti-search {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--color-text-tertiary, #999);
+  pointer-events: none;
+  transition: color var(--transition-base, 0.2s ease);
+  z-index: 1;
+  line-height: 1;
+}
+
+.searchWrap:focus-within .ti-search {
+  color: var(--color-primary);
+}
+
+.searchInput {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 44px 13px 46px;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-dark);
+  outline: none;
+  transition:
+    border-color var(--transition-base, 0.2s ease),
+    box-shadow var(--transition-base, 0.2s ease);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(46,125,91, 0.1);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-tertiary, #aaa);
+}
+
+.searchClear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--color-bg-tertiary);
+  border: none;
+  color: var(--color-text-tertiary, #999);
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  transition: color var(--transition-base, 0.2s ease), background var(--transition-base, 0.2s ease);
+  z-index: 1;
+}
+
+.searchClear:hover {
+  color: var(--color-dark);
+  background: var(--color-border-light);
+}
+
+/* ── Card grid ── */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+/* ── Service card ── */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: var(--radius-2xl, 16px);
+  background:
+    radial-gradient(130% 140% at 100% 0%, rgba(46,125,91, 0.07) 0%, transparent 55%),
+    linear-gradient(160deg, #ffffff 0%, var(--color-bg-tertiary, #faf7f2) 140%);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform var(--transition-base, 0.25s ease),
+    box-shadow var(--transition-base, 0.25s ease),
+    border-color var(--transition-base, 0.25s ease);
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-border);
+}
+
+.cardGlow {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 231, 198, 0.5), transparent 70%);
+  filter: blur(28px);
+  pointer-events: none;
+  transition: opacity var(--transition-base, 0.25s ease), transform var(--transition-base, 0.25s ease);
+}
+
+.card:hover .cardGlow {
+  opacity: 0.8;
+  transform: scale(1.2);
+}
+
+/* ── Card top row ── */
+.cardTop {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.cardMode {
+  flex-shrink: 0;
+}
+
+.cardBadges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Name ── */
+.cardName {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-dark);
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+
+/* ── Description ── */
+.cardDesc {
+  position: relative;
+  z-index: 1;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Meta info ── */
+.cardMeta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.metaItem i {
+  font-size: 14px;
+  color: var(--color-text-tertiary, #aaa);
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+/* ── Card footer ── */
+.cardFoot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.cardPrice {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.priceValue {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.priceLabel {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #999);
+}
+
+.priceFree {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-green, #2d9c6b);
+}
+
+.btnEnrolled {
+  background: var(--color-green, #2d9c6b) !important;
+  cursor: default;
+  opacity: 0.85;
+}
+
+/* ── Message bar ── */
+.msgBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg, 10px);
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+}
+
+.msgSuccess {
+  background: rgba(45, 156, 107, 0.1);
+  border: 1px solid rgba(45, 156, 107, 0.25);
+  color: #1d7a4f;
+}
+
+.msgError {
+  background: rgba(220, 53, 69, 0.08);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  color: #b02a37;
+}
+
+.msgDismiss {
+  background: none;
+  border: none;
+  margin-left: auto;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+  color: inherit;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.msgDismiss:hover {
+  opacity: 1;
+}
+
+/* ── Skeleton ── */
+.skelCard {
+  position: relative;
+  padding: 24px;
+  border-radius: var(--radius-2xl, 16px);
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+}
+
+.skelGlow {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 231, 198, 0.3), transparent 70%);
+  filter: blur(28px);
+  pointer-events: none;
+}
+
+.skelLine {
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 740px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+  .searchWrap {
+    max-width: 100%;
+  }
+}
