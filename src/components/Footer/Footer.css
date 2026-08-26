@@ -1,9 +1,116 @@
-/* SOMA FOOTER — Premium Editorial • Cream + Forest Accent */
+/* SOMA FOOTER — Premium Editorial • Cream + Forest Accent • Animated */
 .footer {
   position: relative;
   background: linear-gradient(180deg, #FAF6EC 0%, #F5EFE0 35%, #FFF7E6 65%, #FAF6EC 100%);
   color: var(--soma-charcoal);
   overflow: hidden;
+  isolation: isolate;
+}
+.footer-watermark {
+  position: absolute;
+  right: -12px;
+  bottom: 30px;
+  font-family: var(--font-display);
+  font-size: clamp(116px, 17vw, 200px);
+  font-weight: 300;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(24,61,45,0.07);
+  letter-spacing: -0.05em;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.90;
+  background: linear-gradient(90deg,
+    rgba(24,61,45,0.08) 0%,
+    rgba(244,180,0,0.18) 20%,
+    rgba(46,125,91,0.12) 38%,
+    rgba(244,180,0,0.14) 56%,
+    rgba(129,178,154,0.12) 74%,
+    rgba(24,61,45,0.08) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-size: 200% 100%;
+  animation: watermarkColorMove 8s linear infinite;
+  filter: blur(0.12px);
+}
+@keyframes watermarkColorMove {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-watermark { animation: none !important; }
+}
+.footer-watermark-glow {
+  position: absolute;
+  inset: -6px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: transparent;
+  -webkit-text-stroke: 0;
+  background: radial-gradient(42% 52% at 50% 50%, rgba(244,180,0,0.10) 0%, transparent 72%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: blur(14px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.footer-watermark-fill {
+  position: absolute;
+  inset: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: transparent;
+  -webkit-text-stroke: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(244,180,0,0.08) 30%,
+    rgba(244,180,0,0.14) 50%,
+    transparent 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-size: 200% 100%;
+  animation: watermarkFillMove 3.2s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.9;
+}
+.footer-watermark-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(112deg, transparent 32%, rgba(255,255,255,0.42) 46%, rgba(255,255,255,0.62) 50%, rgba(244,180,0,0.36) 54%, transparent 64%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: translateX(-100%);
+  animation: watermarkShine 3.9s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes watermarkShine {
+  0% { transform: translateX(-100%); opacity: 0; }
+  15% { opacity: 1; }
+  48% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+@keyframes watermarkColorMove {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
+}
+@keyframes watermarkFillMove {
+  0% { background-position: -80% 50%; opacity: 0; }
+  20% { opacity: 1; }
+  70% { background-position: 180% 50%; opacity: 0; }
+  100% { background-position: 180% 50%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-watermark,
+  .footer-watermark-shine,
+  .footer-watermark-fill,
+  .footer-watermark-glow { animation: none !important; }
 }
 .footer-bg {
   position: absolute;
@@ -254,7 +361,17 @@
   box-shadow: 0 6px 20px rgba(244,180,0,0.32);
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 }
+.footer-btn-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(112deg, transparent 36%, rgba(255,255,255,0.32) 48%, rgba(255,255,255,0.52) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: footerShine 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes footerShine { 0% { transform: translateX(-100%); } 55% { transform: translateX(100%); } 100% { transform: translateX(100%); } }
 .footer-form button::after {
   content: "";
   position: absolute;

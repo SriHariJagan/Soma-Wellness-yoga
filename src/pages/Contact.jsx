@@ -91,24 +91,44 @@ const Contact = () => {
       />
 
       <section className="contact-info-section">
-        <div className="contact-info-grid">
+        <motion.div
+          className="contact-info-grid"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08, delayChildren: 0.12 } } }}
+        >
           {infoCards.map((card) => (
-            <motion.div key={card.title} className="contact-card" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+            <motion.div
+              key={card.title}
+              className="contact-card"
+              variants={{ hidden: { opacity: 0, y: 18, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } } }}
+              whileHover={{ y: -5, scale: 1.015 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="contact-card-icon">{card.icon}</div>
               <h3>{card.title}</h3>
               {card.lines.map((line) => <p key={line}>{line}</p>)}
-              {card.action && <a className="contact-card-link" href={card.action.href} {...(card.action.external ? { target: "_blank", rel: "noreferrer" } : {})}>{card.action.label} →</a>}
+              {card.action && <a className="contact-card-link" href={card.action.href} {...(card.action.external ? { target: "_blank", rel: "noreferrer" } : {})}>{card.action.label} <span>→</span></a>}
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <section className="contact-main">
-        <div className="contact-main-grid">
-          <motion.div className="contact-form-card" initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)" }}>Send a message</span>
-            <h2 style={{ marginTop: 8 }}>We’ll get back with care</h2>
-            <p className="contact-form-sub">Fill in the form below — no obligation, just conversation.</p>
+        <motion.div
+          className="contact-main-grid"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
+        >
+          <motion.div className="contact-form-card" variants={{ hidden: { opacity: 0, y: 20, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" /> Send a message
+            </span>
+            <h2 style={{ marginTop: 10, fontSize: 26, letterSpacing: "-0.02em" }}>We’ll get back with care</h2>
+            <p className="contact-form-sub">Fill in the form below — no obligation, just conversation. We reply within one working day.</p>
 
             {sent && <div className="contact-form-note" role="status">Thank you — your message has been sent. We’ll be in touch soon.</div>}
             {error && <div className="contact-form-error" role="alert">{error}</div>}
@@ -120,30 +140,55 @@ const Contact = () => {
               </div>
               <label className="contact-field"><span>Email</span><input type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required /></label>
               <label className="contact-field"><span>Message</span><textarea name="message" value={form.message} onChange={handleChange} rows={5} placeholder="How can we help you?" required /></label>
-              <motion.button type="submit" className="contact-submit" whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} disabled={loading}>
+              <motion.button type="submit" className="contact-submit" whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.97 }} disabled={loading}>
                 {loading ? "Sending..." : "Send message →"}
               </motion.button>
             </form>
 
             <div className="contact-quick">
-              <a className="contact-quick-btn" href={`tel:${STUDIO.phoneHref}`}><FaPhoneAlt /> Call</a>
+              <a className="contact-quick-btn" href={`tel:${STUDIO.phoneHref}`}><FaPhoneAlt /> Call +254 700 000 000</a>
               <div className="contact-quick-social">
                 {socials.map((s) => <a key={s.label} href={s.href} target="_blank" rel="noreferrer" aria-label={s.label}>{s.icon}</a>)}
               </div>
             </div>
           </motion.div>
 
-          <motion.div className="contact-map-card" initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.08 }}>
+          <motion.div className="contact-map-card" variants={{ hidden: { opacity: 0, y: 20, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}>
             <div className="contact-map-head">
-              <FaMapMarkerAlt />
+              <span style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}><FaMapMarkerAlt /></span>
               <div>
                 <h3>Soma Wellness Studio</h3>
-                <p>{STUDIO.address}</p>
+                <p>{STUDIO.address} · {STUDIO.hours}</p>
+                <a href={mapsLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, color: "var(--soma-primary)", letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 4, display: "inline-block" }}>Get directions →</a>
               </div>
             </div>
             <iframe className="contact-map" title="Soma Wellness location map" src={mapEmbed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+            <div style={{ padding: 12, background: "var(--soma-ivory)", borderTop: "1px solid var(--soma-line-light)", display: "flex", gap: 8, alignItems: "center", fontSize: 11, color: "var(--soma-warm-gray)" }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2E7D5B", boxShadow: "0 0 0 5px rgba(46,125,91,0.12)", flexShrink: 0 }} aria-hidden="true" /> Open Mon–Sat 6AM–8PM · Sunday closed · Spring Valley
+            </div>
           </motion.div>
-        </div>
+        </motion.div>
+
+        {/* NEW — Visit gallery where thin */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          style={{ marginTop: 20, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}
+        >
+          {[
+            { img: "https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?q=80&w=600&auto=format&fit=crop", label: "Light & wood" },
+            { img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=600&auto=format&fit=crop", label: "Calm space" },
+            { img: "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=600&auto=format&fit=crop", label: "Spring Valley" },
+          ].map((g, i) => (
+            <motion.div key={g.label} initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} whileHover={{ y: -4, scale: 1.02 }} style={{ borderRadius: 16, overflow: "hidden", position: "relative", height: 160, background: "#e8e2d4", border: "1px solid rgba(255,255,255,0.62)", boxShadow: "0 8px 24px rgba(24,61,45,0.06)" }}>
+              <img src={g.img} alt={g.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 42%, rgba(24,61,45,0.18) 100%)", pointerEvents: "none" }} aria-hidden="true" />
+              <div style={{ position: "absolute", left: 10, bottom: 10, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 9999, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--soma-forest)", boxShadow: "0 4px 14px rgba(0,0,0,0.10)" }}>{g.label}</div>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
     </main>
   );

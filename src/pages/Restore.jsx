@@ -3,14 +3,19 @@ import { motion } from "framer-motion";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
 import { RESTORE_TREATMENTS } from "../config/siteContent";
 import SomaCTA from "../components/soma/SomaCTA";
+import { EASE, usePrefersReducedMotion } from "../lib/motion";
 
 const signatures = [
   { name: "STILLNESS", sub: "The deep calm ritual", desc: "Restorative yoga, guided meditation, 60-min relaxation massage + herbal tea", len: "2 hrs", price: "11,000", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=800&auto=format&fit=crop" },
   { name: "THE ACACIA", sub: "Our premium journey", desc: "Private yoga, meditation, 60-min massage, body treatment, refreshments + unhurried rest", len: "2.5 hrs", price: "18,500", img: "https://images.unsplash.com/photo-1600334089648-bd6e2a7a65a8?q=80&w=800&auto=format&fit=crop" },
   { name: "FOR TWO", sub: "A journey for two", desc: "Couple yoga/stretch, massage for two, herbal tea + quiet time together", len: "2 hrs", price: "22,500", per: "per couple", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=800&auto=format&fit=crop" },
+  { name: "BREATHE", sub: "Breath & clarity", desc: "Pranayama, breath awareness, gentle movement + herbal tea ritual", len: "90 min", price: "4,500", img: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop" },
+  { name: "NIDRA", sub: "Deep rest journey", desc: "Yoga Nidra, NSDR, sound bath + integration & tea", len: "75 min", price: "3,800", img: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" },
+  { name: "AROMA", sub: "Scent & unwind", desc: "Aromatherapy massage, body scrub, steam + herbal tea", len: "90 min", price: "6,500", img: "https://images.unsplash.com/photo-1591343395082-e120087004b4?q=80&w=800&auto=format&fit=crop" },
 ];
 
 const Restore = () => {
+  const reduced = usePrefersReducedMotion();
   const scrollRef = useRef(null);
   return (
     <div style={{ background: "var(--soma-cream)" }}>
@@ -21,72 +26,234 @@ const Restore = () => {
         image="https://images.unsplash.com/photo-1596178065887-1198b6148b2b?q=80&w=900&auto=format&fit=crop"
       />
 
-      {/* Treatments - editorial list */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "32px clamp(20px,4vw,40px) 0" }}>
+      {/* Treatments - editorial premium */}
+      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "36px clamp(20px,4vw,40px) 0" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 24, alignItems: "start" }}>
-          <div>
-            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 400, color: "var(--soma-forest)" }}>Massage & meditation</h3>
-            <p style={{ fontSize: 13, color: "#5a6b63", marginTop: 6 }}>Meditation classes included for AMANI/UZIMA/FAMILY. Steam & wellness rituals on request.</p>
-            <div style={{ marginTop: 16, background: "#fff", border: "1px solid var(--soma-line-light)", borderRadius: 16, overflow: "hidden" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 0, background: "var(--soma-forest)", color: "#fff", padding: "12px 16px", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: EASE }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 10px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" />
+              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)" }}>Massage & meditation</span>
+              <span style={{ fontSize: 10, fontWeight: 700, background: "var(--soma-ivory)", border: "1px solid var(--soma-line-light)", padding: "4px 8px", borderRadius: 9999, color: "var(--soma-warm-gray)" }}>7 treatments</span>
+            </div>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 300, color: "var(--soma-forest)", letterSpacing: "-0.02em", lineHeight: 0.95 }}>Unhurried <em style={{ fontStyle: "italic", color: "var(--soma-primary)" }}>touch.</em></h3>
+            <p style={{ fontSize: 13.5, color: "#5a6b63", marginTop: 8, lineHeight: 1.6 }}>Meditation classes included for AMANI/UZIMA/FAMILY. Steam & wellness rituals on request.</p>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.05, delayChildren: reduced ? 0 : 0.12 } } }}
+              style={{ marginTop: 16, background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 100%)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.62)", borderRadius: 18, overflow: "hidden", boxShadow: "0 12px 36px rgba(24,61,45,0.07), inset 0 1px 0 rgba(255,255,255,0.72)" }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 0, background: "linear-gradient(135deg, #183D2D 0%, #1e4d3a 100%)", color: "#fff", padding: "14px 16px", fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", position: "relative" }}>
                 <span>Treatment</span><span style={{ textAlign: "right" }}>Length</span><span style={{ textAlign: "right" }}>Price</span>
+                <span style={{ position: "absolute", bottom: 0, left: 16, right: 16, height: 1, background: "linear-gradient(90deg, transparent, rgba(244,180,0,0.42), transparent)", pointerEvents: "none" }} aria-hidden="true" />
               </div>
               {RESTORE_TREATMENTS.map((t, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 12, padding: "14px 16px", fontSize: 13, borderTop: i ? "1px solid var(--soma-line-light)" : "none", background: i%2?"var(--soma-ivory)":"#fff" }}>
-                  <span>{t.name}</span><span style={{ textAlign: "right", color: "#5a6b63" }}>{t.len}</span><span style={{ textAlign: "right", fontWeight: 700, color: "var(--soma-forest)" }}>{t.price}</span>
+                <motion.div
+                  key={i}
+                  variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE } } }}
+                  whileHover={reduced ? {} : { x: 2, backgroundColor: i % 2 ? "rgba(244,180,0,0.04)" : "rgba(46,125,91,0.03)" }}
+                  style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 12, padding: "15px 16px", fontSize: 13, borderTop: i ? "1px solid var(--soma-line-light)" : "none", background: i % 2 ? "var(--soma-ivory)" : "#fff", position: "relative", alignItems: "center" }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--soma-primary)", flexShrink: 0, opacity: 0.9 }} aria-hidden="true" />
+                    {t.name}
+                  </span>
+                  <span style={{ textAlign: "right", color: "#5a6b63", fontWeight: 500 }}>{t.len}</span>
+                  <span style={{ textAlign: "right", fontWeight: 800, color: "var(--soma-forest)", letterSpacing: "-0.01em" }}>{t.price} <span style={{ fontSize: 10, fontWeight: 600, color: "var(--soma-warm-gray)" }}>KES</span></span>
                 </motion.div>
               ))}
+            </motion.div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65, delay: 0.18, ease: EASE }}
+            whileHover={reduced ? {} : { y: -4, scale: 1.01 }}
+            style={{ background: "linear-gradient(135deg, #183D2D 0%, #1c4a34 60%, #1e5c3f 100%)", color: "#fff", borderRadius: 20, padding: 22, position: "sticky", top: 88, overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)", boxShadow: "0 20px 48px rgba(24,61,45,0.20), 0 8px 20px rgba(24,61,45,0.12), inset 0 1px 0 rgba(255,255,255,0.10)" }}
+          >
+            <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, border: "1px solid rgba(255,255,255,0.07)", borderRadius: "50%", pointerEvents: "none" }} aria-hidden="true" />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(112deg, transparent 38%, rgba(255,255,255,0.06) 48%, transparent 62%)", pointerEvents: "none" }} aria-hidden="true" />
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.72, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.32)", flexShrink: 0 }} aria-hidden="true" /> The Six-Week Reset
             </div>
-          </div>
-          <div style={{ background: "var(--soma-forest)", color: "#fff", borderRadius: 18, padding: 20, position: "sticky", top: 88 }}>
-            <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>The Six-Week Reset</div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 22, marginTop: 8 }}>Six weeks to rebuild</div>
-            <div style={{ fontSize: 13, lineHeight: 1.6, opacity: 0.9, marginTop: 8 }}>Opening assessment · 12 yoga · 6 meditation/Nidra · 2 sixty-min massages · home plan · closing review</div>
-            <div style={{ fontSize: 24, fontWeight: 800, marginTop: 16 }}>32,000 <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.7 }}>KES</span></div>
-            <div style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>Mats, oils, tea & water at reception. Gift vouchers 12 months.</div>
-            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop" alt="Reset" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 12, marginTop: 16 }} loading="lazy" />
-          </div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 300, marginTop: 10, letterSpacing: "-0.02em", lineHeight: 0.95 }}>Six weeks to <em style={{ fontStyle: "italic", color: "#F4B400" }}>rebuild</em></div>
+            <div style={{ fontSize: 13, lineHeight: 1.65, opacity: 0.88, marginTop: 10 }}>Opening assessment · 12 yoga · 6 meditation/Nidra · 2 sixty-min massages · home plan · closing review</div>
+            <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.4, ease: EASE }} style={{ height: 1, background: "linear-gradient(90deg, rgba(244,180,0,0.42) 0%, transparent 88%)", marginTop: 14, transformOrigin: "left" }} aria-hidden="true" />
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 14 }}>
+              <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em" }}>32,000</span>
+              <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.72, letterSpacing: "0.06em" }}>KES</span>
+              <span style={{ fontSize: 10, fontWeight: 700, background: "var(--soma-gold)", color: "var(--soma-forest)", padding: "4px 8px", borderRadius: 9999, marginLeft: 8 }}>Most chosen</span>
+            </div>
+            <div style={{ fontSize: 11, opacity: 0.62, marginTop: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.10)", padding: "8px 10px", borderRadius: 10, backdropFilter: "blur(6px)" }}>Mats, oils, tea & water at reception. Gift vouchers 12 months.</div>
+            <motion.div initial={{ clipPath: "inset(10% 0 0 0)" }} whileInView={{ clipPath: "inset(0% 0 0 0)" }} viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE }} style={{ marginTop: 16, borderRadius: 14, overflow: "hidden", position: "relative", border: "1px solid rgba(255,255,255,0.14)" }}>
+              <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop" alt="Reset" style={{ width: "100%", height: 168, objectFit: "cover", display: "block" }} loading="lazy" />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 52%, rgba(24,61,45,0.18) 100%)", pointerEvents: "none" }} aria-hidden="true" />
+              <div style={{ position: "absolute", left: 10, bottom: 10, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 9999, fontSize: 10, fontWeight: 700, color: "var(--soma-forest)", letterSpacing: "0.06em", boxShadow: "0 4px 14px rgba(0,0,0,0.12)" }}>6 weeks · 21 sessions</div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Signature - horizontal scroll unique */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "32px clamp(20px,4vw,40px) 0" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 16, flexWrap: "wrap" }}>
+      {/* Signature - premium horizontal */}
+      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "36px clamp(20px,4vw,40px) 0" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: EASE }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 16, flexWrap: "wrap" }}
+        >
           <div>
-            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 400, color: "var(--soma-forest)" }}>Signature experiences</h3>
-            <p style={{ fontSize: 12, color: "#5a6b63" }}>Half a morning or an afternoon, one journey. Mon–Fri 10:00–15:00 · Weekends 20% surcharge · Swipe →</p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 10px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" />
+              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)" }}>Signature journeys</span>
+              <span style={{ fontSize: 10, background: "var(--soma-ivory)", border: "1px solid var(--soma-line-light)", padding: "4px 8px", borderRadius: 9999, color: "var(--soma-warm-gray)", fontWeight: 700 }}>6 journeys · drag →</span>
+            </div>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 300, color: "var(--soma-forest)", letterSpacing: "-0.02em", lineHeight: 0.95 }}>Signature <em style={{ fontStyle: "italic", color: "var(--soma-primary)" }}>experiences</em></h3>
+            <p style={{ fontSize: 12.5, color: "#5a6b63", marginTop: 6, lineHeight: 1.6 }}>Half a morning or an afternoon, one journey. Mon–Fri 10:00–15:00 · Weekends 20% surcharge · Swipe →</p>
           </div>
-          <div style={{ fontSize: 11, color: "var(--soma-warm-gray)" }}>Drag / scroll horizontally</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--soma-warm-gray)", background: "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.78) 100%)", border: "1px solid rgba(255,255,255,0.62)", padding: "8px 12px", borderRadius: 9999, boxShadow: "0 4px 14px rgba(24,61,45,0.06)", display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-primary)", flexShrink: 0 }} aria-hidden="true" /> Drag / scroll →
+          </div>
+        </motion.div>
+
+        <div style={{ overflow: "hidden", padding: "18px 0 12px", margin: "0 -4px", cursor: reduced ? "default" : "grab" }} ref={scrollRef}>
+          <motion.div
+            drag={reduced ? false : "x"}
+            dragConstraints={{ left: -1100, right: 0 }}
+            dragElastic={0.18}
+            dragMomentum={true}
+            whileTap={{ cursor: "grabbing" }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.07, delayChildren: reduced ? 0 : 0.1 } } }}
+            style={{ display: "flex", gap: 16, width: "max-content", paddingRight: 40 }}
+          >
+            {signatures.map((s) => (
+              <motion.div
+                key={s.name}
+                variants={{ hidden: { opacity: 0, y: 18, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: EASE } } }}
+                whileHover={reduced ? {} : { y: -6, scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                style={{ minWidth: 320, flex: "0 0 320px", background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.90) 100%)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.62)", borderRadius: 20, overflow: "hidden", boxShadow: "0 12px 32px rgba(24,61,45,0.08), inset 0 1px 0 rgba(255,255,255,0.72)", position: "relative", scrollSnapAlign: "start" }}
+              >
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent)", pointerEvents: "none", zIndex: 2 }} aria-hidden="true" />
+                <div style={{ height: 200, overflow: "hidden", background: "#e8e2d4", position: "relative" }}>
+                  <motion.img
+                    src={s.img}
+                    alt={s.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+                    loading="lazy"
+                    draggable={false}
+                    whileHover={reduced ? {} : { scale: 1.06 }}
+                    transition={{ duration: 0.7, ease: EASE }}
+                  />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 42%, rgba(24,61,45,0.14) 100%)", pointerEvents: "none" }} aria-hidden="true" />
+                  <div style={{ position: "absolute", inset: 10, border: "1px solid rgba(255,255,255,0.42)", borderRadius: 12, pointerEvents: "none" }} aria-hidden="true" />
+                  <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 9999, fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--soma-forest)", boxShadow: "0 4px 14px rgba(0,0,0,0.10)", display: "inline-flex", alignItems: "center", gap: 6, pointerEvents: "none" }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", flexShrink: 0 }} aria-hidden="true" /> {s.len} · {s.price} KES {s.per || ""}
+                  </div>
+                </div>
+                <div style={{ padding: 16 }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 500, color: "var(--soma-forest)", letterSpacing: "-0.015em", lineHeight: 1 }}>{s.name}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--soma-primary)", textTransform: "uppercase", letterSpacing: "0.07em", marginTop: 6 }}>{s.sub}</div>
+                  <div style={{ fontSize: 12.5, color: "#5a6b63", marginTop: 8, lineHeight: 1.6 }}>{s.desc}</div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-        <div ref={scrollRef} style={{ display: "flex", gap: 16, overflowX: "auto", scrollSnapType: "x mandatory", padding: "16px 0 8px", scrollbarWidth: "none" }}>
-          {signatures.map((s) => (
-            <motion.div key={s.name} whileHover={{ y: -4 }} style={{ minWidth: 340, flex: "0 0 340px", background: "#fff", border: "1px solid var(--soma-line-light)", borderRadius: 18, overflow: "hidden", scrollSnapAlign: "start" }}>
-              <div style={{ height: 200, overflow: "hidden", background: "#ddd" }}><img src={s.img} alt={s.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" /></div>
-              <div style={{ padding: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--soma-gold)" }}>{s.len} · {s.price} KES {s.per || ""}</div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--soma-forest)", marginTop: 6 }}>{s.name}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#5a6b63", textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.sub}</div>
-                <div style={{ fontSize: 13, color: "#5a6b63", marginTop: 8, lineHeight: 1.5 }}>{s.desc}</div>
-              </div>
+      </section>
+
+      {/* Benefits & safety — premium */}
+      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "28px clamp(20px,4vw,40px) 36px" }}>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.09, delayChildren: reduced ? 0 : 0.12 } } }}
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}
+        >
+          {[
+            { t: "Deep calm, not sedation", d: "Restorative yoga + Nidra + massage to down-regulate, not just relax.", icon: "◯" },
+            { t: "Premium, unhurried", d: "2–2.5 hrs, tea, rest, no rushing. Real recovery, not a quick spa slot.", icon: "✦" },
+            { t: "Safe & medical-aware", d: "Tell us about pregnancy, surgery, pain or heart concerns. Clearance respected.", icon: "✓" },
+          ].map((b) => (
+            <motion.div
+              key={b.t}
+              variants={{ hidden: { opacity: 0, y: 16, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: EASE } } }}
+              whileHover={reduced ? {} : { y: -4, scale: 1.015 }}
+              style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.90) 100%)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.62)", borderRadius: 16, padding: 18, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(24,61,45,0.06), inset 0 1px 0 rgba(255,255,255,0.72)", textAlign: "left" }}
+            >
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent)", pointerEvents: "none" }} aria-hidden="true" />
+              <div style={{ width: 30, height: 30, borderRadius: "50%", background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 12px rgba(24,61,45,0.14)" }} aria-hidden="true">{b.icon}</div>
+              <div style={{ fontWeight: 700, color: "var(--soma-forest)", fontSize: 14, marginTop: 12, letterSpacing: "-0.01em" }}>{b.t}</div>
+              <div style={{ fontSize: 12.5, color: "#5a6b63", marginTop: 8, lineHeight: 1.6 }}>{b.d}</div>
+              <motion.span initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: EASE }} style={{ display: "block", height: 1, background: "linear-gradient(90deg, var(--soma-gold) 0%, transparent 88%)", marginTop: 12, transformOrigin: "left", opacity: 0.42 }} aria-hidden="true" />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
-      {/* Benefits & safety */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "24px clamp(20px,4vw,40px) 32px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-          {[
-            { t: "Deep calm, not sedation", d: "Restorative yoga + Nidra + massage to down-regulate, not just relax." },
-            { t: "Premium, unhurried", d: "2–2.5 hrs, tea, rest, no rushing. Real recovery, not a quick spa slot." },
-            { t: "Safe & medical-aware", d: "Tell us about pregnancy, surgery, pain or heart concerns. Clearance respected." },
-          ].map((b) => (
-            <div key={b.t} style={{ background: "#fff", border: "1px solid var(--soma-line-light)", borderRadius: 14, padding: 16 }}>
-              <div style={{ fontWeight: 700, color: "var(--soma-forest)", fontSize: 13 }}>{b.t}</div>
-              <div style={{ fontSize: 12, color: "#5a6b63", marginTop: 6, lineHeight: 1.5 }}>{b.d}</div>
+      {/* Gift vouchers — NEW premium where thin */}
+      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "0 clamp(20px,4vw,40px) 36px" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.65, ease: EASE }}
+          style={{ display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 18, alignItems: "stretch" }}
+        >
+          <motion.div
+            whileHover={reduced ? {} : { y: -4, scale: 1.01 }}
+            style={{ background: "linear-gradient(135deg, #183D2D 0%, #1c4a34 55%, #2E7D5B 100%)", color: "#fff", borderRadius: 20, padding: 24, position: "relative", overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)", boxShadow: "0 20px 48px rgba(24,61,45,0.18), inset 0 1px 0 rgba(255,255,255,0.10)" }}
+          >
+            <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, border: "1px solid rgba(255,255,255,0.08)", borderRadius: "50%", pointerEvents: "none" }} aria-hidden="true" />
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.72, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.32)", flexShrink: 0 }} aria-hidden="true" /> Gift vouchers · 12 months
             </div>
-          ))}
-        </div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 300, marginTop: 10, lineHeight: 0.95, letterSpacing: "-0.02em" }}>Give <em style={{ fontStyle: "italic", color: "#F4B400" }}>stillness.</em></div>
+            <div style={{ fontSize: 13, lineHeight: 1.65, opacity: 0.88, marginTop: 10 }}>Valid 12 months, any treatment or journey. Beautifully wrapped at reception or emailed instantly.</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16 }}>
+              {[
+                { v: "5,000", l: "Taster" },
+                { v: "11,000", l: "Stillness" },
+                { v: "Custom", l: "Any amount" },
+              ].map((g) => (
+                <div key={g.v} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: 12, textAlign: "center", backdropFilter: "blur(8px)" }}>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{g.v}</div>
+                  <div style={{ fontSize: 10, opacity: 0.72, marginTop: 2, letterSpacing: "0.06em", textTransform: "uppercase" }}>{g.l}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, background: "#fff", color: "var(--soma-forest)", padding: "8px 12px", borderRadius: 9999 }}>Buy at reception →</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.72)", alignSelf: "center" }}>or email · instant</span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.12, ease: EASE }}
+            style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.90) 100%)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.62)", borderRadius: 20, padding: 22, boxShadow: "0 12px 36px rgba(24,61,45,0.07), inset 0 1px 0 rgba(255,255,255,0.72)", display: "flex", flexDirection: "column", gap: 12 }}
+          >
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 400, color: "var(--soma-forest)", letterSpacing: "-0.015em" }}>What to know before you book</div>
+            <ul style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 12.5, color: "#5a6b63", lineHeight: 1.6 }}>
+              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> Tell us about pregnancy, surgery, heart concerns — we’ll adapt.</li>
+              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> Arrive 10 min early · Mats, oils, tea & water provided.</li>
+              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> Mon–Fri 10:00–15:00 · Weekends +20% · 12h cancel (half), no-show full.</li>
+            </ul>
+            <div style={{ marginTop: 4, background: "var(--soma-ivory)", border: "1px solid var(--soma-line-light)", borderRadius: 12, padding: 12, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--soma-forest)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>✦</span>
+              <span style={{ fontSize: 11, color: "var(--soma-warm-gray)", lineHeight: 1.5 }}><strong style={{ color: "var(--soma-forest)" }}>Need help choosing?</strong> Tell us your goal and time — we’ll craft the right journey.</span>
+            </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       <SomaCTA />

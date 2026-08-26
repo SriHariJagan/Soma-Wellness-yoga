@@ -1,74 +1,311 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { EASE } from "../../lib/motion";
+import React, { useRef } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
 import styles from "./SomaIntro.module.css";
 
+const stats = [
+  { label: "Small groups", sub: "so you are seen" },
+  { label: "Conscious teachers", sub: "rooted in lineage" },
+  { label: "Premium, calm, human", sub: "always" },
+];
+
 const SomaIntro = () => {
+  const reduced = usePrefersReducedMotion();
+  const ref = useRef(null);
+  const visualRef = useRef(null);
+
+  // Scroll-linked for image — subtle editorial parallax (distinct from Hero's 90px)
+  const { scrollYProgress } = useScroll({
+    target: visualRef,
+    offset: ["start end", "end start"],
+  });
+  const imgY = useTransform(scrollYProgress, [0, 1], [reduced ? 0 : 28, reduced ? 0 : -28]);
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1.06, 1]);
+  const springY = useSpring(imgY, { stiffness: 80, damping: 20 });
+  const springScale = useSpring(imgScale, { stiffness: 80, damping: 20 });
+
+  // accent slow rotation
+  const accentRotate = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : 18]);
+
   return (
-    <section className={styles.section}>
+    <section ref={ref} className={styles.section}>
+      {/* soft editorial bg */}
+      <div className={styles.bg} aria-hidden="true" />
+      <div className={styles.grain} aria-hidden="true" />
+      <div className={styles.organicShape} aria-hidden="true" />
+
       <div className={styles.inner}>
         <div className={styles.grid}>
+          {/* ── Visual — left now, clip reveal + parallax ── */}
           <motion.div
-            className={styles.copy}
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, ease: EASE }}
-          >
-            <span className={styles.eyebrow}>Our philosophy</span>
-            <h2 className={styles.title}>
-              Wellness is not a<br />
-              <em>performance.</em><br />
-              It is a <em>return.</em>
-            </h2>
-            <p className={styles.lead}>
-              Soma is a space to come back — to breath, to body, to presence. We honor lineage without rigidity, modern science without noise, and luxury without distance.
-            </p>
-            <p className={styles.body}>
-              Every detail — light, linen, wood, silence — is considered so your nervous system can exhale. No mirrors demanding perfection. No hustle disguised as healing. Just honest practice, held with care.
-            </p>
-            <div className={styles.stats}>
-              <div><span>—</span><strong>Small groups</strong> <em>so you are seen</em></div>
-              <div><span>—</span><strong>Conscious teachers</strong> <em>rooted in lineage</em></div>
-              <div><span>—</span><strong>Premium, calm, human</strong> <em>always</em></div>
-            </div>
-          </motion.div>
-
-          <motion.div
+            ref={visualRef}
             className={styles.visual}
-            initial={{ opacity: 0, clipPath: "inset(12% 0 0 0)", scale: 0.98 }}
-            whileInView={{ opacity: 1, clipPath: "inset(0% 0 0 0)", scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.9, ease: EASE }}
-            whileHover={{ y: -4 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5 }}
           >
-            <div className={styles.imageWrap}>
-              <motion.img
-                src="https://images.unsplash.com/photo-1528715471578-2e5b6c0bb37a?q=80&w=900&auto=format&fit=crop"
-                alt="Attractive woman in graceful yoga stretch — premium wellness at Soma, Nairobi"
-                width="900"
-                height="1100"
-                loading="lazy"
-                decoding="async"
-                initial={{ scale: 1.06 }}
-                whileInView={{ scale: 1 }}
+            {/* organic accent — slow breathe, not Hero's blobs */}
+            <motion.div
+              className={styles.accent}
+              style={{ rotate: accentRotate }}
+              animate={reduced ? {} : { scale: [1, 1.03, 1] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden="true"
+            />
+            <motion.div
+              className={styles.accent2}
+              animate={reduced ? {} : { scale: [1, 1.04, 1], y: [0, -6, 0] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+              aria-hidden="true"
+            />
+
+            <motion.div
+              className={styles.imageWrap}
+              initial={reduced ? { opacity: 1 } : { clipPath: "inset(18% 0 0 0)", y: 18, opacity: 0 }}
+              whileInView={reduced ? { opacity: 1 } : { clipPath: "inset(0% 0 0 0)", y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.05, ease: EASE }}
+              whileHover={reduced ? {} : { y: -4 }}
+            >
+              <motion.div className={styles.imageInner} style={{ y: springY, scale: springScale }}>
+                <motion.img
+                  src="https://images.unsplash.com/photo-1528715471578-2e5b6c0bb37a?q=80&w=900&auto=format&fit=crop"
+                  alt="Attractive woman in graceful yoga stretch — premium wellness at Soma, Nairobi"
+                  width="900"
+                  height="1100"
+                  loading="lazy"
+                  decoding="async"
+                  initial={reduced ? { scale: 1 } : { scale: 1.08 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.3, ease: EASE }}
+                />
+              </motion.div>
+
+              {/* subtle top highlight */}
+              <div className={styles.imageHighlight} aria-hidden="true" />
+              <div className={styles.imageRing} aria-hidden="true" />
+
+              {/* caption — slide up reveal, delayed */}
+              <motion.div
+                className={styles.caption}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 1.2, ease: EASE }}
-              />
-              <div className={styles.caption}>
+                transition={{ duration: 0.65, delay: 0.55, ease: EASE }}
+              >
                 <span>01 — The Soma way</span>
                 <p>Soft strength. Warm light. A space that lets you arrive.</p>
+                <motion.span
+                  className={styles.captionLine}
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, delay: 0.75, ease: EASE }}
+                  style={{ transformOrigin: "left" }}
+                  aria-hidden="true"
+                />
+              </motion.div>
+            </motion.div>
+
+            {/* floating micro-card — editorial, not Hero's glass floatCard */}
+            <motion.div
+              className={styles.microCard}
+              initial={{ opacity: 0, y: 10, x: 8 }}
+              whileInView={{ opacity: 1, y: 0, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.75, ease: EASE }}
+              whileHover={reduced ? {} : { y: -2, scale: 1.015 }}
+            >
+              <span className={styles.microDot} />
+              <div>
+                <strong>300 members · 12 max</strong>
+                <span>Never crowded, always seen.</span>
               </div>
-            </div>
-            <div className={styles.accent} aria-hidden="true" />
+            </motion.div>
+          </motion.div>
+
+          {/* ── Copy — staggered editorial reveal (now right) ── */}
+          <motion.div
+            className={styles.copy}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: reduced ? 0 : 0.11, delayChildren: reduced ? 0 : 0.14 } },
+            }}
+          >
+            {/* eyebrow — line draw + dot */}
+            <motion.div
+              className={styles.eyebrow}
+              variants={{
+                hidden: { opacity: 0, y: 12 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+              }}
+            >
+              <motion.span
+                className={styles.eyebrowLine}
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: EASE }}
+                style={{ transformOrigin: "left" }}
+              />
+              <span className={styles.eyebrowDot} />
+              Our philosophy
+              {/* subtle pulse — not in Hero's eyebrowPulse, this one is slower */}
+              {!reduced && (
+                <motion.span
+                  className={styles.eyebrowHalo}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.18, 0.06, 0.18] }}
+                  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                  aria-hidden="true"
+                />
+              )}
+            </motion.div>
+
+            {/* title — each line clip reveal, distinct from Hero's word blur */}
+            <h2 className={styles.title}>
+              <span className={styles.titleClip}>
+                <motion.span
+                  className={styles.titleLine}
+                  variants={{
+                    hidden: { y: "110%", skewY: 2 },
+                    visible: { y: "0%", skewY: 0, transition: { duration: 0.78, ease: EASE } },
+                  }}
+                >
+                  Wellness is not a
+                </motion.span>
+              </span>
+              <span className={styles.titleClip}>
+                <motion.span
+                  className={styles.titleLine}
+                  variants={{
+                    hidden: { y: "110%", skewY: 2 },
+                    visible: { y: "0%", skewY: 0, transition: { duration: 0.78, ease: EASE, delay: 0.08 } },
+                  }}
+                >
+                  <em>performance.</em>
+                </motion.span>
+              </span>
+              <span className={styles.titleClip}>
+                <motion.span
+                  className={styles.titleLine}
+                  variants={{
+                    hidden: { y: "110%", skewY: 2 },
+                    visible: { y: "0%", skewY: 0, transition: { duration: 0.78, ease: EASE, delay: 0.16 } },
+                  }}
+                >
+                  It is a <em>return.</em>
+                </motion.span>
+              </span>
+              {/* underline accent — draws after title, different timing vs Hero */}
+              <motion.span
+                className={styles.titleAccent}
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, delay: 0.65, ease: EASE }}
+                aria-hidden="true"
+              />
+            </h2>
+
+            <motion.p
+              className={styles.lead}
+              variants={{
+                hidden: { opacity: 0, y: 16, filter: reduced ? "blur(0px)" : "blur(6px)" },
+                visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.7, ease: EASE } },
+              }}
+            >
+              Soma is a space to come back — to breath, to body, to presence. We honor lineage without rigidity, modern science without noise, and luxury without distance.
+            </motion.p>
+
+            <motion.p
+              className={styles.body}
+              variants={{
+                hidden: { opacity: 0, y: 14 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE } },
+              }}
+            >
+              Every detail — light, linen, wood, silence — is considered so your nervous system can exhale. No mirrors demanding perfection. No hustle disguised as healing. Just honest practice, held with care.
+            </motion.p>
+
+            {/* stats — sequential line draw, unique to this section */}
+            <motion.div
+              className={styles.stats}
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: reduced ? 0 : 0.1, delayChildren: reduced ? 0 : 0.18 } },
+              }}
+            >
+              {stats.map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  className={styles.statRow}
+                  variants={{
+                    hidden: { opacity: 0, x: -14 },
+                    visible: { opacity: 1, x: 0, transition: { duration: 0.55, ease: EASE } },
+                  }}
+                >
+                  <span className={styles.statDash} aria-hidden="true">—</span>
+                  <strong>{s.label}</strong>
+                  <em>{s.sub}</em>
+                  {/* line draw under each row — not in Hero */}
+                  <motion.span
+                    className={styles.statLine}
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: 0.3 + i * 0.08, ease: EASE }}
+                    style={{ transformOrigin: "left" }}
+                    aria-hidden="true"
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
         </div>
 
-        <div className={styles.divider} aria-hidden="true">
-          <span />
-          <em>SOMA</em>
-          <span />
-        </div>
+        {/* divider — line draw + SOMA letter spacing */}
+        <motion.div
+          className={styles.divider}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: reduced ? 0 : 0.18, delayChildren: reduced ? 0 : 0.2 } },
+          }}
+          aria-hidden="true"
+        >
+          <motion.span
+            className={styles.dividerLine}
+            variants={{
+              hidden: { scaleX: 0 },
+              visible: { scaleX: 1, transition: { duration: 0.9, ease: EASE } },
+            }}
+            style={{ transformOrigin: "right" }}
+          />
+          <motion.em
+            className={styles.dividerText}
+            variants={{
+              hidden: { opacity: 0, letterSpacing: "0.18em" },
+              visible: { opacity: 1, letterSpacing: "0.32em", transition: { duration: 0.8, ease: EASE } },
+            }}
+          >
+            SOMA
+          </motion.em>
+          <motion.span
+            className={styles.dividerLine}
+            variants={{
+              hidden: { scaleX: 0 },
+              visible: { scaleX: 1, transition: { duration: 0.9, ease: EASE } },
+            }}
+            style={{ transformOrigin: "left" }}
+          />
+        </motion.div>
       </div>
     </section>
   );
