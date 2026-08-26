@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
 import SomaCTA from "../components/soma/SomaCTA";
+import PageFAQSection from "../components/soma/PageFAQSection";
+import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
 
 const CountUp = ({ value, suffix = "", reduced }) => {
@@ -265,6 +267,8 @@ const About = () => {
           ))}
         </motion.div>
       </section>
+
+      <PageFAQSection title="About SOMA — common questions" questions={PAGE_FAQS.about} />
 
       <SomaCTA />
 

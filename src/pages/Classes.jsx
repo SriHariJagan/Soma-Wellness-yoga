@@ -4,6 +4,8 @@ import SomaPageHeader from "../components/soma/SomaPageHeader";
 import { MEMBERSHIPS, MEMBERSHIP_PAY_AHEAD, FOUNDING_RATES, SOMA_DAILY } from "../config/siteContent";
 import { Link } from "react-router-dom";
 import SomaCTA from "../components/soma/SomaCTA";
+import PageFAQSection from "../components/soma/PageFAQSection";
+import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
 
 const Classes = () => {
@@ -366,6 +368,8 @@ const Classes = () => {
           Spring Valley, Nairobi · All prices in KES, VAT included · August 2026 · Prices subject to management approval. Good to know: book ahead for private/therapy/massage · packages start from first use · unused sessions don’t carry over · 12h cancellation (half fee), no-show full fee · medical clearance may be required.
         </div>
       </section>
+      <PageFAQSection title="Joining SOMA — common questions" questions={PAGE_FAQS.join} />
+
       <SomaCTA />
     </div>
   );

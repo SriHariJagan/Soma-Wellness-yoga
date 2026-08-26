@@ -32,9 +32,28 @@ const UserServiceSchema = new mongoose.Schema(
     transactionId: { type: String, default: '' },
 
     purchaseDate:  { type: Date, default: Date.now },
-    activationDate:{ type: Date, default: Date.now },
+    // SOMA rule: expiry starts from first use (activated_at), NOT purchaseDate
+    purchased_at:  { type: Date, default: Date.now },
+    activated_at:  { type: Date, default: null }, // set on first redemption; nullable
+    activationDate:{ type: Date, default: null },
     expiryDate:    { type: Date, default: null },
     completionDate:{ type: Date, default: null },
+    // SOMA package specifics
+    validityWeeks: { type: Number, default: null },
+    validityMonths:{ type: Number, default: null },
+    currency:      { type: String, default: 'KES' },
+    // For SOMA RESET progress tracking
+    progress: {
+      assessmentDone: { type: Boolean, default: false },
+      yogaUsed: { type: Number, default: 0 },
+      yogaTotal: { type: Number, default: 0 },
+      meditationUsed: { type: Number, default: 0 },
+      meditationTotal: { type: Number, default: 0 },
+      massagesUsed: { type: Number, default: 0 },
+      massagesTotal: { type: Number, default: 0 },
+      homePlanDelivered: { type: Boolean, default: false },
+      reviewDone: { type: Boolean, default: false },
+    },
 
     history: [
       { action: { type: String }, note: { type: String }, at: { type: Date, default: Date.now } },

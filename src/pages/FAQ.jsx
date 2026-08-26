@@ -15,17 +15,43 @@ const categories = [
 ];
 
 const catMap = {
+  // A. About SOMA (1-5)
   "What is SOMA Wellness?": "about",
   "Where are you located?": "about",
+  "What services are available at SOMA Wellness?": "about",
   "What services do you offer?": "about",
+  "Is SOMA Wellness only for people who practise Yoga?": "about",
+  "What makes SOMA Wellness different from a regular gym, Yoga studio or spa?": "about",
+  // B. Yoga, Therapy & Personalized Care (6-11)
+  "Do I need previous Yoga experience to join?": "therapy",
   "Do I need yoga experience?": "therapy",
   "What is Yoga Therapy?": "therapy",
+  "How is Yoga Therapy different from a regular Yoga class?": "therapy",
+  "Do I need a consultation before starting Yoga Therapy?": "therapy",
+  "Can people with medical conditions join SOMA Wellness?": "therapy",
+  "Are private Yoga sessions available?": "therapy",
   "Are private sessions available?": "therapy",
+  // C. Meditation, Specialized Programs & Wellness Therapies (12-17)
+  "Do you offer meditation and breathing classes?": "programs",
+  "Do you offer prenatal and postnatal Yoga?": "programs",
   "Do you offer prenatal and postnatal yoga?": "programs",
+  "Is Yoga available for children?": "programs",
+  "Do you have programs for senior citizens?": "programs",
   "Do you have programmes for children and seniors?": "programs",
-  "Can I combine yoga, massage and meditation in one package?": "programs",
-  "How do I book?": "practical",
+  "Do you provide massage and wellness therapies?": "programs",
+  "Can I combine Yoga, massage, meditation and other therapies in one package?": "programs",
+  // D. Corporate, Education & Community (18-19)
+  "Do you offer corporate wellness programs?": "programs",
+  "Do you conduct Yoga Teacher Training and workshops?": "programs",
+  // E. Visiting, Booking & Practical (20-25)
+  "What should I wear for a Yoga session?": "practical",
   "What should I wear / bring?": "practical",
+  "Do I need to bring my own Yoga mat or props?": "practical",
+  "How long is a typical session?": "practical",
+  "How do I know which program is right for me?": "practical",
+  "How can I book a session?": "practical",
+  "How do I book?": "practical",
+  "Can I visit the centre before taking a membership?": "practical",
 };
 
 const FAQ = () => {
@@ -48,6 +74,10 @@ const FAQ = () => {
         image="https://images.unsplash.com/photo-1494172961521-33799ddd43a5?q=80&w=900&auto=format&fit=crop"
       />
       <section style={{ maxWidth: 960, margin: "0 auto", padding: "28px clamp(20px,4vw,40px) 0" }}>
+        <div style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, #FFFBF8 100%)", border: "1px solid var(--soma-line-light)", borderRadius: 16, padding: 16, marginBottom: 18, boxShadow: "0 6px 20px rgba(24,61,45,0.04)" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", color: "var(--soma-primary)" }}>About this FAQ</div>
+          <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "#5a6b63", marginTop: 6 }}>This guide has been prepared to help guests, members and prospective clients understand the SOMA Wellness concept, our key services, how sessions are structured, and what to expect when visiting the centre. Adaptable for website, printed brochure, reception desk and client communications. SOMA is designed as an integrated wellness destination — not simply a yoga studio, gym or spa. <em style={{ color: "var(--soma-forest)", fontStyle: "normal", fontWeight: 600 }}>Rebalance · Renew · Restore · Reconnect — Spring Valley, Nairobi.</em></div>
+        </div>
         <motion.div
           initial="hidden"
           whileInView="visible"

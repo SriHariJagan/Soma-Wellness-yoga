@@ -5,11 +5,11 @@
 
 export const SOMA_NAV = [
   { label: "Join", path: "/classes" },
-  { label: "Private", path: "/private" },
+  { label: "One-to-One", path: "/private" },
   { label: "Life Stages", path: "/life-stages" },
   { label: "Restore", path: "/restore" },
-  { label: "Academy", path: "/yttc" },
-  { label: "FAQ", path: "/faq" },
+  { label: "Learn & Partner", path: "/yttc" },
+  { label: "Founding Members", path: "/founding" },
 ];
 
 export const HERO_FLOATING_CARDS = [
@@ -127,17 +127,105 @@ export const SOMA_JOURNAL = [
   { category: "Ritual", title: "Morning light, morning body", excerpt: "Designing a morning ritual that actually holds you.", image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop" },
 ];
 
-// FAQ — Nairobi structured
+// FAQ — Nairobi structured — 25 questions from SOMA Wellness Nairobi FAQ (Pages 1-10)
+// Sections: A. About SOMA (1-5) | B. Yoga, Therapy & Personalized Care (6-11) | C. Meditation & Wellness Therapies (12-17) | D. Corporate & Education (18-19) | E. Visiting & Practical (20-25)
 export const FAQ_ITEMS = [
-  { q: "What is SOMA Wellness?", a: "SOMA Wellness is a holistic yoga and wellness centre in Spring Valley, Nairobi — an integrated destination for physical health, mental well-being, relaxation and balanced living. We bring together Yoga, Yoga Therapy, Meditation, Breathwork, Massage, Wellness Therapies and mindful lifestyle practices in a calm, welcoming environment. Our approach treats body, breath and mind as one whole — not just fitness." },
-  { q: "Where are you located?", a: "Spring Valley, Nairobi, Kenya — a peaceful wellness space that feels away from a conventional gym or clinic, yet conveniently accessible within Nairobi. Full address: Spring Valley, Nairobi, Kenya." },
-  { q: "What services do you offer?", a: "Group & Private Yoga, Yoga Therapy, Meditation & Breathwork, Stress Management, Massage & Steam/Wellness Rituals, Prenatal & Postnatal, Children's & Senior Yoga, Corporate Wellness, Consultations, Workshops & Retreats, Teacher Training and Integrated Wellness Packages. Services roll out in phases as the centre grows." },
-  { q: "Do I need yoga experience?", a: "Not at all. Beginners are welcome. Our teachers guide you by ability, flexibility, age and experience. You don’t need to be flexible to start — yoga helps you build flexibility, strength and awareness gradually." },
-  { q: "What is Yoga Therapy?", a: "An individualized application of yoga — modified postures, supported movement, breathing, relaxation, meditation and lifestyle guidance tailored to your needs, limitations and goals. Useful for stiffness, postural issues, stress, reduced mobility or musculoskeletal discomfort. It complements medical care, not replaces it." },
-  { q: "Are private sessions available?", a: "Yes. One-to-one private yoga and therapy for beginners, busy professionals, older adults, those recovering mobility, therapy clients or anyone preferring privacy and personal guidance. Couple / small private groups also available." },
-  { q: "Do you offer prenatal and postnatal yoga?", a: "Yes — specialized Prenatal and Postnatal programmes with modified practices. Prenatal focuses on gentle movement, breathing and relaxation; Postnatal supports gradual recovery and reconnection. Medical clearance may be requested." },
-  { q: "Do you have programmes for children and seniors?", a: "Yes. Children: playful, age-appropriate postures, breathing, balance, concentration and mindfulness (5-17). Seniors: gentle, chair-supported yoga, assisted stretching, balance, breathing and meditation — emphasis on safety, comfort and independence." },
-  { q: "Can I combine yoga, massage and meditation in one package?", a: "Absolutely — that’s the SOMA idea. Choose integrated journeys: Deep Relaxation, Stress Management, Rejuvenation, Body Recovery, Mind-Body Balance, Personal/Couple/Corporate Wellness. Our team will recommend the right combination for your goals and time." },
-  { q: "How do I book?", a: "Phone, email, website or reception at Spring Valley. Advance booking recommended for private, therapy, massage, consultations and signature experiences. General groups ~60 min; meditation 30-60 min; therapies per treatment; packages per combination." },
-  { q: "What should I wear / bring?", a: "Comfortable, breathable clothing that allows movement. Avoid heavy meals 2-3 hours before. We provide mats, blocks, belts, bolsters, blankets, chairs and props — or bring your own mat if you prefer." },
+  // A. About SOMA Wellness
+  { q: "What is SOMA Wellness?", a: "SOMA Wellness is a holistic yoga and wellness centre in Spring Valley, Nairobi created to support physical health, mental well-being, relaxation and a more balanced way of living. We bring together Yoga, Yoga Therapy, Meditation, Breathwork, Massage, Wellness Therapies and mindful lifestyle practices in a calm and welcoming environment. Our approach is not limited to fitness — we focus on the body, breath and mind as an integrated whole." },
+  { q: "Where are you located?", a: "SOMA Wellness is based in Spring Valley, Nairobi, Kenya. Our centre has been conceptualized as a peaceful wellness space away from the feeling of a conventional gym or clinic, while remaining conveniently accessible within Nairobi. Full Address: Spring Valley, Nairobi, Kenya." },
+  { q: "What services are available at SOMA Wellness?", a: "SOMA offers: Group Yoga Classes, Personal / One-to-One Yoga, Yoga Therapy, Meditation, Pranayama & Breathwork, Stress Management & Relaxation, Massage Therapies, Steam / Wellness Rituals, Prenatal & Postnatal Yoga, Children's Yoga, Senior-Friendly Yoga, Corporate Yoga & Workplace Wellness, Individual Wellness Consultations, Special Workshops & Retreat-style Programs, Yoga Teacher Training and Educational Programs, and Integrated Wellness Packages. Services may be introduced in phases as the centre develops." },
+  { q: "Is SOMA Wellness only for people who practise Yoga?", a: "No. Although Yoga is at the heart of our philosophy, SOMA Wellness is for anyone interested in overall well-being. You can come for meditation, stress management, relaxation, massage, steam and wellness rituals, therapeutic yoga, breathwork, lifestyle support, or general physical and mental wellness — individually or combined through an integrated wellness program. No prior Yoga experience is required." },
+  { q: "What makes SOMA Wellness different from a regular gym, Yoga studio or spa?", a: "SOMA has been conceived as an integrated wellness destination rather than a gym, studio or spa alone. We bring together movement, breath, mindfulness, therapy, relaxation, education and lifestyle under one holistic philosophy. You may come to practise Yoga, but our larger purpose is to help you cultivate a healthier relationship with your body, breath, mind and everyday life." },
+  // B. Yoga, Yoga Therapy & Personalized Care
+  { q: "Do I need previous Yoga experience to join?", a: "Not at all. Beginners are welcome. Our instructors guide participants according to individual ability, flexibility, age and experience. You do not need to be flexible before starting — Yoga helps you gradually develop flexibility, strength, awareness and balance." },
+  { q: "What is Yoga Therapy?", a: "Yoga Therapy is the individualized application of Yoga practices according to a person's needs, limitations and health goals. A program may include modified postures, supported or therapeutic movements, breathing practices, relaxation techniques, meditation and lifestyle guidance. It may be useful as a supportive wellness approach for stiffness, postural problems, stress, reduced mobility or recurring musculoskeletal discomfort. It is intended to complement appropriate medical care, not replace medical diagnosis or treatment." },
+  { q: "How is Yoga Therapy different from a regular Yoga class?", a: "A regular Yoga class follows a structured practice suitable for a group. Yoga Therapy is more individualized — we discuss your health history, lifestyle, physical limitations and wellness goals, then plan a suitable practice specifically for you. Depending on your needs, Yoga Therapy may be offered as an individual session or through a specialized therapeutic program." },
+  { q: "Do I need a consultation before starting Yoga Therapy?", a: "For personalized Yoga Therapy, an initial assessment or consultation is recommended. This helps us understand your health concerns, medical history, lifestyle, previous injuries, current physical limitations, stress levels and personal goals, so we can recommend the most appropriate program." },
+  { q: "Can people with medical conditions join SOMA Wellness?", a: "In many cases, yes, but it depends on the individual and the condition. Please inform our wellness team about any medical condition, recent surgery, pregnancy, injury, chronic pain, cardiovascular condition, significant mobility limitation, medication or ongoing treatment before beginning a program. Where necessary, we may recommend obtaining clearance from your healthcare professional before participating." },
+  { q: "Are private Yoga sessions available?", a: "Yes. SOMA offers personalized one-to-one Yoga sessions for beginners, busy professionals, older adults, people with specific wellness goals, individuals recovering mobility, clients requiring Yoga Therapy, and those who prefer privacy and personalized instruction. Couple or small private-group sessions may also be arranged." },
+  // C. Meditation, Specialized Programs & Wellness Therapies
+  { q: "Do you offer meditation and breathing classes?", a: "Yes. Meditation and conscious breathing are central to SOMA: Guided Meditation, Mindfulness, Pranayama, Breath Awareness, Relaxation, Yogic breathing practices and Stress-management practices. Sessions help develop calmness, awareness, emotional balance and mental clarity." },
+  { q: "Do you offer prenatal and postnatal Yoga?", a: "Yes. SOMA plans specialized Prenatal and Postnatal Yoga programs with appropriately modified practices. Prenatal Yoga focuses on gentle movement, breathing, relaxation and overall well-being during pregnancy; Postnatal Yoga supports gradual recovery, mobility, relaxation and reconnection with the body following childbirth. Medical clearance may be requested depending on stage and health circumstances." },
+  { q: "Is Yoga available for children?", a: "Yes. Our children's Yoga programs introduce Yoga in an age-appropriate and engaging manner: simple postures, breathing exercises, balance and coordination, relaxation, concentration, body awareness and mindfulness. Special children's batches, workshops and family wellness activities may be announced periodically." },
+  { q: "Do you have programs for senior citizens?", a: "Yes. Yoga is adapted for different ages and mobility levels: Gentle Yoga, Chair-supported Yoga, Assisted stretching, Balance practices, Breathing exercises, Relaxation and Meditation. The emphasis is on comfort, safety, mobility and maintaining functional independence, rather than difficult postures." },
+  { q: "Do you provide massage and wellness therapies?", a: "Yes. SOMA incorporates selected massage, relaxation and wellness therapies as part of its holistic approach. Depending on availability, clients may book therapies individually or combine them with Yoga, meditation, steam or other wellness rituals. Our detailed therapy menu and wellness packages explain duration, benefits and pricing for each service." },
+  { q: "Can I combine Yoga, massage, meditation and other therapies in one package?", a: "Yes — this is a core SOMA concept. Choose integrated wellness journeys and packages combining Yoga, Meditation, Massage, Steam, Breathwork and Relaxation for goals such as Deep Relaxation, Stress Management, Body Recovery, Rejuvenation, Mind-Body Balance, Personal Wellness, Couple Wellness and Corporate Wellness. Our team will recommend the most appropriate package for your goals and time." },
+  // D. Corporate, Education & Community Programs
+  { q: "Do you offer corporate wellness programs?", a: "Yes. SOMA provides Corporate Yoga and Workplace Wellness for companies, organizations, institutions and professional teams: Desk Yoga, Workplace Yoga, Stress-management sessions, Meditation, Breathwork, Posture and ergonomic awareness, Employee wellness workshops, Wellness days, Executive wellness programs and Customized corporate wellness packages. Sessions can be arranged at SOMA Wellness, at the organization's premises, or in another suitable setting." },
+  { q: "Do you conduct Yoga Teacher Training and workshops?", a: "Yes. Education is an important part of SOMA: Yoga Teacher Training Courses, Short-term Yoga courses, Yoga Therapy workshops, Meditation workshops, Pranayama programs, Wellness education sessions, Professional development programs and Special masterclasses with experienced teachers. Upcoming programs will be announced via our website and social media." },
+  // E. Visiting, Booking & Practical Information
+  { q: "What should I wear for a Yoga session?", a: "Wear comfortable, breathable clothing that allows unrestricted movement. No specialized Yoga clothing is needed. Avoid very heavy meals immediately before class — keep approximately 2–3 hours between a substantial meal and practice unless your healthcare professional has advised otherwise." },
+  { q: "Do I need to bring my own Yoga mat or props?", a: "SOMA aims to provide essential Yoga equipment: Yoga mats, blocks, belts, bolsters, blankets, chairs and other supportive props. You are also welcome to bring your personal Yoga mat if you prefer." },
+  { q: "How long is a typical session?", a: "Session duration depends on the service: Group Yoga ~60 minutes, Private Yoga ~60 minutes, Yoga Therapy ~60 minutes or as recommended, Meditation / Breathwork ~30–60 minutes, Massage / Wellness Therapies per treatment, Integrated Wellness Packages per combination. Exact duration will be confirmed while booking." },
+  { q: "How do I know which program is right for me?", a: "You do not need to decide alone — tell our team what you are looking for (fitness, flexibility, stress relief, relaxation, pain-management support, better mobility, meditation, personalized Yoga, massage, rejuvenation, or overall wellness) and we can recommend an appropriate class, therapy or wellness package. For more specific concerns, a consultation may be recommended." },
+  { q: "How can I book a session?", a: "Sessions can be booked via Phone / WhatsApp, Email, Website, or Reception at SOMA Wellness, Spring Valley, Nairobi. Advance booking is particularly recommended for private sessions, Yoga Therapy, massage, consultations and wellness packages. [Number / Email / Website to be inserted]." },
+  { q: "Can I visit the centre before taking a membership?", a: "Yes. Prospective clients are welcome to contact our team and learn about the centre, available classes and wellness services before selecting a membership or package. A consultation or introductory session may also be recommended depending on the program you are interested in." },
 ];
+
+// ── Per-page FAQ mapping (bottom of each page) ────────────────
+export const PAGE_FAQS = {
+  // About — A. About SOMA (1-5)
+  about: [
+    "What is SOMA Wellness?",
+    "Where are you located?",
+    "What services are available at SOMA Wellness?",
+    "Is SOMA Wellness only for people who practise Yoga?",
+    "What makes SOMA Wellness different from a regular gym, Yoga studio or spa?",
+  ],
+  // Join — memberships, practical visit
+  join: [
+    "Can I visit the centre before taking a membership?",
+    "How do I know which program is right for me?",
+    "What services are available at SOMA Wellness?",
+    "How long is a typical session?",
+    "How can I book a session?",
+    "Can people with medical conditions join SOMA Wellness?",
+  ],
+  // One-to-One — B. Yoga, Therapy & Personalized Care (6-11)
+  private: [
+    "Do I need previous Yoga experience to join?",
+    "What is Yoga Therapy?",
+    "How is Yoga Therapy different from a regular Yoga class?",
+    "Do I need a consultation before starting Yoga Therapy?",
+    "Can people with medical conditions join SOMA Wellness?",
+    "Are private Yoga sessions available?",
+    "How long is a typical session?",
+    "How can I book a session?",
+  ],
+  // Life Stages — C. specialized (13-15) + medical
+  lifeStages: [
+    "Do you offer prenatal and postnatal Yoga?",
+    "Is Yoga available for children?",
+    "Do you have programs for senior citizens?",
+    "Can people with medical conditions join SOMA Wellness?",
+    "Do I need a consultation before starting Yoga Therapy?",
+    "How long is a typical session?",
+    "How can I book a session?",
+  ],
+  // Restore — C. meditation/massage + integration
+  restore: [
+    "Do you offer meditation and breathing classes?",
+    "Do you provide massage and wellness therapies?",
+    "Can I combine Yoga, massage, meditation and other therapies in one package?",
+    "Can people with medical conditions join SOMA Wellness?",
+    "How long is a typical session?",
+    "How can I book a session?",
+  ],
+  // Learn & Partner — D. Corporate & Education
+  yttc: [
+    "Do you offer corporate wellness programs?",
+    "Do you conduct Yoga Teacher Training and workshops?",
+    "What makes SOMA Wellness different from a regular gym, Yoga studio or spa?",
+    "How can I book a session?",
+    "How long is a typical session?",
+  ],
+  // Contact — E. Practical
+  contact: [
+    "Where are you located?",
+    "What should I wear for a Yoga session?",
+    "Do I need to bring my own Yoga mat or props?",
+    "How long is a typical session?",
+    "How can I book a session?",
+    "Can I visit the centre before taking a membership?",
+  ],
+};

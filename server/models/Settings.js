@@ -30,6 +30,22 @@ const SettingsSchema = new mongoose.Schema(
       deliveryMinDays:        { type: Number, default: 3 },
       deliveryMaxDays:        { type: Number, default: 5 },
     },
+
+    // ── SOMA catalog / founding / membership cycle config ────
+    soma: {
+      currency: { type: String, default: 'KES' },
+      location: { type: String, default: 'Spring Valley, Nairobi' },
+      vatInclusive: { type: Boolean, default: true },
+      foundingCap: { type: Number, default: 100 },
+      foundingWindowDays: { type: Number, default: 90 },
+      foundingLockMonths: { type: Number, default: 12 },
+      openingDate: { type: Date, default: () => new Date('2026-08-01T00:00:00+03:00') },
+      upgradeEffective: { type: String, enum: ['next_cycle', 'immediate'], default: 'next_cycle' },
+      installmentDefaults: {
+        soma200Count: { type: Number, default: 3 },
+        soma200Interval: { type: String, default: 'monthly' },
+      },
+    },
   },
   { timestamps: true }
 );

@@ -6,7 +6,7 @@ const PlanSchema = new mongoose.Schema(
     name:              { type: String, required: true },
     description:       { type: String, default: '' },
     price:             { type: Number, default: 0 },
-    currency:          { type: String, default: 'INR' },
+    currency:          { type: String, default: 'KES' },
     durationMonths:    { type: Number, required: true },
     durationUnit:      { type: String, default: 'months' },
     pauseDays:         { type: Number, default: 0 },
@@ -20,6 +20,15 @@ const PlanSchema = new mongoose.Schema(
     active:            { type: Boolean, default: true },
     visibility:        { type: String, enum: PLAN_VISIBILITY, default: 'public' },
     createdBy:         { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // ── SOMA extensions ────────────────────────────────
+    tier:              { type: String, enum: ['JUA', 'AMANI', 'UZIMA', 'FAMILY', null], default: null },
+    tierLabel:         { type: String, default: '' },
+    isSoma:            { type: Boolean, default: false },
+    somaCategory:      { type: String, enum: ['membership', 'pass', 'daily', 'other'], default: 'membership' },
+    allowances:        { type: mongoose.Schema.Types.Mixed, default: {} },
+    foundingMonthly:   { type: Number, default: null },
+    termPricing:       { type: mongoose.Schema.Types.Mixed, default: {} }, // {1:12000,3:32000...}
+    originalPrice:     { type: Number, default: null },
   },
   { timestamps: true }
 );

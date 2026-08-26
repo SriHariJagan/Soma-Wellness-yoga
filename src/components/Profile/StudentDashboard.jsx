@@ -28,6 +28,7 @@ const YTTCPage = lazy(() => import("./YTTCPage"));
 const OrderHistoryPage = lazy(() => import("./OrderHistoryPage"));
 
 const NAV = [
+  { id: "soma",          label: "SOMA Wellness",     icon: "ti-heart"          },
   { id: "profile",       label: "Profile",           icon: "ti-user"           },
   { id: "cart",          label: "My Cart",           icon: "ti-shopping-cart"  },
   { id: "orders",        label: "Order History",     icon: "ti-receipt-2"      },
@@ -50,7 +51,9 @@ const NAV = [
   { id: "myBlogs",       label: "My Blogs",          icon: "ti-pencil"         },
 ];
 
+const SomaDashboard = lazy(() => import("./SomaDashboard"));
 const PAGE_MAP = {
+  soma:          SomaDashboard,
   profile:       ProfilePage,
   cart:          CartPage,
   orders:        OrderHistoryPage,

@@ -4,6 +4,8 @@ import SomaPageHeader from "../components/soma/SomaPageHeader";
 import { PRIVATE_RATES } from "../config/siteContent";
 import SomaCTA from "../components/soma/SomaCTA";
 import SomaGuarantee from "../components/soma/SomaGuarantee";
+import PageFAQSection from "../components/soma/PageFAQSection";
+import { PAGE_FAQS } from "../config/siteContent";
 import { Link } from "react-router-dom";
 
 const steps = [
@@ -86,6 +88,9 @@ const Private = () => {
       </section>
 
       <SomaGuarantee />
+
+      <PageFAQSection title="Private Yoga & Therapy — common questions" questions={PAGE_FAQS.private} />
+
       <SomaCTA />
       <style>{`@media(max-width:900px){div[style*="gridTemplateColumns: 0.9fr 1.1fr"]{grid-template-columns:1fr !important;} div[style*="position: sticky"]{position:relative !important; top:0 !important; height:360px !important;}}`}</style>
     </div>

@@ -38,6 +38,7 @@ const BulkOrders = lazy(() => import('./pages/BulkOrders'));
 const OrderTracking = lazy(() => import('./pages/OrderTracking'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AdminTestPages = lazy(() => import('./pages/AdminTestPages'));
+const FoundingMembers = lazy(() => import('./pages/FoundingMembers'));
 
 const RouteFallback = () => <SomaLoader compact />;
 
@@ -144,6 +145,7 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
             <Route path="/life-stages" element={<LifeStages />} />
             <Route path="/restore" element={<Restore />} />
             <Route path="/yttc"    element={<YTTC />} />
+            <Route path="/founding" element={<FoundingMembers />} />
             <Route path="/faq"     element={<FAQ />} />
             <Route path="/events"  element={<Events />} />
             <Route path="/contact" element={<Contact />} />

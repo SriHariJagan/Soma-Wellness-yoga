@@ -9,6 +9,19 @@ const CourseSchema = new mongoose.Schema(
     price:       { type: Number, default: 0 },
     description: { type: String, default: '' },
     active:      { type: Boolean, default: true },
+    // SOMA Academy extensions
+    hours:           { type: Number, default: null }, // 25/100/200
+    earlyPrice:      { type: Number, default: null }, // 145000 for 200h
+    earlyCutoffDate: { type: Date, default: null },
+    earlyCap:        { type: Number, default: null }, // seat count
+    earlyEnrolled:   { type: Number, default: 0 },
+    installmentsAllowed: { type: Boolean, default: false },
+    installmentsConfig: {
+      count: { type: Number, default: 3 },
+      interval: { type: String, enum: ['monthly', 'biweekly', 'weekly'], default: 'monthly' },
+    },
+    category:        { type: String, enum: ['academy', 'group', 'other'], default: 'academy' },
+    currency:        { type: String, default: 'KES' },
     enrolledUsers: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       enrolledAt: { type: Date, default: Date.now },

@@ -52,6 +52,30 @@ const MembershipSchema = new mongoose.Schema(
     completedSessions: { type: Number, default: 0 },
     sessionHistory:    { type: [SessionHistoryEntrySchema], default: [] },
 
+    // ── SOMA-specific fields ──────────────────────────────────
+    tier: { type: String, enum: ['JUA', 'AMANI', 'UZIMA', 'FAMILY', null], default: null },
+    termMonths: { type: Number, enum: [1, 3, 6, 12], default: null },
+    tierLabel: { type: String, default: '' },
+    currency: { type: String, default: 'KES' },
+    // Founding member tracking
+    isFounding: { type: Boolean, default: false },
+    founding_rate_expires_at: { type: Date, default: null },
+    foundingMonthlyRate: { type: Number, default: null },
+    // Monthly allowances (reset every cycle, no rollover)
+    allowances: { type: mongoose.Schema.Types.Mixed, default: {} },
+    allowanceUsage: { type: mongoose.Schema.Types.Mixed, default: {} },
+    lastResetAt: { type: Date, default: null },
+    nextResetAt: { type: Date, default: null },
+    billingCycleStart: { type: Date, default: null },
+    // Upgrade/downgrade config (next billing cycle default)
+    pendingTier: { type: String, default: null },
+    pendingTermMonths: { type: Number, default: null },
+    upgradeEffective: { type: String, enum: ['next_cycle', 'immediate'], default: 'next_cycle' },
+
+    // Family/Corporate multi-user linkage
+    familyMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    accountType: { type: String, enum: ['individual', 'family', 'corporate'], default: 'individual' },
+
     history: { type: [HistoryEntrySchema], default: [] },
   },
   { timestamps: true }

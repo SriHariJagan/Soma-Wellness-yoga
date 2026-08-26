@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
 import { ACADEMY, CORPORATE } from "../config/siteContent";
 import SomaCTA from "../components/soma/SomaCTA";
+import PageFAQSection from "../components/soma/PageFAQSection";
+import { PAGE_FAQS } from "../config/siteContent";
 import { Link } from "react-router-dom";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
 
@@ -317,6 +319,8 @@ const YTTC = () => {
           </motion.div>
         </motion.div>
       </section>
+      <PageFAQSection title="Learn & Partner — common questions" questions={PAGE_FAQS.yttc} />
+
       <SomaCTA />
       <style>{`@media(max-width:900px){div[style*="gridTemplateColumns: 1.4fr 0.9fr"],div[style*="gridTemplateColumns: 1.1fr 0.9fr"],div[style*="gridTemplateColumns: 1.15fr 0.85fr"]{grid-template-columns:1fr !important;}}`}</style>
     </div>

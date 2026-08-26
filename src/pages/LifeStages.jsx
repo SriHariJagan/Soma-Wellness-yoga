@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
 import { LIFE_STAGES } from "../config/siteContent";
 import SomaCTA from "../components/soma/SomaCTA";
+import PageFAQSection from "../components/soma/PageFAQSection";
+import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
 
 const tabs = [
@@ -231,6 +233,8 @@ const LifeStages = () => {
           ))}
         </motion.div>
       </section>
+
+      <PageFAQSection title="Life Stages — common questions" questions={PAGE_FAQS.lifeStages} />
 
       <SomaCTA />
       <style>{`@media(max-width:900px){div[style*="gridTemplateColumns: 1fr 1fr"]{grid-template-columns:1fr !important; height:auto !important;} .lifeGrid{height:auto !important;} .lifeGrid > div:last-child{height:280px !important;}}`}</style>

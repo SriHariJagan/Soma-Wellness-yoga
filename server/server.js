@@ -57,6 +57,7 @@ import { requestTimeout } from "./middleware/requestTimeout.js";
 import * as monCtrl from "./controllers/monitoringController.js";
 import monitoringRoutes from "./routes/monitoring.js";
 import blogRoutes from "./routes/blogs.js";
+import somaRoutes from "./routes/soma.js";
 
 // ── Startup validation for required SMTP env vars ──
 function validateSmtpConfig() {
@@ -221,6 +222,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/leads", leadRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/soma", somaRoutes);
 
 // ── Admin Monitoring (authed) ──
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
@@ -250,6 +252,9 @@ const ENROLLMENT_CHECK_INTERVAL = 60 * 60 * 1000; // 1 hour
 setInterval(() => {
   expireDueEnrollments().catch(() => {});
 }, ENROLLMENT_CHECK_INTERVAL);
+
+// ── SOMA cron: allowance reset, voucher expiry, founding window/rollover (every hour) ──
+import { startSomaCron } from "./services/cron/somaCron.js";
 
 // ── Book store: sweep stale orders (every 15 min) ──
 //  - 30 min: release inventory reservations + send "payment cancelled" email
@@ -656,6 +661,72 @@ async function seedDefaultServices() {
   }
 }
 
+// ── SOMA: Seed SOMA tier plans (KES) ─────────────────────────
+async function seedSomaPlans() {
+  const SOMA_PLANS = [
+    // Base tiers (monthly)
+    { name: 'SOMA JUA', description: '8 group yoga classes/month · Member rates else', price: 12000, currency: 'KES', durationMonths: 1, tier: 'JUA', tierLabel: 'SOMA JUA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: 8 }, foundingMonthly: 10000, termPricing: { 1: 12000, 3: 32000, 6: 61000, 12: 108000 }, benefits: ['8 group yoga classes a month', 'Member rates on everything else'], displayOrder: 10, isPopular: false, active: true },
+    { name: 'SOMA AMANI', description: 'Unlimited yoga, meditation & breathwork · SOMA DAILY', price: 18500, currency: 'KES', durationMonths: 1, tier: 'AMANI', tierLabel: 'SOMA AMANI', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1 }, foundingMonthly: 15000, termPricing: { 1: 18500, 3: 49500, 6: 94000, 12: 166500 }, benefits: ['Unlimited group yoga', 'Meditation and breathwork', 'SOMA DAILY included', 'Member rates on everything else'], displayOrder: 11, isPopular: false, active: true },
+    { name: 'SOMA UZIMA', description: 'Unlimited yoga & meditation · 2 massages + 1 private · 15% off', price: 28500, currency: 'KES', durationMonths: 1, tier: 'UZIMA', tierLabel: 'SOMA UZIMA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, massages60: 2, privateSessions: 1, guestPasses: 2 }, foundingMonthly: 24000, termPricing: { 1: 28500, 3: 76500, 6: 145000, 12: 256500 }, benefits: ['Unlimited yoga and meditation', 'SOMA DAILY included', '2 sixty-minute massages', '1 private yoga or therapy session', 'Priority booking · 2 guest passes', '15% off everything else'], badge: 'BEST VALUE', isPopular: true, displayOrder: 12, active: true },
+    { name: 'SOMA FAMILY', description: '2 adults unlimited · 1 Young programme · SOMA DAILY · 10% off', price: 35000, currency: 'KES', durationMonths: 1, tier: 'FAMILY', tierLabel: 'SOMA FAMILY', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, familyAdults: 2, childrenPrograms: 1 }, foundingMonthly: 28500, termPricing: { 1: 35000, 3: 94500, 6: 178500, 12: 315000 }, benefits: ['2 adults, unlimited yoga', "1 children's or teen programme", 'Meditation and breathwork', 'SOMA DAILY included', '10% off everything else'], displayOrder: 13, active: true },
+    // Passes
+    { name: '5-Class Pass', description: '5 classes · 6 weeks · 2,200/class', price: 11000, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 20, active: true },
+    { name: '10-Class Pass', description: '10 classes · 3 months · 2,100/class', price: 21000, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 21, active: true },
+    // Daily
+    { name: 'SOMA DAILY — Monthly', description: 'Weekly podcast, daily reflection, monthly guided audio, seasonal notes', price: 1500, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 30, active: true },
+    { name: 'SOMA DAILY — Annual', description: 'Annual, 2 months free vs monthly', price: 15000, currency: 'KES', durationMonths: 12, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 31, active: true },
+  ];
+  for (const p of SOMA_PLANS) {
+    await Plan.findOneAndUpdate({ name: p.name }, { $set: p }, { upsert: true, returnDocument: 'after' });
+  }
+}
+
+// ── SOMA: Seed SOMA services (massage, meditation, signatures, life stages) ─
+async function seedSomaServices() {
+  const SOMA_SERVICES = [
+    // Restore à la carte
+    { name: 'Relaxation Massage', description: '60 min relaxation massage', mode: 'center', category: 'Therapy', type: 'Massage', price: 5500, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 30 },
+    { name: 'Aromatherapy Massage', description: '60 min aromatherapy massage', mode: 'center', category: 'Therapy', type: 'Massage', price: 6000, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 31 },
+    { name: 'Deep Tissue / Sports Massage', description: '60 min deep tissue / sports', mode: 'center', category: 'Therapy', type: 'Massage', price: 6500, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 32 },
+    { name: 'Short Treatment — Head & Shoulders', description: '30 min head & shoulders or feet', mode: 'center', category: 'Therapy', type: 'Massage', price: 3000, pricingModel: 'per_session', sessionDuration: 30, active: true, displayOrder: 33 },
+    { name: 'Body Scrub', description: '45 min body scrub', mode: 'center', category: 'Therapy', type: 'Scrub', price: 4000, pricingModel: 'per_session', sessionDuration: 45, active: true, displayOrder: 34 },
+    { name: 'Meditation / Breathwork / Yoga Nidra', description: '45 min meditation class — free for AMANI/UZIMA/FAMILY', mode: 'center', category: 'Therapy', type: 'Meditation', price: 1800, pricingModel: 'per_session', sessionDuration: 45, active: true, displayOrder: 35 },
+    // Signatures
+    { name: 'STILLNESS', description: 'Restorative yoga, guided meditation, 60-min relaxation massage, herbal tea — 2 hrs', mode: 'center', category: 'Therapy', type: 'Signature', price: 11000, pricingModel: 'per_session', sessionDuration: 120, active: true, displayOrder: 40 },
+    { name: 'THE ACACIA', description: 'Private yoga, meditation, 60-min massage, body treatment, refreshments, rest — 2.5 hrs (premium)', mode: 'center', category: 'Therapy', type: 'Signature', price: 18500, pricingModel: 'per_session', sessionDuration: 150, active: true, displayOrder: 41 },
+    { name: 'FOR TWO', description: 'Couple yoga/stretching, massage for two, herbal tea, quiet time — 2 hrs per couple', mode: 'center', category: 'Therapy', type: 'Signature', price: 22500, pricingModel: 'per_session', sessionDuration: 120, active: true, displayOrder: 42 },
+    // Life Stages (sold as 4 or 8 blocks — price is 4-block; 8-block handled via variant)
+    { name: 'SOMA MAMA (Pregnancy)', description: 'Pregnancy — 4 sessions 12,000 · 8 sessions 22,000 · Single 3,500 · Private 5,500', mode: 'center', category: 'Specialty', type: 'Therapy', price: 12000, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 50 },
+    { name: 'SOMA MAMA+ (After Birth)', description: 'After birth — 4 sessions 11,500 · 8 sessions 21,000', mode: 'center', category: 'Specialty', type: 'Therapy', price: 11500, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 51 },
+    { name: 'SOMA YOUNG (5–17)', description: 'Children/teens 5–17 — 4 sessions 7,000 · 8 sessions 12,000 · Holiday camp 3d 9K / 5d 14K', mode: 'center', category: 'Specialty', type: 'Group', price: 7000, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 52 },
+    { name: 'SOMA AGE WELL (Seniors)', description: 'Seniors — 4 sessions 7,000 · 8 sessions 12,000', mode: 'center', category: 'Specialty', type: 'Therapy', price: 7000, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 53 },
+    // Private yoga / therapy
+    { name: 'Therapy Assessment (75 min)', description: 'Required before any therapy programme — 75 min — 6,500', mode: 'center', category: 'Personal', type: 'Therapy', price: 6500, pricingModel: 'per_session', sessionDuration: 75, active: true, displayOrder: 60 },
+    { name: 'Private Yoga / Therapy — Single', description: '60 min private yoga or therapy — 5,500', mode: 'center', category: 'Personal', type: 'Hatha', price: 5500, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 61 },
+    { name: 'SOMA RESET (6-Week Programme)', description: 'Opening assessment, 12 yoga, 6 meditation/Nidra, 2 massages, home plan, closing review — 32,000', mode: 'center', category: 'Therapy', type: 'Therapy', price: 32000, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 70 },
+  ];
+  for (const svc of SOMA_SERVICES) {
+    await Service.findOneAndUpdate({ name: svc.name }, { $set: svc }, { upsert: true, returnDocument: 'after' });
+  }
+}
+
+async function seedFoundingSettings() {
+  const FoundingSettings = (await import('./models/FoundingSettings.js')).default;
+  await FoundingSettings.getSingleton();
+}
+
+async function seedSomaCourses() {
+  const Course = (await import('./models/Course.js')).default;
+  const SOMA_COURSES = [
+    { title: 'Yoga Foundations', duration: '25 hours', price: 30000, hours: 25, installmentsAllowed: false, description: '25-hr foundations', active: true, category: 'academy' },
+    { title: 'SOMA 100 — Foundation Teacher Course', duration: '100 hours', price: 85000, hours: 100, installmentsAllowed: true, installmentsConfig: { count: 3, interval: 'monthly' }, active: true, category: 'academy' },
+    { title: 'SOMA 200 — Yoga Teacher Training', duration: '200 hours', price: 165000, hours: 200, earlyPrice: 145000, earlyCap: 12, installmentsAllowed: true, installmentsConfig: { count: 6, interval: 'monthly' }, active: true, category: 'academy' },
+  ];
+  for (const c of SOMA_COURSES) {
+    await Course.findOneAndUpdate({ title: c.title }, { $set: c }, { upsert: true, returnDocument: 'after' });
+  }
+}
+
 // ── Boot ──
 let server;
 
@@ -717,7 +788,12 @@ connectDB(process.env.MONGO_URI)
 
     await seedDefaultPlans().catch(() => {});
     await seedDefaultServices().catch(() => {});
+    await seedSomaPlans().catch((e) => logger.warn(MODULE, "SOMA plan seed skipped", { error: e.message }));
+    await seedSomaServices().catch((e) => logger.warn(MODULE, "SOMA service seed skipped", { error: e.message }));
+    await seedFoundingSettings().catch(() => {});
+    await seedSomaCourses().catch(() => {});
     expireDueEnrollments().catch(() => {});
+    try { startSomaCron(); } catch {}
 
     server = app.listen(PORT, () => {
       logger.info(MODULE, "Listening", { port: PORT });

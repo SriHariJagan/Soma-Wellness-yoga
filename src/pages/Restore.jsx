@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
 import { RESTORE_TREATMENTS } from "../config/siteContent";
 import SomaCTA from "../components/soma/SomaCTA";
+import PageFAQSection from "../components/soma/PageFAQSection";
+import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
 
 const signatures = [
@@ -255,6 +257,8 @@ const Restore = () => {
           </motion.div>
         </motion.div>
       </section>
+
+      <PageFAQSection title="Restore & wellness therapies — common questions" questions={PAGE_FAQS.restore} />
 
       <SomaCTA />
       <style>{`@media(max-width:900px){div[style*="gridTemplateColumns: 1.2fr 0.8fr"]{grid-template-columns:1fr !important;} div[style*="position: sticky"]{position:relative !important; top:0 !important;}}`}</style>

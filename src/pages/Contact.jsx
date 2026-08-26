@@ -4,6 +4,8 @@ import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaFacebookF, FaInstagram, FaYoutub
 import { FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
+import PageFAQSection from "../components/soma/PageFAQSection";
+import { PAGE_FAQS } from "../config/siteContent";
 import "./Contact.css";
 
 const STUDIO = {
@@ -190,6 +192,8 @@ const Contact = () => {
           ))}
         </motion.div>
       </section>
+
+      <PageFAQSection title="Visiting & booking — common questions" questions={PAGE_FAQS.contact} compact />
     </main>
   );
 };

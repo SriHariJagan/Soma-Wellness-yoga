@@ -9,11 +9,11 @@ import SomaLogo from "../soma/SomaLogo";
 
 const navLinks = [
   { label: "Join", path: "/classes", num: "01" },
-  { label: "Restore", path: "/restore", num: "02" },
-  { label: "Academy", path: "/yttc", num: "03" },
-  { label: "Life Stages", path: "/life-stages", num: "04" },
-  { label: "FAQ", path: "/faq", num: "05" },
-  { label: "Contact", path: "/contact", num: "06" },
+  { label: "One-to-One", path: "/private", num: "02" },
+  { label: "Life Stages", path: "/life-stages", num: "03" },
+  { label: "Restore", path: "/restore", num: "04" },
+  { label: "Learn & Partner", path: "/yttc", num: "05" },
+  { label: "Founding Members", path: "/founding", num: "06" },
 ];
 
 const socialLinks = [
