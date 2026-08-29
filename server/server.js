@@ -96,12 +96,16 @@ app.set("trust proxy", 1);
 app.use(compression({ threshold: 1024, level: 6 }));
 
 // ── CORS ──
-const allowedOrigins = (
-  process.env.CORS_ORIGINS ||
-  "https://somawellness.in,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app"
-)
-  .split(",")
-  .map((o) => o.trim());
+const BASE_ORIGINS =
+  "https://somawellness.in,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app";
+
+const allowedOrigins = [
+  ...new Set(
+    [...BASE_ORIGINS.split(","), ...(process.env.CORS_ORIGINS || "").split(",")]
+      .map((o) => o.trim())
+      .filter(Boolean)
+  ),
+];
 
 const isLocalhost = (origin) =>
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
