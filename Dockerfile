@@ -6,12 +6,12 @@ WORKDIR /app
 FROM base AS deps
 COPY server/package.json server/package-lock.json* ./server/
 COPY package.json package-lock.json* ./
-RUN cd server && npm ci --omit=dev && cd .. && npm ci --omit=dev
+RUN cd server && npm ci --omit=dev && cd .. && npm install --omit=dev --legacy-peer-deps
 
 # ── Build frontend ──
 FROM base AS builder
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
