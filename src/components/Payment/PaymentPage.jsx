@@ -104,6 +104,8 @@ export default function PaymentPage() {
 
   /* ── Success ── */
   if (success) {
+    const isStudent = JSON.parse(localStorage.getItem('user') || '{}')?.role === 'student';
+    const dashboardPath = isStudent ? '/studentdashboard' : '/yogaadmin';
     return (
       <div className="pay-shell">
         <div className="pay-success">
@@ -113,7 +115,17 @@ export default function PaymentPage() {
           <p className="pay-success-sub">
             {payable ? t('payment.bookingConfirmed', { course: course.name }) : t('payment.bookingReceivedMsg', { course: course.name })}
           </p>
-          <button className="pay-btn" onClick={() => navigate('/')}>{t('payment.backToHome')}</button>
+          {course.founding && (
+            <div style={{ background:'rgba(24,61,45,0.06)', border:'1px solid rgba(46,125,91,0.15)', borderRadius:12, padding:'12px 16px', margin:'12px 0', fontSize:13, color:'var(--soma-forest)', fontWeight:600, textAlign:'center' }}>
+              ◈ Your founding rate of <strong>{course.price}</strong> is locked for {course.time}
+            </div>
+          )}
+          <button className="pay-btn" onClick={() => navigate(dashboardPath)} style={{ marginBottom:8 }}>
+            Go to Dashboard →
+          </button>
+          <button className="pay-btn-ghost" onClick={() => navigate('/')}>
+            {t('payment.backToHome')}
+          </button>
         </div>
       </div>
     );

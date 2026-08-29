@@ -34,7 +34,8 @@ export default function FoundingMembers() {
 
   const handleClaim = useCallback(() => {
     try {
-      const priceInfo = selectedPrice || resolveMembershipPrice(selectedTier, selectedTerm, { foundingEligible: !!founding?.eligible });
+      const isEligible = founding === null ? true : !!founding?.eligible;
+      const priceInfo = selectedPrice || resolveMembershipPrice(selectedTier, selectedTerm, { foundingEligible: isEligible });
       const tierInfo = TIERS.find(tier => tier.key === selectedTier);
       const termLabel = `${selectedTerm} month${selectedTerm > 1 ? 's' : ''}`;
       navigate('/payment', {
@@ -45,7 +46,7 @@ export default function FoundingMembers() {
           tier: selectedTier,
           term: selectedTerm,
           founding: true,
-          foundingEligible: !!founding?.eligible,
+          foundingEligible: isEligible,
           amount: priceInfo.termTotal,
         }
       });
@@ -183,7 +184,7 @@ export default function FoundingMembers() {
             </div>
             <span style={{ marginLeft:'auto', fontSize:10, fontWeight:800, letterSpacing:'0.06em', background:'var(--soma-gold)', color:'var(--soma-forest)', padding:'4px 8px', borderRadius:9999 }}>SAVE UP TO 16%</span>
           </div>
-          <PayAheadSelector tierKey={selectedTier} foundingEligible={!!founding?.eligible} onSelect={handlePayAheadSelect} />
+          <PayAheadSelector tierKey={selectedTier} foundingEligible={founding === null ? true : !!founding?.eligible} onSelect={handlePayAheadSelect} />
         </motion.div>
 
         <motion.div
@@ -200,7 +201,7 @@ export default function FoundingMembers() {
             whileTap={{ scale: 0.98 }}
             style={{ border:'none', cursor:'pointer', fontFamily:'inherit' }}
           >
-            {t('founding.claim')} — {selectedTier} · {selectedTerm}mo · {selectedPrice ? formatKES(selectedPrice.termTotal) : formatKES(resolveMembershipPrice(selectedTier, selectedTerm, { foundingEligible: !!founding?.eligible }).termTotal)} <span style={{ marginLeft:4 }}>→</span>
+            {t('founding.claim')} — {selectedTier} · {selectedTerm}mo · {selectedPrice ? formatKES(selectedPrice.termTotal) : formatKES(resolveMembershipPrice(selectedTier, selectedTerm, { foundingEligible: founding === null ? true : !!founding?.eligible }).termTotal)} <span style={{ marginLeft:4 }}>→</span>
           </motion.button>
           <div style={{ marginTop:8, fontSize:11, color:'#5a6b63' }}>
             Or <Link to="/contact" style={{ color:'var(--soma-primary)', fontWeight:700, textDecoration:'underline' }}>contact us</Link> for help

@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth, savePendingIntent, clearPendingIntent } from '../../context/AuthContext.jsx';
 import { isLoggedIn } from '../../utils/payment.js';
 import PaymentPreviewModal from './PaymentPreviewModal.jsx';
@@ -84,11 +85,16 @@ export default function CheckoutGate({ intent, onProceed, children }) {
   return (
     <>
       {trigger}
-      {step === 'preview' && (
-        <PaymentPreviewModal intent={pendingIntent} onClose={handleClose} onContinue={handleContinueFromPreview} />
-      )}
-      {step === 'otp' && (
-        <OtpVerificationModal intent={pendingIntent} onClose={handleClose} onVerified={handleVerified} />
+      {createPortal(
+        <>
+          {step === 'preview' && (
+            <PaymentPreviewModal intent={pendingIntent} onClose={handleClose} onContinue={handleContinueFromPreview} />
+          )}
+          {step === 'otp' && (
+            <OtpVerificationModal intent={pendingIntent} onClose={handleClose} onVerified={handleVerified} />
+          )}
+        </>,
+        document.body
       )}
     </>
   );
@@ -124,7 +130,7 @@ export function useCheckoutGate() {
     setTimeout(() => cb?.(data), 100);
   }, [login, state.onProceed]);
 
-  const GateModals = (
+  const GateModals = createPortal(
     <>
       {state.step === 'preview' && (
         <PaymentPreviewModal intent={state.intent} onClose={close} onContinue={() => setState((s) => ({ ...s, step: 'otp' }))} />
@@ -132,7 +138,8 @@ export function useCheckoutGate() {
       {state.step === 'otp' && (
         <OtpVerificationModal intent={state.intent} onClose={close} onVerified={handleVerified} />
       )}
-    </>
+    </>,
+    document.body
   );
 
   return { requireAuth, GateModals, close };
