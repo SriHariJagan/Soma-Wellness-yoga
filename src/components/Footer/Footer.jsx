@@ -6,15 +6,18 @@ import { FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import "./Footer.css";
 import { EASE, usePrefersReducedMotion } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../common/LanguageSwitcher";
 
 const socials = [
-  { href: "https://www.facebook.com/pragyayoga.in", label: "Facebook", icon: <FaFacebookF /> },
-  { href: "https://www.instagram.com/pragyayogaofficial/", label: "Instagram", icon: <FaInstagram /> },
+  { href: "https://www.facebook.com/somawellness", label: "Facebook", icon: <FaFacebookF /> },
+  { href: "https://www.instagram.com/somawellness/", label: "Instagram", icon: <FaInstagram /> },
   { href: "https://www.youtube.com/c/KapilKesari", label: "YouTube", icon: <FaYoutube /> },
-  { href: "https://twitter.com/PragyayogaIn", label: "Twitter/X", icon: <FaXTwitter /> },
+  { href: "https://twitter.com/SomaWellness", label: "Twitter/X", icon: <FaXTwitter /> },
 ];
 
 const Footer = () => {
+  const { t } = useTranslation();
   const [subscribed, setSubscribed] = React.useState(false);
   const reduced = usePrefersReducedMotion();
 
@@ -56,12 +59,8 @@ const Footer = () => {
             <motion.div className="footer-logo-wrap" initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: EASE }}>
               <img src="/images/soma/logo.png" alt="Soma Wellness" className="footer-logo-img" />
             </motion.div>
-            <p className="footer-tagline">
-              Return to your <em>center</em>
-            </p>
-            <p>
-              Soma Wellness is a premium space to return to your center — through breath, movement, rest and community. Warm, calm, and deeply human.
-            </p>
+            <p className="footer-tagline" dangerouslySetInnerHTML={{ __html: t("footer.tagline") }} />
+            <p>{t("footer.description")}</p>
             <div className="footer-social">
               {socials.map((s, i) => (
                 <motion.a
@@ -84,16 +83,16 @@ const Footer = () => {
           </motion.div>
 
           <motion.div className="footer-links" variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } } }}>
-            <h3>Explore</h3>
+            <h3>{t("footer.explore")}</h3>
             <ul>
               {[
-                { to: "/classes", label: "Join" },
-                { to: "/private", label: "Private" },
-                { to: "/life-stages", label: "Life Stages" },
-                { to: "/restore", label: "Restore" },
-                { to: "/yttc", label: "Academy" },
-                { to: "/faq", label: "FAQ" },
-                { to: "/contact", label: "Contact" },
+                { to: "/classes", label: t("navigation.join") },
+                { to: "/private", label: t("navigation.private") },
+                { to: "/life-stages", label: t("navigation.lifeStages") },
+                { to: "/restore", label: t("navigation.restore") },
+                { to: "/yttc", label: t("navigation.academy") },
+                { to: "/faq", label: t("navigation.faq") },
+                { to: "/contact", label: t("navigation.contact") },
               ].map((l) => (
                 <li key={l.to}>
                   <Link to={l.to}>{l.label}</Link>
@@ -103,10 +102,10 @@ const Footer = () => {
           </motion.div>
 
           <motion.div className="footer-contact" variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } } }}>
-            <h3>Visit</h3>
+            <h3>{t("footer.visit")}</h3>
             <div className="footer-contact-item">
               <div className="footer-contact-icon"><FaMapMarkerAlt /></div>
-              <span>Spring Valley, Nairobi, Kenya — Integrated Wellness Center · Yoga · Therapy · Meditation</span>
+              <span>{t("footer.address")}</span>
             </div>
             <div className="footer-contact-item">
               <div className="footer-contact-icon"><MdEmail /></div>
@@ -118,21 +117,22 @@ const Footer = () => {
             </div>
             <motion.div className="footer-hours" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: EASE }} style={{ transformOrigin: "left" }}>
               <span className="footer-hours-dot" />
-              <span>Mon–Sat · 6am–8pm · Sunday closed</span>
+              <span>{t("footer.hours")}</span>
             </motion.div>
           </motion.div>
 
           <motion.div className="footer-newsletter" variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } } }}>
-            <h3>Stay close</h3>
-            <p>Soft notes on practice, breath and conscious living. No spam, just intention.</p>
+            <h3>{t("footer.stayClose")}</h3>
+            <p>{t("footer.stayCloseDesc")}</p>
             <form className="footer-form" onSubmit={handleSubscribe}>
-              <input type="email" placeholder="Your email" required />
+              <input type="email" placeholder={t("footer.yourEmail")} required aria-label={t("footer.yourEmail")} />
               <motion.button type="submit" whileHover={reduced ? {} : { y: -2 }} whileTap={{ scale: 0.97 }} disabled={subscribed}>
-                {subscribed ? 'Joined ✓' : 'Join'}
+                {subscribed ? t("footer.joined") : t("footer.join")}
                 {!subscribed && <span className="footer-btn-shine" aria-hidden="true" />}
               </motion.button>
             </form>
-            <p className="footer-privacy">By joining you agree to our privacy note. Unsubscribe anytime.</p>
+            <p className="footer-privacy">{t("footer.privacyNote")}</p>
+            <div style={{ marginTop: 12 }}><LanguageSwitcher compact /></div>
           </motion.div>
         </motion.div>
       </div>
@@ -145,13 +145,13 @@ const Footer = () => {
         transition={{ duration: 0.6, ease: EASE }}
       >
         <div className="footer-bottom-inner">
-          <p>© 2026 <strong>Soma Wellness Nairobi</strong> · Spring Valley · Rebalance · Renew · Restore · Reconnect</p>
+          <p dangerouslySetInnerHTML={{ __html: t("footer.copyright", { year: 2026 }) }} />
           <div className="footer-legal">
-            <a href="#">Privacy</a>
+            <a href="#">{t("footer.privacy")}</a>
             <span className="footer-sep">·</span>
-            <a href="#">Terms</a>
+            <a href="#">{t("footer.terms")}</a>
             <span className="footer-sep">·</span>
-            <span>Nairobi, Kenya</span>
+            <span>{t("footer.nairobiKenya")}</span>
           </div>
         </div>
       </motion.div>

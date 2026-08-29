@@ -7,7 +7,7 @@ const ConsultationSchema = new mongoose.Schema(
     date:    { type: Date, required: true },
     timeSlot: { type: String, default: '' },
     duration: { type: Number, default: 30 },
-    doctor:  { type: String, default: 'Pragya Wellness Team' },
+    doctor:  { type: String, default: 'Soma Wellness Team' },
     topic:   { type: String, default: 'General consultation' },
     price:   { type: Number, default: 0 },
     paymentStatus: { type: String, enum: CONSULTATION_PAYMENT_STATUSES, default: 'pending' },

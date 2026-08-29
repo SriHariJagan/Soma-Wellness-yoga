@@ -8,10 +8,10 @@ import layout from '../../../notification/templates/engine/layout.js';
 // admin emails are plain summaries.
 // ─────────────────────────────────────────────────────────────
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://pragyayoga.com';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://somawellness.in';
 
 function inr(n) {
-  return `₹${Number(n || 0).toLocaleString('en-IN')}`;
+  return `KES ${Number(n || 0).toLocaleString('en-KE')}`;
 }
 
 function itemsTable(items = []) {
@@ -189,7 +189,7 @@ export function orderDispatched(data = {}) {
   const courier = data.courier || 'our logistics partner';
   const awb = data.trackingNumber ? `Tracking number: <strong>${escapeHtml(data.trackingNumber)}</strong>` : '';
   const expected = data.expectedDelivery
-    ? new Date(data.expectedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    ? new Date(data.expectedDelivery).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })
     : `within ${data.estimatedDelivery?.maxDays || 5} days`;
   const subject = `Order ${data.orderNumber} dispatched`;
   const body = `
@@ -198,7 +198,7 @@ export function orderDispatched(data = {}) {
     ${card({ title: 'Dispatch details', content: infoTable([
       { label: 'Courier', value: courier },
       { label: 'Tracking number', value: data.trackingNumber || '—' },
-      { label: 'Dispatched on', value: data.dispatchDate ? new Date(data.dispatchDate).toLocaleDateString('en-IN') : '—' },
+      { label: 'Dispatched on', value: data.dispatchDate ? new Date(data.dispatchDate).toLocaleDateString('en-KE') : '—' },
       { label: 'Expected delivery', value: expected },
     ]) })}
     ${trackingButton(data.orderNumber)}

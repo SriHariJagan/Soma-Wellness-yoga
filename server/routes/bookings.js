@@ -33,7 +33,7 @@ router.post('/', bookingLimiter, validate(schemas.booking), asyncHandler(async (
     channels: ['inApp'],
     data: { name, email, courseName, coursePrice },
     subject: 'New booking received',
-    message: `<strong>${name}</strong> booked <strong>${courseName}</strong> (₹${coursePrice}).`,
+    message: `<strong>${name}</strong> booked <strong>${courseName}</strong> (KES ${coursePrice}).`,
     priority: 'normal',
   }).catch((err) => logger.error(MODULE, 'Admin notification failed', { error: err.message }));
 

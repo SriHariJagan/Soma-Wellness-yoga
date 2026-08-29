@@ -1,0 +1,55 @@
+/* Social login buttons */
+.wrap { display: flex; flex-direction: column; gap: 10px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+.btn {
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid rgba(38,51,44,0.10);
+  background: linear-gradient(180deg, #fff 0%, #FFFDF7 100%);
+  color: var(--soma-charcoal);
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+  box-shadow: 0 2px 8px rgba(24,61,45,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.btn:hover {
+  transform: translateY(-2px);
+  border-color: currentColor;
+  box-shadow: 0 8px 20px rgba(24,61,45,0.12), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.btn:active { transform: translateY(0); }
+
+.btn.x, .btn.github { color: #18181b; }
+.btn.google:hover   { background: linear-gradient(180deg,#fff,#F3F7FF); border-color:#4285F4; color:#4285F4; }
+.btn.facebook:hover { background: linear-gradient(180deg,#fff,#F0F6FF); border-color:#1877F2; }
+.btn.linkedin:hover { background: linear-gradient(180deg,#fff,#EFF6FC); border-color:#0A66C2; }
+.btn.microsoft:hover{ background: linear-gradient(180deg,#fff,#FFF8EF); border-color:#FFB900; }
+
+.hint {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: .02em;
+  color: var(--soma-warm-gray);
+}
+
+@media (max-width: 480px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* fit-to-viewport */
+@media (max-height: 840px) {
+  .btn { height: 42px; }
+}
+@media (max-height: 730px) {
+  .btn { height: 38px; }
+  .hint { display: none; }
+}

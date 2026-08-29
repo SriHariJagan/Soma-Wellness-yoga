@@ -83,7 +83,7 @@ export function MotionCard({ children, className, style, lift = -5, ...rest }) {
 }
 
 /* CountUp — animates a number from 0 → value the first time it scrolls
-   into view. Wrap ONLY the numeric part; keep prefixes/suffixes (₹, %)
+   into view. Wrap ONLY the numeric part; keep prefixes/suffixes (KES , %)
    in the surrounding JSX so no text is altered.
    `format` receives the rounded integer and returns a string. */
 export function CountUp({ value, format, duration = 1.3, className }) {
@@ -93,7 +93,7 @@ export function CountUp({ value, format, duration = 1.3, className }) {
   const mv = useMotionValue(0);
   const text = useTransform(mv, (v) => {
     const n = Math.round(v);
-    return format ? format(n) : n.toLocaleString("en-IN");
+    return format ? format(n) : n.toLocaleString("en-KE");
   });
 
   useEffect(() => {

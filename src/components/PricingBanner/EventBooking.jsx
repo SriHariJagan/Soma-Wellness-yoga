@@ -7,7 +7,7 @@ const EventBooking = () => (
     <header className={styles.header}>
       <h2 className={styles.title}>Book Your Spot</h2>
       <p className={styles.sub}>
-        Reserve your place in upcoming yoga classes or special events at Pragya Yoga.
+         Reserve your place in upcoming yoga classes or special events at Soma Wellness.
       </p>
     </header>
 

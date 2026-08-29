@@ -2,7 +2,7 @@
 export const PAYMENT_STATUSES = ['initiated', 'pending', 'captured', 'failed', 'expired', 'refunding', 'refunded']  ;
 
 // ── Payment Gateway Types ────────────────────────────────────
-export const PAYMENT_GATEWAYS = ['razorpay', 'offline', 'manual']  ;
+export const PAYMENT_GATEWAYS = ['razorpay', 'mpesa', 'offline', 'manual']  ;
 
 // ── Payment Sources ──────────────────────────────────────────
 export const PAYMENT_SOURCES = ['student', 'admin', 'webhook', 'system']  ;
@@ -30,7 +30,7 @@ export const PAYMENT_ITEM_TYPES = [
 export const CART_ITEM_TYPES = ['plan', 'service', 'course', 'workshop', 'consultation', 'yttc', 'book']  ;
 
 // ── Payment Routes Valid Item Types ──────────────────────────
-export const VALID_ITEM_TYPES = ['membership', 'service', 'workshop', 'consultation', 'booking', 'event', 'course', 'yttc', 'book', 'other']  ;
+export const VALID_ITEM_TYPES = ['membership', 'service', 'workshop', 'consultation', 'booking', 'event', 'course', 'yttc', 'book', 'order', 'other']  ;
 
 // ── Order Statuses ───────────────────────────────────────────
 // Legacy service/membership order statuses (kept for backward compatibility):
@@ -74,4 +74,4 @@ export const COUPON_DISCOUNT_TYPES = ['Percentage', 'Flat']  ;
 export const COUPON_APPLICABLE_TO = ['all', 'specific']  ;
 
 // ── Payment Currencies ───────────────────────────────────────
-export const PAYMENT_CURRENCIES = ['INR']  ;
+export const PAYMENT_CURRENCIES = ['KES']  ;

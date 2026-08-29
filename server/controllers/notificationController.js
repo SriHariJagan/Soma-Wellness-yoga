@@ -404,7 +404,7 @@ export const getStudentNotifications = asyncHandler(async (req, res) => {
     message: r.notification?.message || '',
     type: r.notification?.type || 'general',
     priority: r.notification?.priority || 'normal',
-    sender: r.notification?.sender?.name || 'Pragya Yoga',
+    sender: r.notification?.sender?.name || 'Soma Wellness',
     url: r.notification?.url || '',
     route: r.notification?.route || '',
     courseId: r.notification?.courseId,

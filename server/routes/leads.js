@@ -44,7 +44,7 @@ router.post('/', validate(schemas.lead), asyncHandler(async (req, res) => {
       phone,
       subject: interestType || 'Website Enquiry',
       message: notes || '',
-      submissionDate: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      submissionDate: new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }),
       ip,
     }).catch((err) => logger.error(MODULE, 'Admin email failed', { error: err.message }));
   }

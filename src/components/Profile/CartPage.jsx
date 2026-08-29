@@ -1,22 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import s from "./Dashboard.shared.module.css";
 import {
   getCart, removeFromCart, applyCouponToCart, removeCouponFromCart, checkoutCart, verifyPayment,
 } from "../api/StudentServices.js";
+import { loadRazorpay, initiateMpesaPayment, queryMpesaStatus, isLoggedIn } from "../../utils/payment.js";
+import MpesaCheckout from "../Payment/MpesaCheckout.jsx";
+import CheckoutGate from "../checkout/CheckoutGate.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
-
-const loadRazorpay = () =>
-  new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true);
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
 
 const ITEM_ICONS = {
   plan:          "ti ti-currency-rupee",
@@ -40,6 +34,7 @@ export function setCartRefreshFn(fn) { globalRefreshCart = fn; }
 export async function triggerCartRefresh() { if (globalRefreshCart) await globalRefreshCart(); }
 
 export default function CartPage({ onNavigate, reload: reloadParent }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cartData, setCartData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,6 +43,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
   const [couponMsg, setCouponMsg] = useState({ text: "", type: "" });
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [toast, setToast] = useState(null);
 
   const showToast = useCallback((message, type = "success") => {
@@ -135,8 +131,8 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
       const rzp = new window.Razorpay({
         key: razorpay.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: razorpay.amount,
-        currency: razorpay.currency || "INR",
-        name: "Pragya Yoga",
+        currency: razorpay.currency || "KES",
+        name: "Soma Wellness",
         description: "Cart Checkout",
         order_id: razorpay.order_id,
         theme: { color: "#F97316" },
@@ -192,12 +188,12 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
           >
             <i className="ti ti-circle-check" />
           </motion.div>
-          <h2 style={{ color: "var(--color-dark)", margin: "0 0 4px", fontSize: 20 }}>Enrollment Successful!</h2>
+          <h2 style={{ color: "var(--color-dark)", margin: "0 0 4px", fontSize: 20 }}>{t("payment.orderPlaced")}</h2>
           <p style={{ color: "var(--color-text-secondary)", fontSize: 13, margin: "0 0 4px" }}>
-            Order #{checkoutResult.order?.orderNumber}
+            {t("payment.orderNumber", { number: checkoutResult.order?.orderNumber })}
           </p>
           <p style={{ color: "var(--color-text-secondary)", fontSize: 13, margin: "0 0 24px" }}>
-            Total paid: ₹{(checkoutResult.order?.total || 0).toLocaleString("en-IN")}
+            {t("cart.total")}: KES {(checkoutResult.order?.total || 0).toLocaleString()}
           </p>
           <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
             <button
@@ -208,7 +204,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                 color: "#fff", cursor: "pointer", fontFamily: "'Inter', sans-serif",
               }}
             >
-              Continue Shopping
+              {t("cart.continueShopping")}
             </button>
             <button
               onClick={() => onNavigate?.("orders")}
@@ -218,7 +214,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                 cursor: "pointer", fontFamily: "'Inter', sans-serif",
               }}
             >
-              View My Order
+              {t("payment.trackOrder")}
             </button>
           </div>
         </motion.div>
@@ -251,7 +247,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
         )}
       </AnimatePresence>
 
-      <p className={s.pageTitle}>My Cart</p>
+      <p className={s.pageTitle}>{t("cart.title")}</p>
 
       {/* Coupon message */}
       {couponMsg.text && (
@@ -283,9 +279,9 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
           <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 15 }}>
             <i className="ti ti-shopping-cart-off" style={{ fontSize: 56, color: "#D1C4B5", marginBottom: 16, display: "block" }} />
           </motion.div>
-          <p style={{ color: "#6B5E4E", fontWeight: 600, fontSize: 15, margin: 0 }}>Your cart is empty</p>
+          <p style={{ color: "#6B5E4E", fontWeight: 600, fontSize: 15, margin: 0 }}>{t("cart.empty")}</p>
           <p style={{ fontSize: 12, color: "#9C8E7C", marginTop: 6, maxWidth: 300, margin: "6px auto 20px" }}>
-            Browse membership plans, yoga services, or workshops to get started on your wellness journey.
+            {t("cart.emptyDesc")}
           </p>
           <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
             <button
@@ -296,7 +292,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                 color: "#fff", cursor: "pointer", fontFamily: "'Inter', sans-serif",
               }}
             >
-              Browse Plans
+              {t("cart.proceedCheckout")}
             </button>
             <button
               onClick={() => onNavigate?.("browseServices")}
@@ -306,7 +302,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                 cursor: "pointer", fontFamily: "'Inter', sans-serif",
               }}
             >
-              Browse Services
+              {t("cart.continueShopping")}
             </button>
           </div>
         </div>
@@ -361,18 +357,18 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
 
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: "var(--color-dark)" }}>
-                          ₹{item.finalPrice.toLocaleString("en-IN")}
+                          KES {item.finalPrice.toLocaleString()}
                         </span>
                         {item.discount > 0 && (
                           <>
                             <span style={{ fontSize: 12, color: "#9C8E7C", textDecoration: "line-through" }}>
-                              ₹{item.price.toLocaleString("en-IN")}
+                              KES {item.price.toLocaleString()}
                             </span>
                             <span style={{
                               fontSize: 10, fontWeight: 600, color: "#10B981",
                               padding: "1px 6px", borderRadius: 6, background: "rgba(16,185,129,0.1)",
                             }}>
-                              -₹{item.discount.toLocaleString("en-IN")}
+                              -KES {item.discount.toLocaleString()}
                             </span>
                           </>
                         )}
@@ -388,7 +384,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
           <div>
             <div className={s.card} style={{ position: "sticky", top: 16 }}>
               <p style={{ fontWeight: 700, fontSize: 14, color: "var(--color-dark)", margin: "0 0 14px" }}>
-                Order Summary
+                {t("payment.orderSummary")}
               </p>
 
               {/* Coupon */}
@@ -402,7 +398,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                     <div>
                       <span style={{ fontSize: 12, fontWeight: 600, color: "#10B981" }}>{summary.couponCode}</span>
                       <span style={{ fontSize: 11, color: "#6B5E4E", marginLeft: 4 }}>
-                        (-₹{summary.couponDiscount.toLocaleString("en-IN")})
+                        (-KES {summary.couponDiscount.toLocaleString()})
                       </span>
                     </div>
                     <button onClick={handleRemoveCoupon} style={{ border: "none", background: "none", color: "#DC2626", cursor: "pointer", fontSize: 14, padding: 2 }}>
@@ -414,7 +410,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                     <input
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      placeholder="Enter coupon code"
+                      placeholder={t("cart.couponPlaceholder")}
                       style={{
                         flex: 1, height: 34, borderRadius: 8, border: "1px solid #E7D7BE",
                         fontSize: 12, fontFamily: "'Inter', sans-serif", padding: "0 10px",
@@ -432,7 +428,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                         fontFamily: "'Inter', sans-serif",
                       }}
                     >
-                      Apply
+                      {t("cart.applyCoupon")}
                     </button>
                   </div>
                 )}
@@ -441,18 +437,18 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
               {/* Price Breakdown */}
               <div style={{ borderTop: "1px solid var(--color-border-light)", paddingTop: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6B5E4E", marginBottom: 6 }}>
-                  <span>Subtotal ({summary.itemCount} item{summary.itemCount > 1 ? "s" : ""})</span>
-                  <span>₹{summary.subtotal.toLocaleString("en-IN")}</span>
+                  <span>{t("cart.subtotal")} ({summary.itemCount})</span>
+                  <span>KES {summary.subtotal.toLocaleString()}</span>
                 </div>
                 {summary.discount > 0 && (
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#10B981", marginBottom: 6 }}>
-                    <span>Discount</span>
-                    <span>-₹{summary.discount.toLocaleString("en-IN")}</span>
+                    <span>{t("cart.discount")}</span>
+                    <span>-KES {summary.discount.toLocaleString()}</span>
                   </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6B5E4E", marginBottom: 6 }}>
-                  <span>Tax</span>
-                  <span>₹{(summary.tax || 0).toLocaleString("en-IN")}</span>
+                  <span>{t("cart.total")}</span>
+                  <span>KES {summary.total.toLocaleString()}</span>
                 </div>
                 {hasBooks && (
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#D97706", marginBottom: 6 }}>
@@ -467,8 +463,8 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                 borderTop: "1px solid var(--color-border-light)",
                 paddingTop: 12, marginTop: 8, fontWeight: 700, fontSize: 15, color: "var(--color-dark)",
               }}>
-                <span>Total</span>
-                <span>₹{summary.total.toLocaleString("en-IN")}</span>
+                <span>{t("cart.total")}</span>
+                <span>KES {summary.total.toLocaleString()}</span>
               </div>
 
               {hasBooks && (
@@ -480,7 +476,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
 
               {summary.discount > 0 && (
                 <p style={{ fontSize: 11, color: "#10B981", margin: "6px 0 0", textAlign: "right" }}>
-                  You save ₹{summary.discount.toLocaleString("en-IN")}
+                  You save KES {summary.discount.toLocaleString()}
                 </p>
               )}
 
@@ -490,30 +486,51 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                 </p>
               )}
 
-              <motion.button
-                onClick={handleCheckout}
-                disabled={checkingOut || (hasBooks && hasNonBooks)}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 10,
-                  fontSize: 13, fontWeight: 700, border: "none",
-                  cursor: checkingOut || (hasBooks && hasNonBooks) ? "not-allowed" : "pointer",
-                  background: checkingOut ? "#F5F0EB" : "linear-gradient(135deg, #F97316, #EA580C)",
-                  color: checkingOut ? "#9C8E7C" : "#fff",
-                  fontFamily: "'Inter', sans-serif", transition: "all 0.2s",
-                }}
-              >
-                {checkingOut ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                    <span style={{
-                      width: 14, height: 14, border: "2px solid #9C8E7C", borderTopColor: "transparent",
-                      borderRadius: "50%", display: "inline-block",
-                      animation: "spin 0.6s linear infinite",
-                    }} />
-                    Processing...
-                  </span>
-                ) : hasBooks ? "Checkout Books (Shipping)" : "Proceed to Checkout"}
-              </motion.button>
+              {isLoggedIn() ? (
+                <motion.button
+                  onClick={handleCheckout}
+                  disabled={checkingOut || (hasBooks && hasNonBooks)}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 10,
+                    fontSize: 13, fontWeight: 700, border: "none",
+                    cursor: checkingOut || (hasBooks && hasNonBooks) ? "not-allowed" : "pointer",
+                    background: checkingOut ? "#F5F0EB" : "linear-gradient(135deg, #F97316, #EA580C)",
+                    color: checkingOut ? "#9C8E7C" : "#fff",
+                    fontFamily: "'Inter', sans-serif", transition: "all 0.2s",
+                  }}
+                >
+                  {checkingOut ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <span style={{
+                        width: 14, height: 14, border: "2px solid #9C8E7C", borderTopColor: "transparent",
+                        borderRadius: "50%", display: "inline-block",
+                        animation: "spin 0.6s linear infinite",
+                      }} />
+                      Processing...
+                    </span>
+                  ) : hasBooks ? t("payment.placeOrder") : t("cart.proceedCheckout")}
+                </motion.button>
+              ) : (
+                <CheckoutGate
+                  intent={{ name: `Cart (${cartData?.items?.length || 0} items)`, price: `KES ${summary?.total?.toLocaleString?.() || 0}`, type: 'cart' }}
+                  onProceed={handleCheckout}
+                >
+                  <button
+                    disabled={checkingOut || (hasBooks && hasNonBooks)}
+                    style={{
+                      width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 10,
+                      fontSize: 13, fontWeight: 700, border: "none",
+                      cursor: checkingOut || (hasBooks && hasNonBooks) ? "not-allowed" : "pointer",
+                      background: checkingOut ? "#F5F0EB" : "linear-gradient(135deg, #F97316, #EA580C)",
+                      color: checkingOut ? "#9C8E7C" : "#fff",
+                      fontFamily: "'Inter', sans-serif", transition: "all 0.2s",
+                    }}
+                  >
+                    {hasBooks ? t("payment.placeOrder") : t("cart.proceedCheckout")}
+                  </button>
+                </CheckoutGate>
+              )}
             </div>
           </div>
         </div>

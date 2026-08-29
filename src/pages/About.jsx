@@ -6,6 +6,7 @@ import SomaCTA from "../components/soma/SomaCTA";
 import PageFAQSection from "../components/soma/PageFAQSection";
 import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
+import { useTranslation, Trans } from "react-i18next";
 
 const CountUp = ({ value, suffix = "", reduced }) => {
   const ref = React.useRef(null);
@@ -30,13 +31,14 @@ const CountUp = ({ value, suffix = "", reduced }) => {
 };
 
 const About = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
   return (
     <div style={{ background: "var(--soma-cream)" }}>
       <SomaPageHeader
-        eyebrow="About SOMA Wellness Nairobi · Spring Valley"
-        title="An integrated wellness<br /><em>destination.</em>"
-        subtitle="Not a studio, gym or spa — but a calm, premium home for Yoga, Therapy, Meditation and mindful living in Nairobi. Rebalance · Renew · Restore · Reconnect."
+        eyebrow={t("about.eyebrow")}
+        title={t("about.title")}
+        subtitle={t("about.subtitle")}
         image="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=900&auto=format&fit=crop"
       />
 
@@ -268,7 +270,7 @@ const About = () => {
         </motion.div>
       </section>
 
-      <PageFAQSection title="About SOMA — common questions" questions={PAGE_FAQS.about} />
+      <PageFAQSection title={t("about.faqTitle")} questions={PAGE_FAQS.about} />
 
       <SomaCTA />
 

@@ -48,7 +48,7 @@ const itemAnim = {
 
 function formatDate(d) {
   if (!d) return '';
-  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function fmtBytes(bytes) {

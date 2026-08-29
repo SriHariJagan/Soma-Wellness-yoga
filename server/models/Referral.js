@@ -5,7 +5,7 @@ const ReferralSchema = new mongoose.Schema(
   {
     user:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
     code:   { type: String, required: true, unique: true, index: true },
-    earned: { type: Number, default: 0 },              // credit balance in ₹
+    earned: { type: Number, default: 0 },              // credit balance in KES 
 
     invited: [
       { name: String, email: String, at: { type: Date, default: Date.now } },

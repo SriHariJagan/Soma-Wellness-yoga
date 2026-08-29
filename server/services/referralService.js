@@ -51,11 +51,11 @@ export async function applyReferral(code, newUser) {
         'Referral Reward Earned!',
         `<h2 style="color:#2D1406;">Referral Reward!</h2>
          <p>Hi ${referrerUser.name || 'there'},</p>
-         <p>Your friend <strong>${newUser.name}</strong> has joined <strong>Pragya Yoga Alliance</strong> using your referral link.</p>
-         <p>You have earned a reward of <strong>₹${REWARD_PER_JOIN}</strong>!</p>
+         <p>Your friend <strong>${newUser.name}</strong> has joined <strong>Soma Wellness</strong> using your referral link.</p>
+         <p>You have earned a reward of <strong>KES ${REWARD_PER_JOIN}</strong>!</p>
          <p>Keep sharing your referral code to earn more rewards.</p>
-         <p style="color:#7C6A58;font-size:12px;">— Pragya Yoga Alliance Team</p>`,
-        `Referral Reward Earned!\n\nHi ${referrerUser.name || 'there'},\n\nYour friend ${newUser.name} has joined Pragya Yoga Alliance using your referral link.\n\nYou have earned a reward of ₹${REWARD_PER_JOIN}!\n\nKeep sharing your referral code to earn more rewards.\n\n— Pragya Yoga Alliance Team`,
+         <p style="color:#7C6A58;font-size:12px;">— Soma Wellness Team</p>`,
+        `Referral Reward Earned!\n\nHi ${referrerUser.name || 'there'},\n\nYour friend ${newUser.name} has joined Soma Wellness using your referral link.\n\nYou have earned a reward of KES ${REWARD_PER_JOIN}!\n\nKeep sharing your referral code to earn more rewards.\n\n— Soma Wellness Team`,
       );
     }
   } catch (err) {

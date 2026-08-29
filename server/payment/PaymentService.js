@@ -120,7 +120,7 @@ export class PaymentService {
       description: description || '',
       items: resolvedItems,
       amount: totalAmount,
-      currency: 'INR',
+      currency: 'KES',
       gateway: 'razorpay',
       razorpayOrderId: razorpayOrder.id,
       paymentStatus: 'pending',
@@ -155,7 +155,7 @@ export class PaymentService {
     try {
       const user = await User.findById(userId).select('name email').lean();
       const amountInr = (payment.amount / 100).toFixed(2);
-      const amountDisplay = `₹${amountInr}`;
+      const amountDisplay = `KES ${amountInr}`;
 
       const mod = await import('../notification/core/NotificationService.js');
       const ns = mod.default;
@@ -182,7 +182,7 @@ export class PaymentService {
           invoiceNumber: invoiceNo,
           amount: amountDisplay,
           description: payment.label || 'Purchase',
-          invoiceDate: new Date().toLocaleDateString('en-IN'),
+          invoiceDate: new Date().toLocaleDateString('en-KE'),
           paymentMethod: 'Razorpay',
         }).catch((err) => logger.error(MODULE, 'Invoice email failed', { error: err.message }));
 
@@ -194,7 +194,7 @@ export class PaymentService {
           transactionId: payment.razorpayPaymentId || '',
           orderId: payment.razorpayOrderId || '',
           description: payment.label || 'Purchase',
-          paymentDate: new Date().toLocaleString('en-IN'),
+          paymentDate: new Date().toLocaleString('en-KE'),
         }).catch((err) => logger.error(MODULE, 'Payment success email failed', { error: err.message }));
       }
 
@@ -219,7 +219,7 @@ export class PaymentService {
           invoiceNumber: invoiceNo,
           description: payment.label,
           planName: payment.label,
-          invoiceDate: new Date().toLocaleDateString('en-IN'),
+          invoiceDate: new Date().toLocaleDateString('en-KE'),
         },
         subject: `Payment Receipt - ${invoiceNo}`,
         title: 'Payment Successful',

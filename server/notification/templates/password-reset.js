@@ -10,8 +10,6 @@ export default function passwordReset(notification) {
 
   const subject = notification.subject || `Reset Your ${STUDIO_NAME} Password`;
 
-  console.log("OTP EMAIL QUEUE PUSHED", notification);
-
   const body = `
     ${heading("Password Reset Request")}
     ${p(`Hi ${escapeHtml(name)},`)}

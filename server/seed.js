@@ -68,8 +68,8 @@ async function run() {
     {
       $set: {
         announcementBanner: 'Grand Ashram Intensive Starts Next Week! Enroll now.',
-        studioName: 'Pragya Yoga',
-        supportEmail: 'pragyayogaofficial@gmail.com',
+        studioName: 'Soma Wellness',
+        supportEmail: 'hello@somawellness.in',
         supportPhone: '+91 9675547597',
         integrations: { paymentGateway: true, zoom: true, whatsapp: true, emailSmtp: true },
       },
@@ -290,7 +290,7 @@ async function run() {
       name: pick(classNames),
       time: '6:00 AM', date: daysAgo(i * 2), mode: 'online',
       trainer: pick(['Kapil Kesari', 'Anita Rao']),
-      status: 'completed', recordingUrl: `https://recordings.pragyayoga.in/session-${rint(1000, 9999)}.mp4`,
+      status: 'completed', recordingUrl: `https://recordings.somawellness.in/session-${rint(1000, 9999)}.mp4`,
     });
   }
   await ClassSession.insertMany(recordings);
@@ -308,10 +308,10 @@ async function run() {
 
   // ── Downloads ──
   await Download.create([
-    { name: 'Asana Blueprint Handbook', type: 'pdf', size: '4.2 MB', url: 'https://files.pragyayoga.in/asana-handbook.pdf', category: 'Guides', visibility: 'all', downloadCount: rint(20, 200) },
-    { name: 'Pranayama Video Series', type: 'video', size: '320 MB', url: 'https://files.pragyayoga.in/pranayama-series.mp4', category: 'Video', visibility: 'all', downloadCount: rint(20, 200) },
-    { name: 'Meditation Scripts Pack', type: 'guide', size: '1.1 MB', url: 'https://files.pragyayoga.in/meditation-scripts.pdf', category: 'Guides', visibility: 'all', downloadCount: rint(20, 200) },
-    { name: 'Morning Chants (Audio)', type: 'audio', size: '48 MB', url: 'https://files.pragyayoga.in/morning-chants.mp3', category: 'Audio', visibility: 'plan', allowedPlans: ['Annual Pass'], downloadCount: rint(5, 60) },
+    { name: 'Asana Blueprint Handbook', type: 'pdf', size: '4.2 MB', url: 'https://files.somawellness.in/asana-handbook.pdf', category: 'Guides', visibility: 'all', downloadCount: rint(20, 200) },
+    { name: 'Pranayama Video Series', type: 'video', size: '320 MB', url: 'https://files.somawellness.in/pranayama-series.mp4', category: 'Video', visibility: 'all', downloadCount: rint(20, 200) },
+    { name: 'Meditation Scripts Pack', type: 'guide', size: '1.1 MB', url: 'https://files.somawellness.in/meditation-scripts.pdf', category: 'Guides', visibility: 'all', downloadCount: rint(20, 200) },
+    { name: 'Morning Chants (Audio)', type: 'audio', size: '48 MB', url: 'https://files.somawellness.in/morning-chants.mp3', category: 'Audio', visibility: 'plan', allowedPlans: ['Annual Pass'], downloadCount: rint(5, 60) },
   ]);
 
   // ── Global broadcast notification ──

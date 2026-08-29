@@ -7,10 +7,10 @@ export default function render(data = {}) {
   const invoiceNumber = escapeHtml(data.invoiceNumber || '');
   const amount = data.amount || '';
   const description = escapeHtml(data.description || 'Purchase');
-  const invoiceDate = data.invoiceDate || new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const invoiceDate = data.invoiceDate || new Date().toLocaleDateString('en-KE', { timeZone: 'Africa/Nairobi' });
   const paymentMethod = escapeHtml(data.paymentMethod || 'Online Payment');
   const invoiceLink = data.invoiceLink || '';
-  const dashboardUrl = data.dashboardUrl || 'https://pragyayoga.com/dashboard';
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
 
   const subject = `Invoice${invoiceNumber ? ` #${invoiceNumber}` : ''} from ${STUDIO_NAME}`;
 

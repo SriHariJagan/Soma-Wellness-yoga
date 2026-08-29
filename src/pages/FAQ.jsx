@@ -5,13 +5,15 @@ import { FAQ_ITEMS } from "../config/siteContent";
 import SomaCTA from "../components/soma/SomaCTA";
 import SomaGuarantee from "../components/soma/SomaGuarantee";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
+import { useTranslation } from "react-i18next";
+import { SW_FAQ_MAP } from "../components/soma/PageFAQSection";
 
-const categories = [
-  { id: "all", label: "All" },
-  { id: "about", label: "About SOMA" },
-  { id: "therapy", label: "Therapy & Care" },
-  { id: "programs", label: "Programs" },
-  { id: "practical", label: "Booking & Visit" },
+const categoriesKeys = [
+  { id: "all", key: "faq.categories.all" },
+  { id: "about", key: "faq.categories.about" },
+  { id: "therapy", key: "faq.categories.therapy" },
+  { id: "programs", key: "faq.categories.programs" },
+  { id: "practical", key: "faq.categories.practical" },
 ];
 
 const catMap = {
@@ -55,28 +57,33 @@ const catMap = {
 };
 
 const FAQ = () => {
+  const { t, i18n } = useTranslation();
+  const isSw = (i18n.language || "en").startsWith("sw");
+  const categories = categoriesKeys.map((c) => ({ id: c.id, label: t(c.key) }));
   const [open, setOpen] = useState(0);
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
   const reduced = usePrefersReducedMotion();
-  const filtered = FAQ_ITEMS.filter((it) => {
-    const c = catMap[it.q] || "about";
-    const okCat = cat === "all" || c === cat;
+  const localizedFaqItems = isSw ? FAQ_ITEMS.map((it) => SW_FAQ_MAP[it.q] || it) : FAQ_ITEMS;
+  const filtered = localizedFaqItems.filter((it) => {
+    const origQ = FAQ_ITEMS.find((e) => SW_FAQ_MAP[e.q]?.q === it.q)?.q || it.q;
+    const catKey = catMap[origQ] || "about";
+    const okCat = cat === "all" || catKey === cat;
     const okQ = !q || it.q.toLowerCase().includes(q.toLowerCase()) || it.a.toLowerCase().includes(q.toLowerCase());
     return okCat && okQ;
   });
   return (
     <div style={{ background: "var(--soma-cream)" }}>
       <SomaPageHeader
-        eyebrow="Soma Wellness Nairobi · Spring Valley · Guide"
-        title="Frequently Asked<br /><em>Questions</em>"
-        subtitle="Not a studio, gym or spa — but an integrated destination. Yoga · Therapy · Meditation · Recovery · Education. Find yourself below."
+        eyebrow={t("faq.eyebrow")}
+        title={t("faq.title")}
+        subtitle={t("faq.subtitle")}
         image="https://images.unsplash.com/photo-1494172961521-33799ddd43a5?q=80&w=900&auto=format&fit=crop"
       />
       <section style={{ maxWidth: 960, margin: "0 auto", padding: "28px clamp(20px,4vw,40px) 0" }}>
         <div style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, #FFFBF8 100%)", border: "1px solid var(--soma-line-light)", borderRadius: 16, padding: 16, marginBottom: 18, boxShadow: "0 6px 20px rgba(24,61,45,0.04)" }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", color: "var(--soma-primary)" }}>About this FAQ</div>
-          <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "#5a6b63", marginTop: 6 }}>This guide has been prepared to help guests, members and prospective clients understand the SOMA Wellness concept, our key services, how sessions are structured, and what to expect when visiting the centre. Adaptable for website, printed brochure, reception desk and client communications. SOMA is designed as an integrated wellness destination — not simply a yoga studio, gym or spa. <em style={{ color: "var(--soma-forest)", fontStyle: "normal", fontWeight: 600 }}>Rebalance · Renew · Restore · Reconnect — Spring Valley, Nairobi.</em></div>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", color: "var(--soma-primary)" }}>{t("faq.aboutThisFaq")}</div>
+          <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "#5a6b63", marginTop: 6 }} dangerouslySetInnerHTML={{ __html: t("faq.aboutDesc") }} />
         </div>
         <motion.div
           initial="hidden"
@@ -124,7 +131,7 @@ const FAQ = () => {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search questions — e.g. prenatal, booking, therapy"
+              placeholder={t("common.searchPlaceholder")}
               style={{
                 width: "100%",
                 padding: "13px 16px 13px 38px",
@@ -182,7 +189,7 @@ const FAQ = () => {
             })
           ) : (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: "center", padding: 24, background: "linear-gradient(180deg, #fff 0%, #FFFBF8 100%)", borderRadius: 16, border: "1px solid var(--soma-line-light)", fontSize: 13, color: "#5a6b63", boxShadow: "0 6px 20px rgba(24,61,45,0.04)" }}>
-              No matching questions. Try <em>booking</em> or <em>prenatal</em>.
+              <span dangerouslySetInnerHTML={{ __html: t("common.noResults") }} />
             </motion.div>
           )}
         </motion.div>
@@ -195,10 +202,10 @@ const FAQ = () => {
           style={{ marginTop: 22, background: "linear-gradient(135deg, #183D2D 0%, #1c4a34 55%, #1e5c3f 100%)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 18, textAlign: "center", position: "relative", overflow: "hidden", boxShadow: "0 16px 36px rgba(24,61,45,0.16), inset 0 1px 0 rgba(255,255,255,0.10)" }}
         >
           <div style={{ position: "absolute", top: -30, right: -30, width: 100, height: 100, border: "1px solid rgba(255,255,255,0.07)", borderRadius: "50%", pointerEvents: "none" }} aria-hidden="true" />
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "#fff", letterSpacing: "-0.01em" }}>Still have a question?</div>
-          <div style={{ fontSize: 12.5, color: "rgba(255,247,230,0.82)", marginTop: 6, lineHeight: 1.5 }}>Our team will guide you to the most suitable service or package. Call <strong style={{ color: "#F4B400" }}>+254 700 000 000</strong> · Spring Valley, Nairobi</div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "#fff", letterSpacing: "-0.01em" }}>{t("faq.stillHave")}</div>
+          <div style={{ fontSize: 12.5, color: "rgba(255,247,230,0.82)", marginTop: 6, lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: t("faq.stillDesc") }} />
           <div style={{ marginTop: 12, display: "inline-flex", gap: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", padding: "8px 12px", borderRadius: 9999, fontSize: 11, color: "rgba(255,255,255,0.72)" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#F4B400", flexShrink: 0, marginTop: 4 }} aria-hidden="true" /> We reply within one working day
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#F4B400", flexShrink: 0, marginTop: 4 }} aria-hidden="true" /> {t("faq.replyOneDay")}
           </div>
         </motion.div>
       </section>

@@ -1,5 +1,5 @@
 /**
- * Central motion library for Pragya Yoga.
+ * Central motion library for Soma Wellness.
  *
  * A single, reusable source of truth for premium animation across the site:
  * easing curves, spring presets, entrance variants, and stagger orchestration.
@@ -71,12 +71,11 @@ export const slideInRight = {
 };
 
 export const blurIn = {
-  hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.75, ease: EASE },
+    transition: { duration: 0.6, ease: EASE },
   },
 };
 
@@ -92,7 +91,7 @@ export const popCard = {
 };
 
 /* ── Stagger containers ── */
-export const staggerContainer = (stagger = 0.1, delayChildren = 0) => ({
+export const staggerContainer = (stagger = 0.06, delayChildren = 0) => ({
   hidden: {},
   visible: {
     transition: { staggerChildren: stagger, delayChildren },
@@ -100,7 +99,7 @@ export const staggerContainer = (stagger = 0.1, delayChildren = 0) => ({
 });
 
 /* Convenience for letter / word reveals. */
-export const staggerFast = staggerContainer(0.06);
+export const staggerFast = staggerContainer(0.04);
 
 /* ── Viewport config used for scroll reveals ── */
 export const viewportOnce = { once: true, margin: "-80px" };

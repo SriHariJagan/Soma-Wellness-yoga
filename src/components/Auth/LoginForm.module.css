@@ -117,4 +117,120 @@
 .toggleText { text-align:center; margin-top:18px; font-size:13px; color: var(--soma-warm-gray); }
 .toggleText button { background:none; border:none; color: var(--soma-primary); font-weight:600; cursor:pointer; font-size:13px; }
 .toggleText button:hover { color: var(--soma-forest); text-decoration:underline; }
-@media(max-width:640px){ .formCard{padding:24px 20px;} .row{grid-template-columns:1fr;} }
+
+/* ── Premium additions (shared with ForgotPassword) ─────────── */
+.cardHead { text-align:center; margin-bottom: 22px; }
+.cardBadge {
+  display:inline-flex; align-items:center; gap:7px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(46,125,91,0.10) 0%, rgba(244,180,0,0.10) 100%);
+  border: 1px solid rgba(46,125,91,0.18);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--soma-primary);
+  margin-bottom: 14px;
+}
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3vw, 32px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--soma-forest);
+}
+.cardSub { margin-top: 8px; font-size: 13.5px; line-height: 1.6; color: var(--soma-warm-gray); }
+
+.dividerRow {
+  display:flex; align-items:center; gap:12px;
+  margin: 20px 0 16px;
+}
+.dividerLine { flex:1; height:1px; background: linear-gradient(90deg, transparent, rgba(38,51,44,0.16), transparent); }
+.dividerText {
+  font-size: 10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+  color: var(--soma-warm-gray);
+}
+
+.pwToggle {
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer;
+  color: var(--soma-warm-gray);
+  padding:6px; border-radius:8px;
+  display:inline-flex;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.pwToggle:hover { color: var(--soma-primary); background: rgba(46,125,91,0.08); }
+.hasToggle .input { padding-right: 42px; }
+
+.alert {
+  display:flex; align-items:flex-start; gap:9px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  font-size: 12.5px; line-height: 1.5;
+  animation: slideDown .28s ease both;
+}
+.alertErr {
+  background: #FDF2F2;
+  border: 1px solid #F5C6C6;
+  color: #B42318;
+}
+.alertOk {
+  background: #F0FAF4;
+  border: 1px solid #BFE5CC;
+  color: #166534;
+}
+@keyframes slideDown { from { opacity:0; transform: translateY(-6px);} to { opacity:1; transform:none; } }
+
+.forgotCard { width:100%; max-width: 480px; margin: 0 auto; }
+
+.sentIcon {
+  width: 74px; height: 74px;
+  margin: 4px auto 18px;
+  border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(circle at 30% 25%, #34D399 0%, #059669 70%);
+  color:#fff;
+  font-size: 30px;
+  box-shadow: 0 14px 34px rgba(5,150,105,0.35), inset 0 1px 0 rgba(255,255,255,0.45);
+}
+.resendBtn {
+  background:none; border:none; cursor:pointer;
+  color: var(--soma-primary); font-weight:700; font-size:13px;
+}
+.resendBtn:disabled { color: var(--soma-warm-gray); cursor:not-allowed; }
+
+@media(max-width:640px){ .formCard{padding:24px 20px; margin: 0 auto; width: 100%; max-width: 100%;} .row{grid-template-columns:1fr;} .forgotCard{max-width: 100%; margin: 0 auto;} }
+
+/* ── Flip-in-place views (login / register / forgot) ─────────── */
+.flipWrap { perspective: 1600px; overflow: visible; }
+.face { backface-visibility: hidden; transform-style: preserve-3d; }
+
+/* ── Fit-to-viewport compression (no scrolling) ─────────────── */
+.formCard { max-height: calc(100vh - 36px); }
+@supports (height: 100dvh) { .formCard { max-height: calc(100dvh - 36px); } }
+
+@media (max-height: 840px) {
+  .formCard { padding: 26px 28px; }
+  .cardHead { margin-bottom: 16px; }
+  .cardTitle { font-size: 25px; }
+  .cardSub { margin-top: 5px; font-size: 12.5px; }
+  .dividerRow { margin: 15px 0 12px; }
+  .form { gap: 13px; }
+  .input { padding: 11px 12px 11px 37px; font-size: 13.5px; }
+  .submitBtn { padding: 12px 18px; margin-top: 2px; }
+  .toggleText { margin-top: 13px; font-size: 12.5px; }
+}
+@media (max-height: 730px) {
+  .formCard { padding: 20px 24px; }
+  .cardBadge { display: none; }
+  .cardTitle { font-size: 23px; }
+  .socialBlockHintHide { display: none; }
+  .toggleText { margin-top: 10px; }
+}
+@media (max-height: 640px) {
+  .cardSub { display: none; }
+  .formCard { padding: 16px 22px; }
+}
+/* ultra-short screens: allow graceful internal scroll as last resort */
+@media (max-height: 520px) {
+  .formSide { overflow-y: auto; justify-content: flex-start; padding-top: 22px; }
+}

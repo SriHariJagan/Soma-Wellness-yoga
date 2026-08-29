@@ -4,7 +4,7 @@ import Badge from "../Admin/Badge";
 import styles from "./TrialSessionModal.module.css";
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString("en-IN", {
+  return new Date(dateStr).toLocaleDateString("en-KE", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 }

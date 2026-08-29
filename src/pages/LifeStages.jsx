@@ -6,33 +6,36 @@ import SomaCTA from "../components/soma/SomaCTA";
 import PageFAQSection from "../components/soma/PageFAQSection";
 import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
-
-const tabs = [
-  { id: "mama", label: "SOMA MAMA", sub: "Pregnancy", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=900&auto=format&fit=crop", bullets: ["Gentle movement, breathing, relaxation", "Medical clearance respected", "Props, modifications, rest anytime"], price: "4·12,000 · 8·22,000 · Single 3,500 · Private 5,500" },
-  { id: "mamaplus", label: "SOMA MAMA+", sub: "After birth", img: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=900&auto=format&fit=crop", bullets: ["Gradual recovery, mobility, core", "Reconnect with body, breath", "6 weeks+ postpartum, clearance as needed"], price: "4·11,500 · 8·21,000" },
-  { id: "young", label: "SOMA YOUNG", sub: "5 to 17", img: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=900&auto=format&fit=crop", bullets: ["Playful, age-grouped 5-12 & 13-17", "Balance, focus, body awareness", "Holiday camp 3d 9K / 5d 14K"], price: "4·7,000 · 8·12,000" },
-  { id: "agewell", label: "SOMA AGE WELL", sub: "Seniors", img: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=900&auto=format&fit=crop", bullets: ["Gentle, chair-supported, assisted", "Balance, fall-prevention, independence", "Breathing, meditation, community"], price: "4·7,000 · 8·12,000" },
-];
+import { useTranslation } from "react-i18next";
+import styles from "./LifeStages.module.css";
 
 const LifeStages = () => {
+  const { t } = useTranslation();
   const [active, setActive] = useState("mama");
   const reduced = usePrefersReducedMotion();
-  const cur = tabs.find((t) => t.id === active);
+
+  const tabs = [
+    { id: "mama", label: "SOMA MAMA", sub: t("lifeStages.tabs.mama.sub"), img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.mama.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.mama.price") },
+    { id: "mamaplus", label: "SOMA MAMA+", sub: t("lifeStages.tabs.mamaplus.sub"), img: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.mamaplus.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.mamaplus.price") },
+    { id: "young", label: "SOMA YOUNG", sub: t("lifeStages.tabs.young.sub"), img: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.young.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.young.price") },
+    { id: "agewell", label: "SOMA AGE WELL", sub: t("lifeStages.tabs.agewell.sub"), img: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.agewell.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.agewell.price") },
+  ];
+  const cur = tabs.find((x) => x.id === active);
   return (
     <div style={{ background: "var(--soma-cream)" }}>
       <SomaPageHeader
-        eyebrow="Life Stages · For every season"
-        title="Programmes shaped<br /><em>around you.</em>"
-        subtitle="Everything sells as block 4 or 8. Children grouped by age. Pregnancy screening & medical clearance respected."
+        eyebrow={t("lifeStages.eyebrow")}
+        title={t("lifeStages.title")}
+        subtitle={t("lifeStages.subtitle")}
         image="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=900&auto=format&fit=crop"
       />
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "28px clamp(20px,4vw,40px) 0" }}>
+      <section className={styles.section}>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: EASE }}
-          style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}
+          className={styles.tabsWrap}
         >
           {tabs.map((t) => {
             const isActive = active === t.id;
@@ -42,28 +45,16 @@ const LifeStages = () => {
                 onClick={() => setActive(t.id)}
                 whileHover={reduced ? {} : { y: -2, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                style={{
-                  padding: "11px 16px",
-                  borderRadius: 9999,
-                  border: `1px solid ${isActive ? "var(--soma-forest)" : "rgba(255,255,255,0.62)"}`,
-                  background: isActive ? "linear-gradient(135deg, #183D2D 0%, #1e4d3a 100%)" : "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.88) 100%)",
-                  color: isActive ? "#fff" : "var(--soma-forest)",
-                  fontSize: 11,
-                  fontWeight: 800,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  boxShadow: isActive ? "0 8px 22px rgba(24,61,45,0.18), inset 0 1px 0 rgba(255,255,255,0.14)" : "0 4px 14px rgba(24,61,45,0.06), inset 0 1px 0 rgba(255,255,255,0.72)",
-                  backdropFilter: "blur(8px)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  position: "relative",
-                  overflow: "hidden",
-                }}
+                className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
               >
-                {!isActive && <span style={{ position: "absolute", inset: 0, background: "linear-gradient(112deg, transparent 40%, rgba(255,255,255,0.18) 48%, transparent 60%)", pointerEvents: "none", opacity: 0.9 }} aria-hidden="true" />}
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: isActive ? "var(--soma-gold)" : "var(--soma-primary)", boxShadow: isActive ? "0 0 8px rgba(244,180,0,0.32)" : "0 0 0 4px rgba(46,125,91,0.08)", flexShrink: 0 }} aria-hidden="true" />
-                {t.label} <span style={{ opacity: isActive ? 0.72 : 0.6, fontWeight: 600 }}>· {t.sub}</span>
+                <span className={styles.tabIcon} aria-hidden="true">
+                  {t.id === "mama" ? "🤱" : t.id === "mamaplus" ? "🌸" : t.id === "young" ? "🌈" : "🌿"}
+                </span>
+                <span className={styles.tabText}>
+                  <span className={styles.tabLabel}>{t.label}</span>
+                  <span className={styles.tabSub}>{t.sub}</span>
+                </span>
+                {isActive && <span className={styles.tabDot} aria-hidden="true" />}
               </motion.button>
             );
           })}
@@ -76,20 +67,7 @@ const LifeStages = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
             transition={{ duration: 0.42, ease: EASE }}
-            style={{
-              marginTop: 20,
-              background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.94) 100%)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.62)",
-              borderRadius: 22,
-              overflow: "hidden",
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              height: 460,
-              boxShadow: "0 16px 44px rgba(24,61,45,0.08), inset 0 1px 0 rgba(255,255,255,0.72)",
-              position: "relative",
-            }}
-            className="lifeGrid"
+            className={styles.lifeGrid}
           >
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(244,180,0,0.32), transparent)", pointerEvents: "none", zIndex: 2 }} aria-hidden="true" />
             <div style={{ padding: 26, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative" }}>
@@ -142,13 +120,13 @@ const LifeStages = () => {
       </section>
 
       {/* Bento pricing — premium */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "22px clamp(20px,4vw,40px) 32px" }}>
+      <section className={styles.bentoSection}>
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.08, delayChildren: reduced ? 0 : 0.12 } } }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}
+          className={styles.bentoGrid}
         >
           {LIFE_STAGES.map((p) => (
             <motion.div
@@ -179,13 +157,13 @@ const LifeStages = () => {
       </section>
 
       {/* Trust for parents/seniors — premium + NEW safety */}
-      <section style={{ maxWidth: 960, margin: "0 auto", padding: "0 clamp(20px,4vw,40px) 8px" }}>
+      <section className={styles.trustSection}>
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-30px" }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.10 } } }}
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}
+          className={styles.trustGrid}
         >
           {[
             { label: "For parents", quote: "“My 9-year-old loves Young — playful but teaches focus. Teachers group by age, so she’s with peers, not lost in adult class.”", name: "Faith, SOMA YOUNG parent", icon: "♥" },
@@ -211,13 +189,13 @@ const LifeStages = () => {
       </section>
 
       {/* NEW — Safety & props where thin */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "22px clamp(20px,4vw,40px) 32px" }}>
+      <section className={styles.safetySection}>
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.08 } } }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}
+          className={styles.safetyGrid}
         >
           {[
             { t: "Props for every body", d: "Chairs, bolsters, belts, blocks — support without strain. Rest anytime, no pressure.", icon: "◯" },
@@ -234,10 +212,9 @@ const LifeStages = () => {
         </motion.div>
       </section>
 
-      <PageFAQSection title="Life Stages — common questions" questions={PAGE_FAQS.lifeStages} />
+      <PageFAQSection title={t("lifeStages.faqTitle")} questions={PAGE_FAQS.lifeStages} />
 
       <SomaCTA />
-      <style>{`@media(max-width:900px){div[style*="gridTemplateColumns: 1fr 1fr"]{grid-template-columns:1fr !important; height:auto !important;} .lifeGrid{height:auto !important;} .lifeGrid > div:last-child{height:280px !important;}}`}</style>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { adminShippingApi } from "../api/AdminServices.js";
 import s from "./ShippingManagement.module.css";
 
-const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const inr = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
 
 const TYPE_LABEL = {
   flat: "Flat rate",
@@ -136,10 +136,10 @@ export default function ShippingManagement() {
         <form className={s.settingsCard} onSubmit={saveSettings}>
           <h2>Store defaults</h2>
           <div className={s.settingsGrid}>
-            <label><span>Free shipping threshold (₹)</span>
+            <label><span>Free shipping threshold (KES )</span>
               <input name="freeShippingThreshold" type="number" min="0" step="0.01" defaultValue={settings?.freeShippingThreshold ?? 999} />
             </label>
-            <label><span>Default shipping charge (₹)</span>
+            <label><span>Default shipping charge (KES )</span>
               <input name="defaultShippingCharge" type="number" min="0" step="0.01" defaultValue={settings?.defaultShippingCharge ?? 60} />
             </label>
             <label><span>Delivery min days</span>
@@ -395,11 +395,11 @@ function RuleModal({ mode, rule, saving, onClose, onSave }) {
                   <option value="unavailable">Unavailable (no delivery)</option>
                 </select>
               </label>
-              <label className={s.field}><span>Charge (₹)</span>
+              <label className={s.field}><span>Charge (KES )</span>
                 <input type="number" min="0" step="0.01" value={form.shippingAmount} onChange={set("shippingAmount")} disabled={typeUnavailable || form.shippingType === "free"} className={errors.shippingAmount ? s.inputBad : ""} />
                 {errors.shippingAmount && <span className={s.error}>{errors.shippingAmount}</span>}
               </label>
-              <label className={s.field}><span>Free above (₹, 0 = never)</span>
+              <label className={s.field}><span>Free above (KES , 0 = never)</span>
                 <input type="number" min="0" step="0.01" value={form.freeShippingThreshold} onChange={set("freeShippingThreshold")} disabled={typeUnavailable} />
               </label>
               <label className={s.field}><span>Delivery min days</span>
@@ -416,7 +416,7 @@ function RuleModal({ mode, rule, saving, onClose, onSave }) {
             <h3>Management</h3>
             <div className={s.formGrid}>
               <label className={s.field}><span>Rule name *</span>
-                <input value={form.name} onChange={set("name")} placeholder="e.g. Metro cities flat ₹60" className={errors.name ? s.inputBad : ""} />
+                <input value={form.name} onChange={set("name")} placeholder="e.g. Metro cities flat KES 60" className={errors.name ? s.inputBad : ""} />
                 {errors.name && <span className={s.error}>{errors.name}</span>}
               </label>
               <label className={s.field}><span>Priority (higher wins ties)</span><input type="number" value={form.priority} onChange={set("priority")} placeholder="0" /></label>

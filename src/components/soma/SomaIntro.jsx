@@ -1,18 +1,20 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 import styles from "./SomaIntro.module.css";
 
-const stats = [
-  { label: "Small groups", sub: "so you are seen" },
-  { label: "Conscious teachers", sub: "rooted in lineage" },
-  { label: "Premium, calm, human", sub: "always" },
-];
-
 const SomaIntro = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
   const ref = useRef(null);
   const visualRef = useRef(null);
+
+  const stats = [
+    { label: t("home.intro.stats.smallGroupsLabel"), sub: t("home.intro.stats.smallGroupsSub") },
+    { label: t("home.intro.stats.consciousTeachersLabel"), sub: t("home.intro.stats.consciousTeachersSub") },
+    { label: t("home.intro.stats.premiumLabel"), sub: t("home.intro.stats.premiumSub") },
+  ];
 
   // Scroll-linked for image — subtle editorial parallax (distinct from Hero's 90px)
   const { scrollYProgress } = useScroll({
@@ -71,7 +73,7 @@ const SomaIntro = () => {
               <motion.div className={styles.imageInner} style={{ y: springY, scale: springScale }}>
                 <motion.img
                   src="https://images.unsplash.com/photo-1528715471578-2e5b6c0bb37a?q=80&w=900&auto=format&fit=crop"
-                  alt="Attractive woman in graceful yoga stretch — premium wellness at Soma, Nairobi"
+                  alt={t("home.intro.alt")}
                   width="900"
                   height="1100"
                   loading="lazy"
@@ -95,8 +97,8 @@ const SomaIntro = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.65, delay: 0.55, ease: EASE }}
               >
-                <span>01 — The Soma way</span>
-                <p>Soft strength. Warm light. A space that lets you arrive.</p>
+                <span>{t("home.intro.captionLabel")}</span>
+                <p>{t("home.intro.captionText")}</p>
                 <motion.span
                   className={styles.captionLine}
                   initial={{ scaleX: 0 }}
@@ -120,8 +122,8 @@ const SomaIntro = () => {
             >
               <span className={styles.microDot} />
               <div>
-                <strong>300 members · 12 max</strong>
-                <span>Never crowded, always seen.</span>
+                <strong>{t("home.intro.microTitle")}</strong>
+                <span>{t("home.intro.microSub")}</span>
               </div>
             </motion.div>
           </motion.div>
@@ -154,7 +156,7 @@ const SomaIntro = () => {
                 style={{ transformOrigin: "left" }}
               />
               <span className={styles.eyebrowDot} />
-              Our philosophy
+              {t("home.intro.eyebrow")}
               {/* subtle pulse — not in Hero's eyebrowPulse, this one is slower */}
               {!reduced && (
                 <motion.span
@@ -176,7 +178,7 @@ const SomaIntro = () => {
                     visible: { y: "0%", skewY: 0, transition: { duration: 0.78, ease: EASE } },
                   }}
                 >
-                  Wellness is not a
+                  {t("home.intro.titleLine1")}
                 </motion.span>
               </span>
               <span className={styles.titleClip}>
@@ -187,7 +189,7 @@ const SomaIntro = () => {
                     visible: { y: "0%", skewY: 0, transition: { duration: 0.78, ease: EASE, delay: 0.08 } },
                   }}
                 >
-                  <em>performance.</em>
+                  <em>{t("home.intro.titleLine2")}</em>
                 </motion.span>
               </span>
               <span className={styles.titleClip}>
@@ -198,7 +200,7 @@ const SomaIntro = () => {
                     visible: { y: "0%", skewY: 0, transition: { duration: 0.78, ease: EASE, delay: 0.16 } },
                   }}
                 >
-                  It is a <em>return.</em>
+                  {t("home.intro.titleLine3")} <em>{t("home.intro.titleLine4")}</em>
                 </motion.span>
               </span>
               {/* underline accent — draws after title, different timing vs Hero */}
@@ -219,7 +221,7 @@ const SomaIntro = () => {
                 visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.7, ease: EASE } },
               }}
             >
-              Soma is a space to come back — to breath, to body, to presence. We honor lineage without rigidity, modern science without noise, and luxury without distance.
+              {t("home.intro.lead")}
             </motion.p>
 
             <motion.p
@@ -229,7 +231,7 @@ const SomaIntro = () => {
                 visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE } },
               }}
             >
-              Every detail — light, linen, wood, silence — is considered so your nervous system can exhale. No mirrors demanding perfection. No hustle disguised as healing. Just honest practice, held with care.
+              {t("home.intro.body")}
             </motion.p>
 
             {/* stats — sequential line draw, unique to this section */}

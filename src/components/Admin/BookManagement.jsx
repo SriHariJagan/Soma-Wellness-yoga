@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { adminBooksApi } from "../api/AdminServices.js";
 import s from "./BookManagement.module.css";
 
-const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const inr = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
 
 const emptyBook = {
   title: "", slug: "", subtitle: "", authors: [], shortDescription: "", description: "",
@@ -280,8 +280,8 @@ function BookModal({ mode, book, saving, onClose, onSave }) {
             <label className={s.field}><span>Slug (blank = auto)</span><input value={form.slug} onChange={set("slug")} /></label>
             <label className={s.field}><span>Authors (comma separated)</span><input value={form.authors} onChange={set("authors")} /></label>
             <label className={s.field}><span>SKU *</span><input value={form.sku} onChange={set("sku")} required /></label>
-            <label className={s.field}><span>Price (₹) *</span><input type="number" min="0" step="0.01" value={form.price} onChange={set("price")} required /></label>
-            <label className={s.field}><span>Compare-at price (₹)</span><input type="number" min="0" step="0.01" value={form.compareAtPrice} onChange={set("compareAtPrice")} /></label>
+            <label className={s.field}><span>Price (KES ) *</span><input type="number" min="0" step="0.01" value={form.price} onChange={set("price")} required /></label>
+            <label className={s.field}><span>Compare-at price (KES )</span><input type="number" min="0" step="0.01" value={form.compareAtPrice} onChange={set("compareAtPrice")} /></label>
             <label className={s.field}><span>Category</span><input value={form.category} onChange={set("category")} /></label>
             <label className={s.field}><span>Tags (comma separated)</span><input value={form.tags} onChange={set("tags")} /></label>
             <label className={s.field}><span>Language</span><input value={form.language} onChange={set("language")} /></label>

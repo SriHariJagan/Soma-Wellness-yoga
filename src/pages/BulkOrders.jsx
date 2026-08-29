@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { FaBuildingColumns, FaTruckFast, FaEnvelopeOpenText } from "react-icons/fa6";
 import { submitBulkEnquiry } from "../components/api/BookServices";
 import { useScrollToSection } from "../hooks/useScrollToSection";
+import { useTranslation } from "react-i18next";
 import styles from "./BulkOrders.module.css";
 
 const BulkOrders = () => {
   useScrollToSection();
+  const { t } = useTranslation();
 
   const [form, setForm] = useState({
     organisationName: "", contactPerson: "", email: "", phone: "",
@@ -37,11 +39,11 @@ const BulkOrders = () => {
       <div className={styles.successPage}>
         <div className={styles.successCard}>
           <div className={styles.successIcon}>✓</div>
-          <h1>Enquiry received!</h1>
-          <p>Your reference number is <strong>{done.reference}</strong>.</p>
-          <p className={styles.successSub}>Our team will contact you within 2 business days with pricing and dispatch details.</p>
+          <h1>{t("bulkOrders.successTitle")}</h1>
+          <p>{t("bulkOrders.successRef", { ref: done.reference })}</p>
+          <p className={styles.successSub}>{t("bulkOrders.successMsg")}</p>
           <button className={styles.primaryBtn} onClick={() => { setDone(null); setForm({ organisationName: "", contactPerson: "", email: "", phone: "", bookTitle: "", quantity: "", state: "", pincode: "", message: "" }); }}>
-            Submit another enquiry
+            {t("bulkOrders.submitAnother")}
           </button>
         </div>
       </div>
@@ -52,67 +54,62 @@ const BulkOrders = () => {
     <div className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <h1>Bulk &amp; Institutional Orders</h1>
+          <h1>{t("bulkOrders.title")}</h1>
           <p className={styles.heroSub}>
-            Stocking our books for your studio, school, library or organisation?
-            Get wholesale pricing on orders of 10+ copies.
+            {t("bulkOrders.subtitle")}
           </p>
         </div>
       </section>
 
       <section className={styles.perks}>
-        <div className={styles.perk}><FaBuildingColumns /><span><strong>Institutions welcome</strong> — studios, schools, colleges, libraries</span></div>
-        <div className={styles.perk}><FaTruckFast /><span><strong>Bulk dispatch</strong> — pan-India delivery options</span></div>
-        <div className={styles.perk}><FaEnvelopeOpenText /><span><strong>2 business days</strong> — quote turnaround</span></div>
+        <div className={styles.perk}><FaBuildingColumns /><span><strong>{t("bulkOrders.institutionsWelcome")}</strong> — studios, schools, colleges, libraries</span></div>
+        <div className={styles.perk}><FaTruckFast /><span><strong>{t("bulkOrders.bulkDispatch")}</strong> — pan-India delivery options</span></div>
+        <div className={styles.perk}><FaEnvelopeOpenText /><span><strong>{t("bulkOrders.twoBusinessDays")}</strong> — quote turnaround</span></div>
       </section>
 
       <section className={styles.formWrap}>
-        <h2>Tell us what you need</h2>
+        <h2>{t("bulkOrders.formTitle")}</h2>
         {error && <div className={styles.errorBox}>{error}</div>}
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.grid}>
             <label className={styles.field}>
-              <span>Organisation / studio name *</span>
-              <input value={form.organisationName} onChange={set("organisationName")} required placeholder="e.g. Pragya Yoga Studio" />
+              <span>{t("bulkOrders.orgName")}</span>
+              <input value={form.organisationName} onChange={set("organisationName")} required placeholder={t("bulkOrders.orgPlaceholder")} />
             </label>
             <label className={styles.field}>
-              <span>Contact person *</span>
-              <input value={form.contactPerson} onChange={set("contactPerson")} required placeholder="e.g. Priya Sharma" />
+              <span>{t("bulkOrders.contactPerson")}</span>
+              <input value={form.contactPerson} onChange={set("contactPerson")} required placeholder={t("bulkOrders.contactPlaceholder")} />
             </label>
             <label className={styles.field}>
-              <span>Email *</span>
+              <span>{t("bulkOrders.email")}</span>
               <input type="email" value={form.email} onChange={set("email")} required placeholder="you@email.com" />
             </label>
             <label className={styles.field}>
-              <span>Mobile number *</span>
+              <span>{t("bulkOrders.phone")}</span>
               <input value={form.phone} onChange={set("phone")} maxLength={10} required placeholder="10-digit mobile" />
             </label>
             <label className={styles.field}>
-              <span>Book(s) of interest</span>
-              <input value={form.bookTitle} onChange={set("bookTitle")} placeholder="e.g. The Confident Child" />
+              <span>{t("bulkOrders.bookTitle")}</span>
+              <input value={form.bookTitle} onChange={set("bookTitle")} placeholder={t("bulkOrders.booksPlaceholder")} />
             </label>
             <label className={styles.field}>
-              <span>Approximate quantity (min 10) *</span>
-              <input type="number" min="10" value={form.quantity} onChange={set("quantity")} required placeholder="e.g. 50" />
+              <span>{t("bulkOrders.quantity")}</span>
+              <input type="number" min="10" value={form.quantity} onChange={set("quantity")} required placeholder={t("bulkOrders.quantityPlaceholder")} />
             </label>
             <label className={styles.field}>
-              <span>State</span>
-              <input value={form.state} onChange={set("state")} placeholder="e.g. Bihar" />
+              <span>{t("bulkOrders.deliveryAddress")}</span>
+              <input value={form.state} onChange={set("state")} placeholder={t("bulkOrders.addressPlaceholder")} />
             </label>
             <label className={styles.field}>
-              <span>PIN code</span>
-              <input value={form.pincode} onChange={set("pincode")} maxLength={6} placeholder="6-digit PIN" />
+              <span>{t("bulkOrders.notes")}</span>
+              <textarea value={form.message} onChange={set("message")} rows={4} placeholder={t("bulkOrders.notesPlaceholder")} />
             </label>
           </div>
-          <label className={styles.field}>
-            <span>Message / requirements (optional)</span>
-            <textarea value={form.message} onChange={set("message")} rows={4} placeholder="Customisation, delivery timelines, invoice needs…" />
-          </label>
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? "Submitting…" : "Send enquiry"}
+            {loading ? t("bulkOrders.submitting") : t("bulkOrders.sendEnquiry")}
           </button>
         </form>
-        <p className={styles.backLink}><Link to="/books">← Back to the bookstore</Link></p>
+        <p className={styles.backLink}><Link to="/books">{t("bulkOrders.backToStore")}</Link></p>
       </section>
     </div>
   );

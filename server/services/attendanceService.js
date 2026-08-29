@@ -138,7 +138,7 @@ export async function markAttendanceAtomic(params) {
               try {
                 await notify(userService.user, {
                   title: 'Service completed',
-                  message: `Your <strong>${userService.serviceName}</strong> service has been successfully completed. Thank you for visiting Pragya Yoga.`,
+                   message: `Your <strong>${userService.serviceName}</strong> service has been successfully completed. Thank you for visiting Soma Wellness.`,
                   type: 'success',
                 });
               } catch {}

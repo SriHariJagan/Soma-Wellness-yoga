@@ -1,7 +1,7 @@
 export const LANDING_PAGES = [
   {
     slug: "personal-yoga-classes-malviya-nagar",
-    title: "Personal Yoga Classes in Malviya Nagar | Pragya Yoga Alliance",
+    title: "Personal Yoga Classes in Malviya Nagar | Soma Wellness",
     description: "Looking for Personal Yoga Classes in Malviya Nagar, Jaipur? Get one-to-one attention, customized yoga sessions, and flexible timings from experienced instructors. Book today!",
     h1: "Personal Yoga Classes in Malviya Nagar",
     heroImage: "/images/services/yoga2.webp",
@@ -140,7 +140,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "kids-yoga-malviya-nagar",
-    title: "Kids Yoga in Malviya Nagar | Pragya Yoga Alliance",
+    title: "Kids Yoga in Malviya Nagar | Soma Wellness",
     description: "Looking for Kids Yoga in Malviya Nagar, Jaipur? Fun, age-appropriate yoga sessions that build flexibility, balance, focus, and healthy habits for children. Book today!",
     h1: "Kids Yoga in Malviya Nagar",
     heroImage: "/images/services/yoga1.webp",
@@ -288,7 +288,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "prenatal-yoga-malviya-nagar",
-    title: "Yoga Classes for Pregnant Women in Malviya Nagar | Pragya Yoga Alliance",
+    title: "Yoga Classes for Pregnant Women in Malviya Nagar | Soma Wellness",
     description: "Looking for Yoga Classes for Pregnant Women in Malviya Nagar, Jaipur? Gentle prenatal yoga with breathing, relaxation, and trimester-adapted practices. Book today!",
     h1: "Yoga Classes for Pregnant Women in Malviya Nagar",
     heroImage: "/images/landing/prenatal-hero.webp",
@@ -431,7 +431,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "yoga-for-stress-malviya-nagar",
-    title: "Yoga Classes for Stress in Malviya Nagar | Pragya Yoga Alliance",
+    title: "Yoga Classes for Stress in Malviya Nagar | Soma Wellness",
     description: "Looking for Yoga Classes for Stress in Malviya Nagar, Jaipur? Gentle yoga, breathing exercises, and relaxation techniques to manage everyday stress. Book today!",
     h1: "Yoga Classes for Stress in Malviya Nagar",
     heroImage: "/images/landing/stress-hero.webp",
@@ -590,7 +590,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "corporate-yoga-malviya-nagar",
-    title: "Yoga Classes for Corporate in Malviya Nagar | Pragya Yoga Alliance",
+    title: "Yoga Classes for Corporate in Malviya Nagar | Soma Wellness",
     description: "Looking for Yoga Classes for Corporate in Malviya Nagar, Jaipur? Workplace yoga for employee wellness — gentle stretches, breathing, and relaxation at your office. Book today!",
     h1: "Yoga Classes for Corporate in Malviya Nagar",
     heroImage: "/images/landing/corp-hero.webp",
@@ -767,13 +767,13 @@ export const LANDING_PAGES = [
   },
   {
     slug: "corporate-yoga-durgapura",
-    title: "Yoga Classes for Corporate in Durgapura | Pragya Yoga Alliance",
+    title: "Yoga Classes for Corporate in Durgapura | Soma Wellness",
     description: "Looking for Yoga Classes for Corporate in Durgapura, Jaipur? Workplace yoga for employee wellness — gentle stretches, breathing, and relaxation at your office. Book today!",
     h1: "Yoga Classes for Corporate in Durgapura",
     heroImage: "/images/landing/corp-hero.webp",
     intro: [
       "A healthy and focused workforce is essential for every successful organization. Long working hours, tight deadlines, continuous screen time, and workplace stress can affect employees' physical and mental well-being. Yoga Classes for Corporate in Durgapura offer an effective way for companies to introduce wellness into the workplace while helping employees stay active, relaxed, and productive.",
-      "At Pragya Yoga Alliance, we provide structured corporate yoga sessions designed to suit the needs of modern professionals. Our sessions can be customized for offices, corporate teams, startups, institutions, and organizations looking to create a healthier workplace environment."
+      "At Soma Wellness, we provide structured corporate yoga sessions designed to suit the needs of modern professionals. Our sessions can be customized for offices, corporate teams, startups, institutions, and organizations looking to create a healthier workplace environment."
     ],
     stats: [
       { icon: "award", label: "Yoga Alliance Certified", sub: "Professional Instructors" },
@@ -803,7 +803,7 @@ export const LANDING_PAGES = [
       {
         heading: "Corporate Yoga Programs Designed for Durgapura Workplaces",
         paragraphs: [
-          "Every organization has different requirements. Some companies may prefer short sessions before work, while others may want yoga during lunch breaks or after working hours. At Pragya Yoga Alliance, our corporate yoga sessions can be planned according to your team's schedule, workplace environment, and objectives.",
+          "Every organization has different requirements. Some companies may prefer short sessions before work, while others may want yoga during lunch breaks or after working hours. At Soma Wellness, our corporate yoga sessions can be planned according to your team's schedule, workplace environment, and objectives.",
           "Our sessions may include gentle yoga movements, stretching exercises, breathing practices, mindfulness, and relaxation techniques.",
           "We can also adapt the intensity according to the participants. Beginners can comfortably participate in basic sessions, while employees who already practice yoga can benefit from more structured routines.",
         ],
@@ -847,9 +847,9 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance for Corporate Yoga?",
+        heading: "Why Choose Soma Wellness for Corporate Yoga?",
         paragraphs: [
-          "Choosing the right yoga instructor or wellness provider is important when introducing yoga into a professional environment. At Pragya Yoga Alliance, we focus on creating practical and engaging sessions for corporate participants.",
+          "Choosing the right yoga instructor or wellness provider is important when introducing yoga into a professional environment. At Soma Wellness, we focus on creating practical and engaging sessions for corporate participants.",
           "Our approach includes:",
         ],
         bullets: [
@@ -884,7 +884,7 @@ export const LANDING_PAGES = [
         heading: "How to Start Corporate Yoga at Your Workplace",
         paragraphs: [
           "Getting started is simple. First, identify your team's preferred schedule and the type of wellness activities you want to introduce. Next, discuss the number of participants, available space, session duration, and frequency with the yoga provider.",
-          "At Pragya Yoga Alliance, we can help you plan a suitable corporate yoga program based on your organization's requirements.",
+          "At Soma Wellness, we can help you plan a suitable corporate yoga program based on your organization's requirements.",
           "Whether you are planning weekly sessions or a one-time corporate wellness event, the program can be structured around your team's needs.",
         ],
       },
@@ -898,10 +898,10 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Start Your Corporate Yoga Program with Pragya Yoga Alliance",
+        heading: "Start Your Corporate Yoga Program with Soma Wellness",
         paragraphs: [
           "A healthier workplace starts with healthier habits. If your organization wants to support employee wellness, reduce everyday workplace stress, and encourage a more active routine, corporate yoga can be a valuable addition to your employee wellness program.",
-          "Pragya Yoga Alliance offers Yoga Classes for Corporate in Durgapura with flexible sessions designed around the needs of modern workplaces. Contact us to discuss your team size, preferred schedule, and corporate yoga requirements and create a wellness program that works for your organization.",
+          "Soma Wellness offers Yoga Classes for Corporate in Durgapura with flexible sessions designed around the needs of modern workplaces. Contact us to discuss your team size, preferred schedule, and corporate yoga requirements and create a wellness program that works for your organization.",
         ],
       },
     ],
@@ -934,12 +934,12 @@ export const LANDING_PAGES = [
   },
   {
     slug: "therapeutic-yoga-durgapura",
-    title: "Therapeutic Yoga Classes in Durgapura | Pragya Yoga Alliance",
+    title: "Therapeutic Yoga Classes in Durgapura | Soma Wellness",
     description: "Looking for Therapeutic Yoga Classes in Durgapura, Jaipur? Gentle yoga, mindful breathing, and relaxation adapted to your needs. Book a personalized session today!",
     h1: "Therapeutic Yoga Classes in Durgapura",
     heroImage: "/images/landing/ther-hero.webp",
     intro: [
-      "Finding the right approach to improve physical strength, flexibility, mobility, and overall well-being can make a meaningful difference in everyday life. Therapeutic Yoga Classes in Durgapura offer a structured and mindful way to incorporate yoga into your wellness routine. At Pragya Yoga Alliance, our yoga sessions focus on mindful movement, breathing practices, relaxation, and personalized guidance to help practitioners develop a healthier relationship with their body and mind.",
+      "Finding the right approach to improve physical strength, flexibility, mobility, and overall well-being can make a meaningful difference in everyday life. Therapeutic Yoga Classes in Durgapura offer a structured and mindful way to incorporate yoga into your wellness routine. At Soma Wellness, our yoga sessions focus on mindful movement, breathing practices, relaxation, and personalized guidance to help practitioners develop a healthier relationship with their body and mind.",
       "Whether you are new to yoga, returning after a break, or looking for a more focused yoga practice, therapeutic yoga can be adapted according to individual needs and comfort levels."
     ],
     stats: [
@@ -954,7 +954,7 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Therapeutic yoga is a personalized approach to yoga that combines traditional yoga practices with mindful movement, breathing exercises, relaxation, and awareness. Unlike a general yoga class where everyone may follow the same sequence, therapeutic yoga can be modified based on an individual's physical condition, flexibility, experience, and wellness goals.",
           "The practice generally emphasizes comfortable movements, proper breathing, body awareness, and gradual progression. The objective is to create a sustainable yoga routine rather than pushing the body beyond its comfortable limits.",
-          "At Pragya Yoga Alliance, we encourage practitioners to understand their bodies and practice with patience. Every individual has different abilities, and yoga should be approached accordingly."
+          "At Soma Wellness, we encourage practitioners to understand their bodies and practice with patience. Every individual has different abilities, and yoga should be approached accordingly."
         ],
       },
       {
@@ -972,9 +972,9 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
-          "Choosing the right yoga centre is important when you are looking for personalized and mindful yoga instruction. At Pragya Yoga Alliance, we aim to create an encouraging environment where students can learn yoga at their own pace.",
+          "Choosing the right yoga centre is important when you are looking for personalized and mindful yoga instruction. At Soma Wellness, we aim to create an encouraging environment where students can learn yoga at their own pace.",
           "Our approach focuses on:",
         ],
         bullets: [
@@ -999,7 +999,7 @@ export const LANDING_PAGES = [
         heading: "Personalized Yoga Practice in Durgapura",
         paragraphs: [
           "One of the key advantages of therapeutic yoga is that the practice can be adapted to the individual. Factors such as age, flexibility, fitness level, previous yoga experience, and personal goals can influence how a session is structured.",
-          "At Pragya Yoga Alliance, instructors can guide students through appropriate movements and encourage them to work within their comfortable range. The focus is on learning correct techniques rather than forcing difficult postures.",
+          "At Soma Wellness, instructors can guide students through appropriate movements and encourage them to work within their comfortable range. The focus is on learning correct techniques rather than forcing difficult postures.",
           "This personalized approach can make yoga more approachable for people who may feel uncomfortable joining highly intensive fitness sessions."
         ],
       },
@@ -1012,9 +1012,9 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Start Your Yoga Journey With Pragya Yoga Alliance",
+        heading: "Start Your Yoga Journey With Soma Wellness",
         paragraphs: [
-          "If you are searching for Therapeutic Yoga Classes in Durgapura, Pragya Yoga Alliance provides a supportive environment to learn and practice yoga with proper guidance. Our goal is to help students develop consistency, improve body awareness, and make yoga a meaningful part of their lifestyle.",
+          "If you are searching for Therapeutic Yoga Classes in Durgapura, Soma Wellness provides a supportive environment to learn and practice yoga with proper guidance. Our goal is to help students develop consistency, improve body awareness, and make yoga a meaningful part of their lifestyle.",
           "If you are exploring yoga options across Jaipur, you can also visit our Best Yoga Classes in Jaipur page to learn more about our overall yoga programs and approach."
         ],
         links: [
@@ -1025,8 +1025,8 @@ export const LANDING_PAGES = [
         heading: "Begin a Healthier Yoga Routine Today",
         paragraphs: [
           "Yoga is a journey that develops gradually through regular practice, patience, and awareness. You do not need to be highly flexible or experienced to begin. With suitable instruction and modifications, you can learn foundational yoga techniques and progressively develop your practice.",
-          "At Pragya Yoga Alliance, we focus on creating a positive learning experience where students can practice comfortably and consistently.",
-          "If you are looking for Therapeutic Yoga Classes in Durgapura, connect with Pragya Yoga Alliance and take the first step toward making mindful yoga a regular part of your wellness routine."
+          "At Soma Wellness, we focus on creating a positive learning experience where students can practice comfortably and consistently.",
+          "If you are looking for Therapeutic Yoga Classes in Durgapura, connect with Soma Wellness and take the first step toward making mindful yoga a regular part of your wellness routine."
         ],
       },
     ],
@@ -1050,7 +1050,7 @@ export const LANDING_PAGES = [
     ],
     cta: {
       heading: "Start Therapeutic Yoga in Durgapura",
-      text: "Yoga is a journey that develops gradually through regular practice, patience, and awareness. You do not need to be highly flexible or experienced to begin. With suitable instruction and modifications, you can learn foundational yoga techniques and progressively develop your practice. If you are looking for Therapeutic Yoga Classes in Durgapura, connect with Pragya Yoga Alliance and take the first step toward making mindful yoga a regular part of your wellness routine.",
+      text: "Yoga is a journey that develops gradually through regular practice, patience, and awareness. You do not need to be highly flexible or experienced to begin. With suitable instruction and modifications, you can learn foundational yoga techniques and progressively develop your practice. If you are looking for Therapeutic Yoga Classes in Durgapura, connect with Soma Wellness and take the first step toward making mindful yoga a regular part of your wellness routine.",
       buttonLabel: "Book a Therapeutic Yoga Session",
       buttonLink: "/contact",
       secondaryLabel: "Explore Yoga Classes",
@@ -1059,7 +1059,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "therapeutic-yoga-malviya-nagar",
-    title: "Therapeutic Yoga Classes in Malviya Nagar | Pragya Yoga Alliance",
+    title: "Therapeutic Yoga Classes in Malviya Nagar | Soma Wellness",
     description: "Looking for Therapeutic Yoga Classes in Malviya Nagar, Jaipur? Gentle yoga, mindful breathing, and relaxation adapted to your needs. Book a personalized session today!",
     h1: "Therapeutic Yoga Classes in Malviya Nagar",
     heroImage: "/images/landing/ther-hero.webp",
@@ -1235,7 +1235,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "online-yoga-classes-in-india",
-    title: "Online Yoga Classes in India | Pragya Yoga Alliance",
+    title: "Online Yoga Classes in India | Soma Wellness",
     description: "Looking for Online Yoga Classes in India? Join live, instructor-guided online yoga sessions from home — beginner-friendly, flexible timings, and personalized guidance. Book today!",
     h1: "Online Yoga Classes in India",
     heroImage: "/images/services/yoga2.webp",
@@ -1243,7 +1243,7 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Instructor-guided online yoga classes",
     heroLead: "designed for your level, goals, and schedule — practice from the comfort of your home, anywhere in India.",
     intro: [
-      "Finding time for regular yoga can be challenging when you have a busy schedule, work commitments, family responsibilities, or live far from a yoga studio. Online yoga classes in India offer a convenient way to practice yoga from the comfort of your home while receiving guidance from experienced instructors. Pragya Yoga Alliance provides online yoga sessions designed for beginners, working professionals, homemakers, students, and regular practitioners who want to make yoga a consistent part of their lifestyle.",
+      "Finding time for regular yoga can be challenging when you have a busy schedule, work commitments, family responsibilities, or live far from a yoga studio. Online yoga classes in India offer a convenient way to practice yoga from the comfort of your home while receiving guidance from experienced instructors. Soma Wellness provides online yoga sessions designed for beginners, working professionals, homemakers, students, and regular practitioners who want to make yoga a consistent part of their lifestyle.",
       "Whether you are looking to improve flexibility, build strength, practice mindful breathing, or simply create time for relaxation, online yoga can make your practice more accessible and convenient.",
     ],
     stats: [
@@ -1257,7 +1257,7 @@ export const LANDING_PAGES = [
         heading: "What Are Online Yoga Classes?",
         paragraphs: [
           "Online yoga classes are instructor-guided sessions conducted through digital platforms, allowing participants to practice from home or any convenient location. Instead of travelling to a yoga studio, you can join a live session using a smartphone, tablet, laptop, or computer.",
-          "At Pragya Yoga Alliance, online sessions can be structured according to different experience levels and individual requirements. The instructor guides participants through yoga postures, breathing exercises, relaxation techniques, and other practices while explaining how to perform movements correctly.",
+          "At Soma Wellness, online sessions can be structured according to different experience levels and individual requirements. The instructor guides participants through yoga postures, breathing exercises, relaxation techniques, and other practices while explaining how to perform movements correctly.",
           "Online yoga is particularly useful for people who want professional guidance but prefer the flexibility of practicing from home.",
         ],
       },
@@ -1366,9 +1366,9 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
-          "Pragya Yoga Alliance focuses on making yoga accessible through guided online sessions. The aim is to provide participants with structured instruction while allowing them to practice from their preferred location.",
+          "Soma Wellness focuses on making yoga accessible through guided online sessions. The aim is to provide participants with structured instruction while allowing them to practice from their preferred location.",
           "Whether you are starting yoga for the first time or already have experience, online sessions can be adapted to different levels of practice. The emphasis is on learning yoga correctly, developing consistency, and creating a positive approach to physical and mental well-being.",
           "With online learning, participants from different parts of India can access yoga instruction without being limited by geographical location.",
         ],
@@ -1388,7 +1388,7 @@ export const LANDING_PAGES = [
         heading: "Start Online Yoga Classes in India",
         paragraphs: [
           "Yoga can be practiced by people with different lifestyles, experience levels, and schedules when the practice is appropriately adapted. Online classes make professional guidance more accessible to people who prefer learning from home.",
-          "If you are searching for online yoga classes in India, Pragya Yoga Alliance offers a convenient way to learn and practice yoga through guided online sessions. Start your yoga journey from wherever you are in India and build a consistent practice that fits your lifestyle, schedule, and personal wellness goals.",
+          "If you are searching for online yoga classes in India, Soma Wellness offers a convenient way to learn and practice yoga through guided online sessions. Start your yoga journey from wherever you are in India and build a consistent practice that fits your lifestyle, schedule, and personal wellness goals.",
           "Before beginning any new physical activity, especially if you have an existing health concern or specific limitation, consult an appropriate healthcare professional and inform your yoga instructor about any relevant restrictions.",
         ],
       },
@@ -1426,7 +1426,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "yoga-classes-durgapura",
-    title: "Yoga Classes in Durgapura | Pragya Yoga Alliance",
+    title: "Yoga Classes in Durgapura | Soma Wellness",
     description: "Looking for Yoga Classes in Durgapura, Jaipur? Join beginner-friendly, structured yoga sessions for flexibility, strength, stress relief, and overall wellness. Book today!",
     h1: "Yoga Classes in Durgapura",
     heroImage: "/images/services/Hatha_yoga.webp",
@@ -1434,7 +1434,7 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Structured yoga classes",
     heroLead: "designed for your level, goals, and schedule — build strength, flexibility, and inner balance at your own pace.",
     intro: [
-      "Finding the right Yoga Classes in Durgapura can make it easier to build a consistent yoga routine and improve both physical and mental well-being. At Pragya Yoga Alliance, we offer yoga sessions designed for beginners, working professionals, students, and anyone looking to develop a healthier lifestyle through traditional and practical yoga practices.",
+      "Finding the right Yoga Classes in Durgapura can make it easier to build a consistent yoga routine and improve both physical and mental well-being. At Soma Wellness, we offer yoga sessions designed for beginners, working professionals, students, and anyone looking to develop a healthier lifestyle through traditional and practical yoga practices.",
       "Whether your goal is better flexibility, improved strength, stress relief, weight management, or overall wellness, our structured yoga classes can help you progress at your own pace.",
     ],
     stats: [
@@ -1449,7 +1449,7 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Durgapura is a well-connected area of Jaipur, making it convenient for people living in nearby localities to access professional yoga training. With busy work schedules, long screen time, and everyday stress becoming part of modern life, regular yoga can provide a natural way to take care of your body and mind.",
           "Yoga combines physical postures, breathing techniques, relaxation, and mindfulness. Practising regularly may help improve flexibility, balance, posture, mobility, and concentration while encouraging a calmer and more focused lifestyle.",
-          "At Pragya Yoga Alliance, our approach focuses on helping students understand yoga rather than simply performing different poses. We encourage proper technique, controlled breathing, body awareness, and consistency.",
+          "At Soma Wellness, our approach focuses on helping students understand yoga rather than simply performing different poses. We encourage proper technique, controlled breathing, body awareness, and consistency.",
         ],
       },
       {
@@ -1486,10 +1486,10 @@ export const LANDING_PAGES = [
         mediaBadge: "Physical & Mental Wellness",
       },
       {
-        heading: "Why Pragya Yoga Alliance?",
+        heading: "Why Soma Wellness?",
         paragraphs: [
           "Choosing a yoga centre is about more than finding a convenient class. The quality of instruction, teaching approach, class environment, and consistency can all influence your experience.",
-          "Pragya Yoga Alliance focuses on creating a supportive learning environment where students can practise yoga comfortably and progressively. Our sessions are designed to accommodate different levels of experience while emphasizing correct technique and mindful practice.",
+          "Soma Wellness focuses on creating a supportive learning environment where students can practise yoga comfortably and progressively. Our sessions are designed to accommodate different levels of experience while emphasizing correct technique and mindful practice.",
           "We aim to make yoga approachable for people who may be starting for the first time as well as those who already have experience with yoga.",
           "If you are exploring options beyond Durgapura, you can also visit our Best Yoga Centre in Malviya Nagar to learn more about our yoga programs and approach.",
         ],
@@ -1505,7 +1505,7 @@ export const LANDING_PAGES = [
           "Beginners are encouraged to work within their comfortable range and gradually improve their strength and flexibility. Over time, regular practice can help students become more confident and comfortable with different yoga postures.",
         ],
         image: "/images/services/studio.webp",
-        imageAlt: "Guided yoga session in the studio at Pragya Yoga Alliance, Durgapura",
+        imageAlt: "Guided yoga session in the studio at Soma Wellness, Durgapura",
         mediaBadge: "Structured Sessions",
       },
       {
@@ -1523,7 +1523,7 @@ export const LANDING_PAGES = [
         heading: "A Supportive Approach to Learning Yoga",
         paragraphs: [
           "Every person has a different body, fitness level, flexibility, and previous experience. That's why yoga should not be treated as a competition.",
-          "At Pragya Yoga Alliance, we encourage students to focus on their own progress. Instead of comparing your practice with someone else's, you can gradually work on improving your posture, breathing, flexibility, balance, and awareness.",
+          "At Soma Wellness, we encourage students to focus on their own progress. Instead of comparing your practice with someone else's, you can gradually work on improving your posture, breathing, flexibility, balance, and awareness.",
           "This approach makes yoga more accessible and helps students develop a sustainable relationship with their practice.",
         ],
       },
@@ -1538,11 +1538,11 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Start Your Yoga Journey with Pragya Yoga Alliance",
+        heading: "Start Your Yoga Journey with Soma Wellness",
         paragraphs: [
           "Yoga is a journey rather than a one-time activity. With regular practice, proper guidance, and patience, you can gradually develop greater awareness of your body and mind.",
-          "If you're searching for Yoga Classes in Durgapura, Pragya Yoga Alliance can be a convenient option for learning yoga in a structured and supportive environment. From beginner-friendly practices to sessions for more experienced students, our goal is to help you build a consistent yoga routine that fits your lifestyle.",
-          "Start your yoga journey with Pragya Yoga Alliance and take a step towards a healthier, more balanced lifestyle.",
+          "If you're searching for Yoga Classes in Durgapura, Soma Wellness can be a convenient option for learning yoga in a structured and supportive environment. From beginner-friendly practices to sessions for more experienced students, our goal is to help you build a consistent yoga routine that fits your lifestyle.",
+          "Start your yoga journey with Soma Wellness and take a step towards a healthier, more balanced lifestyle.",
         ],
       },
     ],
@@ -1564,8 +1564,8 @@ export const LANDING_PAGES = [
         a: "With consistent practice, yoga may support better flexibility and mobility, improved posture and body awareness, increased strength and balance, stress management, relaxation, concentration, and a healthier, more active lifestyle.",
       },
       {
-        q: "Where is Pragya Yoga Alliance located in relation to Durgapura?",
-        a: "Durgapura is a well-connected area of Jaipur, making it convenient for people living in Durgapura and nearby localities to access professional yoga training at Pragya Yoga Alliance.",
+        q: "Where is Soma Wellness located in relation to Durgapura?",
+        a: "Durgapura is a well-connected area of Jaipur, making it convenient for people living in Durgapura and nearby localities to access professional yoga training at Soma Wellness.",
       },
     ],
     cta: {
@@ -1579,17 +1579,17 @@ export const LANDING_PAGES = [
   },
   {
     slug: "best-yoga-classes-jaipur",
-    title: "Best Yoga Classes in Jaipur – Improve Health, Flexibility & Inner Balance | Pragya Yoga Alliance",
-    description: "Looking for the Best Yoga Classes in Jaipur? Join structured yoga sessions for flexibility, strength, breathing, stress relief, and mindfulness at Pragya Yoga Alliance. Beginners welcome!",
+    title: "Best Yoga Classes in Jaipur – Improve Health, Flexibility & Inner Balance | Soma Wellness",
+    description: "Looking for the Best Yoga Classes in Jaipur? Join structured yoga sessions for flexibility, strength, breathing, stress relief, and mindfulness at Soma Wellness. Beginners welcome!",
     h1: "Best Yoga Classes in Jaipur",
     heroImage: "/images/services/yoga2.webp",
     heroEyebrow: "Jaipur · All Levels Welcome",
     heroLeadStrong: "Structured yoga classes",
     heroLead: "designed for your level, goals, and schedule — build strength, flexibility, and inner balance at your own pace.",
     intro: [
-      "Finding the right yoga class can make a significant difference to your physical fitness, mental well-being, and overall lifestyle. If you are looking for the Best Yoga Classes in Jaipur, Pragya Yoga Alliance offers a supportive environment where beginners and experienced practitioners can learn yoga through structured and practical sessions. Our classes focus on improving flexibility, strength, breathing, posture, relaxation, and mindfulness while helping you build a consistent yoga practice.",
-      "Why Choose Yoga Classes in Jaipur? Yoga is more than a physical exercise. It is a holistic practice that combines movement, breathing techniques, meditation, and mindfulness. With busy schedules and increasing lifestyle-related stress, regular yoga can be a simple way to create balance between the body and mind. At Pragya Yoga Alliance, yoga sessions are designed to suit different fitness levels and individual learning needs. Whether you want to become more flexible, improve your posture, manage everyday stress, or simply develop a healthier routine, regular yoga practice can help you work towards your wellness goals.",
-      "If you are specifically searching for a trusted yoga studio in Malviya Nagar, you can explore our Best Yoga Centre in Malviya Nagar to learn more about Pragya Yoga Alliance and our approach to yoga training.",
+      "Finding the right yoga class can make a significant difference to your physical fitness, mental well-being, and overall lifestyle. If you are looking for the Best Yoga Classes in Jaipur, Soma Wellness offers a supportive environment where beginners and experienced practitioners can learn yoga through structured and practical sessions. Our classes focus on improving flexibility, strength, breathing, posture, relaxation, and mindfulness while helping you build a consistent yoga practice.",
+      "Why Choose Yoga Classes in Jaipur? Yoga is more than a physical exercise. It is a holistic practice that combines movement, breathing techniques, meditation, and mindfulness. With busy schedules and increasing lifestyle-related stress, regular yoga can be a simple way to create balance between the body and mind. At Soma Wellness, yoga sessions are designed to suit different fitness levels and individual learning needs. Whether you want to become more flexible, improve your posture, manage everyday stress, or simply develop a healthier routine, regular yoga practice can help you work towards your wellness goals.",
+      "If you are specifically searching for a trusted yoga studio in Malviya Nagar, you can explore our Best Yoga Centre in Malviya Nagar to learn more about Soma Wellness and our approach to yoga training.",
     ],
     stats: [
       { icon: "award", label: "Yoga Alliance Certified", sub: "Globally Recognized" },
@@ -1599,9 +1599,9 @@ export const LANDING_PAGES = [
     ],
     sections: [
       {
-        heading: "What Makes Pragya Yoga Alliance Different?",
+        heading: "What Makes Soma Wellness Different?",
         paragraphs: [
-          "Choosing a yoga class is an important decision because the quality of instruction and learning environment can influence your practice. Pragya Yoga Alliance aims to provide a comfortable and positive space where students can learn yoga step by step.",
+          "Choosing a yoga class is an important decision because the quality of instruction and learning environment can influence your practice. Soma Wellness aims to provide a comfortable and positive space where students can learn yoga step by step.",
           "Our approach focuses on:",
         ],
         bullets: [
@@ -1614,14 +1614,14 @@ export const LANDING_PAGES = [
           "Focus on both physical and mental well-being",
         ],
         image: "/images/services/studio.webp",
-        imageAlt: "Peaceful yoga studio environment at Pragya Yoga Alliance, Jaipur",
+        imageAlt: "Peaceful yoga studio environment at Soma Wellness, Jaipur",
         mediaBadge: "Supportive Learning",
       },
       {
         heading: "Yoga Classes for Beginners and Experienced Practitioners",
         paragraphs: [
           "You do not need to be highly flexible or experienced to start yoga. Many people avoid yoga because they believe they need to perform advanced poses from the beginning. In reality, yoga can be adapted according to your current ability and fitness level.",
-          "At Pragya Yoga Alliance, beginners can learn basic postures, breathing techniques, and foundational movements before progressing to more challenging practices. Experienced practitioners can also continue refining their posture, flexibility, balance, breathing, and mindfulness.",
+          "At Soma Wellness, beginners can learn basic postures, breathing techniques, and foundational movements before progressing to more challenging practices. Experienced practitioners can also continue refining their posture, flexibility, balance, breathing, and mindfulness.",
           "The goal is to develop a sustainable practice rather than rushing through difficult poses.",
         ],
         image: "/images/services/yoga1.webp",
@@ -1667,14 +1667,14 @@ export const LANDING_PAGES = [
         paragraphs: [
           "One of the biggest advantages of attending a structured yoga class is consistency. Watching random videos online may provide useful information, but attending guided sessions can make it easier to maintain a regular schedule and learn correct techniques.",
           "A qualified instructor can also demonstrate postures, explain breathing methods, and help students understand how to practise safely according to their individual abilities.",
-          "At Pragya Yoga Alliance, the emphasis is on learning yoga progressively and creating an environment where students can practise comfortably.",
+          "At Soma Wellness, the emphasis is on learning yoga progressively and creating an environment where students can practise comfortably.",
         ],
       },
       {
         heading: "Yoga Classes in Malviya Nagar, Jaipur",
         paragraphs: [
           "For people living or working around Malviya Nagar, attending a nearby yoga class can make it easier to maintain a regular routine. Choosing a convenient location reduces travel time and allows you to fit yoga into your daily schedule.",
-          "If you are comparing local options, take a look at our Best Yoga Classes in Malviya Nagar page to explore the classes and training options available at Pragya Yoga Alliance.",
+          "If you are comparing local options, take a look at our Best Yoga Classes in Malviya Nagar page to explore the classes and training options available at Soma Wellness.",
           "Whether you are completely new to yoga or already have experience, choosing a class that matches your goals, schedule, and comfort level can make your practice more enjoyable.",
         ],
         links: [
@@ -1699,11 +1699,11 @@ export const LANDING_PAGES = [
         mediaBadge: "Everyone Welcome",
       },
       {
-        heading: "Start Your Yoga Journey with Pragya Yoga Alliance",
+        heading: "Start Your Yoga Journey with Soma Wellness",
         paragraphs: [
           "The right yoga class can help you turn yoga from an occasional activity into a meaningful part of your lifestyle. With guided instruction, regular practice, and a supportive environment, you can gradually work on flexibility, strength, balance, breathing, relaxation, and mindfulness.",
-          "Pragya Yoga Alliance is committed to creating a welcoming learning environment for people who want to explore yoga in Jaipur. Whether your goal is to become more active, improve your flexibility, develop better body awareness, or simply create time for yourself, a consistent yoga practice can be a valuable addition to your daily routine.",
-          "If you are searching for the Best Yoga Classes in Jaipur, connect with Pragya Yoga Alliance and take the first step towards building a healthier, more balanced, and mindful lifestyle.",
+          "Soma Wellness is committed to creating a welcoming learning environment for people who want to explore yoga in Jaipur. Whether your goal is to become more active, improve your flexibility, develop better body awareness, or simply create time for yourself, a consistent yoga practice can be a valuable addition to your daily routine.",
+          "If you are searching for the Best Yoga Classes in Jaipur, connect with Soma Wellness and take the first step towards building a healthier, more balanced, and mindful lifestyle.",
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
@@ -1728,8 +1728,8 @@ export const LANDING_PAGES = [
         a: "With consistent practice, yoga may support better flexibility and mobility, improved posture and body awareness, increased strength and balance, stress management, relaxation, concentration, and a healthier, more active lifestyle.",
       },
       {
-        q: "Where is Pragya Yoga Alliance located in Jaipur?",
-        a: "Pragya Yoga Alliance is located in Malviya Nagar, Jaipur — a well-connected area making it convenient for people living in nearby localities to access professional yoga training.",
+        q: "Where is Soma Wellness located in Jaipur?",
+        a: "Soma Wellness is located in Malviya Nagar, Jaipur — a well-connected area making it convenient for people living in nearby localities to access professional yoga training.",
       },
     ],
     cta: {
@@ -1743,7 +1743,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "personal-yoga-classes-durgapura",
-    title: "Personal Yoga Classes in Durgapura | Pragya Yoga Alliance",
+    title: "Personal Yoga Classes in Durgapura | Soma Wellness",
     description: "Looking for Personal Yoga Classes in Durgapura, Jaipur? Get one-to-one attention, customized yoga sessions, and flexible timings from experienced instructors. Book today!",
     h1: "Personal Yoga Classes in Durgapura",
     heroImage: "/images/services/yoga2.webp",
@@ -1751,7 +1751,7 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Personalized yoga sessions",
     heroLead: "designed for your level, goals, and schedule — focused guidance from experienced instructors.",
     intro: [
-      "Finding the right yoga practice can make a meaningful difference to your physical fitness, flexibility, focus, and overall well-being. At Pragya Yoga Alliance, we offer personalized yoga sessions designed around your individual needs, fitness level, lifestyle, and goals. Our Personal Yoga Classes in Durgapura are ideal for beginners, working professionals, seniors, and anyone looking for focused guidance from an experienced yoga instructor.",
+      "Finding the right yoga practice can make a meaningful difference to your physical fitness, flexibility, focus, and overall well-being. At Soma Wellness, we offer personalized yoga sessions designed around your individual needs, fitness level, lifestyle, and goals. Our Personal Yoga Classes in Durgapura are ideal for beginners, working professionals, seniors, and anyone looking for focused guidance from an experienced yoga instructor.",
       "Whether you want to improve flexibility, build strength, manage everyday stress, develop better posture, or establish a consistent yoga routine, personalized sessions can provide the attention and support you need.",
     ],
     stats: [
@@ -1765,7 +1765,7 @@ export const LANDING_PAGES = [
         heading: "Personalized Yoga Sessions for Your Individual Goals",
         paragraphs: [
           "Everyone has different physical abilities and wellness goals. A standard group class may not always provide enough time to address individual requirements. Personal yoga sessions offer a more focused approach where the instructor can understand your needs and structure the practice accordingly.",
-          "At Pragya Yoga Alliance, sessions can be adapted according to your experience level, physical comfort, preferred pace, and yoga objectives. Beginners can learn fundamental postures and breathing techniques step by step, while experienced practitioners can work on improving their alignment, flexibility, strength, and overall practice.",
+          "At Soma Wellness, sessions can be adapted according to your experience level, physical comfort, preferred pace, and yoga objectives. Beginners can learn fundamental postures and breathing techniques step by step, while experienced practitioners can work on improving their alignment, flexibility, strength, and overall practice.",
           "Our approach focuses on making yoga practical, comfortable, and sustainable for everyday life.",
         ],
         image: "/images/landing/personal-one-to-one.webp",
@@ -1791,7 +1791,7 @@ export const LANDING_PAGES = [
       {
         heading: "Yoga Programs Designed Around Your Needs",
         paragraphs: [
-          "At Pragya Yoga Alliance, we believe that yoga should be adaptable to the individual. Your practice can include a combination of yoga postures, breathing exercises, relaxation techniques, and mindfulness practices depending on your goals and experience.",
+          "At Soma Wellness, we believe that yoga should be adaptable to the individual. Your practice can include a combination of yoga postures, breathing exercises, relaxation techniques, and mindfulness practices depending on your goals and experience.",
         ],
         bullets: [
           "Yoga for Beginners — If you have never practiced yoga before, there is no need to worry about keeping up with an advanced class. Personal sessions allow beginners to learn the basics gradually and comfortably. You can learn fundamental yoga poses, breathing techniques, basic alignment, and simple relaxation practices while developing confidence in your practice.",
@@ -1804,7 +1804,7 @@ export const LANDING_PAGES = [
         heading: "Suitable for Different Age Groups and Experience Levels",
         paragraphs: [
           "One of the key advantages of personal yoga training is adaptability. Yoga sessions can be modified according to the individual's experience, comfort, mobility, and goals.",
-          "At Pragya Yoga Alliance, personal sessions may be suitable for:",
+          "At Soma Wellness, personal sessions may be suitable for:",
         ],
         bullets: [
           "Beginners learning yoga for the first time",
@@ -1824,7 +1824,7 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Learning yoga correctly from the beginning can help you build a strong foundation. An experienced instructor can explain how to perform postures, coordinate movement with breathing, and make appropriate modifications when required.",
           "Instead of copying movements without understanding them, personal instruction gives you the opportunity to ask questions and receive direct feedback throughout the session.",
-          "For those exploring other options, you can also discover our Best Yoga Classes in Jaipur to learn more about the yoga programs offered by Pragya Yoga Alliance.",
+          "For those exploring other options, you can also discover our Best Yoga Classes in Jaipur to learn more about the yoga programs offered by Soma Wellness.",
         ],
         links: [
           { label: "Best Yoga Classes in Jaipur", to: "/best-yoga-classes-jaipur" },
@@ -1841,10 +1841,10 @@ export const LANDING_PAGES = [
         mediaBadge: "Durgapura Location",
       },
       {
-        heading: "Why Pragya Yoga Alliance?",
+        heading: "Why Soma Wellness?",
         paragraphs: [
           "Choosing a yoga institute is about more than simply finding a class. The quality of instruction, approach to teaching, individual attention, and overall learning environment can influence your experience.",
-          "At Pragya Yoga Alliance, our focus is on providing structured and personalized yoga guidance. We aim to help students understand yoga while developing a practice that can become part of their regular lifestyle.",
+          "At Soma Wellness, our focus is on providing structured and personalized yoga guidance. We aim to help students understand yoga while developing a practice that can become part of their regular lifestyle.",
           "If you are also exploring group-based options, visit our Best Yoga Classes in Malviya Nagar page to learn more about our classes and training options.",
         ],
         links: [
@@ -1855,8 +1855,8 @@ export const LANDING_PAGES = [
         heading: "Start Your Personalized Yoga Journey",
         paragraphs: [
           "Yoga does not have to be complicated. With the right guidance and a consistent approach, you can gradually develop better awareness of your body, breathing, movement, and overall wellness routine.",
-          "If you are looking for Personal Yoga Classes in Durgapura, Pragya Yoga Alliance can help you begin with a practice suited to your individual requirements. Whether your goal is to learn the fundamentals, improve your existing practice, increase flexibility, build strength, or simply create more time for yourself, personalized yoga sessions can provide the focused guidance you need.",
-          "Contact Pragya Yoga Alliance today to discuss your yoga goals and find a suitable personal yoga training option in Durgapura.",
+          "If you are looking for Personal Yoga Classes in Durgapura, Soma Wellness can help you begin with a practice suited to your individual requirements. Whether your goal is to learn the fundamentals, improve your existing practice, increase flexibility, build strength, or simply create more time for yourself, personalized yoga sessions can provide the focused guidance you need.",
+          "Contact Soma Wellness today to discuss your yoga goals and find a suitable personal yoga training option in Durgapura.",
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
@@ -1896,7 +1896,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "personal-yoga-classes-jagatpura",
-    title: "Personal Yoga Classes in Jagatpura | Pragya Yoga Alliance",
+    title: "Personal Yoga Classes in Jagatpura | Soma Wellness",
     description: "Looking for Personal Yoga Classes in Jagatpura, Jaipur? Get one-to-one attention, customized yoga sessions, and flexible timings from experienced instructors. Book today!",
     h1: "Personal Yoga Classes in Jagatpura",
     heroImage: "/images/services/yoga2.webp",
@@ -1905,7 +1905,7 @@ export const LANDING_PAGES = [
     heroLead: "designed for your level, goals, and schedule — focused guidance from experienced instructors.",
     intro: [
       "Finding the right yoga practice can make a meaningful difference to your physical fitness, flexibility, mobility, and overall well-being. Personal Yoga Classes in Jagatpura offer a convenient and focused way to learn yoga with guidance designed around your individual needs. Whether you are a beginner, a working professional, a senior, or someone looking to improve flexibility and fitness, personalized yoga sessions can help you build a consistent and comfortable practice.",
-      "At Pragya Yoga Alliance, we provide personalized yoga guidance for individuals who want to practice yoga with proper instruction and attention. Our sessions are designed to make yoga accessible, structured, and suitable for different experience levels."
+      "At Soma Wellness, we provide personalized yoga guidance for individuals who want to practice yoga with proper instruction and attention. Our sessions are designed to make yoga accessible, structured, and suitable for different experience levels."
     ],
     stats: [
       { icon: "award", label: "Yoga Alliance Certified", sub: "Globally Recognized" },
@@ -1935,7 +1935,7 @@ export const LANDING_PAGES = [
         heading: "Personalized Yoga Training for Your Individual Goals",
         paragraphs: [
           "Yoga is not a one-size-fits-all practice. Some people begin yoga to improve flexibility, while others want to develop strength, improve mobility, manage daily stress, or simply create a healthier routine.",
-          "At Pragya Yoga Alliance, our approach focuses on understanding your objectives before structuring your sessions. Based on your experience and requirements, the practice can include a combination of yoga asanas, breathing exercises, relaxation techniques, and other traditional yoga practices.",
+          "At Soma Wellness, our approach focuses on understanding your objectives before structuring your sessions. Based on your experience and requirements, the practice can include a combination of yoga asanas, breathing exercises, relaxation techniques, and other traditional yoga practices.",
           "If you are new to yoga, the sessions can begin with fundamental postures and gradually introduce more techniques as your confidence improves. If you already practice yoga, personalized sessions can help you refine your technique and develop a more structured routine.",
         ],
       },
@@ -1976,13 +1976,13 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Correct technique is an important part of yoga practice. Performing a posture incorrectly can reduce its effectiveness and may increase the risk of discomfort or injury.",
           "Personal yoga instruction allows the teacher to provide individual corrections and explain how to approach different postures safely and comfortably. You can learn about alignment, breathing, movement, and modifications according to your level.",
-          "At Pragya Yoga Alliance, we aim to create a positive learning environment where students can progress gradually and develop confidence in their yoga practice.",
+          "At Soma Wellness, we aim to create a positive learning environment where students can progress gradually and develop confidence in their yoga practice.",
         ],
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
-          "Pragya Yoga Alliance focuses on helping individuals develop a sustainable and meaningful yoga practice. Our personalized approach is suitable for people who prefer individual attention instead of a large group setting.",
+          "Soma Wellness focuses on helping individuals develop a sustainable and meaningful yoga practice. Our personalized approach is suitable for people who prefer individual attention instead of a large group setting.",
           "When you choose personal yoga training, you can benefit from:",
         ],
         bullets: [
@@ -2000,13 +2000,13 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Jagatpura is a growing residential and educational area of Jaipur, with people from different age groups and professional backgrounds. With busy routines, finding time for regular fitness can be challenging.",
           "Personal yoga sessions provide an opportunity to make your practice more focused and organized. Instead of spending time trying to follow a generalized routine, you can work directly with an instructor and focus on techniques relevant to your goals.",
-          "If you are looking for professional guidance and personalized attention, Pragya Yoga Alliance can help you take the next step toward establishing a regular yoga practice.",
+          "If you are looking for professional guidance and personalized attention, Soma Wellness can help you take the next step toward establishing a regular yoga practice.",
         ],
       },
       {
         heading: "Explore More Yoga Classes in Jaipur",
         paragraphs: [
-          "If you are exploring yoga options across the city, you can also learn more about our Best Yoga Classes in Jaipur and discover how Pragya Yoga Alliance can support your yoga journey.",
+          "If you are exploring yoga options across the city, you can also learn more about our Best Yoga Classes in Jaipur and discover how Soma Wellness can support your yoga journey.",
           "For students specifically looking for classes in the Malviya Nagar area, explore our Best Yoga Classes in Malviya Nagar to learn more about available yoga training options.",
         ],
         links: [
@@ -2019,7 +2019,7 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Yoga is a practice that can be adapted to different ages, experience levels, schedules, and personal goals. With individual guidance, you can learn at your own pace while receiving support throughout your practice.",
           "Whether you want to begin yoga from scratch, improve your flexibility, develop better movement habits, or create a regular fitness routine, personalized instruction can make your learning experience more focused and comfortable.",
-          "If you are searching for Personal Yoga Classes in Jagatpura, Pragya Yoga Alliance offers a personalized approach to help you learn and practice yoga with proper guidance. Take the first step toward making yoga a regular part of your lifestyle and begin your journey with a practice designed around you.",
+          "If you are searching for Personal Yoga Classes in Jagatpura, Soma Wellness offers a personalized approach to help you learn and practice yoga with proper guidance. Take the first step toward making yoga a regular part of your lifestyle and begin your journey with a practice designed around you.",
         ],
       },
     ],
@@ -2052,7 +2052,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "kids-yoga-durgapura",
-    title: "Kids Yoga in Durgapura | Pragya Yoga Alliance",
+    title: "Kids Yoga in Durgapura | Soma Wellness",
     description: "Looking for Kids Yoga in Durgapura, Jaipur? Fun, age-appropriate yoga sessions that build flexibility, balance, focus, and confidence for children. Book today!",
     h1: "Kids Yoga in Durgapura",
     heroImage: "/images/services/yoga1.webp",
@@ -2060,7 +2060,7 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Fun, engaging yoga for kids",
     heroLead: "building strength, flexibility, focus, and confidence through playful movement and mindfulness.",
     intro: [
-      "Yoga is a wonderful way for children to develop strength, flexibility, balance, focus, and confidence while enjoying an active and engaging environment. At Pragya Yoga Alliance, our Kids Yoga in Durgapura program is designed specifically for children, combining age-appropriate yoga poses, breathing exercises, mindfulness, and fun activities. Our sessions encourage healthy physical development while helping children become calmer, more focused, and confident in their everyday lives.",
+      "Yoga is a wonderful way for children to develop strength, flexibility, balance, focus, and confidence while enjoying an active and engaging environment. At Soma Wellness, our Kids Yoga in Durgapura program is designed specifically for children, combining age-appropriate yoga poses, breathing exercises, mindfulness, and fun activities. Our sessions encourage healthy physical development while helping children become calmer, more focused, and confident in their everyday lives.",
       "If you are a parent looking for a safe and engaging yoga program for your child in Jaipur, our kids' yoga sessions can be a great addition to their daily routine.",
     ],
     stats: [
@@ -2094,7 +2094,7 @@ export const LANDING_PAGES = [
       {
         heading: "Fun and Engaging Kids Yoga Classes in Durgapura",
         paragraphs: [
-          "At Pragya Yoga Alliance, we understand that children learn differently from adults. A traditional adult yoga class may not always be suitable for young learners. That's why our sessions use simple instructions, playful movements, interactive activities, and age-appropriate yoga techniques.",
+          "At Soma Wellness, we understand that children learn differently from adults. A traditional adult yoga class may not always be suitable for young learners. That's why our sessions use simple instructions, playful movements, interactive activities, and age-appropriate yoga techniques.",
           "Our instructors aim to make every class enjoyable while introducing children to the fundamentals of yoga. Instead of focusing only on holding poses for long periods, sessions can include movement-based activities, simple breathing practices, balance exercises, relaxation, and mindfulness.",
           "The goal is to help children associate yoga with positivity, enjoyment, and healthy movement.",
         ],
@@ -2127,10 +2127,10 @@ export const LANDING_PAGES = [
         mediaBadge: "Welcoming Environment",
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
           "Choosing the right yoga centre for your child is an important decision. Parents generally look for an environment where children can learn comfortably while receiving appropriate guidance.",
-          "At Pragya Yoga Alliance, we focus on creating a positive learning experience for young students. Our approach combines traditional yoga principles with child-friendly teaching methods.",
+          "At Soma Wellness, we focus on creating a positive learning experience for young students. Our approach combines traditional yoga principles with child-friendly teaching methods.",
           "Here are some reasons parents can consider our program:",
         ],
         bullets: [
@@ -2185,11 +2185,11 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Find Kids Yoga in Durgapura with Pragya Yoga Alliance",
+        heading: "Find Kids Yoga in Durgapura with Soma Wellness",
         paragraphs: [
-          "If you are searching for Kids Yoga in Durgapura, Pragya Yoga Alliance offers a child-friendly environment where children can explore yoga through movement, breathing, mindfulness, and fun activities. Our aim is to make yoga approachable and enjoyable while helping children develop healthy physical and mental habits.",
-          "Give your child an opportunity to discover the joy of yoga in a supportive learning environment. Pragya Yoga Alliance is committed to making yoga a positive and meaningful experience for young learners in Jaipur.",
-          "Contact Pragya Yoga Alliance to learn more about class schedules, age groups, availability, and enrollment for Kids Yoga in Durgapura.",
+          "If you are searching for Kids Yoga in Durgapura, Soma Wellness offers a child-friendly environment where children can explore yoga through movement, breathing, mindfulness, and fun activities. Our aim is to make yoga approachable and enjoyable while helping children develop healthy physical and mental habits.",
+          "Give your child an opportunity to discover the joy of yoga in a supportive learning environment. Soma Wellness is committed to making yoga a positive and meaningful experience for young learners in Jaipur.",
+          "Contact Soma Wellness to learn more about class schedules, age groups, availability, and enrollment for Kids Yoga in Durgapura.",
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
@@ -2229,7 +2229,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "kids-yoga-jagatpura",
-    title: "Kids Yoga in Jagatpura | Pragya Yoga Alliance",
+    title: "Kids Yoga in Jagatpura | Soma Wellness",
     description: "Looking for Kids Yoga in Jagatpura, Jaipur? Fun, age-appropriate yoga sessions that build flexibility, balance, focus, and confidence for children. Book today!",
     h1: "Kids Yoga in Jagatpura: Build Strong, Healthy and Confident Kids",
     heroImage: "/images/services/yoga1.webp",
@@ -2238,7 +2238,7 @@ export const LANDING_PAGES = [
     heroLead: "building strength, flexibility, focus, and confidence through playful movement and mindfulness.",
     intro: [
       "Children today spend a significant amount of time studying, using screens, and following busy daily routines. Regular physical activity can help them stay active, focused, and emotionally balanced. Yoga is a gentle and engaging way for children to develop strength, flexibility, concentration, and confidence while having fun.",
-      "At Pragya Yoga Alliance, our Kids Yoga in Jagatpura program is designed to introduce children to yoga through age-appropriate movements, breathing exercises, relaxation techniques, and fun activities. The sessions are structured to make yoga enjoyable for kids while helping them develop healthy habits that can benefit them as they grow."
+      "At Soma Wellness, our Kids Yoga in Jagatpura program is designed to introduce children to yoga through age-appropriate movements, breathing exercises, relaxation techniques, and fun activities. The sessions are structured to make yoga enjoyable for kids while helping them develop healthy habits that can benefit them as they grow."
     ],
     stats: [
       { icon: "award", label: "Yoga Alliance Certified", sub: "Globally Recognized" },
@@ -2273,7 +2273,7 @@ export const LANDING_PAGES = [
         heading: "What Makes Children's Yoga Different?",
         paragraphs: [
           "Children's yoga should not simply be a smaller version of an adult yoga class. Kids learn differently and usually respond better to activities that are interactive, engaging, and age appropriate.",
-          "At Pragya Yoga Alliance, children's sessions can incorporate simple poses, playful movements, breathing activities, balance exercises, and relaxation. Instead of focusing only on perfect posture, the objective is to help children enjoy movement and gradually become comfortable with yoga.",
+          "At Soma Wellness, children's sessions can incorporate simple poses, playful movements, breathing activities, balance exercises, and relaxation. Instead of focusing only on perfect posture, the objective is to help children enjoy movement and gradually become comfortable with yoga.",
           "The sessions can also encourage children to participate at their own pace. This creates a positive environment where children can learn without unnecessary pressure."
         ],
       },
@@ -2286,12 +2286,12 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
           "Choosing the right yoga centre is important when enrolling children in yoga classes. Children need an environment where they feel comfortable, supported, and encouraged to participate.",
-          "Pragya Yoga Alliance focuses on creating a positive learning experience where children can explore yoga in an engaging environment. The approach can help introduce young learners to yoga without making the sessions feel overly complicated or demanding.",
+          "Soma Wellness focuses on creating a positive learning experience where children can explore yoga in an engaging environment. The approach can help introduce young learners to yoga without making the sessions feel overly complicated or demanding.",
           "Our yoga programs are designed to encourage physical activity while also introducing children to breathing, mindfulness, relaxation, and self-awareness.",
-          "Parents looking for a broader yoga program can also explore our Best Yoga Classes in Jaipur to learn more about the yoga options available through Pragya Yoga Alliance."
+          "Parents looking for a broader yoga program can also explore our Best Yoga Classes in Jaipur to learn more about the yoga options available through Soma Wellness."
         ],
         links: [
           { label: "Best Yoga Classes in Jaipur", to: "/best-yoga-classes-jaipur" },
@@ -2326,7 +2326,7 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Children who are interested in movement, stretching, mindfulness, or learning something new can explore kids yoga. The appropriate class format may depend on the child's age, physical abilities, and previous experience.",
           "Parents should discuss any specific physical concerns or limitations with the instructor before enrolling their child. Yoga should always be practised comfortably and without forcing a child into a pose.",
-          "If you are looking for structured yoga sessions for your child, you can also explore our Best Yoga Classes in Malviya Nagar to discover other class options offered by Pragya Yoga Alliance."
+          "If you are looking for structured yoga sessions for your child, you can also explore our Best Yoga Classes in Malviya Nagar to discover other class options offered by Soma Wellness."
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
@@ -2337,7 +2337,7 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Introducing healthy habits during childhood can help children develop a positive relationship with physical activity. Yoga offers a combination of movement, breathing, balance, relaxation, and mindfulness that can be adapted to suit young learners.",
           "Rather than treating yoga as a competition, children can be encouraged to focus on learning, enjoying movement, and gradually improving their abilities. With regular practice and positive guidance, yoga can become an enjoyable part of a child's routine.",
-          "If you are searching for Kids Yoga in Jagatpura, Pragya Yoga Alliance provides an opportunity for children to discover yoga in a supportive and engaging environment. Contact Pragya Yoga Alliance to learn more about suitable kids' yoga sessions, schedules, and enrollment options"
+          "If you are searching for Kids Yoga in Jagatpura, Soma Wellness provides an opportunity for children to discover yoga in a supportive and engaging environment. Contact Soma Wellness to learn more about suitable kids' yoga sessions, schedules, and enrollment options"
         ],
       },
     ],
@@ -2374,7 +2374,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "prenatal-yoga-durgapura",
-    title: "Yoga Classes for Pregnant Women in Durgapura | Pragya Yoga Alliance",
+    title: "Yoga Classes for Pregnant Women in Durgapura | Soma Wellness",
     description: "Looking for Yoga Classes for Pregnant Women in Durgapura, Jaipur? Gentle prenatal yoga with breathing, relaxation, and trimester-adapted practices. Book today!",
     h1: "Yoga Classes for Pregnant Women in Durgapura",
     heroImage: "/images/landing/prenatal-hero.webp",
@@ -2382,8 +2382,8 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Gentle prenatal yoga",
     heroLead: "for comfort, flexibility, and relaxation during pregnancy — adapted to your trimester and individual needs.",
     intro: [
-      "Pregnancy is a beautiful journey, but it also brings physical and emotional changes that can make everyday activities more challenging. Yoga Classes for Pregnant Women in Durgapura can provide a gentle and supportive way to stay active, improve flexibility, manage stress, and prepare the body for the changes that come with pregnancy. At Pragya Yoga Alliance, our pregnancy yoga sessions are designed with safety, comfort, and the individual needs of expecting mothers in mind.",
-      "Safe and Gentle Prenatal Yoga in Durgapura: Prenatal yoga is different from regular yoga. During pregnancy, the body goes through continuous changes, so yoga practices need to be modified according to the stage of pregnancy and individual comfort levels. At Pragya Yoga Alliance, we focus on gentle movements, appropriate breathing techniques, relaxation, and mindful practices rather than intense poses or strenuous exercises. Our sessions aim to create a comfortable environment where pregnant women can practice yoga under appropriate guidance. Whether you are new to yoga or have been practicing before pregnancy, suitable modifications can help you enjoy the benefits of yoga while respecting your body's changing needs.",
+      "Pregnancy is a beautiful journey, but it also brings physical and emotional changes that can make everyday activities more challenging. Yoga Classes for Pregnant Women in Durgapura can provide a gentle and supportive way to stay active, improve flexibility, manage stress, and prepare the body for the changes that come with pregnancy. At Soma Wellness, our pregnancy yoga sessions are designed with safety, comfort, and the individual needs of expecting mothers in mind.",
+      "Safe and Gentle Prenatal Yoga in Durgapura: Prenatal yoga is different from regular yoga. During pregnancy, the body goes through continuous changes, so yoga practices need to be modified according to the stage of pregnancy and individual comfort levels. At Soma Wellness, we focus on gentle movements, appropriate breathing techniques, relaxation, and mindful practices rather than intense poses or strenuous exercises. Our sessions aim to create a comfortable environment where pregnant women can practice yoga under appropriate guidance. Whether you are new to yoga or have been practicing before pregnancy, suitable modifications can help you enjoy the benefits of yoga while respecting your body's changing needs.",
     ],
     stats: [
       { icon: "award", label: "Yoga Alliance Certified", sub: "Globally Recognized" },
@@ -2414,18 +2414,18 @@ export const LANDING_PAGES = [
         paragraphs: [
           "A prenatal yoga class generally focuses on comfortable and pregnancy-appropriate practices rather than challenging poses. Depending on the trimester and individual requirements, sessions may include gentle stretches, mobility exercises, supported yoga postures, breathing techniques, relaxation, and meditation.",
           "The focus should always be on comfort rather than achieving a particular pose. Pregnant women should avoid pushing beyond their normal range of motion and should communicate with their instructor whenever a movement feels uncomfortable.",
-          "At Pragya Yoga Alliance, the approach is centered around mindful practice and appropriate modifications. This helps create a welcoming experience for mothers who want to maintain a healthy and active lifestyle during pregnancy.",
+          "At Soma Wellness, the approach is centered around mindful practice and appropriate modifications. This helps create a welcoming experience for mothers who want to maintain a healthy and active lifestyle during pregnancy.",
         ],
         image: "/images/landing/prenatal-instructor.webp",
         imageAlt: "Pregnant woman on a yoga mat guided by an instructor during prenatal yoga",
         mediaBadge: "Expert Guidance",
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
           "Choosing the right yoga centre is particularly important during pregnancy. Expecting mothers need an environment where they feel comfortable asking questions, taking breaks, and modifying movements whenever necessary.",
-          "Pragya Yoga Alliance focuses on creating a supportive learning environment for yoga practitioners at different stages of their journey. Our approach to prenatal yoga emphasizes mindful movement, proper breathing, relaxation, and practices that can be adapted to individual needs.",
-          "If you are also exploring other yoga programs in the city, you can learn more about our Best Yoga Classes in Jaipur and discover the range of yoga options available through Pragya Yoga Alliance.",
+          "Soma Wellness focuses on creating a supportive learning environment for yoga practitioners at different stages of their journey. Our approach to prenatal yoga emphasizes mindful movement, proper breathing, relaxation, and practices that can be adapted to individual needs.",
+          "If you are also exploring other yoga programs in the city, you can learn more about our Best Yoga Classes in Jaipur and discover the range of yoga options available through Soma Wellness.",
         ],
         links: [
           { label: "Best Yoga Classes in Jaipur", to: "/best-yoga-classes-jaipur" },
@@ -2449,8 +2449,8 @@ export const LANDING_PAGES = [
         heading: "A Comfortable Yoga Environment for Expecting Mothers",
         paragraphs: [
           "A supportive environment can make a significant difference to the overall yoga experience during pregnancy. Classes should allow participants to move at their own pace without feeling pressured to keep up with others.",
-          "At Pragya Yoga Alliance, we encourage mindful practice and listening to your body. Props and modifications can be used where appropriate to make certain movements more comfortable. Participants are also encouraged to take rest whenever required.",
-          "If you are looking for a broader range of yoga programs, you can also explore our Best Yoga Classes in Malviya Nagar to understand the other classes offered by Pragya Yoga Alliance.",
+          "At Soma Wellness, we encourage mindful practice and listening to your body. Props and modifications can be used where appropriate to make certain movements more comfortable. Participants are also encouraged to take rest whenever required.",
+          "If you are looking for a broader range of yoga programs, you can also explore our Best Yoga Classes in Malviya Nagar to understand the other classes offered by Soma Wellness.",
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
@@ -2471,8 +2471,8 @@ export const LANDING_PAGES = [
         heading: "Start Your Prenatal Yoga Journey in Durgapura",
         paragraphs: [
           "Finding a suitable yoga class during pregnancy can help you establish a mindful routine while giving you an opportunity to focus on movement, breathing, and relaxation. With appropriate guidance and modifications, prenatal yoga can become a valuable part of your pregnancy wellness routine.",
-          "If you are searching for Yoga Classes for Pregnant Women in Durgapura, Pragya Yoga Alliance offers a supportive setting where expecting mothers can practice gentle yoga according to their comfort and individual requirements.",
-          "Connect with Pragya Yoga Alliance to learn more about prenatal yoga classes, schedules, and suitable practices for your stage of pregnancy. Start your journey toward mindful movement and a more relaxed pregnancy experience with guidance designed around your needs.",
+          "If you are searching for Yoga Classes for Pregnant Women in Durgapura, Soma Wellness offers a supportive setting where expecting mothers can practice gentle yoga according to their comfort and individual requirements.",
+          "Connect with Soma Wellness to learn more about prenatal yoga classes, schedules, and suitable practices for your stage of pregnancy. Start your journey toward mindful movement and a more relaxed pregnancy experience with guidance designed around your needs.",
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
@@ -2512,7 +2512,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "prenatal-yoga-jagatpura",
-    title: "Yoga Classes for Pregnant Women in Jagatpura | Pragya Yoga Alliance",
+    title: "Yoga Classes for Pregnant Women in Jagatpura | Soma Wellness",
     description: "Looking for Yoga Classes for Pregnant Women in Jagatpura, Jaipur? Gentle prenatal yoga with breathing, relaxation, and trimester-adapted practices. Book today!",
     h1: "Yoga Classes for Pregnant Women in Jagatpura",
     heroImage: "/images/landing/prenatal-hero.webp",
@@ -2520,7 +2520,7 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Gentle prenatal yoga",
     heroLead: "for comfort, flexibility, and relaxation during pregnancy — adapted to your trimester and individual needs.",
     intro: [
-      "Pregnancy is a beautiful journey that brings many physical, emotional, and lifestyle changes. Practicing suitable yoga under proper guidance can help expecting mothers stay active, relaxed, and comfortable throughout pregnancy. If you are looking for Yoga Classes for Pregnant Women in Jagatpura, Pragya Yoga Alliance offers a supportive environment where pregnancy-friendly yoga practices can be learned with care and attention.",
+      "Pregnancy is a beautiful journey that brings many physical, emotional, and lifestyle changes. Practicing suitable yoga under proper guidance can help expecting mothers stay active, relaxed, and comfortable throughout pregnancy. If you are looking for Yoga Classes for Pregnant Women in Jagatpura, Soma Wellness offers a supportive environment where pregnancy-friendly yoga practices can be learned with care and attention.",
       "Our approach focuses on gentle movements, breathing practices, relaxation, and mindfulness that can be adapted according to the stage of pregnancy and individual comfort. The goal is not to push the body but to help mothers develop a healthy and positive routine during this important phase of life."
     ],
     stats: [
@@ -2550,7 +2550,7 @@ export const LANDING_PAGES = [
       {
         heading: "Gentle Yoga for Expecting Mothers in Jagatpura",
         paragraphs: [
-          "At Pragya Yoga Alliance, prenatal yoga sessions are designed with the specific needs of expecting mothers in mind. The sessions can include gentle yoga postures, breathing exercises, relaxation techniques, and mindfulness practices.",
+          "At Soma Wellness, prenatal yoga sessions are designed with the specific needs of expecting mothers in mind. The sessions can include gentle yoga postures, breathing exercises, relaxation techniques, and mindfulness practices.",
           "Unlike a regular yoga class, prenatal sessions require careful consideration of movements, intensity, balance, and positioning. Certain postures may need to be modified or avoided depending on the stage of pregnancy.",
           "Our instructors aim to create a calm and welcoming atmosphere where women can practice at their own pace without unnecessary pressure."
         ],
@@ -2569,7 +2569,7 @@ export const LANDING_PAGES = [
       {
         heading: "What Can You Expect From Our Prenatal Yoga Classes?",
         paragraphs: [
-          "Pragya Yoga Alliance focuses on creating comfortable and accessible sessions for pregnant women. Depending on individual needs and the stage of pregnancy, a class may include:"
+          "Soma Wellness focuses on creating comfortable and accessible sessions for pregnant women. Depending on individual needs and the stage of pregnancy, a class may include:"
         ],
         bullets: [
           "Gentle warm-up movements",
@@ -2594,7 +2594,7 @@ export const LANDING_PAGES = [
         heading: "A Supportive Environment for Expecting Mothers",
         paragraphs: [
           "Choosing the right yoga centre is important during pregnancy. A comfortable environment can make it easier to focus on breathing, movement, relaxation, and overall well-being.",
-          "Pragya Yoga Alliance aims to provide a welcoming space where expecting mothers can practice without feeling pressured. The focus remains on safe, mindful, and comfortable movement.",
+          "Soma Wellness aims to provide a welcoming space where expecting mothers can practice without feeling pressured. The focus remains on safe, mindful, and comfortable movement.",
           "If you are also exploring general yoga programs in Jaipur, you can learn more through our Best Yoga Classes in Jaipur page."
         ],
         links: [
@@ -2610,9 +2610,9 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
-          "Pragya Yoga Alliance combines yoga practice with a mindful and supportive approach. Our goal is to help expecting mothers develop a comfortable wellness routine rather than treating pregnancy like a conventional fitness program.",
+          "Soma Wellness combines yoga practice with a mindful and supportive approach. Our goal is to help expecting mothers develop a comfortable wellness routine rather than treating pregnancy like a conventional fitness program.",
           "Here are some reasons to consider our prenatal yoga sessions:"
         ],
         bullets: [
@@ -2629,18 +2629,18 @@ export const LANDING_PAGES = [
         heading: "Prenatal Yoga in Jagatpura for a Healthier Routine",
         paragraphs: [
           "Finding the right Yoga Classes for Pregnant Women in Jagatpura can make it easier to incorporate gentle movement and relaxation into your pregnancy routine. With appropriate guidance, prenatal yoga can become a meaningful part of your self-care journey.",
-          "At Pragya Yoga Alliance, we encourage expecting mothers to practice mindfully, respect their body's changing needs, and focus on comfort rather than intensity. Each session is an opportunity to slow down, breathe, move gently, and spend time connecting with yourself and your baby.",
-          "For women who are interested in exploring other yoga programs, visit our Best Yoga Classes in Malviya Nagar page to discover more classes offered by Pragya Yoga Alliance."
+          "At Soma Wellness, we encourage expecting mothers to practice mindfully, respect their body's changing needs, and focus on comfort rather than intensity. Each session is an opportunity to slow down, breathe, move gently, and spend time connecting with yourself and your baby.",
+          "For women who are interested in exploring other yoga programs, visit our Best Yoga Classes in Malviya Nagar page to discover more classes offered by Soma Wellness."
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
         ],
       },
       {
-        heading: "Start Your Prenatal Yoga Journey With Pragya Yoga Alliance",
+        heading: "Start Your Prenatal Yoga Journey With Soma Wellness",
         paragraphs: [
           "Pregnancy is a time of significant physical and emotional change, and having a gentle wellness routine can help you make time for yourself. Prenatal yoga combines mindful movement, breathing, relaxation, and awareness in a way that can be adapted to the needs of expecting mothers.",
-          "If you are searching for Yoga Classes for Pregnant Women in Jagatpura, Pragya Yoga Alliance provides a supportive place to explore pregnancy-friendly yoga practices. Contact us to learn more about available classes, timings, and guidance for your stage of pregnancy."
+          "If you are searching for Yoga Classes for Pregnant Women in Jagatpura, Soma Wellness provides a supportive place to explore pregnancy-friendly yoga practices. Contact us to learn more about available classes, timings, and guidance for your stage of pregnancy."
         ],
       },
     ],
@@ -2677,7 +2677,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "yoga-for-stress-durgapura",
-    title: "Yoga Classes For Stress in Durgapura | Pragya Yoga Alliance",
+    title: "Yoga Classes For Stress in Durgapura | Soma Wellness",
     description: "Looking for Yoga Classes For Stress in Durgapura, Jaipur? Gentle yoga, breathing exercises, and relaxation techniques to manage everyday stress. Book today!",
     h1: "Yoga Classes For Stress in Durgapura",
     heroImage: "/images/landing/stress-hero.webp",
@@ -2685,8 +2685,8 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Calm mind, relaxed body",
     heroLead: "through gentle yoga, breathing, and mindfulness — manage everyday stress with structured guidance.",
     intro: [
-      "Stress has become a common part of modern life, affecting your sleep, concentration, energy levels, and overall sense of well-being. Practicing yoga regularly can help calm the mind, relax the body, and develop better control over stress. At Pragya Yoga Alliance, our Yoga Classes For Stress in Durgapura are designed to create a peaceful environment where beginners and experienced practitioners can learn yoga techniques that support physical and mental relaxation.",
-      "Find Balance Through Yoga in Durgapura: Daily responsibilities, work pressure, family commitments, and a busy lifestyle can leave the mind feeling overwhelmed. While occasional stress is normal, continuous stress can affect your daily routine and quality of life. Yoga combines physical postures, breathing exercises, meditation, and relaxation techniques to help create a healthier connection between the body and mind. With consistent practice, yoga can become a natural part of your routine for managing everyday stress. At Pragya Yoga Alliance, we focus on mindful and structured yoga practices rather than simply performing difficult poses. Our sessions encourage participants to slow down, focus on their breathing, and develop greater awareness of their body and thoughts.",
+      "Stress has become a common part of modern life, affecting your sleep, concentration, energy levels, and overall sense of well-being. Practicing yoga regularly can help calm the mind, relax the body, and develop better control over stress. At Soma Wellness, our Yoga Classes For Stress in Durgapura are designed to create a peaceful environment where beginners and experienced practitioners can learn yoga techniques that support physical and mental relaxation.",
+      "Find Balance Through Yoga in Durgapura: Daily responsibilities, work pressure, family commitments, and a busy lifestyle can leave the mind feeling overwhelmed. While occasional stress is normal, continuous stress can affect your daily routine and quality of life. Yoga combines physical postures, breathing exercises, meditation, and relaxation techniques to help create a healthier connection between the body and mind. With consistent practice, yoga can become a natural part of your routine for managing everyday stress. At Soma Wellness, we focus on mindful and structured yoga practices rather than simply performing difficult poses. Our sessions encourage participants to slow down, focus on their breathing, and develop greater awareness of their body and thoughts.",
     ],
     stats: [
       { icon: "award", label: "Yoga Alliance Certified", sub: "Globally Recognized" },
@@ -2712,9 +2712,9 @@ export const LANDING_PAGES = [
         mediaBadge: "Calm & Relaxing",
       },
       {
-        heading: "What You Can Expect at Pragya Yoga Alliance",
+        heading: "What You Can Expect at Soma Wellness",
         paragraphs: [
-          "At Pragya Yoga Alliance, our sessions are designed to make yoga accessible to people with different levels of experience. You don't need to be highly flexible or have previous yoga experience to begin.",
+          "At Soma Wellness, our sessions are designed to make yoga accessible to people with different levels of experience. You don't need to be highly flexible or have previous yoga experience to begin.",
           "Our approach may include:",
         ],
         bullets: [
@@ -2742,9 +2742,9 @@ export const LANDING_PAGES = [
         mediaBadge: "Beginner Friendly",
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
-          "Choosing the right yoga centre can make a significant difference in your experience. At Pragya Yoga Alliance, we aim to create a welcoming and comfortable learning environment for people looking to include yoga in their daily lives.",
+          "Choosing the right yoga centre can make a significant difference in your experience. At Soma Wellness, we aim to create a welcoming and comfortable learning environment for people looking to include yoga in their daily lives.",
         ],
         bullets: [
           "Experienced Guidance — Proper guidance can help you understand yoga postures, breathing techniques, and relaxation practices more effectively. Our sessions focus on learning techniques with appropriate attention to posture and breathing.",
@@ -2767,7 +2767,7 @@ export const LANDING_PAGES = [
       {
         heading: "Explore Yoga Classes in Jaipur",
         paragraphs: [
-          "If you are looking for a broader range of yoga programs, you can explore Best Yoga Classes in Jaipur to learn more about the yoga services and programs offered by Pragya Yoga Alliance.",
+          "If you are looking for a broader range of yoga programs, you can explore Best Yoga Classes in Jaipur to learn more about the yoga services and programs offered by Soma Wellness.",
           "You can also explore our Best Yoga Classes in Malviya Nagar page if you are interested in attending classes in or around Malviya Nagar. This can help you choose a suitable yoga program based on your location and requirements.",
         ],
         links: [
@@ -2780,7 +2780,7 @@ export const LANDING_PAGES = [
         paragraphs: [
           "Managing stress is not always about making major changes to your life. Small, consistent habits can make a meaningful difference to how you approach your daily routine. Yoga can give you dedicated time to move, breathe, relax, and reconnect with yourself.",
           "With regular practice, you can develop greater awareness of your body and breathing while creating a healthy routine that supports your overall well-being.",
-          "If you are searching for Yoga Classes For Stress in Durgapura, Pragya Yoga Alliance can help you begin your yoga journey with structured guidance, mindful practices, and a welcoming learning environment. Join us and take a positive step toward a calmer, healthier, and more balanced lifestyle.",
+          "If you are searching for Yoga Classes For Stress in Durgapura, Soma Wellness can help you begin your yoga journey with structured guidance, mindful practices, and a welcoming learning environment. Join us and take a positive step toward a calmer, healthier, and more balanced lifestyle.",
         ],
         links: [
           { label: "Best Yoga Classes in Malviya Nagar", to: "/classes" },
@@ -2820,7 +2820,7 @@ export const LANDING_PAGES = [
   },
   {
     slug: "yoga-for-stress-jagatpura",
-    title: "Yoga Classes For Stress in Jagatpura | Pragya Yoga Alliance",
+    title: "Yoga Classes For Stress in Jagatpura | Soma Wellness",
     description: "Looking for Yoga Classes For Stress in Jagatpura, Jaipur? Gentle yoga, breathing exercises, and relaxation techniques to manage everyday stress. Book today!",
     h1: "Yoga Classes For Stress in Jagatpura",
     heroImage: "/images/landing/stress-hero.webp",
@@ -2828,7 +2828,7 @@ export const LANDING_PAGES = [
     heroLeadStrong: "Calm mind, relaxed body",
     heroLead: "through gentle yoga, breathing, and mindfulness — manage everyday stress with structured guidance.",
     intro: [
-      "Stress has become a common part of modern life, especially with busy work schedules, personal responsibilities, long screen hours, and everyday pressures. Practicing yoga regularly can help you slow down, reconnect with your body, and create a calmer daily routine. If you are looking for Yoga Classes For Stress in Jagatpura, Pragya Yoga Alliance offers yoga practices designed to support physical relaxation, mental calmness, and overall well-being.",
+      "Stress has become a common part of modern life, especially with busy work schedules, personal responsibilities, long screen hours, and everyday pressures. Practicing yoga regularly can help you slow down, reconnect with your body, and create a calmer daily routine. If you are looking for Yoga Classes For Stress in Jagatpura, Soma Wellness offers yoga practices designed to support physical relaxation, mental calmness, and overall well-being.",
       "Yoga combines physical postures, breathing exercises, meditation, and mindful movement. With consistent practice, these techniques can help you manage everyday stress while improving flexibility, body awareness, concentration, and relaxation."
     ],
     stats: [
@@ -2859,7 +2859,7 @@ export const LANDING_PAGES = [
       {
         heading: "Yoga Classes for Stress Relief in Jagatpura",
         paragraphs: [
-          "At Pragya Yoga Alliance, our approach focuses on creating a comfortable environment where students can practice yoga according to their individual needs and experience levels. Whether you are new to yoga or already have some experience, a consistent practice can become an important part of your stress-management routine.",
+          "At Soma Wellness, our approach focuses on creating a comfortable environment where students can practice yoga according to their individual needs and experience levels. Whether you are new to yoga or already have some experience, a consistent practice can become an important part of your stress-management routine.",
           "Our sessions can include gentle asanas, breathing exercises, relaxation techniques, meditation, and mindful movement. The combination of these practices allows students to move their attention away from daily distractions and spend dedicated time focusing on themselves.",
           "If you are searching for Yoga Classes For Stress in Jagatpura, choosing a regular class can make it easier to build consistency. Instead of trying to manage stress only when you feel overwhelmed, regular yoga practice can become part of your everyday wellness routine."
         ],
@@ -2889,9 +2889,9 @@ export const LANDING_PAGES = [
         ],
       },
       {
-        heading: "Why Choose Pragya Yoga Alliance?",
+        heading: "Why Choose Soma Wellness?",
         paragraphs: [
-          "Pragya Yoga Alliance aims to make yoga a practical and accessible part of everyday life. Our classes focus on mindful practice rather than simply completing a series of physical postures.",
+          "Soma Wellness aims to make yoga a practical and accessible part of everyday life. Our classes focus on mindful practice rather than simply completing a series of physical postures.",
           "Students can benefit from guidance on proper posture, breathing, movement, and relaxation techniques. The goal is to help you develop a sustainable yoga routine that fits naturally into your lifestyle.",
           "If you are exploring yoga options across Jaipur, you can also visit our Best Yoga Classes in Jaipur page to learn more about our approach and available yoga programs."
         ],
@@ -2911,7 +2911,7 @@ export const LANDING_PAGES = [
         heading: "Explore Our Yoga Classes",
         paragraphs: [
           "Different people have different yoga goals. Some may want to improve flexibility, while others may be interested in meditation, fitness, relaxation, or developing a deeper understanding of yoga.",
-          "If you are also searching for classes in another Jaipur location, explore our Best Yoga Classes in Malviya Nagar page to discover more about the programs offered by Pragya Yoga Alliance.",
+          "If you are also searching for classes in another Jaipur location, explore our Best Yoga Classes in Malviya Nagar page to discover more about the programs offered by Soma Wellness.",
           "Our goal is to create a supportive learning environment where students can practice yoga comfortably and develop a routine that works for their individual needs."
         ],
         links: [
@@ -2922,8 +2922,8 @@ export const LANDING_PAGES = [
         heading: "Start Your Yoga Journey in Jagatpura",
         paragraphs: [
           "Managing everyday stress starts with making time for yourself. Yoga provides a combination of mindful movement, breathing, relaxation, and meditation that can help you create that space in your routine.",
-          "If you are looking for Yoga Classes For Stress in Jagatpura, Pragya Yoga Alliance can help you begin or strengthen your yoga journey with guided sessions focused on relaxation, awareness, and overall wellness.",
-          "Take the first step toward a calmer and more balanced routine. Join Pragya Yoga Alliance and make yoga a regular part of your lifestyle."
+          "If you are looking for Yoga Classes For Stress in Jagatpura, Soma Wellness can help you begin or strengthen your yoga journey with guided sessions focused on relaxation, awareness, and overall wellness.",
+          "Take the first step toward a calmer and more balanced routine. Join Soma Wellness and make yoga a regular part of your lifestyle."
         ],
       },
     ],

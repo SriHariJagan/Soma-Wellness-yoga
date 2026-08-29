@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import styles from "./SomaCTA.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 
 const SomaCTA = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
 
   // magnetic for primary
@@ -43,7 +45,7 @@ const SomaCTA = () => {
 
           <motion.span className={styles.eyebrow} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.55, ease: EASE }}>
             <span className={styles.eyebrowDot} />
-            Begin your journey
+            {t("home.cta.eyebrow")}
           </motion.span>
 
           <motion.h2
@@ -53,29 +55,29 @@ const SomaCTA = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.65, delay: 0.08, ease: EASE }}
           >
-            Come as you are. <br />
-            <em>Leave more yourself.</em>
+            {t("home.cta.titleLine1")} <br />
+            <em>{t("home.cta.titleEm")}</em>
             <motion.span className={styles.titleUnderline} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.85, delay: 0.45, ease: EASE }} style={{ transformOrigin: "center" }} aria-hidden="true" />
           </motion.h2>
 
           <motion.p className={styles.copy} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16, ease: EASE }}>
-            Whether it’s your first class or your five hundredth — there’s a place for you at Soma. Small groups, warm light, honest practice.
+            {t("home.cta.copy")}
           </motion.p>
 
           <motion.div className={styles.actions} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.24, ease: EASE }}>
             <motion.div onMouseMove={onMove} onMouseLeave={onLeave} style={{ x: mx, y: my }} transition={spring.snappy} whileTap={{ scale: 0.98 }}>
               <Link to="/newuser" className={styles.primary}>
-                Begin your journey <span>—</span>
+                {t("home.cta.primary")} <span>—</span>
                 <span className={styles.btnShine} aria-hidden="true" />
               </Link>
             </motion.div>
-            <Link to="/contact" className={styles.secondary}>
-              Talk to us <span>→</span>
+            <Link to="/classes" className={styles.secondary}>
+              {t("home.cta.secondary")} <span>→</span>
             </Link>
           </motion.div>
 
           <motion.p className={styles.note} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.32, ease: EASE }}>
-            No contracts · Pause anytime · Members love the flexibility
+            {t("home.cta.note")}
           </motion.p>
         </motion.div>
       </div>

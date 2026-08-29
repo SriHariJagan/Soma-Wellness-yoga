@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { FaTruckFast, FaShieldHalved, FaLock } from "react-icons/fa6";
 import { getCart, updateCartItemQty, removeCartItem, applyCouponToCart, removeCouponFromCart, validateBookCart, checkoutBooks, verifyPayment, loadRazorpay, checkShippingAvailability } from "../components/api/BookServices";
 import { useScrollToSection } from "../hooks/useScrollToSection";
 import styles from "./BookCheckout.module.css";
 
-const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const formatKES = (n) => `KES ${Number(n || 0).toLocaleString()}`;
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const emptyAddress = {
@@ -13,6 +14,7 @@ const emptyAddress = {
 };
 
 const BookCheckout = () => {
+  const { t } = useTranslation();
   useScrollToSection();
   const navigate = useNavigate();
   const location = useLocation();
@@ -121,7 +123,7 @@ const BookCheckout = () => {
 
   const handlePinCheck = async () => {
     const pin = (address.pincode || "").trim();
-    if (!/^\d{6}$/.test(pin)) { setPinCheck(null); setPinChecked(""); setError("Enter a valid 6-digit PIN code"); return; }
+    if (!/^\d{6}$/.test(pin)) { setPinCheck(null); setPinChecked(""); setError(t("bookCheckout.invalidPin")); return; }
     setError("");
     setPinLoading(true);
     try {
@@ -165,21 +167,21 @@ const BookCheckout = () => {
       const fe = {};
       missing.forEach(([k]) => { fe[k] = true; });
       setFieldErrors(fe);
-      setError(`Please fill in: ${missing.map(([, l]) => l).join(", ")}`);
+      setError(t("bookCheckout.fillRequired", { fields: missing.map(([, l]) => l).join(", ") }));
       const first = document.getElementById(`addr-${missing[0][0]}`);
       if (first) first.focus();
       return;
     }
     setFieldErrors({});
     if (!shippingInfo) {
-      setError("Check delivery availability for your PIN code first");
+      setError(t("bookCheckout.checkPinFirst"));
       return;
     }
     setPaying(true);
     try {
       const ok = await loadRazorpay();
-      if (!ok) throw new Error("Could not load Razorpay. Check your connection and try again.");
-      if (!RAZORPAY_KEY_ID) throw new Error("Payment is not configured. Please contact support.");
+      if (!ok) throw new Error(t("bookCheckout.couldNotLoadPayment"));
+      if (!RAZORPAY_KEY_ID) throw new Error(t("bookCheckout.paymentNotConfigured"));
 
       const idempotencyKey = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
       const result = await checkoutBooks({ idempotencyKey, address });
@@ -188,7 +190,7 @@ const BookCheckout = () => {
         key: RAZORPAY_KEY_ID,
         amount: result.razorpay.amount,
         currency: result.razorpay.currency,
-        name: "Pragya Yoga Bookstore",
+        name: "Soma Wellness Store",
         description: `Order ${result.order.orderNumber}`,
         order_id: result.razorpay.order_id,
         prefill: { name: address.fullName, email: address.email, contact: address.phone },
@@ -211,14 +213,14 @@ const BookCheckout = () => {
         modal: {
           ondismiss: () => {
             setPaying(false);
-            setError("Payment cancelled. No amount was deducted. Your order is saved for 1 hour — you can retry anytime, after which it is automatically cancelled.");
+            setError(t("bookCheckout.paymentCancelled"));
           },
         },
       });
 
       rzp.on("payment.failed", () => {
         setPaying(false);
-        setError("Payment failed. No amount was deducted. Your order is saved for 1 hour — you can retry, after which it is automatically cancelled.");
+        setError(t("bookCheckout.paymentFailed"));
       });
 
       rzp.open();
@@ -233,25 +235,25 @@ const BookCheckout = () => {
       <div className={styles.successPage}>
         <div className={styles.successCard}>
           <div className={styles.successIcon}>✓</div>
-          <h1>Order confirmed!</h1>
-          <p>Thank you for your purchase. Your order <strong>#{success.orderNumber}</strong> has been confirmed.</p>
+          <h1>{t("bookCheckout.orderConfirmed")}</h1>
+          <p>{t("bookCheckout.thankYouPurchase")}</p>
           <p className={styles.successSub}>A confirmation email is on its way to <strong>{success.email}</strong>. We will pack and dispatch your books soon.</p>
           <div className={styles.successActions}>
-            <button className={styles.primaryBtn} onClick={() => navigate("/")}>← Back to Home</button>
-            <Link to={`/order-tracking?order=${success.orderNumber}`} className={styles.secondaryBtn}>Track your order</Link>
+            <button className={styles.primaryBtn} onClick={() => navigate("/")}>{t("bookCheckout.backToHome")}</button>
+            <Link to={`/order-tracking?order=${success.orderNumber}`} className={styles.secondaryBtn}>{t("bookCheckout.trackYourOrder")}</Link>
           </div>
         </div>
       </div>
     );
   }
 
-  if (loading) return <div className={styles.statePage}>Loading your cart…</div>;
+  if (loading) return <div className={styles.statePage}>{t("bookCheckout.loadingCart")}</div>;
 
   if (bookItems.length === 0 && otherItems.length > 0) {
     return (
       <div className={styles.statePage}>
-        <p>Your cart contains only non-book items.</p>
-        <Link to="/studentdashboard?tab=cart">Go to your cart</Link>
+        <p>{t("bookCheckout.nonBookItems")}</p>
+        <Link to="/studentdashboard?tab=cart">{t("bookCheckout.goToCart")}</Link>
       </div>
     );
   }
@@ -259,8 +261,8 @@ const BookCheckout = () => {
   if (bookItems.length === 0) {
     return (
       <div className={styles.statePage}>
-        <p>Your cart is empty.</p>
-        <Link to="/books">Browse the bookstore →</Link>
+        <p>{t("bookCheckout.cartEmpty")}</p>
+        <Link to="/books">{t("bookCheckout.browseStore")}</Link>
       </div>
     );
   }
@@ -268,8 +270,8 @@ const BookCheckout = () => {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1>Book Checkout</h1>
-        <p>Secure checkout powered by Razorpay</p>
+        <h1>{t("bookCheckout.title")}</h1>
+        <p>{t("bookCheckout.securePowered")}</p>
       </header>
 
       <div className={styles.layout}>
@@ -278,7 +280,7 @@ const BookCheckout = () => {
           {error && <div className={styles.errorBox}>{error}</div>}
 
           <section className={styles.block}>
-            <h2>Your books</h2>
+            <h2>{t("bookCheckout.yourBooks")}</h2>
             {bookItems.map((item) => (
               <div key={item._id} className={styles.cartRow}>
                 {item.image ? (
@@ -288,7 +290,7 @@ const BookCheckout = () => {
                 )}
                 <div className={styles.cartInfo}>
                   <div className={styles.cartName}>{item.name}</div>
-                  <div className={styles.cartPrice}>{inr(item.price)} each</div>
+                  <div className={styles.cartPrice}>{formatKES(item.price)} each</div>
                 </div>
                 <div className={styles.qtyBox}>
                   <button onClick={() => handleQty(item._id, -1)} disabled={(quantities[item._id] || 1) <= 1}>−</button>
@@ -304,64 +306,64 @@ const BookCheckout = () => {
           </section>
 
           <section className={styles.block}>
-            <h2>Delivery address</h2>
+            <h2>{t("bookCheckout.deliveryAddress")}</h2>
             <div className={styles.formGrid}>
               <label className={styles.field}>
-                <span>Full name *</span>
-                <input id="addr-fullName" className={fieldErrors.fullName ? styles.inputError : ""} value={address.fullName} onChange={set("fullName")} placeholder="e.g. Priya Sharma" />
+                <span>{t("bookCheckout.fullName")}</span>
+                <input id="addr-fullName" className={fieldErrors.fullName ? styles.inputError : ""} value={address.fullName} onChange={set("fullName")} placeholder={t("bookCheckout.fullNamePlaceholder")} />
               </label>
               <label className={styles.field}>
-                <span>Mobile number *</span>
-                <input id="addr-phone" className={fieldErrors.phone ? styles.inputError : ""} value={address.phone} onChange={set("phone")} maxLength={10} placeholder="10-digit mobile" />
+                <span>{t("bookCheckout.mobile")}</span>
+                <input id="addr-phone" className={fieldErrors.phone ? styles.inputError : ""} value={address.phone} onChange={set("phone")} maxLength={10} placeholder={t("bookCheckout.mobilePlaceholder")} />
               </label>
               <label className={styles.field} style={{ gridColumn: "1 / -1" }}>
-                <span>Email *</span>
-                <input id="addr-email" className={fieldErrors.email ? styles.inputError : ""} type="email" value={address.email} onChange={set("email")} placeholder="you@email.com" />
+                <span>{t("bookCheckout.email")}</span>
+                <input id="addr-email" className={fieldErrors.email ? styles.inputError : ""} type="email" value={address.email} onChange={set("email")} placeholder={t("bookCheckout.emailPlaceholder")} />
               </label>
               <label className={styles.field} style={{ gridColumn: "1 / -1" }}>
-                <span>Address line 1 *</span>
-                <input id="addr-line1" className={fieldErrors.line1 ? styles.inputError : ""} value={address.line1} onChange={set("line1")} placeholder="House no, street, locality" />
+                <span>{t("bookCheckout.address1")}</span>
+                <input id="addr-line1" className={fieldErrors.line1 ? styles.inputError : ""} value={address.line1} onChange={set("line1")} placeholder={t("bookCheckout.address1Placeholder")} />
               </label>
               <label className={styles.field} style={{ gridColumn: "1 / -1" }}>
                 <span>Address line 2</span>
                 <input value={address.line2} onChange={set("line2")} placeholder="Landmark, apartment (optional)" />
               </label>
               <label className={styles.field}>
-                <span>City *</span>
-                <input id="addr-city" className={fieldErrors.city ? styles.inputError : ""} value={address.city} onChange={set("city")} />
+                <span>{t("bookCheckout.city")}</span>
+                <input id="addr-city" className={fieldErrors.city ? styles.inputError : ""} value={address.city} onChange={set("city")} placeholder={t("bookCheckout.cityPlaceholder")} />
               </label>
               <label className={styles.field}>
-                <span>State *</span>
-                <input id="addr-state" className={fieldErrors.state ? styles.inputError : ""} value={address.state} onChange={set("state")} />
+                <span>{t("bookCheckout.state")}</span>
+                <input id="addr-state" className={fieldErrors.state ? styles.inputError : ""} value={address.state} onChange={set("state")} placeholder={t("bookCheckout.statePlaceholder")} />
               </label>
               <label className={styles.field}>
-                <span>PIN code *</span>
-                <input id="addr-pincode" className={fieldErrors.pincode ? styles.inputError : ""} value={address.pincode} onChange={set("pincode")} maxLength={6} placeholder="6-digit PIN" inputMode="numeric" />
+                <span>{t("bookCheckout.pinCode")}</span>
+                <input id="addr-pincode" className={fieldErrors.pincode ? styles.inputError : ""} value={address.pincode} onChange={set("pincode")} maxLength={6} placeholder={t("bookCheckout.pinPlaceholder")} inputMode="numeric" />
               </label>
               <label className={styles.field}>
                 <span>Country</span>
                 <input value={address.country} onChange={set("country")} />
               </label>
             </div>
-            <p className={styles.pinHint}>Delivery charges are calculated automatically when you enter your PIN.</p>
+            <p className={styles.pinHint}>{t("bookCheckout.deliveryNote")}</p>
             <button className={styles.pinBtn} onClick={handlePinCheck} disabled={pinLoading}>
-              <FaTruckFast /> {pinLoading ? "Checking…" : "Check delivery & shipping"}
+              <FaTruckFast /> {pinLoading ? t("bookCheckout.checking") : t("bookCheckout.checkDelivery")}
             </button>
             {pinCheck?.shipping && !pinCheck.shipping.available && (
               <p className={styles.pinNo}>{pinCheck.shipping.reason}</p>
             )}
             {shippingInfo && (
               <div className={styles.pinOk}>
-                <div><strong>Delivery available</strong> — {shippingInfo.estimatedDelivery?.minDays}–{shippingInfo.estimatedDelivery?.maxDays} days</div>
-                <div>{shippingCharge > 0 ? `Shipping ${inr(shippingCharge)}` : "Free shipping"}{shippingInfo.freeShippingThreshold > 0 && subtotal < shippingInfo.freeShippingThreshold ? ` (free above ${inr(shippingInfo.freeShippingThreshold)})` : ""}</div>
+                <div><strong>{t("bookCheckout.deliveryAvailable")}</strong> — {shippingInfo.estimatedDelivery?.minDays}–{shippingInfo.estimatedDelivery?.maxDays} days</div>
+                <div>{shippingCharge > 0 ? `${t("bookCheckout.shipping")} ${formatKES(shippingCharge)}` : t("bookCheckout.freeShipping")}{shippingInfo.freeShippingThreshold > 0 && subtotal < shippingInfo.freeShippingThreshold ? ` (free above ${formatKES(shippingInfo.freeShippingThreshold)})` : ""}</div>
               </div>
             )}
           </section>
 
           <section className={styles.block}>
-            <h2>Coupon</h2>
+            <h2>{t("bookCheckout.coupon")}</h2>
             <div className={styles.couponRow}>
-              <input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="Enter coupon code" />
+              <input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder={t("bookCheckout.couponPlaceholder")} />
               <button onClick={() => handleCoupon(true)}>Apply</button>
               {cart?.summary?.couponCode && (
                 <button className={styles.removeCouponBtn} onClick={() => handleCoupon(false)}>Remove {cart.summary.couponCode}</button>
@@ -370,14 +372,14 @@ const BookCheckout = () => {
             {couponMsg && <p className={styles.couponOk}>{couponMsg}</p>}
             {couponErr && <p className={styles.couponErr}>{couponErr}</p>}
             {cart?.summary?.couponCode && (
-              <p className={styles.couponApplied}>Coupon <strong>{cart.summary.couponCode}</strong> applied — discount {inr(cart.summary.couponDiscount)}</p>
+              <p className={styles.couponApplied}>Coupon <strong>{cart.summary.couponCode}</strong> applied — discount {formatKES(cart.summary.couponDiscount)}</p>
             )}
           </section>
         </div>
 
         {/* ── Right: summary + pay ── */}
         <aside className={styles.summary}>
-          <h2>Order summary</h2>
+          <h2>{t("bookCheckout.orderSummary")}</h2>
           {subtotal === null ? (
             validateErr ? (
               <div className={styles.summaryNote}>
@@ -389,25 +391,25 @@ const BookCheckout = () => {
             )
           ) : (
             <>
-              <div className={styles.sumRow}><span>Subtotal</span><span>{inr(subtotal)}</span></div>
+              <div className={styles.sumRow}><span>{t("bookCheckout.subtotal")}</span><span>{formatKES(subtotal)}</span></div>
               {cart?.summary?.couponDiscount > 0 && (
-                <div className={styles.sumRow}><span>Coupon discount</span><span>− {inr(cart.summary.couponDiscount)}</span></div>
+                <div className={styles.sumRow}><span>{t("bookCheckout.couponDiscount")}</span><span>− {formatKES(cart.summary.couponDiscount)}</span></div>
               )}
-              <div className={styles.sumRow}><span>Shipping</span><span>{shippingInfo ? (shippingCharge > 0 ? inr(shippingCharge) : "Free") : <em style={{ opacity: 0.55, fontStyle: "normal" }}>Enter PIN</em>}</span></div>
-              <div className={`${styles.sumRow} ${styles.sumTotal}`}><span>Total</span><span>{shippingInfo ? inr(total) : <em style={{ opacity: 0.55, fontStyle: "normal" }}>Awaiting PIN</em>}</span></div>
+              <div className={styles.sumRow}><span>{t("bookCheckout.shipping")}</span><span>{shippingInfo ? (shippingCharge > 0 ? formatKES(shippingCharge) : t("bookCheckout.free")) : <em style={{ opacity: 0.55, fontStyle: "normal" }}>{t("bookCheckout.enterPin")}</em>}</span></div>
+              <div className={`${styles.sumRow} ${styles.sumTotal}`}><span>{t("bookCheckout.total")}</span><span>{shippingInfo ? formatKES(total) : <em style={{ opacity: 0.55, fontStyle: "normal" }}>{t("bookCheckout.awaitingPin")}</em>}</span></div>
             </>
           )}
 
           {!shippingInfo && (
-            <p className={styles.summaryNote}>Enter your delivery PIN code above to see the delivery charge and final total.</p>
+            <p className={styles.summaryNote}>{t("bookCheckout.enterPinAbove")}</p>
           )}
 
           {error && <p className={styles.payErr}>{error}</p>}
 
           <button className={styles.payBtn} onClick={handlePay} disabled={paying || subtotal === null || !shippingInfo}>
-            {paying ? "Processing…" : shippingInfo ? `Pay ${inr(total ?? 0)} securely` : "Enter PIN to continue"}
+            {paying ? t("bookCheckout.processing") : shippingInfo ? t("bookCheckout.paySecurely", { amount: formatKES(total ?? 0) }) : t("bookCheckout.enterPinToContinue")}
           </button>
-          <p className={styles.secureNote}><FaLock /> Payments via Razorpay (UPI, cards, netbanking, wallets)</p>
+          <p className={styles.secureNote}><FaLock /> {t("bookCheckout.paymentsVia")}</p>
           <p className={styles.secureNote}><FaShieldHalved /> Books are reserved for 30 minutes while you pay. If you leave, the reservation is released automatically.</p>
         </aside>
       </div>

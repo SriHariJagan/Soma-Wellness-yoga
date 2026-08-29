@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ServiceCard from '../shared/ServiceCard';
+import EnrollModal from '../shared/EnrollModal';
 import BrowseMoreCard from './BrowseMoreCard';
 import styles from '../shared/ServiceCard.module.css';
 import './ClassesServices.css';
 
 const API_DOMAIN = import.meta.env.VITE_API_URL || "";
 
-const CACHE_KEY = "pragya_public_services_v1";
+const CACHE_KEY = "soma_public_services_v1";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 const slugify = (str) => str?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "";
@@ -28,17 +30,17 @@ function readCache() {
 function writeCache(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), data }));
-  } catch {
-    // storage full/unavailable — non-fatal
-  }
+  } catch {}
 }
 
 export default function ClassesServices() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const cachedRef = useRef(readCache());
   const [services, setServices] = useState(cachedRef.current || []);
   const [loading, setLoading] = useState(cachedRef.current === null);
   const [error, setError] = useState("");
+  const [selectedService, setSelectedService] = useState(null);
   const scrolledRef = useRef(false);
 
   useEffect(() => {
@@ -86,23 +88,18 @@ export default function ClassesServices() {
     }
   }, [loading, services]);
 
-  const handleEnroll = (serviceId) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/studentdashboard?tab=browseServices");
-    } else {
-      navigate(`/login?redirectTo=${encodeURIComponent("/studentdashboard?tab=browseServices")}`);
-    }
+  const handleEnroll = (service) => {
+    setSelectedService(service);
   };
 
   const handleContact = (service) => {
-    window.location.href = `mailto:${service.contactEmail || "pragyayogaofficial@gmail.com"}`;
+    window.location.href = `mailto:${service.contactEmail || "hello@somawellness.in"}`;
   };
 
   if (loading) {
     return (
       <section className="classes-services">
-        <h2 className="section-title">Our Yoga Services</h2>
+        <h2 className="section-title">{t("navigation.join")}</h2>
         <div className="services-grid">
           {SKELETONS.map((i) => (
             <div key={i} className={styles.skelCard}>
@@ -122,10 +119,8 @@ export default function ClassesServices() {
   if (error && services.length === 0) {
     return (
       <section className="classes-services">
-        <h2 className="section-title">Our Yoga Services</h2>
-        <p className="services-error">
-          Unable to load services at the moment. Please try again later.
-        </p>
+        <h2 className="section-title">{t("navigation.join")}</h2>
+        <p className="services-error">{t("common.tryAgain")}</p>
       </section>
     );
   }
@@ -133,27 +128,35 @@ export default function ClassesServices() {
   if (services.length === 0) {
     return (
       <section className="classes-services">
-        <h2 className="section-title">Our Yoga Services</h2>
-        <p className="services-error">No services available right now. Check back soon!</p>
+        <h2 className="section-title">{t("navigation.join")}</h2>
+        <p className="services-error">{t("services.noServices")}</p>
       </section>
     );
   }
 
   return (
     <section className="classes-services" id="our-services" style={{ scrollMarginTop: 'calc(var(--header-height) + var(--topbar-height) + 20px)' }}>
-      <h2 className="section-title">Our Yoga Services</h2>
+      <h2 className="section-title">{t("navigation.join")}</h2>
       <div className="services-grid">
         {services.map((s, i) => (
           <div key={s._id || i} data-service-slug={slugify(s.name)}>
             <ServiceCard
               service={s}
-              onEnroll={handleEnroll}
-              onContact={handleContact}
+              onEnroll={() => handleEnroll(s)}
+              onContact={() => handleContact(s)}
+              disableGate={true}
             />
           </div>
         ))}
         <BrowseMoreCard />
       </div>
+
+      {selectedService && (
+        <EnrollModal
+          service={selectedService}
+          onClose={() => setSelectedService(null)}
+        />
+      )}
     </section>
   );
 }

@@ -100,6 +100,25 @@ async function getSmtpStatus() {
   };
 }
 
+async function getWhatsAppStatus() {
+  try {
+    const mod = await import('../notification/providers/WhatsAppProvider.js');
+    const WhatsAppProvider = mod.default;
+    const p = new WhatsAppProvider();
+    const s = p.getStatus();
+    return {
+      configured: s.configured,
+      verified: s.verified,
+      lastVerified: s.lastVerified || null,
+      phoneNumberId: s.phoneNumberId || null,
+      displayPhone: s.displayPhone || null,
+      healthy: s.configured,
+    };
+  } catch {
+    return { configured: false, verified: false, healthy: false };
+  }
+}
+
 async function getQueueStatus() {
   try {
     const queue = getNotificationQueue();
@@ -313,11 +332,12 @@ async function getFailedJobsOverview() {
 // ── Public health endpoints (no auth) ──
 
 export async function healthSummary(req, res) {
-  const [mongo, smtp, queue, scheduler] = await Promise.all([
+  const [mongo, smtp, queue, scheduler, whatsapp] = await Promise.all([
     getMongoStatus(),
     getSmtpStatus(),
     getQueueStatus(),
     getSchedulerStatus(),
+    getWhatsAppStatus(),
   ]);
 
   const allHealthy = mongo.healthy && smtp.healthy && queue.healthy && scheduler.healthy;
@@ -328,7 +348,7 @@ export async function healthSummary(req, res) {
     status: degraded ? 'degraded' : 'healthy',
     timestamp: new Date().toISOString(),
     uptime: getUptime(),
-    subsystems: { mongodb: mongo, smtp, queue, scheduler },
+    subsystems: { mongodb: mongo, smtp, queue, scheduler, whatsapp },
   });
 }
 

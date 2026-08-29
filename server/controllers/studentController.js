@@ -676,7 +676,7 @@ export const enrollClass = asyncHandler(async (req, res) => {
     channels: ['inApp', 'email'],
     data: {
       className: session.name,
-      classDate: session.date.toLocaleDateString('en-IN'),
+      classDate: session.date.toLocaleDateString('en-KE'),
       classTime: session.time || '',
       instructor: session.trainer || '',
       meetLink: session.zoomUrl || '',
@@ -849,7 +849,7 @@ export const registerWorkshop = asyncHandler(async (req, res) => {
         },
       ],
       label: `Workshop: ${wk.name}`,
-      description: `Registration for ${wk.name} on ${wk.date?.toLocaleDateString('en-IN')}`,
+      description: `Registration for ${wk.name} on ${wk.date?.toLocaleDateString('en-KE')}`,
       idempotencyKey: req.body?.idempotencyKey,
     });
 
@@ -889,11 +889,11 @@ export const registerWorkshop = asyncHandler(async (req, res) => {
     channels: ['inApp', 'email'],
     data: {
       workshopName: wk.name,
-      workshopDate: wk.date.toLocaleDateString('en-IN'),
+      workshopDate: wk.date.toLocaleDateString('en-KE'),
       workshopTime: wk.startTime || '',
       instructor: wk.instructor || '',
       meetLink: wk.zoomLink || '',
-      price: wk.price > 0 ? `₹${wk.price.toLocaleString('en-IN')}` : 'Free',
+      price: wk.price > 0 ? `KES ${wk.price.toLocaleString('en-KE')}` : 'Free',
       name: req.user.name,
     },
     workshop: wk._id,
@@ -1004,7 +1004,7 @@ export const bookConsultation = asyncHandler(async (req, res) => {
     date: new Date(date),
     timeSlot,
     duration,
-    doctor: 'Pragya Wellness Team',
+    doctor: 'Soma Wellness Team',
     topic: topic || 'General consultation',
     price: fee,
     paymentStatus: 'pending',
@@ -1017,17 +1017,17 @@ export const bookConsultation = asyncHandler(async (req, res) => {
       channels: ['inApp', 'email'],
       data: {
         name: req.user.name,
-        consultationDate: new Date(date).toLocaleDateString('en-IN'),
+        consultationDate: new Date(date).toLocaleDateString('en-KE'),
         doctor: c.doctor,
         topic: c.topic,
       },
       subject: 'Consultation booked',
-      message: `Your consultation is scheduled for ${new Date(date).toLocaleDateString('en-IN')} with ${c.doctor}.`,
+      message: `Your consultation is scheduled for ${new Date(date).toLocaleDateString('en-KE')} with ${c.doctor}.`,
       priority: 'normal',
     }).catch((err) => logger.error(MODULE, 'Consultation confirmation failed', { error: err.message })),
     notify(req.user._id, {
       title: 'Consultation booked',
-      message: `Your ${duration}-min consultation is scheduled for ${new Date(date).toLocaleDateString('en-IN')} at ${timeSlot}.`,
+      message: `Your ${duration}-min consultation is scheduled for ${new Date(date).toLocaleDateString('en-KE')} at ${timeSlot}.`,
       type: 'info',
     }),
   ]);
@@ -1122,7 +1122,7 @@ export const inviteReferral = asyncHandler(async (req, res) => {
   ref.invited.push({ name: name || '', email });
   await ref.save();
 
-  const referralLink = `${process.env.FRONTEND_URL || 'https://pragyayoga.com'}/newuser?ref=${ref.code}`;
+  const referralLink = `${process.env.FRONTEND_URL || 'https://somawellness.in'}/newuser?ref=${ref.code}`;
 
   // Send invitation email via NotificationService.
   notificationService.send(null, {
@@ -1134,7 +1134,7 @@ export const inviteReferral = asyncHandler(async (req, res) => {
       senderName: req.user.name || 'A friend',
       referralLink,
     },
-    subject: `${req.user.name} invites you to Pragya Yoga Alliance!`,
+    subject: `${req.user.name} invites you to Soma Wellness!`,
     title: 'You\'re Invited!',
     priority: 'normal',
   }).catch((err) => logger.error(MODULE, 'Referral email failed', { email, error: err.message }));
@@ -1142,10 +1142,10 @@ export const inviteReferral = asyncHandler(async (req, res) => {
   // Send referral invite email via new email service
   emailService.sendMail(
     email,
-    `${req.user.name} invites you to Pragya Yoga Alliance!`,
+    `${req.user.name} invites you to Soma Wellness!`,
     `<h2 style="color:#2D1406;">You're Invited!</h2>
      <p>Hi ${name || 'there'},</p>
-     <p>Your friend <strong>${req.user.name}</strong> invites you to join <strong>Pragya Yoga Alliance</strong>.</p>
+     <p>Your friend <strong>${req.user.name}</strong> invites you to join <strong>Soma Wellness</strong>.</p>
      <p>Start your wellness journey with authentic Indian yoga and holistic wellness.</p>
      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:16px 0;">
        <tr>
@@ -1160,8 +1160,8 @@ export const inviteReferral = asyncHandler(async (req, res) => {
          </td>
        </tr>
      </table>
-     <p style="color:#7C6A58;font-size:12px;">— Pragya Yoga Alliance Team</p>`,
-    `You're Invited!\n\nHi ${name || 'there'},\n\nYour friend ${req.user.name} invites you to join Pragya Yoga Alliance.\n\nStart your wellness journey with authentic Indian yoga and holistic wellness.\n\nAccept: ${referralLink}\n\n— Pragya Yoga Alliance Team`,
+     <p style="color:#7C6A58;font-size:12px;">— Soma Wellness Team</p>`,
+    `You're Invited!\n\nHi ${name || 'there'},\n\nYour friend ${req.user.name} invites you to join Soma Wellness.\n\nStart your wellness journey with authentic Indian yoga and holistic wellness.\n\nAccept: ${referralLink}\n\n— Soma Wellness Team`,
   ).catch((err) => logger.error(MODULE, 'Referral invite email failed', { email, error: err.message }));
 
   res.json({ success: true, msg: 'Invitation recorded', stats: { invited: ref.invited.length, joined: ref.joined.length, earned: ref.earned } });

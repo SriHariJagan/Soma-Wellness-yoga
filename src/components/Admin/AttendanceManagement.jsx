@@ -324,7 +324,7 @@ export default function AttendanceManagement({ onChanged } = {}) {
             <div style={{ flex: 1, minWidth: 200 }}>
               <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-1)', marginBottom: 8 }}>{inv.title}</div>
               <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.8 }}>
-                <span><i className="ti ti-calendar" /> {new Date(inv.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                <span><i className="ti ti-calendar" /> {new Date(inv.date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
                 {inv.startTime && <span style={{ marginLeft: 14 }}><i className="ti ti-clock" /> {inv.startTime}{inv.endTime ? ` - ${inv.endTime}` : ''}</span>}
                 {inv.duration && <span style={{ marginLeft: 14 }}><i className="ti ti-clock-hour" /> {inv.duration} min</span>}
                 <br />
@@ -658,7 +658,7 @@ export default function AttendanceManagement({ onChanged } = {}) {
                         return (
                           <tr key={inv._id}>
                             <td><span style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--text-1)' }}>{inv.title}</span></td>
-                            <td className={s.tdMuted}>{new Date(inv.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                            <td className={s.tdMuted}>{new Date(inv.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                             <td className={s.tdMuted}>{inv.startTime}{inv.endTime ? ` - ${inv.endTime}` : ''}</td>
                             <td className={s.tdMuted}>{inv.instructor || '—'}</td>
                             <td className={s.tdMuted}>{inv.platform || '—'}</td>
@@ -708,7 +708,7 @@ export default function AttendanceManagement({ onChanged } = {}) {
                     {modalInviteInfo && (
                       <div style={{ marginTop: 8, fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7 }}>
                         <strong style={{ color: 'var(--text-1)', fontSize: 14 }}>{modalInviteInfo.title}</strong><br />
-                        <span><i className="ti ti-calendar" /> {new Date(modalInviteInfo.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span><i className="ti ti-calendar" /> {new Date(modalInviteInfo.date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         {modalInviteInfo.startTime && <span style={{ marginLeft: 12 }}><i className="ti ti-clock" /> {modalInviteInfo.startTime}{modalInviteInfo.endTime ? ` - ${modalInviteInfo.endTime}` : ''}</span>}
                         {modalInviteInfo.instructor && <span style={{ marginLeft: 12 }}><i className="ti ti-user" /> {modalInviteInfo.instructor}</span>}
                         <br />

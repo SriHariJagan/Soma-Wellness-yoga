@@ -4,7 +4,7 @@ import layout from '../../../notification/templates/engine/layout.js';
 
 export default function render(data = {}) {
   const name = escapeHtml(data.name || 'Yoga Seeker');
-  const dashboardUrl = data.dashboardUrl || 'https://pragyayoga.com/dashboard';
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
 
   const subject = `Welcome to ${STUDIO_NAME}, ${name}!`;
 

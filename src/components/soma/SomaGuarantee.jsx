@@ -2,22 +2,25 @@ import React from "react";
 import styles from "./SomaGuarantee.module.css";
 import { motion } from "framer-motion";
 import { EASE, usePrefersReducedMotion } from "../../lib/motion";
-
-const list = [
-  { strong: "Pause anytime", text: "membership holds, history kept" },
-  { strong: "Transparent", text: "VAT included, no hidden fees" },
-  { strong: "Respectful", text: "medical clearance, 12 max, hands-on only with consent" },
-  { strong: "Real", text: "no performative wellness, just honest practice" },
-];
-
-const metrics = [
-  { n: "7", em: "days Discovery", p: "Try before you commit — 3,000 KES" },
-  { n: "12", em: "max per class", p: "So you are seen, adjusted, held" },
-  { n: "19%", em: "founding saving", p: "Held 12 months for first 100" },
-];
+import { useTranslation } from "react-i18next";
 
 const SomaGuarantee = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
+
+  const list = [
+    { strong: t("home.guarantee.list.pauseStrong"), text: t("home.guarantee.list.pauseText") },
+    { strong: t("home.guarantee.list.transparentStrong"), text: t("home.guarantee.list.transparentText") },
+    { strong: t("home.guarantee.list.respectfulStrong"), text: t("home.guarantee.list.respectfulText") },
+    { strong: t("home.guarantee.list.realStrong"), text: t("home.guarantee.list.realText") },
+  ];
+
+  const metrics = [
+    { n: t("home.guarantee.metrics.discoveryNum"), em: t("home.guarantee.metrics.discoveryEm"), p: t("home.guarantee.metrics.discoveryP") },
+    { n: t("home.guarantee.metrics.maxNum"), em: t("home.guarantee.metrics.maxEm"), p: t("home.guarantee.metrics.maxP") },
+    { n: t("home.guarantee.metrics.foundingNum"), em: t("home.guarantee.metrics.foundingEm"), p: t("home.guarantee.metrics.foundingP") },
+  ];
+
   return (
     <section className={styles.section}>
       <div className={styles.bg} aria-hidden="true" />
@@ -38,11 +41,11 @@ const SomaGuarantee = () => {
           <div className={styles.left}>
             <span className={styles.eyebrow}>
               <span className={styles.eyebrowDot} />
-              Our promise — no tricks
+              {t("home.guarantee.eyebrow")}
             </span>
             <h3 className={styles.title}>
-              Come as you are.<br />
-              <em>Leave more yourself.</em>
+              {t("home.guarantee.titleLine1")}<br />
+              <em>{t("home.guarantee.titleLine2")}</em>
               <motion.span className={styles.titleUnderline} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.5, ease: EASE }} style={{ transformOrigin: "left" }} aria-hidden="true" />
             </h3>
             <motion.ul
@@ -75,7 +78,7 @@ const SomaGuarantee = () => {
           >
             {metrics.map((m) => (
               <motion.div
-                key={m.n}
+                key={m.em}
                 className={styles.metric}
                 variants={{ hidden: { opacity: 0, y: 16, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: EASE } } }}
                 whileHover={reduced ? {} : { y: -3, scale: 1.015 }}

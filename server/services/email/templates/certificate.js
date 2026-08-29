@@ -6,7 +6,7 @@ export default function render(data = {}) {
   const name = escapeHtml(data.name || 'Valued Student');
   const certificateName = escapeHtml(data.certificateName || 'Yoga Certificate');
   const certificateUrl = data.certificateUrl || '#';
-  const issueDate = data.issueDate || new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const issueDate = data.issueDate || new Date().toLocaleDateString('en-KE', { timeZone: 'Africa/Nairobi' });
 
   const subject = `Your Certificate is Ready — ${STUDIO_NAME}`;
 

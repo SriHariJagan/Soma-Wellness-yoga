@@ -74,7 +74,7 @@ function relativeTime(dateStr) {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(dateStr).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function CommsWebConfig({ feedback: parentFeedback }) {
@@ -329,7 +329,7 @@ export default function CommsWebConfig({ feedback: parentFeedback }) {
                     <option key={c._id} value={c._id}>{c.title}</option>
                   ))}
                   {category === 'workshop_participant' && entityOptions.map((w) => (
-                    <option key={w._id} value={w._id}>{w.name} — {new Date(w.date).toLocaleDateString('en-IN')}</option>
+                    <option key={w._id} value={w._id}>{w.name} — {new Date(w.date).toLocaleDateString('en-KE')}</option>
                   ))}
                 </select>
               </div>
@@ -578,7 +578,7 @@ export default function CommsWebConfig({ feedback: parentFeedback }) {
                     {message || 'Your notification message will appear here...'}
                   </p>
                   <div style={{ fontSize: 10, color: '#9C8E7C', marginTop: 6 }}>
-                    Pragya Yoga · {NOTIF_TYPES.find((t) => t.value === notifType)?.label || 'General'}
+                    Soma Wellness · {NOTIF_TYPES.find((t) => t.value === notifType)?.label || 'General'}
                   </div>
                 </div>
               </div>

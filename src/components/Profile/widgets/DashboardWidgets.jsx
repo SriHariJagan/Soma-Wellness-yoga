@@ -107,7 +107,7 @@ export function StatCard({
         {numeric && !reduced ? (
           <CountUp value={value} format={format} />
         ) : (
-          <span>{numeric ? (format ? format(value) : value.toLocaleString("en-IN")) : value}</span>
+          <span>{numeric ? (format ? format(value) : value.toLocaleString("en-KE")) : value}</span>
         )}
         {suffix}
       </div>

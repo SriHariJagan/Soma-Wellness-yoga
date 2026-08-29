@@ -1,5 +1,5 @@
 // ============================================================
-// seed-books.js — Populate the Pragya Yoga book store catalogue.
+// seed-books.js — Populate the Soma Wellness book store catalogue.
 // Run:  node server/seed-books.js
 //
 // SAFE TO RE-RUN: books are upserted by SKU; stock numbers are

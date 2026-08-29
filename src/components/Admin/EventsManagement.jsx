@@ -26,7 +26,7 @@ const EMPTY_FORM = {
 
 const formatDate = (d) => {
   if (!d) return '';
-  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 const formatDateInput = (d) => {
@@ -36,7 +36,7 @@ const formatDateInput = (d) => {
 
 const formatDateTime = (d) => {
   if (!d) return '';
-  return new Date(d).toLocaleString('en-IN', {
+  return new Date(d).toLocaleString('en-KE', {
     day: 'numeric', month: 'short', year: 'numeric',
     hour: 'numeric', minute: '2-digit', hour12: true,
   });

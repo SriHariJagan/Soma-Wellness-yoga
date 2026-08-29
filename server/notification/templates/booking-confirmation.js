@@ -13,7 +13,7 @@ export default function bookingConfirmation(notification) {
 
   const details = [];
   if (courseName) details.push({ label: 'Course', value: courseName });
-  if (coursePrice) details.push({ label: 'Amount', value: `₹${coursePrice}` });
+  if (coursePrice) details.push({ label: 'Amount', value: `KES ${coursePrice}` });
 
   const body = `
     ${heading('Booking Confirmed!')}
@@ -31,7 +31,7 @@ export default function bookingConfirmation(notification) {
     `Thank you for booking ${data.courseName || 'your course'} with ${STUDIO_NAME}.`,
     '',
     ...(data.courseName ? [`Course: ${data.courseName}`] : []),
-    ...(data.coursePrice ? [`Amount: ₹${data.coursePrice}`] : []),
+    ...(data.coursePrice ? [`Amount: KES ${data.coursePrice}`] : []),
     '',
     'Our team will reach out to you with further details. If you have any questions, please reply to this email.',
     '',

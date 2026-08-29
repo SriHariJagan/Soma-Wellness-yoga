@@ -16,7 +16,7 @@ const SEVEN_DAYS_MS = 7 * ONE_DAY_MS;
 const THREE_DAYS_MS = 3 * ONE_DAY_MS;
 
 function getTimezone() {
-  return process.env.SCHEDULER_TIMEZONE || 'Asia/Kolkata';
+  return process.env.SCHEDULER_TIMEZONE || 'Africa/Nairobi';
 }
 
 function getDatePartsInTimezone(date, timezone) {
@@ -90,7 +90,7 @@ export async function checkClassReminders(now, windowOverride) {
           channels: ['inApp', 'email'],
           data: {
             className:  session.name,
-            classDate:  session.date.toLocaleDateString('en-IN'),
+            classDate:  session.date.toLocaleDateString('en-KE'),
             classTime:  session.time || '',
             instructor: session.trainer || '',
             meetLink:   session.zoomUrl || '',
@@ -144,7 +144,7 @@ export async function checkWorkshopReminders(now, windowOverride) {
           channels: ['inApp', 'email'],
           data: {
             workshopName:  workshop.name,
-            workshopDate:  workshop.date.toLocaleDateString('en-IN'),
+            workshopDate:  workshop.date.toLocaleDateString('en-KE'),
             workshopTime:  workshop.startTime || '',
             instructor:    workshop.instructor || '',
             meetLink:      workshop.zoomLink || '',
@@ -197,7 +197,7 @@ export async function checkEventReminders(now, windowOverride) {
           channels: ['inApp', 'email'],
           data: {
             eventName: event.name,
-            eventDate: event.date.toLocaleDateString('en-IN'),
+            eventDate: event.date.toLocaleDateString('en-KE'),
             eventTime: event.time || '',
             location:  event.location || '',
             meetLink:  event.link || '',
@@ -262,7 +262,7 @@ export async function checkMembershipExpiry(now) {
           channels: ['inApp', 'email'],
           data: {
             planName:      membership.planType || 'Membership',
-            expiryDate:    membership.expiryDate.toLocaleDateString('en-IN'),
+            expiryDate:    membership.expiryDate.toLocaleDateString('en-KE'),
             daysRemaining: String(boundary.days),
             name:          user.name || 'Student',
           },
@@ -406,7 +406,7 @@ export async function catchUpMembershipExpiry(catchUpSince, now) {
             channels: ['inApp', 'email'],
             data: {
               planName:      membership.planType || 'Membership',
-              expiryDate:    membership.expiryDate.toLocaleDateString('en-IN'),
+              expiryDate:    membership.expiryDate.toLocaleDateString('en-KE'),
               daysRemaining: String(boundary.days),
               name:          user.name || 'Student',
             },

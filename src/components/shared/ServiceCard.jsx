@@ -1,7 +1,8 @@
 import { memo } from "react";
 import styles from "./ServiceCard.module.css";
+import CheckoutGate from "../checkout/CheckoutGate.jsx";
 
-const fmtPrice = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const fmtPrice = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
 
 const PRICE_LABEL = {
   monthly: "/month",
@@ -38,6 +39,7 @@ function ServiceCard({
   onContact,
   enrolled = false,
   busy = false,
+  disableGate = false,
 }) {
   const {
     _id,
@@ -85,7 +87,7 @@ function ServiceCard({
   const handleCta = () => {
     if (pricingModel === "contact") {
       if (onContact) onContact(service);
-      else window.location.href = `mailto:${contactEmail || "pragyayogaofficial@gmail.com"}`;
+      else window.location.href = `mailto:${contactEmail || "hello@somawellness.in"}`;
     } else {
       if (onEnroll) onEnroll(_id);
     }
@@ -245,14 +247,29 @@ function ServiceCard({
       </div>
 
       <div className={styles.cardFooter}>
-        <button
-          type="button"
-          className={`${styles.ctaBtn} ${ctaDisabled ? styles.ctaDisabled : ""} ${pricingModel === "contact" ? styles.ctaContact : ""}`}
-          onClick={handleCta}
-          disabled={ctaDisabled}
-        >
-          {ctaLabel}
-        </button>
+        {pricingModel === "contact" || disableGate ? (
+          <button
+            type="button"
+            className={`${styles.ctaBtn} ${ctaDisabled ? styles.ctaDisabled : ""} ${pricingModel === "contact" ? styles.ctaContact : ""}`}
+            onClick={handleCta}
+            disabled={ctaDisabled}
+          >
+            {ctaLabel}
+          </button>
+        ) : (
+          <CheckoutGate
+            intent={{ name, price: price ? `KES ${Number(price).toLocaleString()}` : 'Free', sub: category || type, type: 'service', itemType: 'service', itemId: _id }}
+            onProceed={handleCta}
+          >
+            <button
+              type="button"
+              className={`${styles.ctaBtn} ${ctaDisabled ? styles.ctaDisabled : ""}`}
+              disabled={ctaDisabled}
+            >
+              {ctaLabel}
+            </button>
+          </CheckoutGate>
+        )}
         {enrolledCount > 0 && pricingModel !== "contact" && (
           <span className={styles.enrollCount}>
             <i className="ti ti-users" aria-hidden="true" />

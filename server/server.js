@@ -1,5 +1,5 @@
 // ============================================================
-// server.js — Pragya Yoga API entrypoint
+// server.js — Soma Wellness API entrypoint
 // ============================================================
 
 import dns from "node:dns";
@@ -18,6 +18,7 @@ import logger from "./notification/logger.js";
 const MODULE = "Server";
 
 import authRoutes from "./routes/auth.js";
+import otpRoutes from "./routes/otp.js";
 import studentRoutes from "./routes/student.js";
 import studentsAdminRoutes from "./routes/students.js";
 import adminRoutes from "./routes/admin.js";
@@ -58,6 +59,8 @@ import * as monCtrl from "./controllers/monitoringController.js";
 import monitoringRoutes from "./routes/monitoring.js";
 import blogRoutes from "./routes/blogs.js";
 import somaRoutes from "./routes/soma.js";
+import mpesaRoutes from "./routes/mpesaRoutes.js";
+import whatsappRoutes from "./routes/whatsappRoutes.js";
 
 // ── Startup validation for required SMTP env vars ──
 function validateSmtpConfig() {
@@ -95,7 +98,7 @@ app.use(compression({ threshold: 1024, level: 6 }));
 // ── CORS ──
 const allowedOrigins = (
   process.env.CORS_ORIGINS ||
-  "https://pragya-yoga.vercel.app,http://localhost:5173,http://localhost:5175, https://pragya-yoga-website.onrender.com"
+  "https://somawellness.in,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com"
 )
   .split(",")
   .map((o) => o.trim());
@@ -173,7 +176,7 @@ app.use("/uploads", (req, res, next) => {
 // ── Webhook route (must be before JSON parser — needs raw body for HMAC) ──
 app.use(
   "/api/payment/webhook",
-  express.raw({ type: "application/json" }),
+  express.raw({ type: "application/json", limit: "1mb" }),
   paymentWebhookRoutes,
 );
 
@@ -200,7 +203,7 @@ app.use("/api", globalLimiter);
 // ── Routes ──
 app.get("/", (req, res) =>
   res.json({
-    status: "Pragya Yoga API is running ✅",
+    status: "Soma Wellness API is running ✅",
     time: new Date().toISOString(),
   }),
 );
@@ -213,6 +216,7 @@ app.get("/api/health/scheduler", asyncHandler(monCtrl.healthScheduler));
 
 app.use("/api", paymentRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/auth/otp", otpRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/students", studentsAdminRoutes);
 app.use("/api/admin", adminRoutes);
@@ -223,6 +227,8 @@ app.use("/api/leads", leadRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/soma", somaRoutes);
+app.use("/api/mpesa", mpesaRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 
 // ── Admin Monitoring (authed) ──
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
@@ -534,7 +540,7 @@ const OFFICIAL_SERVICES = [
     type: "Hatha",
     price: 0,
     pricingModel: "contact",
-    contactEmail: "pragyayogaofficial@gmail.com",
+    contactEmail: "hello@somawellness.in",
     totalSessions: 0,
     sessionDuration: 60,
     scheduleDays: [],
@@ -739,6 +745,14 @@ connectDB(process.env.MONGO_URI)
     }
 
     registerChannel("email", new EmailChannel());
+
+    // Register WhatsApp channel (gracefully degrades if not configured)
+    import("./notification/channels/whatsapp.js").then((mod) => {
+      const WhatsAppChannel = mod.default || mod.WhatsAppChannel;
+      registerChannel("whatsapp", new WhatsAppChannel());
+      logger.info(MODULE, "Registered channel: whatsapp");
+    }).catch(() => {});
+
     registerChannel("inApp", {
       send: async () => ({
         success: true,
@@ -785,6 +799,9 @@ connectDB(process.env.MONGO_URI)
     });
 
     notificationWorker.start();
+
+    // Start payment expiry checker for MPESA and other initiated payments
+    import("./services/paymentExpiryService.js").then((mod) => mod.default.start()).catch(() => {});
 
     await seedDefaultPlans().catch(() => {});
     await seedDefaultServices().catch(() => {});

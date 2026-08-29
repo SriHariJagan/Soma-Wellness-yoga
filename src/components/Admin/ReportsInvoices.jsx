@@ -7,9 +7,9 @@ import { getAdminOrders, getAdminOrderDetail } from '../api/AdminServices.js';
 import InvoiceView from '../shared/InvoiceView.jsx';
 
 const STATUS_LABEL = { paid: 'Settled', pending: 'Pending', failed: 'Failed', refunded: 'Refunded' };
-const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—');
-const fmtDateTime = (d) => (d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—');
-const fmtPrice = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) : '—');
+const fmtDateTime = (d) => (d ? new Date(d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—');
+const fmtPrice = (n) => `KES ${Number(n || 0).toLocaleString('en-KE')}`;
 
 const TYPE_LABELS = {
   plan: 'Membership', service: 'Service', course: 'Course',
@@ -199,14 +199,14 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
 
       <div className={s.statsGrid}>
         <KpiCard icon={<LuReceipt />} accent="orange" label="Total Invoices" value={count} spark={monthlyCount} />
-        <KpiCard icon={<LuClock />} accent="amber" label="Pending" value={pending} prefix="₹" spark={[pending * 0.3, pending * 0.5, pending * 0.7, pending * 0.8, pending * 0.9, pending || 1]} />
-        <KpiCard icon={<LuIndianRupee />} accent="green" label="Revenue Collected" value={revenue} prefix="₹" trend="collected" trendUp spark={monthlyRev} />
-        <KpiCard icon={<LuWallet />} accent="blue" label="Avg. Invoice" value={count ? Math.round(revenue / count) : 0} prefix="₹" spark={monthlyCount.length ? monthlyCount : [1, 2, 3, 4, 5, 6]} />
+        <KpiCard icon={<LuClock />} accent="amber" label="Pending" value={pending} prefix="KES " spark={[pending * 0.3, pending * 0.5, pending * 0.7, pending * 0.8, pending * 0.9, pending || 1]} />
+        <KpiCard icon={<LuIndianRupee />} accent="green" label="Revenue Collected" value={revenue} prefix="KES " trend="collected" trendUp spark={monthlyRev} />
+        <KpiCard icon={<LuWallet />} accent="blue" label="Avg. Invoice" value={count ? Math.round(revenue / count) : 0} prefix="KES " spark={monthlyCount.length ? monthlyCount : [1, 2, 3, 4, 5, 6]} />
       </div>
 
       <div className={s.grid2}>
         <ChartCard title="Revenue Trend" subtitle="Monthly collected revenue"
-          right={<div style={{ textAlign: 'right' }}><div className={s.chartBig}>₹{revenue.toLocaleString('en-IN')}</div><div className={s.chartSub}>total</div></div>}
+          right={<div style={{ textAlign: 'right' }}><div className={s.chartBig}>KES {revenue.toLocaleString('en-KE')}</div><div className={s.chartSub}>total</div></div>}
           legend={[{ color: '#F97316', label: 'Revenue' }]}>
           <div style={{ color: 'var(--text-1)' }}><AreaChart labels={MONTHS} series={[{ color: '#F97316', data: monthlyRev }]} /></div>
         </ChartCard>

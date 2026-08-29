@@ -22,6 +22,11 @@ export class PaymentRepository {
     return Payment.findByRazorpayPaymentId(razorpayPaymentId);
   }
 
+  /** Find a payment by its MPESA CheckoutRequestID stored in auditTrail */
+  async findByMpesaCheckoutRequestId(checkoutRequestId) {
+    return Payment.findOne({ "auditTrail.checkoutRequestId": checkoutRequestId });
+  }
+
   async findByIdempotencyKey(key) {
     return Payment.findByIdempotencyKey(key);
   }
@@ -191,7 +196,7 @@ export class PaymentRepository {
     return Payment.findByIdAndUpdate(id, { $set: { isDeleted: true } });
   }
 
-  async createManualPayment({ user, label, amount, description, items, adminId, receiptUrl }) {
+  async createManualPayment({ user, label, amount, description, items, adminId, receiptUrl, gateway = 'manual' }) {
     const now = new Date();
     const payment = await Payment.create({
       user,
@@ -199,11 +204,11 @@ export class PaymentRepository {
       description: description || '',
       items: items || [],
       amount: Math.round(amount),
-      currency: 'INR',
-      gateway: 'manual',
-      source: 'admin',
-      paymentStatus: 'captured',
-      capturedAt: now,
+      currency: gateway === 'mpesa' ? 'KES' : 'KES',
+      gateway,
+      source: adminId ? 'admin' : 'student',
+      paymentStatus: adminId ? 'captured' : 'initiated',
+      capturedAt: adminId ? now : undefined,
       initiatedAt: now,
       receiptUrl: receiptUrl || '',
       auditTrail: [{
@@ -233,7 +238,7 @@ export class PaymentRepository {
       description: description || 'Free item – no payment required',
       items: items || [],
       amount: 0,
-      currency: 'INR',
+      currency: 'KES',
       gateway: 'offline',
       source: 'student',
       paymentStatus: 'captured',
@@ -256,6 +261,51 @@ export class PaymentRepository {
       label,
     });
     return payment;
+  }
+
+  /** Mark an MPESA payment as successful with receipt details */
+  async markMpesaPaymentSuccess(id, { mpesaReceiptNumber, transactionDate, phoneNumber, amount }) {
+    return Payment.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: {
+          paymentStatus: 'captured',
+          capturedAt: new Date(),
+          mpesaReceiptNumber,
+          mpesaTransactionDate: transactionDate,
+          mpesaPhoneNumber: phoneNumber,
+        },
+        $push: {
+          auditTrail: {
+            action: 'mpesa_stk_success',
+            mpesaReceiptNumber,
+            timestamp: new Date(),
+          },
+        },
+        $inc: { lockVersion: 1 },
+      },
+      { new: true },
+    );
+  }
+
+  /** Expire payments stuck in 'initiated' status beyond the cutoff time */
+  async expireStalePayments(cutoffDate) {
+    return Payment.updateMany(
+      { paymentStatus: 'initiated', createdAt: { $lt: cutoffDate } },
+      {
+        $set: {
+          paymentStatus: 'expired',
+          expiredAt: new Date(),
+        },
+        $push: {
+          auditTrail: {
+            action: 'auto_expired',
+            reason: 'Payment not completed within expiry window',
+            timestamp: new Date(),
+          },
+        },
+      },
+    );
   }
 }
 

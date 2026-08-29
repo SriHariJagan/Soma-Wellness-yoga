@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./ActivePlanPage.module.css";
 import w from "./widgets/DashboardWidgets.module.css";
 import { Stagger, Item, Panel, ProgressRing, Pill, PrimaryButton, GhostButton, PageHeader } from "./widgets/DashboardWidgets";
 import { getActiveMembership, getEnrollmentProgress, cancelMembership, pauseMembership, resumeMembership } from "../api/StudentServices.js";
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+  d ? new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
 const MODAL_OVERLAY = {
   position: "fixed", inset: 0, zIndex: 99999,
@@ -21,6 +22,7 @@ const MODAL_CARD = {
 };
 
 export default function ActivePlanPage({ reload }) {
+  const { t } = useTranslation();
   const [membership, setMembership] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
@@ -57,7 +59,7 @@ export default function ActivePlanPage({ reload }) {
       const res = await pauseMembership();
       setMembership(res.membership);
       await reload?.();
-      setMsg("Membership paused successfully.");
+      setMsg(t("activePlan.pauseSuccess"));
     } catch (err) {
       setMsg(err.message || "Failed to pause membership.");
     } finally {
@@ -73,7 +75,7 @@ export default function ActivePlanPage({ reload }) {
       const res = await resumeMembership();
       setMembership(res.membership);
       await reload?.();
-      setMsg("Membership resumed successfully.");
+      setMsg(t("activePlan.resumeSuccess"));
     } catch (err) {
       setMsg(err.message || "Failed to resume membership.");
     } finally {
@@ -88,7 +90,7 @@ export default function ActivePlanPage({ reload }) {
       await cancelMembership();
       await reload?.();
       setMembership(null);
-      setMsg("Membership cancelled successfully.");
+      setMsg(t("activePlan.cancelSuccess"));
     } catch (err) {
       setMsg(err.message || "Failed to cancel membership.");
     } finally {
@@ -385,7 +387,7 @@ export default function ActivePlanPage({ reload }) {
                     }} />
                     <span style={{ flex: 1, color: 'var(--color-text-secondary)', fontWeight: 500 }}>{sh.title || 'Class'}</span>
                     <span style={{ color: 'var(--color-text-muted)' }}>
-                      {sh.date ? new Date(sh.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}
+                      {sh.date ? new Date(sh.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) : ''}
                     </span>
                     <span style={{
                       fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4,

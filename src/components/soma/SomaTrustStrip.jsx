@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import styles from "./SomaTrustStrip.module.css";
 import { EASE, usePrefersReducedMotion } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 
 // CountUp for stats — premium, distinct from Hero's
 const CountStat = ({ value, suffix = "", reduced }) => {
@@ -30,26 +31,27 @@ const CountStat = ({ value, suffix = "", reduced }) => {
   return <span ref={ref}>{formatted}{suffix}</span>;
 };
 
-const stats = [
-  { n: 300, suffix: "", l: "members max", s: "never crowded, always seen" },
-  { n: 18, suffix: "+", l: "years teaching", s: "lineage + modern science" },
-  { n: 4.9, suffix: "★", l: "community love", s: "500+ lives transformed" },
-  { n: 0, suffix: "", custom: "KES 0", l: "hidden fees", s: "VAT included, no surprises" },
-];
-
-const badges = [
-  "Yoga Alliance lineage",
-  "Medical clearance respected",
-  "12 max per class",
-  "Pause anytime",
-  "12h cancellation, no tricks",
-];
-
 const SomaTrustStrip = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
 
+  const stats = [
+    { n: 300, suffix: "", l: t("home.trust.stats.membersMaxLabel"), s: t("home.trust.stats.membersMaxSub") },
+    { n: 18, suffix: "+", l: t("home.trust.stats.yearsLabel"), s: t("home.trust.stats.yearsSub") },
+    { n: 4.9, suffix: "★", l: t("home.trust.stats.communityLabel"), s: t("home.trust.stats.communitySub") },
+    { n: 0, suffix: "", custom: t("home.trust.stats.hiddenFeesValue"), l: t("home.trust.stats.hiddenFeesLabel"), s: t("home.trust.stats.hiddenFeesSub") },
+  ];
+
+  const badges = [
+    t("home.trust.badges.yogaAlliance"),
+    t("home.trust.badges.medical"),
+    t("home.trust.badges.max12"),
+    t("home.trust.badges.pause"),
+    t("home.trust.badges.cancellation"),
+  ];
+
   return (
-    <section className={styles.strip} aria-label="Trust indicators">
+    <section className={styles.strip} aria-label={t("home.trust.ariaLabel")}>
       <div className={styles.bg} aria-hidden="true" />
       <div className={styles.grain} aria-hidden="true" />
 
@@ -63,15 +65,15 @@ const SomaTrustStrip = () => {
         >
           <span className={styles.eyebrow}>
             <span className={styles.eyebrowDot} />
-            Trusted, transparent, premium
+            {t("home.trust.eyebrow")}
             <motion.span className={styles.eyebrowLine} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: EASE }} style={{ transformOrigin: "left" }} aria-hidden="true" />
           </span>
           <div className={styles.press}>
-            <span>Featured in</span>
-            <em>Business Daily</em> <span className={styles.pressDot} aria-hidden="true">·</span>
-            <em>Cosmopolitan</em> <span className={styles.pressDot} aria-hidden="true">·</span>
-            <em>Parents Kenya</em> <span className={styles.pressDot} aria-hidden="true">·</span>
-            <em>Nairobi Wellness</em>
+            <span>{t("home.trust.featuredIn")}</span>
+            <em>{t("home.trust.press.businessDaily")}</em> <span className={styles.pressDot} aria-hidden="true">·</span>
+            <em>{t("home.trust.press.cosmopolitan")}</em> <span className={styles.pressDot} aria-hidden="true">·</span>
+            <em>{t("home.trust.press.parentsKenya")}</em> <span className={styles.pressDot} aria-hidden="true">·</span>
+            <em>{t("home.trust.press.nairobiWellness")}</em>
           </div>
         </motion.div>
 

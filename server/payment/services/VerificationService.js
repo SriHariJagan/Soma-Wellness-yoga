@@ -59,7 +59,7 @@ export class VerificationService {
     return true;
   }
 
-  verifyCurrency(gatewayCurrency, expectedCurrency = 'INR') {
+  verifyCurrency(gatewayCurrency, expectedCurrency = 'KES') {
     if (gatewayCurrency !== expectedCurrency) {
       throw new PaymentVerificationError(
         `Currency mismatch: expected ${expectedCurrency}, got ${gatewayCurrency}`,

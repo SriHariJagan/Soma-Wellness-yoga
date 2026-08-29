@@ -160,7 +160,7 @@ export class OrderService {
   async createRazorpayOrder(amount, receipt) {
     const options = {
       amount,
-      currency: 'INR',
+      currency: 'KES',
       receipt,
     };
 

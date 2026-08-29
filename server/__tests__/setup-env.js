@@ -16,5 +16,5 @@ process.env.SMTP_USER = 'test@test.com';
 process.env.SMTP_PASS = 'testpass';
 process.env.FROM_EMAIL = 'test@test.com';
 process.env.FROM_NAME = 'Test';
-process.env.SCHEDULER_TIMEZONE = 'Asia/Kolkata';
+process.env.SCHEDULER_TIMEZONE = 'Africa/Nairobi';
 process.env.REFERRAL_REWARD = '500';

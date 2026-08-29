@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SOMA_TESTIMONIALS } from "../../config/siteContent";
 import styles from "./SomaTestimonials.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 
 const SomaTestimonials = () => {
+  const { t } = useTranslation();
+  const items = t("home.testimonials.items", { returnObjects: true });
+  const list = Array.isArray(items) ? items : [];
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const reduced = usePrefersReducedMotion();
-  const t = SOMA_TESTIMONIALS[idx];
+  const cur = list[idx] || {};
 
-  const next = () => setIdx((p) => (p === SOMA_TESTIMONIALS.length - 1 ? 0 : p + 1));
-  const prev = () => setIdx((p) => (p === 0 ? SOMA_TESTIMONIALS.length - 1 : p - 1));
+  const next = () => setIdx((p) => (p === list.length - 1 ? 0 : p + 1));
+  const prev = () => setIdx((p) => (p === 0 ? list.length - 1 : p - 1));
 
   const onDragEnd = (_, info) => {
     if (reduced) return;
@@ -21,10 +24,10 @@ const SomaTestimonials = () => {
 
   // auto-rotate every 4s, pause on hover/drag, respect reduced motion
   React.useEffect(() => {
-    if (reduced || paused) return;
+    if (reduced || paused || !list.length) return;
     const id = setInterval(next, 4000);
     return () => clearInterval(id);
-  }, [idx, paused, reduced]);
+  }, [idx, paused, reduced, list.length]);
 
   return (
     <section className={styles.section}>
@@ -42,11 +45,11 @@ const SomaTestimonials = () => {
         >
           <span className={styles.eyebrow}>
             <span className={styles.eyebrowDot} />
-            Community
+            {t("home.testimonials.eyebrow")}
             <motion.span className={styles.eyebrowLine} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: EASE }} style={{ transformOrigin: "left" }} aria-hidden="true" />
           </span>
           <h2 className={styles.title}>
-            What it feels like to <em>practice here.</em>
+            {t("home.testimonials.titleBefore")} <em>{t("home.testimonials.titleEm")}</em>
             <motion.span className={styles.titleUnderline} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.85, delay: 0.4, ease: EASE }} style={{ transformOrigin: "center" }} aria-hidden="true" />
           </h2>
         </motion.div>
@@ -79,25 +82,25 @@ const SomaTestimonials = () => {
             >
               <div className={styles.cardSheen} aria-hidden="true" />
               <div className={styles.quoteMark} aria-hidden="true">“</div>
-              <p className={styles.quote}>{t.quote}</p>
+              <p className={styles.quote}>{cur.quote}</p>
               <div className={styles.author}>
-                <span className={styles.avatar}>{t.avatar}</span>
+                <span className={styles.avatar}>{cur.avatar}</span>
                 <div>
-                  <strong>{t.name}</strong>
-                  <span>{t.role}</span>
+                  <strong>{cur.name}</strong>
+                  <span>{cur.role}</span>
                 </div>
-                <span className={styles.dragHint} aria-hidden="true">drag ↔</span>
+                <span className={styles.dragHint} aria-hidden="true">{t("home.testimonials.dragHint")}</span>
               </div>
 
               {/* controls now inside card */}
               <div className={styles.controlsInside}>
                 <div className={styles.dots}>
-                  {SOMA_TESTIMONIALS.map((_, i) => (
+                  {list.map((_, i) => (
                     <button
                       key={i}
                       className={`${styles.dot} ${idx === i ? styles.dotActive : ""}`}
                       onClick={() => setIdx(i)}
-                      aria-label={`Testimonial ${i + 1} of ${SOMA_TESTIMONIALS.length}`}
+                      aria-label={t("home.testimonials.testimonialLabel", { current: i + 1, total: list.length })}
                       aria-selected={idx === i}
                     >
                       <motion.span
@@ -111,10 +114,10 @@ const SomaTestimonials = () => {
                   ))}
                 </div>
                 <div className={styles.arrows}>
-                  <motion.button className={styles.arrow} onClick={prev} aria-label="Previous testimonial" whileHover={reduced ? {} : { scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={spring.snappy}>
+                  <motion.button className={styles.arrow} onClick={prev} aria-label={t("home.testimonials.previous")} whileHover={reduced ? {} : { scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={spring.snappy}>
                     ←
                   </motion.button>
-                  <motion.button className={styles.arrow} onClick={next} aria-label="Next testimonial" whileHover={reduced ? {} : { scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={spring.snappy}>
+                  <motion.button className={styles.arrow} onClick={next} aria-label={t("home.testimonials.next")} whileHover={reduced ? {} : { scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={spring.snappy}>
                     →
                   </motion.button>
                 </div>
@@ -130,11 +133,11 @@ const SomaTestimonials = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
         >
-          <span>Trusted by 500+ members</span>
+          <span>{t("home.testimonials.trust1")}</span>
           <span aria-hidden="true">·</span>
-          <span>4.9★ average rating</span>
+          <span>{t("home.testimonials.trust2")}</span>
           <span aria-hidden="true">·</span>
-          <span>18 years of teaching</span>
+          <span>{t("home.testimonials.trust3")}</span>
         </motion.div>
       </div>
     </section>

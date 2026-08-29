@@ -217,7 +217,7 @@ export class RefundService {
         reason: reason || '',
       },
       subject: 'Refund Processed',
-      message: `Refund of ₹${amountInr} has been processed. Refund receipt: ${refundReceipt}`,
+      message: `Refund of KES ${amountInr} has been processed. Refund receipt: ${refundReceipt}`,
       priority: 'normal',
     }).catch((err) => logger.error(MODULE, 'Refund in-app notification failed', { error: err.message }));
 

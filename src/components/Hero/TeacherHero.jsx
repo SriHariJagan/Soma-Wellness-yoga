@@ -31,7 +31,7 @@ const TeacherHero = () => {
           </motion.span>
           <motion.h1 className={styles.title} variants={item}>200 Hours Yoga Teacher Training Course</motion.h1>
           <motion.p className={styles.desc} variants={item}>
-            Our <strong>200‑Hour Yoga Teacher Training Course (YTTC)</strong> at Pragya Yoga
+            Our <strong>200‑Hour Yoga Teacher Training Course (YTTC)</strong> at Soma Wellness
             is designed for those who wish to deepen their practice, gain a thorough understanding
             of yoga philosophy, and embark on the journey of becoming a certified yoga teacher.
           </motion.p>

@@ -283,11 +283,15 @@
 .drawerContact { font-size: 13px; line-height: 1.6; color: var(--soma-charcoal); }
 .drawerContact a { text-decoration: underline; text-underline-offset: 3px; }
 
+.navActions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.langSwitcherWrap { display: flex; align-items: center; }
+
 /* Hide/show */
 @media (max-width: 960px) {
   .navLinks { display: none; }
   .hamburger { display: flex; }
   .userSection { display: none; }
+  .langSwitcherWrap { display: none; }
 }
 @media (min-width: 961px) {
   .hamburger, .overlay, .drawer { display: none !important; }

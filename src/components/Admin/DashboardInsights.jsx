@@ -36,7 +36,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
       icon: <LuUserPlus />, cls: s.timeIcon, title: `${st.name || 'New student'} registered`,
       meta: `${st.city || st.email || 'Student CRM'} · just now`,
     })),
-    { icon: <LuCreditCard />, cls: s.timeIconGreen, title: 'Membership payment received', meta: `₹${(revenue || 0).toLocaleString('en-IN')} total collected` },
+    { icon: <LuCreditCard />, cls: s.timeIconGreen, title: 'Membership payment received', meta: `KES ${(revenue || 0).toLocaleString('en-KE')} total collected` },
     { icon: <LuCalendarCheck />, cls: s.timeIconBlue, title: `${metrics.pendingBookings ?? 0} bookings pending review`, meta: 'Bookings calendar' },
     { icon: <LuSparkles />, cls: s.timeIconAmber, title: `${totalLeads} leads in pipeline`, meta: 'Pipeline CRM' },
   ];
@@ -65,7 +65,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           trend={`${metrics.pendingBookings ?? 0} pending`} trendUp spark={[totalLeads * 0.4, totalLeads * 0.5, totalLeads * 0.7, totalLeads * 0.8, totalLeads * 0.9, totalLeads || 1]} />
         <KpiCard icon={<LuRadioTower />} accent="blue" label="Live Batches" value={totalBatches}
           trend={`${metrics.activeMemberships ?? 0} memberships`} trendUp spark={[totalBatches * 0.3, totalBatches * 0.5, totalBatches * 0.6, totalBatches * 0.8, totalBatches * 0.9, totalBatches || 1]} />
-        <KpiCard icon={<LuIndianRupee />} accent="green" label="Gross Revenue" value={revenue} prefix="₹"
+        <KpiCard icon={<LuIndianRupee />} accent="green" label="Gross Revenue" value={revenue} prefix="KES "
           trend="collected" trendUp spark={revTrend} />
       </div>
 
@@ -76,7 +76,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           spark={[1, 2, 3, 4, 5, bookStore.ordersToday ?? 1]} />
         <KpiCard icon={<LuTruck />} accent="amber" label="Awaiting Dispatch" value={bookStore.pendingDispatch ?? 0}
           spark={[bookStore.pendingDispatch * 0.3 || 0, bookStore.pendingDispatch * 0.5 || 0, bookStore.pendingDispatch * 0.7 || 0, bookStore.pendingDispatch * 0.9 || 0, bookStore.pendingDispatch || 0]} />
-        <KpiCard icon={<LuIndianRupee />} accent="green" label="Store Revenue" value={bookStore.revenue ?? 0} prefix="₹"
+        <KpiCard icon={<LuIndianRupee />} accent="green" label="Store Revenue" value={bookStore.revenue ?? 0} prefix="KES "
           trend="confirmed sales" trendUp spark={bookTrend2} />
         <KpiCard icon={<LuPackageOpen />} accent="blue" label="Products" value={bookStore.products ?? 0}
           trend={`${bookStore.lowStock ?? 0} low stock`} trendUp={false} spark={[1, 2, 3, 4, 5, bookStore.products || 1]} />
@@ -88,7 +88,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           <ChartCard
             title="Revenue & Membership Trend"
             subtitle="Last 6 months"
-            right={<div style={{ textAlign: 'right' }}><div className={s.chartBig}>₹{revenue.toLocaleString('en-IN')}</div><div className={s.chartSub}>total collected</div></div>}
+            right={<div style={{ textAlign: 'right' }}><div className={s.chartBig}>KES {revenue.toLocaleString('en-KE')}</div><div className={s.chartSub}>total collected</div></div>}
             legend={[{ color: '#F97316', label: 'Revenue' }, { color: '#16A34A', label: 'Members' }]}
           >
             <div style={{ color: 'var(--text-1)' }}>

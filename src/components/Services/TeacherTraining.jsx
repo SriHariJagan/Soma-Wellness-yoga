@@ -25,7 +25,7 @@ const TeacherTraining = () => {
           <h2 className={styles.title}>200 Hours Yoga Teacher Training Course</h2>
 
           <p className={styles.desc}>
-            Our <strong>200-Hour Yoga Teacher Training Course (YTTC)</strong> at Pragya Yoga 
+            Our <strong>200-Hour Yoga Teacher Training Course (YTTC)</strong> at Soma Wellness 
             is designed for those who wish to deepen their practice, gain a thorough understanding 
             of yoga philosophy, and embark on the journey of becoming a certified yoga teacher.
           </p>
@@ -51,7 +51,7 @@ const TeacherTraining = () => {
         <div className={styles.imageWrap}>
           <img 
             src="/images/services/YTTC.webp" 
-            alt="Yoga Teacher Training Course at Pragya Yoga" 
+            alt="Yoga Teacher Training Course at Soma Wellness" 
             loading="lazy"
             decoding="async" 
           />

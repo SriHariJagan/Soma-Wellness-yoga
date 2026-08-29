@@ -33,7 +33,7 @@ function buildRedisOptions() {
       logger.error(MODULE, 'Redis reconnect on error', { error: err.message });
       return true;
     },
-    keyPrefix: 'pragya:',
+    keyPrefix: 'soma:',
   };
 
   if (url.startsWith('rediss://')) {

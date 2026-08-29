@@ -15,7 +15,7 @@ const MODULE = 'ServiceService';
 const DAY = 86400000;
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
 export async function buildStudentServices(userId) {
   const services = await UserService.find({ user: userId })
@@ -218,7 +218,7 @@ export async function purchaseService(userId, serviceId, options = {}) {
     data: {
       name: userDoc?.name || 'Student',
       serviceName: service.name,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://pragyayoga.com'}/dashboard`,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.in'}/dashboard`,
     },
     subject: `Enrolled in ${service.name}`,
     priority: 'normal',
@@ -281,7 +281,7 @@ export async function renewUserService(userServiceId, options = {}) {
 
   await notify(us.user, {
     title: 'Service renewed',
-    message: `Your <strong>${us.serviceName}</strong> has been renewed until ${newExpiry.toLocaleDateString('en-IN')}.`,
+    message: `Your <strong>${us.serviceName}</strong> has been renewed until ${newExpiry.toLocaleDateString('en-KE')}.`,
     type: 'success',
   });
   const userDoc = await User.findById(us.user).select('name').lean();
@@ -291,7 +291,7 @@ export async function renewUserService(userServiceId, options = {}) {
     data: {
       name: userDoc?.name || 'Student',
       serviceName: us.serviceName,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://pragyayoga.com'}/dashboard`,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.in'}/dashboard`,
     },
     subject: `Service renewed: ${us.serviceName}`,
     priority: 'normal',

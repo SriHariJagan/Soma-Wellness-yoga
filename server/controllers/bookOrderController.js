@@ -174,7 +174,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
   if (!shipping.available) throw ApiError.badRequest(shipping.reason || 'Delivery is not available for this PIN code');
 
   const total = Math.round((bookSubtotal + shipping.shippingCharge) * 100) / 100;
-  if (total <= 0) throw ApiError.badRequest('Order total must be at least ₹1 — please adjust your coupon and try again');
+  if (total <= 0) throw ApiError.badRequest('Order total must be at least KES 1 — please adjust your coupon and try again');
 
   // ── Reserve inventory atomically ──
   const reservations = [];
@@ -244,7 +244,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       description: `Book checkout – ${lines.length} title(s), ${bookItems.length} item(s), coupon: ${couponCode || 'none'}, pincode: ${address.pincode}`,
       items: paymentItems,
       amount: Math.round(total * 100),
-      currency: 'INR',
+      currency: 'KES',
       gateway: 'razorpay',
       razorpayOrderId: razorpayOrder.id,
       paymentStatus: 'pending',
@@ -294,7 +294,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       inventoryReservedAt: now,
       timeline: [{
         status: 'payment_pending',
-        note: `Order placed — awaiting payment (₹${total.toLocaleString('en-IN')})`,
+        note: `Order placed — awaiting payment (KES ${total.toLocaleString('en-KE')})`,
         by: 'system',
         at: now,
       }],

@@ -63,8 +63,8 @@ export default function NextBatch() {
           "name": "200 Hour Yoga Teacher Training – Next Batch",
           "provider": {
             "@type": "Organization",
-            "name": "Pragya Yoga Alliance",
-            "url": "https://pragyayoga.in"
+            "name": "Soma Wellness",
+            "url": "https://somawellness.in"
           },
           "startDate": "2026-09-15",
           "endDate": "2026-10-30",

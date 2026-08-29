@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./Newsletter.css";
 
 const Newsletter = () => {
+  const { t } = useTranslation();
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e) => {
@@ -9,19 +11,19 @@ const Newsletter = () => {
     const email = e.target.newsletterEmail.value;
 
     if (email) {
-      setMessage("✨ You're subscribed! Welcome aboard.");
+      setMessage(t("newsletter.success"));
       e.target.reset();
     } else {
-      setMessage("⚠️ Please enter a valid email.");
+      setMessage(t("newsletter.invalidEmail"));
     }
   };
 
   return (
     <section className="newsletter" id="join-community">
       <div className="newsletter-container">
-        <h2 className="newsletter-title">Join Our Community</h2>
+        <h2 className="newsletter-title">{t("newsletter.title")}</h2>
         <p className="newsletter-subtitle">
-          Get exclusive updates, insights, and offers directly to your inbox.
+          {t("newsletter.desc")}
         </p>
 
         <form className="newsletter-form" onSubmit={handleSubmit}>
@@ -29,11 +31,11 @@ const Newsletter = () => {
             type="email"
             id="newsletterEmail"
             name="newsletterEmail"
-            placeholder="Your email address"
+            placeholder={t("newsletter.placeholder")}
             required
           />
           <button type="submit" className="newsletter-btn">
-            Subscribe
+            {t("newsletter.subscribe")}
           </button>
         </form>
 

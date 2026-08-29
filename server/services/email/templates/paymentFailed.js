@@ -7,8 +7,8 @@ export default function render(data = {}) {
   const amount = data.amount || '';
   const transactionId = escapeHtml(data.transactionId || '');
   const failureReason = escapeHtml(data.failureReason || 'Unknown error');
-  const paymentDate = data.paymentDate || new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-  const dashboardUrl = data.dashboardUrl || 'https://pragyayoga.com/dashboard';
+  const paymentDate = data.paymentDate || new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
 
   const subject = `Payment Failed — ${STUDIO_NAME}`;
 

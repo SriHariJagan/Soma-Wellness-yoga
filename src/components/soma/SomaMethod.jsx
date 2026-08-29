@@ -1,18 +1,26 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { SOMA_METHOD } from "../../config/siteContent";
 import styles from "./SomaMethod.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
-
-const titleWords = [
-  { text: "Breathe", italic: false },
-  { text: "Move", italic: false },
-  { text: "Rest", italic: false },
-  { text: "Reconnect", italic: true },
-];
+import { useTranslation } from "react-i18next";
 
 const SomaMethod = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
+
+  const titleWords = [
+    { text: t("home.method.word1"), italic: false },
+    { text: t("home.method.word2"), italic: false },
+    { text: t("home.method.word3"), italic: false },
+    { text: t("home.method.word4"), italic: true },
+  ];
+
+  const steps = [
+    { num: "01", word: t("home.method.steps.breathe.word"), desc: t("home.method.steps.breathe.desc") },
+    { num: "02", word: t("home.method.steps.move.word"), desc: t("home.method.steps.move.desc") },
+    { num: "03", word: t("home.method.steps.rest.word"), desc: t("home.method.steps.rest.desc") },
+    { num: "04", word: t("home.method.steps.reconnect.word"), desc: t("home.method.steps.reconnect.desc") },
+  ];
 
   return (
     <section className={styles.section}>
@@ -54,10 +62,10 @@ const SomaMethod = () => {
               style={{ transformOrigin: "left" }}
             />
             <span className={styles.eyebrowDot} />
-            The Soma Method
+            {t("home.method.eyebrow")}
           </motion.div>
 
-          <h2 className={styles.title} aria-label="Breathe Move Rest Reconnect">
+          <h2 className={styles.title} aria-label={t("home.method.titleAria")}>
             <span className={styles.titleRow}>
               {titleWords.map((w, i) => (
                 <React.Fragment key={w.text}>
@@ -109,7 +117,7 @@ const SomaMethod = () => {
               visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE } },
             }}
           >
-            Four movements, one return. A calm, structured path that respects both tradition and your modern life.
+            {t("home.method.sub")}
           </motion.p>
         </motion.div>
 
@@ -124,7 +132,7 @@ const SomaMethod = () => {
             visible: { transition: { staggerChildren: reduced ? 0 : 0.09, delayChildren: reduced ? 0 : 0.18 } },
           }}
         >
-          {SOMA_METHOD.map((m, i) => (
+          {steps.map((m, i) => (
             <motion.article
               key={m.num}
               className={styles.card}
@@ -254,7 +262,7 @@ const SomaMethod = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.9, ease: EASE }}
         >
-          Your path, unhurried — breath to movement to stillness to life.
+          {t("home.method.caption")}
         </motion.p>
       </div>
     </section>

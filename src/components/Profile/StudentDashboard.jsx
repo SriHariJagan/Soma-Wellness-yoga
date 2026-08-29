@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./StudentDashboard.module.css";
 import { getStudentProfile, getActiveMembership, getCartCount } from "../api/StudentServices.js";
+import { useTranslation } from "react-i18next";
 
 const ProfilePage = lazy(() => import("./ProfilePage"));
 const ActivePlanPage = lazy(() => import("./ActivePlanPage"));
@@ -27,28 +28,28 @@ const BlogDetail = lazy(() => import("./BlogDetail"));
 const YTTCPage = lazy(() => import("./YTTCPage"));
 const OrderHistoryPage = lazy(() => import("./OrderHistoryPage"));
 
-const NAV = [
-  { id: "soma",          label: "SOMA Wellness",     icon: "ti-heart"          },
-  { id: "profile",       label: "Profile",           icon: "ti-user"           },
-  { id: "cart",          label: "My Cart",           icon: "ti-shopping-cart"  },
-  { id: "orders",        label: "Order History",     icon: "ti-receipt-2"      },
-  { id: "browsePlans",   label: "Browse Plans",      icon: "ti-currency-rupee" },
-  { id: "plan",          label: "Active plan",       icon: "ti-shield-check"   },
-  { id: "services",      label: "Active services",   icon: "ti-package"        },
-  { id: "browseServices",label: "Browse services",   icon: "ti-layout-grid" },
-  { id: "yttc",          label: "YTTC",              icon: "ti-certificate" },
-  { id: "attendance",    label: "Attendance",        icon: "ti-calendar-check" },
-  { id: "payments",      label: "Payments",          icon: "ti-receipt"        },
-  { id: "classes",       label: "Classes",           icon: "ti-yoga"           },
-  { id: "downloads",     label: "Downloads",         icon: "ti-download"       },
-  { id: "consultations", label: "Consultations",     icon: "ti-stethoscope"    },
-  { id: "workshops",     label: "Workshops",         icon: "ti-award"          },
-  { id: "events",        label: "Events",            icon: "ti-calendar-event" },
+const NAV_KEYS = [
+  { id: "soma",          key: "dashboard.soma",           icon: "ti-heart"          },
+  { id: "profile",       key: "dashboard.profile",        icon: "ti-user"           },
+  { id: "cart",          key: "dashboard.myCart",         icon: "ti-shopping-cart"  },
+  { id: "orders",        key: "dashboard.orderHistory",   icon: "ti-receipt-2"      },
+  { id: "browsePlans",   key: "dashboard.browsePlans",    icon: "ti-currency-rupee" },
+  { id: "plan",          key: "dashboard.activePlan",     icon: "ti-shield-check"   },
+  { id: "services",      key: "dashboard.activeServices", icon: "ti-package"        },
+  { id: "browseServices",key: "dashboard.browseServices", icon: "ti-layout-grid" },
+  { id: "yttc",          key: "dashboard.yttc",           icon: "ti-certificate" },
+  { id: "attendance",    key: "dashboard.attendance",     icon: "ti-calendar-check" },
+  { id: "payments",      key: "dashboard.payments",       icon: "ti-receipt"        },
+  { id: "classes",       key: "dashboard.classes",        icon: "ti-yoga"           },
+  { id: "downloads",     key: "dashboard.downloads",      icon: "ti-download"       },
+  { id: "consultations", key: "dashboard.consultations",  icon: "ti-stethoscope"    },
+  { id: "workshops",     key: "dashboard.workshops",      icon: "ti-award"          },
+  { id: "events",        key: "dashboard.events",         icon: "ti-calendar-event" },
 
-  { id: "notifications", label: "Notifications",     icon: "ti-bell"           },
-  { id: "trial",         label: "Free Trial",        icon: "ti-gift"           },
-  { id: "blogs",         label: "Blogs",             icon: "ti-article"        },
-  { id: "myBlogs",       label: "My Blogs",          icon: "ti-pencil"         },
+  { id: "notifications", key: "dashboard.notifications",  icon: "ti-bell"           },
+  { id: "trial",         key: "dashboard.freeTrial",      icon: "ti-gift"           },
+  { id: "blogs",         key: "dashboard.blogs",          icon: "ti-article"        },
+  { id: "myBlogs",       key: "dashboard.myBlogs",        icon: "ti-pencil"         },
 ];
 
 const SomaDashboard = lazy(() => import("./SomaDashboard"));
@@ -85,6 +86,8 @@ const pageVariants = {
 };
 
 export default function StudentDashboard({ onLogout }) {
+  const { t } = useTranslation();
+  const NAV = NAV_KEYS.map((n) => ({ ...n, label: t(n.key) }));
   const [student, setStudent]         = useState(null);
   const [loading, setLoading]         = useState(true);
   const [fetchError, setFetchError]   = useState("");
@@ -198,7 +201,7 @@ export default function StudentDashboard({ onLogout }) {
       <div className={styles.bootScreen}>
         <div className={styles.bootCard}>
           <span className={styles.bootSpinner} aria-hidden="true" />
-          <p>Loading your dashboard…</p>
+          <p>{t("dashboard.loadingProfile")}</p>
         </div>
       </div>
     );
@@ -209,8 +212,8 @@ export default function StudentDashboard({ onLogout }) {
       <div className={styles.bootScreen}>
         <div className={styles.bootCard}>
           <span className={styles.bootIcon} aria-hidden="true"><i className="ti ti-lock" /></span>
-          <p>{fetchError || "Access Denied."}</p>
-          <button onClick={handleLogout} className={styles.bootBtn}>Back to Login</button>
+          <p>{fetchError || t("dashboard.accessDenied")}</p>
+          <button onClick={handleLogout} className={styles.bootBtn}>{t("dashboard.backToLogin")}</button>
         </div>
       </div>
     );
@@ -269,18 +272,18 @@ export default function StudentDashboard({ onLogout }) {
             <div className={styles.sbName}>{studentName}</div>
             <div className={styles.sbPlan}>
               {activeMembership && activeMembership.isActive
-                ? <><span className={styles.sbPlanHighlight}>{activeMembership.planMonths}-mo</span> Plan · <span style={{color:'#16A34A',fontWeight:600,fontSize:11}}>Active</span></>
+                ? <><span className={styles.sbPlanHighlight}>{activeMembership.planMonths}-mo</span> {t("dashboard.plan")} · <span style={{color:'#16A34A',fontWeight:600,fontSize:11}}>{t("dashboard.statusActive")}</span></>
                 : activeMembership && activeMembership.isPaused
-                  ? <><span className={styles.sbPlanHighlight}>{activeMembership.planMonths}-mo</span> Plan · <span style={{color:'#D97706',fontWeight:600,fontSize:11}}>Paused</span></>
+                  ? <><span className={styles.sbPlanHighlight}>{activeMembership.planMonths}-mo</span> {t("dashboard.plan")} · <span style={{color:'#D97706',fontWeight:600,fontSize:11}}>{t("dashboard.statusPaused")}</span></>
                   : activeMembership
-                    ? <span className={styles.sbPlanMuted}>Expired</span>
-                    : <span className={styles.sbPlanMuted}>No Active Plan</span>
+                    ? <span className={styles.sbPlanMuted}>{t("dashboard.statusExpired")}</span>
+                    : <span className={styles.sbPlanMuted}>{t("dashboard.noActivePlan")}</span>
               }
             </div>
           </div>
         </button>
 
-        <nav className={styles.nav} aria-label="Dashboard Navigation">
+        <nav className={styles.nav} aria-label={t("dashboard.navAria")}>
           {NAV.map(({ id, label, icon }) => {
             const isActive = activePage === id;
             return (
@@ -316,15 +319,15 @@ export default function StudentDashboard({ onLogout }) {
         <div className={styles.sbFooter}>
           <button type="button" className={styles.enrollBtn} onClick={() => handleNav("classes")}>
             <i className="ti ti-plus" aria-hidden="true" />
-            <span className={styles.navLabel}>Enroll / Book</span>
+            <span className={styles.navLabel}>{t("dashboard.enrollBook")}</span>
           </button>
-          <button type="button" className={styles.navItem} onClick={() => navigate("/")} title={isCollapsed ? "Back to Website" : undefined}>
+          <button type="button" className={styles.navItem} onClick={() => navigate("/")} title={isCollapsed ? t("navigation.backToWebsite") : undefined}>
             <i className="ti ti-arrow-left" aria-hidden="true" />
-            <span className={styles.navLabel}>Back to Website</span>
+            <span className={styles.navLabel}>{t("navigation.backToWebsite")}</span>
           </button>
           <button type="button" className={styles.logoutBtn} onClick={handleLogout}>
             <i className="ti ti-logout" aria-hidden="true" />
-            <span className={styles.navLabel}>Sign Out</span>
+            <span className={styles.navLabel}>{t("dashboard.signOut")}</span>
           </button>
         </div>
       </aside>

@@ -7,13 +7,13 @@ import { scrollToSection } from "../../hooks/useScrollToSection";
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  "name": "Pragya Yoga Services",
-  "description": "Authentic Indian yoga classes, workshops, and community programs offered by Pragya Yoga Alliance in Jaipur, India.",
+  "name": "Soma Wellness Services",
+  "description": "Authentic Indian yoga classes, workshops, and community programs offered by Soma Wellness in Jaipur, India.",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Yoga Classes", "url": "https://pragyayoga.in/classes" },
-    { "@type": "ListItem", "position": 2, "name": "Yoga Workshops", "url": "https://pragyayoga.in/workshops" },
-    { "@type": "ListItem", "position": 3, "name": "Yoga Community", "url": "https://pragyayoga.in/community" },
-    { "@type": "ListItem", "position": 4, "name": "Styles of Yoga", "url": "https://pragyayoga.in/styles" }
+    { "@type": "ListItem", "position": 1, "name": "Yoga Classes", "url": "https://somawellness.in/classes" },
+    { "@type": "ListItem", "position": 2, "name": "Yoga Workshops", "url": "https://somawellness.in/workshops" },
+    { "@type": "ListItem", "position": 3, "name": "Yoga Community", "url": "https://somawellness.in/community" },
+    { "@type": "ListItem", "position": 4, "name": "Styles of Yoga", "url": "https://somawellness.in/styles" }
   ],
 };
 
@@ -151,7 +151,7 @@ const Services = () => {
             <h2 className={styles.headerTitle}>Authentic Indian Yoga & Global Wellness</h2>
             <p className={styles.headerSub}>
               Rooted in Bharat's timeless yogic tradition and supported by modern scientific wellness practices,
-              Pragya Yoga Alliance in Jaipur brings authentic Indian yoga to the world.
+               Soma Wellness in Jaipur brings authentic Indian yoga to the world.
             </p>
           </motion.header>
 

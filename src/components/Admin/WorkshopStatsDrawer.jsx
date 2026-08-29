@@ -35,11 +35,11 @@ const iconBox = (bg = C.primaryBg) => ({
 /* ─── Helpers ───────────────────────────────────────────── */
 const fmtDate = (d) => {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 const fmtDateTime = (d) => {
   if (!d) return '—';
-  return new Date(d).toLocaleString('en-IN', {
+  return new Date(d).toLocaleString('en-KE', {
     day: 'numeric', month: 'short', year: 'numeric',
     hour: 'numeric', minute: '2-digit', hour12: true,
   });
@@ -270,7 +270,7 @@ export default function WorkshopStatsDrawer({ open, statsData, statsLoading, onC
             <p style={{ margin: 0, fontSize: 13, color: C.text2, lineHeight: 1.5 }}>
               {fmtDate(wk.date)}{wk.startTime ? ` · ${wk.startTime}${wk.endTime ? ` – ${wk.endTime}` : ''}` : ''}
               {wk.instructor ? ` · ${wk.instructor}` : ''}
-              {wk.isPaid ? ` · ₹${(wk.price || 0).toLocaleString('en-IN')}` : ' · Free'}
+              {wk.isPaid ? ` · KES ${(wk.price || 0).toLocaleString('en-KE')}` : ' · Free'}
               {wk.capacity ? ` · Capacity: ${wk.capacity}` : ''}
             </p>
           </div>
@@ -298,8 +298,8 @@ export default function WorkshopStatsDrawer({ open, statsData, statsLoading, onC
           <MetricCard icon={<LuCheck size={20} />} value={st.paidRegistrations ?? 0} label="Paid Enrollments" color={C.green} subtitle={st.totalRegistrations > 0 ? `${Math.round((st.paidRegistrations / st.totalRegistrations) * 100)}% paid` : ''} />
           <MetricCard icon={<LuClock size={20} />} value={st.remainingSeats ?? 0} label="Remaining Seats" color={C.blue} subtitle={wk.capacity ? `${Math.round((st.remainingSeats / wk.capacity) * 100)}% available` : ''} />
           <MetricCard icon={<LuTrendingUp size={20} />} value={`${st.enrollmentPct ?? 0}%`} label="Enrollment Rate" color={C.amber} subtitle={wk.capacity ? `${st.totalRegistrations ?? 0} / ${wk.capacity}` : ''} />
-          <MetricCard icon={<LuIndianRupee size={20} />} value={wk.isPaid ? `₹${(wk.price || 0).toLocaleString('en-IN')}` : 'Free'} label="Workshop Price" color={C.primary} />
-          <MetricCard icon={<LuAward size={20} />} value={`₹${(st.totalRevenue || 0).toLocaleString('en-IN')}`} label="Total Revenue" color={C.green} subtitle={`${st.paidRegistrations ?? 0} × ₹${(wk.price || 0).toLocaleString('en-IN')}`} />
+          <MetricCard icon={<LuIndianRupee size={20} />} value={wk.isPaid ? `KES ${(wk.price || 0).toLocaleString('en-KE')}` : 'Free'} label="Workshop Price" color={C.primary} />
+          <MetricCard icon={<LuAward size={20} />} value={`KES ${(st.totalRevenue || 0).toLocaleString('en-KE')}`} label="Total Revenue" color={C.green} subtitle={`${st.paidRegistrations ?? 0} × KES ${(wk.price || 0).toLocaleString('en-KE')}`} />
         </div>
 
         {/* ── Workshop Information ───────────────────────────── */}
@@ -336,7 +336,7 @@ export default function WorkshopStatsDrawer({ open, statsData, statsLoading, onC
             <InfoRow icon={<LuClock size={14} />} label="Registration Deadline" value={fmtDate(wk.registrationDeadline)} />
           )}
           {wk.isPaid && (
-            <InfoRow icon={<LuIndianRupee size={14} />} label="Price" value={`₹${(wk.price || 0).toLocaleString('en-IN')}`} />
+            <InfoRow icon={<LuIndianRupee size={14} />} label="Price" value={`KES ${(wk.price || 0).toLocaleString('en-KE')}`} />
           )}
         </SectionCard>
 

@@ -214,7 +214,7 @@ export default function ServicesManagement({ onChanged } = {}) {
     { key: 'instructors',  icon: <LuUsers size={15} />,     label: 'Instructors' },
     { key: 'enrollments',  icon: <LuListChecks size={15} />, label: 'Enrollments' },
   ];
-  const fmtPrice = (n) => Number(n || 0).toLocaleString('en-IN');
+  const fmtPrice = (n) => Number(n || 0).toLocaleString('en-KE');
 
   return (
     <div>
@@ -271,7 +271,7 @@ export default function ServicesManagement({ onChanged } = {}) {
                 <option value="per_session">Per Session</option>
                 <option value="contact">Contact (enquiry)</option>
               </select>
-              <input type="number" placeholder="Price (₹)" value={serviceForm.price} onChange={e => setServiceForm({ ...serviceForm, price: e.target.value })} />
+              <input type="number" placeholder="Price (KES )" value={serviceForm.price} onChange={e => setServiceForm({ ...serviceForm, price: e.target.value })} />
               <input type="number" placeholder="Session duration (min)" value={serviceForm.sessionDuration} onChange={e => setServiceForm({ ...serviceForm, sessionDuration: e.target.value })} />
               <input type="number" placeholder="Total sessions" value={serviceForm.totalSessions} onChange={e => setServiceForm({ ...serviceForm, totalSessions: e.target.value })} />
               <input type="number" placeholder="Validity duration" value={serviceForm.validityDuration} onChange={e => setServiceForm({ ...serviceForm, validityDuration: e.target.value })} />
@@ -356,7 +356,7 @@ export default function ServicesManagement({ onChanged } = {}) {
                         {inst && ` · ${inst}`}
                       </div>
                       <div className={s.productFoot}>
-                        <div className={s.productPrice}>₹{fmtPrice(svc.price)} <span style={{ fontSize: 11, fontWeight: 400, color: '#9C8E7C' }}>{priceLabel}</span></div>
+                        <div className={s.productPrice}>KES {fmtPrice(svc.price)} <span style={{ fontSize: 11, fontWeight: 400, color: '#9C8E7C' }}>{priceLabel}</span></div>
                         <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnDanger}`} onClick={() => handleDeleteService(svc._id, svc.name)} disabled={deletingId === svc._id}>
                           {deletingId === svc._id ? '…' : <LuTrash2 size={13} />}
                         </button>
@@ -437,7 +437,7 @@ export default function ServicesManagement({ onChanged } = {}) {
               </div>
               <div className={s.statCard} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 16, padding: '16px 18px' }}>
                 <div style={{ fontSize: 11, color: '#6B5E4E', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Revenue</div>
-                <div style={{ fontSize: 28, fontWeight: 700, color: '#2E7D5B', marginTop: 4 }}>₹{fmtPrice(analytics.totalRevenue)}</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#2E7D5B', marginTop: 4 }}>KES {fmtPrice(analytics.totalRevenue)}</div>
               </div>
               <div className={s.statCard} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 16, padding: '16px 18px' }}>
                 <div style={{ fontSize: 11, color: '#6B5E4E', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Expiring</div>
@@ -529,7 +529,7 @@ export default function ServicesManagement({ onChanged } = {}) {
                         </td>
                         <td style={{ padding: '12px 16px', color: '#6B5E4E' }}>{asgn.usedSessions || 0} / {asgn.totalSessions || 0}</td>
                         <td style={{ padding: '12px 16px', color: '#6B5E4E', whiteSpace: 'nowrap' }}>
-                          {asgn.expiryDate ? new Date(asgn.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                          {asgn.expiryDate ? new Date(asgn.expiryDate).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           {asgn.daysLeft != null && asgn.daysLeft > 0 && <span style={{ color: '#16A34A', marginLeft: 4 }}>({asgn.daysLeft}d)</span>}
                         </td>
                         <td style={{ padding: '12px 16px' }}>

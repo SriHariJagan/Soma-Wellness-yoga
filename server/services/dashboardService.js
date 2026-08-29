@@ -20,11 +20,11 @@ import FreeTrial from '../models/FreeTrial.js';
 const FRONTEND_URL = 'http://localhost:5173';
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
 const fmtDateTime = (d) =>
   d
-    ? new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })
+    ? new Date(d).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })
     : '—';
 
 const relTime = (d) => {
@@ -57,7 +57,7 @@ function buildAttendanceCalendar(records, now = new Date()) {
   const cells = [];
   for (let i = 0; i < firstWeekday; i++) cells.push({ status: 'empty', date: '' });
   for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = new Date(year, month, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const dateStr = new Date(year, month, d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' });
     let status;
     if (byDay.has(d)) status = byDay.get(d);
     else if (d > today) status = 'future';
@@ -65,7 +65,7 @@ function buildAttendanceCalendar(records, now = new Date()) {
     cells.push({ status, date: dateStr });
   }
 
-  const attendanceMonth = now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  const attendanceMonth = now.toLocaleDateString('en-KE', { month: 'long', year: 'numeric' });
   return { attendanceRecords: cells, attendanceMonth };
 }
 

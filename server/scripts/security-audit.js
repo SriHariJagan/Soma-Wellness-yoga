@@ -399,7 +399,7 @@ function generateReport(findings, format = 'table') {
 
   let report = '';
   report += '='.repeat(100) + '\n';
-  report += '  PRAGYA YOGA - PAYMENT ACTIVATION CHAIN SECURITY AUDIT\n';
+  report += '  SOMA WELLNESS - PAYMENT ACTIVATION CHAIN SECURITY AUDIT\n';
   report += '='.repeat(100) + '\n\n';
 
   if (findings.length === 0) {

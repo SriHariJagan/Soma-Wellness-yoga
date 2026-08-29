@@ -31,7 +31,7 @@ export default function CouponsReferrals({ form, setForm, coupons = [], onSave, 
             <input type="text" placeholder="Code (e.g. FESTIVE20)" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} />
             <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
               <option value="Percentage">Percentage (%)</option>
-              <option value="Flat">Flat (₹)</option>
+              <option value="Flat">Flat (KES )</option>
             </select>
             <input type="number" placeholder="Discount value" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} />
             <label className={s.checkLabel}>
@@ -57,7 +57,7 @@ export default function CouponsReferrals({ form, setForm, coupons = [], onSave, 
             <div key={cp._id || cp.code} className={s.couponCard}>
               <div>
                 <div className={s.couponCode}>{cp.code}</div>
-                <div className={s.couponMeta}>{cp.value}{cp.discountType === 'Percentage' ? '%' : '₹'} Off · {cp.discountType}{cp.usageCount ? ` · used ${cp.usageCount}×` : ''}</div>
+                <div className={s.couponMeta}>{cp.value}{cp.discountType === 'Percentage' ? '%' : 'KES '} Off · {cp.discountType}{cp.usageCount ? ` · used ${cp.usageCount}×` : ''}</div>
               </div>
               <Badge label={cp.isReferral ? 'Referral' : (cp.active === false ? 'Pending' : 'Active')} />
             </div>

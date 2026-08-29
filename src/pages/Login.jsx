@@ -1,8 +1,8 @@
 import React from "react";
-import LoginForm from "../components/Auth/LoginForm";
+import AuthCard from "../components/Auth/AuthCard";
 
-const Login = ({ onLoginSuccess }) => {
-  return <LoginForm onLoginSuccess={onLoginSuccess} />;
-};
+const Login = ({ onLoginSuccess }) => (
+  <AuthCard initialView="login" onLoginSuccess={onLoginSuccess} />
+);
 
 export default Login;

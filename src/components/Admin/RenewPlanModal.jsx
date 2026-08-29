@@ -57,7 +57,7 @@ export default function RenewPlanModal({ student, membership, onClose, onSuccess
 
   const formatPrice = (price) => {
     if (!price && price !== 0) return '';
-    return '₹' + Number(price).toLocaleString('en-IN');
+    return 'KES ' + Number(price).toLocaleString('en-KE');
   };
 
   const renderPlanCard = (plan) => {

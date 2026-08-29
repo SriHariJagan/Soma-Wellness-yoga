@@ -351,7 +351,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
   const now = new Date();
   for (let i = 5; i >= 0; i--) {
     const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const label = m.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+    const label = m.toLocaleDateString('en-KE', { month: 'short', year: '2-digit' });
     monthlyLabels.push(label);
     monthlyValues.push(attendance.filter(a => {
       const d = new Date(a.date);
@@ -521,9 +521,9 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
         <SectionCard icon={<LuUser size={18} />} title="Personal Information">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
             <InfoRow icon={<LuUser size={14} />} label="Full Name" value={sDetail.name} />
-            <InfoRow icon={<LuCalendar size={14} />} label="Date of Birth" value={sDetail.dateOfBirth ? new Date(sDetail.dateOfBirth).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'} />
+            <InfoRow icon={<LuCalendar size={14} />} label="Date of Birth" value={sDetail.dateOfBirth ? new Date(sDetail.dateOfBirth).toLocaleDateString('en-KE', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'} />
             <InfoRow icon={<LuActivity size={14} />} label="Gender" value={sDetail.gender || '—'} />
-            <InfoRow icon={<LuCalendar size={14} />} label="Joined" value={sDetail.createdAt ? new Date(sDetail.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'} />
+            <InfoRow icon={<LuCalendar size={14} />} label="Joined" value={sDetail.createdAt ? new Date(sDetail.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'} />
             <InfoRow icon={<LuActivity size={14} />} label="Status" value={sDetail.status || 'active'} />
             <InfoRow icon={<LuMapPin size={14} />} label="City" value={sDetail.city || '—'} />
           </div>
@@ -558,19 +558,19 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
           <InfoRow icon={<LuActivity size={14} />} label="Status" value={
             <Badge label={membership?.computedStatus || membership?.status || 'None'} />
           } />
-          <InfoRow icon={<LuCalendar size={14} />} label="Start Date" value={membership?.startDate ? new Date(membership.startDate).toLocaleDateString('en-IN') : '—'} />
-          <InfoRow icon={<LuCalendar size={14} />} label="Expiry Date" value={membership?.expiryDate ? new Date(membership.expiryDate).toLocaleDateString('en-IN') : '—'} />
+          <InfoRow icon={<LuCalendar size={14} />} label="Start Date" value={membership?.startDate ? new Date(membership.startDate).toLocaleDateString('en-KE') : '—'} />
+          <InfoRow icon={<LuCalendar size={14} />} label="Expiry Date" value={membership?.expiryDate ? new Date(membership.expiryDate).toLocaleDateString('en-KE') : '—'} />
           <InfoRow icon={<LuClock size={14} />} label="Remaining Days" value={daysLeft !== null ? String(daysLeft) : '—'} />
-          <InfoRow icon={<LuIndianRupee size={14} />} label="Price" value={membership?.price ? `₹${membership.price.toLocaleString('en-IN')}` : '—'} />
+          <InfoRow icon={<LuIndianRupee size={14} />} label="Price" value={membership?.price ? `KES ${membership.price.toLocaleString('en-KE')}` : '—'} />
         </div>
       </SectionCard>
       {membership?.isPaused && (
         <SectionCard icon={<LuClock size={18} />} title="Pause Information" tone="amber">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-            <InfoRow icon={<LuCalendar size={14} />} label="Pause Started" value={membership.pauseStartedAt ? new Date(membership.pauseStartedAt).toLocaleDateString('en-IN') : '—'} />
+            <InfoRow icon={<LuCalendar size={14} />} label="Pause Started" value={membership.pauseStartedAt ? new Date(membership.pauseStartedAt).toLocaleDateString('en-KE') : '—'} />
             <InfoRow icon={<LuClock size={14} />} label="Current Duration" value={`${membership.currentPauseDuration || 0} day(s)`} />
-            <InfoRow icon={<LuCalendar size={14} />} label="Expected Auto-Resume" value={membership.expectedResumeDate ? new Date(membership.expectedResumeDate).toLocaleDateString('en-IN') : '—'} />
-            <InfoRow icon={<LuCalendar size={14} />} label="Updated Expiry" value={membership.expiryDate ? new Date(membership.expiryDate).toLocaleDateString('en-IN') : '—'} />
+            <InfoRow icon={<LuCalendar size={14} />} label="Expected Auto-Resume" value={membership.expectedResumeDate ? new Date(membership.expectedResumeDate).toLocaleDateString('en-KE') : '—'} />
+            <InfoRow icon={<LuCalendar size={14} />} label="Updated Expiry" value={membership.expiryDate ? new Date(membership.expiryDate).toLocaleDateString('en-KE') : '—'} />
             <InfoRow icon={<LuClock size={14} />} label="Pause Days Used" value={String(membership.pauseDaysUsed || 0)} />
             <InfoRow icon={<LuClock size={14} />} label="Remaining Pause Days" value={String(membership.remainingPauseDays || 0)} />
           </div>
@@ -580,11 +580,11 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
               {membership.pauseHistory.map((ph, i) => (
                 <div key={i} style={{ display: 'flex', gap: 12, padding: '6px 0', fontSize: 12, borderBottom: '1px solid rgba(231,215,190,0.2)' }}>
                   <span style={{ color: 'var(--color-text-muted)', minWidth: 80 }}>
-                    {ph.pauseStartedAt ? new Date(ph.pauseStartedAt).toLocaleDateString('en-IN') : '—'}
+                    {ph.pauseStartedAt ? new Date(ph.pauseStartedAt).toLocaleDateString('en-KE') : '—'}
                   </span>
                   <span style={{ color: 'var(--color-text-muted)' }}>→</span>
                   <span style={{ color: 'var(--color-text-muted)', minWidth: 80 }}>
-                    {ph.pauseEndedAt ? new Date(ph.pauseEndedAt).toLocaleDateString('en-IN') : 'Ongoing'}
+                    {ph.pauseEndedAt ? new Date(ph.pauseEndedAt).toLocaleDateString('en-KE') : 'Ongoing'}
                   </span>
                   <span style={{ color: '#D97706', fontWeight: 700 }}>{ph.daysCounted || 0}d</span>
                 </div>
@@ -612,7 +612,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
           {membership.history.map((h, i) => (
             <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(231,215,190,0.3)' }}>
               <div style={{ fontSize: 12, color: C.text3, flexShrink: 0, minWidth: 80 }}>
-                {h.at ? new Date(h.at).toLocaleDateString('en-IN') : '—'}
+                {h.at ? new Date(h.at).toLocaleDateString('en-KE') : '—'}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: C.dark, textTransform: 'capitalize' }}>{h.action || 'Updated'}</div>
@@ -667,12 +667,12 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                     <InfoRow icon={<LuDumbbell size={14} />} label="Mode" value={svc.mode} />
                   )}
                   <InfoRow icon={<LuClock size={14} />} label="Sessions" value={`${svc.usedSessions || 0} / ${svc.totalSessions || 0} (${sessionPct}%)`} />
-                  <InfoRow icon={<LuCalendar size={14} />} label="Purchase Date" value={svc.purchaseDate ? new Date(svc.purchaseDate).toLocaleDateString('en-IN') : '—'} />
-                  <InfoRow icon={<LuCalendar size={14} />} label="Activation" value={svc.activationDate ? new Date(svc.activationDate).toLocaleDateString('en-IN') : '—'} />
-                  <InfoRow icon={<LuCalendar size={14} />} label="Expiry" value={svc.expiryDate ? new Date(svc.expiryDate).toLocaleDateString('en-IN') : '—'} />
+                  <InfoRow icon={<LuCalendar size={14} />} label="Purchase Date" value={svc.purchaseDate ? new Date(svc.purchaseDate).toLocaleDateString('en-KE') : '—'} />
+                  <InfoRow icon={<LuCalendar size={14} />} label="Activation" value={svc.activationDate ? new Date(svc.activationDate).toLocaleDateString('en-KE') : '—'} />
+                  <InfoRow icon={<LuCalendar size={14} />} label="Expiry" value={svc.expiryDate ? new Date(svc.expiryDate).toLocaleDateString('en-KE') : '—'} />
                   <InfoRow icon={<LuClock size={14} />} label="Days Left" value={daysLeft != null ? String(daysLeft) : '—'} />
                   {svc.payment?.amount != null && (
-                    <InfoRow icon={<LuIndianRupee size={14} />} label="Price" value={`₹${(svc.payment.amount || svc.price || 0).toLocaleString('en-IN')}`} />
+                    <InfoRow icon={<LuIndianRupee size={14} />} label="Price" value={`KES ${(svc.payment.amount || svc.price || 0).toLocaleString('en-KE')}`} />
                   )}
                   {svc.payment?.invoiceNo && (
                     <InfoRow icon={<LuFileText size={14} />} label="Invoice" value={svc.payment.invoiceNo} />
@@ -687,7 +687,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                     {svc.history.map((h, i) => (
                       <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(231,215,190,0.3)' }}>
                         <div style={{ fontSize: 12, color: C.text3, flexShrink: 0, minWidth: 80, textTransform: 'capitalize' }}>
-                          {h.at ? new Date(h.at).toLocaleDateString('en-IN') : '—'}
+                          {h.at ? new Date(h.at).toLocaleDateString('en-KE') : '—'}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: C.dark, textTransform: 'capitalize' }}>{h.action}</div>
@@ -768,7 +768,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                   )}
                 </div>
                 <div style={{ fontSize: 11, color: C.text3 }}>
-                  {a.date ? new Date(a.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—'}
+                  {a.date ? new Date(a.date).toLocaleDateString('en-KE', { day: '2-digit', month: 'short' }) : '—'}
                 </div>
               </div>
             ))
@@ -785,7 +785,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
           <FeedbackBanner message={feedback.message} type={feedback.type} onDismiss={closeFeedback} />
           <SectionCard icon={<LuIndianRupee size={18} />} title="Record Payment">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <FormInput label="Amount (₹)" type="number" value={String(paymentForm.amount)} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
+              <FormInput label="Amount (KES )" type="number" value={String(paymentForm.amount)} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
               <FormInput label="Label" value={paymentForm.label} onChange={e => setPaymentForm({ ...paymentForm, label: e.target.value })} placeholder="e.g. Monthly Pass" />
               <FormInput label="Method" value={paymentForm.method} onChange={e => setPaymentForm({ ...paymentForm, method: e.target.value })} />
               <FormInput label="Status" value={paymentForm.status} onChange={e => setPaymentForm({ ...paymentForm, status: e.target.value })} />
@@ -803,11 +803,11 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, marginBottom: 16 }}>
           <div style={{ ...cardSt, padding: '16px 18px', textAlign: 'center' }}>
-            <div style={{ fontSize: 26, fontWeight: 700, color: C.green }}>₹{totalPaid.toLocaleString('en-IN')}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: C.green }}>KES {totalPaid.toLocaleString('en-KE')}</div>
             <div style={{ fontSize: 11, color: C.text2, marginTop: 2 }}>Total Paid</div>
           </div>
           <div style={{ ...cardSt, padding: '16px 18px', textAlign: 'center' }}>
-            <div style={{ fontSize: 26, fontWeight: 700, color: pendingAmount > 0 ? C.red : C.text3 }}>₹{pendingAmount.toLocaleString('en-IN')}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: pendingAmount > 0 ? C.red : C.text3 }}>KES {pendingAmount.toLocaleString('en-KE')}</div>
             <div style={{ fontSize: 11, color: C.text2, marginTop: 2 }}>Pending</div>
           </div>
         </div>
@@ -833,9 +833,9 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: C.dark }}>₹{(p.amount || 0).toLocaleString('en-IN')}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: C.dark }}>KES {(p.amount || 0).toLocaleString('en-KE')}</div>
                   <div style={{ fontSize: 10, color: C.text3, marginTop: 1 }}>
-                    {p.date ? new Date(p.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                    {p.date ? new Date(p.date).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                   </div>
                 </div>
               </div>
@@ -873,7 +873,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                   <a href={cs.zoomUrl} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontSize: 12, textDecoration: 'none' }}>Join</a>
                 )}
                 <div style={{ fontSize: 11, color: C.text3, marginTop: 2 }}>
-                  {cs.date ? new Date(cs.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—'}
+                  {cs.date ? new Date(cs.date).toLocaleDateString('en-KE', { day: '2-digit', month: 'short' }) : '—'}
                 </div>
               </div>
             </div>
@@ -895,7 +895,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                 <div style={{ fontSize: 11, color: C.text2 }}>{cs.trainer || '—'}</div>
               </div>
               <div style={{ fontSize: 11, color: C.text3 }}>
-                {cs.date ? new Date(cs.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—'}
+                {cs.date ? new Date(cs.date).toLocaleDateString('en-KE', { day: '2-digit', month: 'short' }) : '—'}
               </div>
             </div>
           ))
@@ -942,7 +942,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
       let icon = <LuActivity size={15} />;
       let color = C.blue;
       const a = log.action || '';
-      if (a.includes('payment') || a.includes('Payment') || a.includes('₹')) {
+      if (a.includes('payment') || a.includes('Payment') || a.includes('KES ')) {
         icon = <LuIndianRupee size={15} />; color = C.green;
       } else if (a.includes('membership') || a.includes('Membership') || a.includes('plan') || a.includes('Plan')) {
         icon = <LuBadgeCheck size={15} />; color = C.primary;
@@ -957,7 +957,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
       }
       return {
         icon,
-        time: log.createdAt ? new Date(log.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
+        time: log.createdAt ? new Date(log.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
         title: a.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
         meta: log.meta ? JSON.stringify(log.meta).slice(0, 80) : '',
         color,
@@ -968,7 +968,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
     if (membership?.createdAt) {
       logEntries.push({
         icon: <LuBadgeCheck size={15} />,
-        time: new Date(membership.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        time: new Date(membership.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }),
         title: 'Membership Activated',
         meta: `${membership.planType || 'Plan'} · ${membership.planMonths || '?'} months`,
         color: C.primary,
@@ -977,8 +977,8 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
     for (const p of payments.slice(0, 5)) {
       logEntries.push({
         icon: <LuIndianRupee size={15} />,
-        time: p.date ? new Date(p.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
-        title: `Payment ${p.status === 'paid' ? 'Received' : 'Pending'} — ₹${(p.amount || 0).toLocaleString('en-IN')}`,
+        time: p.date ? new Date(p.date).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
+        title: `Payment ${p.status === 'paid' ? 'Received' : 'Pending'} — KES ${(p.amount || 0).toLocaleString('en-KE')}`,
         meta: p.label || p.method || 'Payment',
         color: p.status === 'paid' ? C.green : C.amber,
       });
@@ -986,7 +986,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
     for (const a of attendance.slice(0, 5)) {
       logEntries.push({
         icon: <LuCalendarCheck size={15} />,
-        time: new Date(a.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        time: new Date(a.date).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }),
         title: `Class ${a.status === 'present' ? 'Attended' : a.status === 'zoom' ? 'Attended (Zoom)' : 'Missed'}`,
         meta: a.classType || 'General Class',
         color: a.status === 'absent' ? C.red : C.green,
@@ -995,7 +995,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
     if (sDetail?.createdAt) {
       logEntries.push({
         icon: <LuUser size={15} />,
-        time: new Date(sDetail.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        time: new Date(sDetail.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }),
         title: 'Student Profile Created',
         meta: 'Account registered in the system',
         color: C.blue,
@@ -1053,7 +1053,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                 <Badge label={sDetail.status || 'active'} />
               </div>
               <div style={{ fontSize: 12, color: C.text3, marginTop: 6 }}>
-                Joined {sDetail.createdAt ? new Date(sDetail.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'}
+                Joined {sDetail.createdAt ? new Date(sDetail.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'}
               </div>
             </div>
           </div>
@@ -1098,7 +1098,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
         />
         <OverviewCard
           icon={<LuIndianRupee size={18} />}
-          value={`₹${totalPaid.toLocaleString('en-IN')}`}
+          value={`KES ${totalPaid.toLocaleString('en-KE')}`}
           label="Total Payments"
           trend={`${payments.length} payments`}
           trendUp={totalPaid > 0}
@@ -1106,7 +1106,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
         />
         <OverviewCard
           icon={<LuClock size={18} />}
-          value={`₹${pendingAmount.toLocaleString('en-IN')}`}
+          value={`KES ${pendingAmount.toLocaleString('en-KE')}`}
           label="Outstanding Payments"
           trend={pendingAmount > 0 ? 'Due' : 'Clear'}
           trendUp={pendingAmount === 0}
@@ -1115,7 +1115,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
         <OverviewCard
           icon={<LuCalendarCheck size={18} />}
           value={upcomingClasses.length > 0 ? upcomingClasses[0].name : '—'}
-          label={upcomingClasses.length > 0 ? `Next: ${new Date(upcomingClasses[0].date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}` : 'No upcoming'}
+          label={upcomingClasses.length > 0 ? `Next: ${new Date(upcomingClasses[0].date).toLocaleDateString('en-KE', { day: '2-digit', month: 'short' })}` : 'No upcoming'}
           trend={String(upcomingClasses.length)}
           trendUp={upcomingClasses.length > 0}
           color={C.blue}

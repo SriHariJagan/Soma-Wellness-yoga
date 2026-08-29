@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import styles from "./ResetPassword.module.css";
+import { useTranslation } from "react-i18next";
 
 const ResetPassword = () => {
+  const { t } = useTranslation();
   const { token } = useParams();
   const navigate = useNavigate();
 
@@ -17,7 +19,7 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
-      setMessage("Passwords do not match!");
+      setMessage(t("validation.passwordMismatch"));
       setIsError(true);
       return;
     }
@@ -34,16 +36,16 @@ const ResetPassword = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage(data.msg || "Password reset successful!");
+        setMessage(data.msg || t("auth.resetSuccess"));
         setIsError(false);
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        setMessage(data.error || "Error resetting password");
+        setMessage(data.error || t("errors.generic"));
         setIsError(true);
       }
     } catch (err) {
       console.error(err);
-      setMessage("Server error. Please try again.");
+      setMessage(t("errors.server"));
       setIsError(true);
     } finally {
       setLoading(false);
@@ -57,33 +59,33 @@ const ResetPassword = () => {
           <div className={styles.logoMark}>
             <img src="/images/soma/logo.png" alt="Soma Wellness" width="44" height="44" style={{ objectFit: "contain" }} />
           </div>
-          <h2 className={styles.title}>Reset Password</h2>
-          <p className={styles.subtitle}>Enter your new password below</p>
+          <h2 className={styles.title}>{t("auth.resetPassword")}</h2>
+          <p className={styles.subtitle}>{t("auth.resetSubtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
-            <label className={styles.label}>New Password</label>
+            <label className={styles.label}>{t("auth.newPassword")}</label>
             <div className={styles.inputWrap}>
               <span className={styles.inputIcon}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               </span>
-              <input type="password" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className={styles.input} />
+              <input type="password" placeholder={t("auth.newPassword")} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className={styles.input} aria-label={t("auth.newPassword")} />
             </div>
           </div>
 
           <div className={styles.inputGroup}>
-            <label className={styles.label}>Confirm Password</label>
+            <label className={styles.label}>{t("auth.confirmPassword")}</label>
             <div className={styles.inputWrap}>
               <span className={styles.inputIcon}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               </span>
-              <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={styles.input} />
+              <input type="password" placeholder={t("auth.confirmPassword")} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={styles.input} aria-label={t("auth.confirmPassword")} />
             </div>
           </div>
 
           <motion.button type="submit" className={styles.submitBtn} disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-            {loading ? "Resetting..." : "Reset Password"}
+            {loading ? t("common.loading") : t("auth.resetPassword")}
           </motion.button>
         </form>
 
@@ -92,7 +94,7 @@ const ResetPassword = () => {
         )}
 
         <p className={styles.backLink}>
-          <button type="button" onClick={() => navigate("/login")}>← Back to Sign In</button>
+          <button type="button" onClick={() => navigate("/login")}>← {t("auth.backToSignIn")}</button>
         </p>
       </motion.div>
     </div>

@@ -33,7 +33,7 @@ const EMPTY_FORM = {
 const formatDate = (d) => {
   if (!d) return '';
   const dt = new Date(d);
-  return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return dt.toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 const formatDateInput = (d) => {
@@ -45,7 +45,7 @@ const formatDateInput = (d) => {
 const formatDateTime = (d) => {
   if (!d) return '';
   const dt = new Date(d);
-  return dt.toLocaleString('en-IN', {
+  return dt.toLocaleString('en-KE', {
     day: 'numeric', month: 'short', year: 'numeric',
     hour: 'numeric', minute: '2-digit', hour12: true,
   });
@@ -324,7 +324,7 @@ export default function WorkshopManagement({ onChanged } = {}) {
           </label>
           {form.isPaid && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label className={s.fieldLabel} style={{ margin: 0 }}>Price (₹)</label>
+              <label className={s.fieldLabel} style={{ margin: 0 }}>Price (KES )</label>
               <input type="number" min="0" style={{ width: '140px' }} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} />
             </div>
           )}
@@ -430,7 +430,7 @@ export default function WorkshopManagement({ onChanged } = {}) {
                   </div>
 
                   {/* Price */}
-                  {wk.isPaid && <div className={s.productMeta} style={{ marginTop: 4, fontWeight: 700 }}>₹{wk.price?.toLocaleString('en-IN')}</div>}
+                  {wk.isPaid && <div className={s.productMeta} style={{ marginTop: 4, fontWeight: 700 }}>KES {wk.price?.toLocaleString('en-KE')}</div>}
 
                   {/* Actions */}
                   <div className={s.productFoot}>
@@ -494,7 +494,7 @@ export default function WorkshopManagement({ onChanged } = {}) {
                       <td>{wk.registrations?.length || 0}</td>
                       <td>{wk.capacity || 50}</td>
                       <td><Badge label={ws} /></td>
-                      <td>{wk.isPaid ? `₹${wk.price?.toLocaleString('en-IN')}` : 'Free'}</td>
+                      <td>{wk.isPaid ? `KES ${wk.price?.toLocaleString('en-KE')}` : 'Free'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'flex-end' }}>
                           <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={() => handleEdit(wk)} title="Edit"><LuSettings2 size={13} /></button>

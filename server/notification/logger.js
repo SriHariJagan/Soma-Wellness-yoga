@@ -16,7 +16,7 @@ let _dtf = null;
 function getFormatter() {
   if (!_dtf) {
     _dtf = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Kolkata',
+      timeZone: 'Africa/Nairobi',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',

@@ -16,7 +16,7 @@ const envSchema = z.object({
     .transform((v) => parseInt(v, 10))
     .pipe(z.number().int().min(1).max(65535))
     .default('5000'),
-  APP_NAME: z.string().default('Pragya Yoga Alliance'),
+  APP_NAME: z.string().default('Soma Wellness'),
 
   // ── Database ──
   MONGO_URI: z
@@ -60,7 +60,7 @@ const envSchema = z.object({
     ),
 
   // ── CORS ──
-  CORS_ORIGINS: z.string().default('https://pragya-yoga.vercel.app,http://localhost:5173'),
+  CORS_ORIGINS: z.string().default('https://somawellness.in,http://localhost:5173'),
   FRONTEND_URL: z
     .string()
     .default('http://localhost:5173')
@@ -83,11 +83,14 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   FROM_EMAIL: z.string().optional(),
-  FROM_NAME: z.string().default('Pragya Yoga Alliance'),
+  FROM_NAME: z.string().default('Soma Wellness'),
   REPLY_TO: z.string().optional(),
 
-  // ── Admin Email ──
-  ADMIN_EMAIL: z.string().email('ADMIN_EMAIL must be a valid email').optional(),
+  // ── Admin Email ── (comma-separated allowed)
+  ADMIN_EMAIL: z.string().optional().refine(
+    (v) => !v || v.split(',').every((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim())),
+    'ADMIN_EMAIL must be valid email(s) — comma-separated'
+  ),
   SMTP_MAX_CONNECTIONS: z
     .string()
     .optional()
@@ -130,7 +133,7 @@ const envSchema = z.object({
     .transform((v) => (v ? parseInt(v, 10) : 60000)),
 
   // ── Scheduling ──
-  SCHEDULER_TIMEZONE: z.string().default('Asia/Kolkata'),
+  SCHEDULER_TIMEZONE: z.string().default('Africa/Nairobi'),
 
   // ── Referral ──
   REFERRAL_REWARD: z
@@ -154,6 +157,36 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['error', 'warn', 'info', 'debug'])
     .default('info'),
+
+  // ── OTP ──
+  OTP_LENGTH: z.string().optional().default('6'),
+  OTP_TTL_MINUTES: z.string().optional().default('10'),
+  OTP_MAX_ATTEMPTS: z.string().optional().default('5'),
+  OTP_RESEND_COOLDOWN_SECONDS: z.string().optional().default('60'),
+  AT_USERNAME: z.string().optional(),
+  AT_API_KEY: z.string().optional(),
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_VERIFY_SERVICE_SID: z.string().optional(),
+
+  // ── MPESA (Safaricom Daraja) — all optional, gateway degrades gracefully if missing ──
+  MPESA_ENV: z.enum(['sandbox', 'production']).optional().default('sandbox'),
+  MPESA_CONSUMER_KEY: z.string().optional(),
+  MPESA_CONSUMER_SECRET: z.string().optional(),
+  MPESA_SHORTCODE: z.string().optional(),
+  MPESA_PASSKEY: z.string().optional(),
+  MPESA_CALLBACK_URL: z.string().optional(),
+  MPESA_INITIATOR_NAME: z.string().optional().default('soma'),
+  MPESA_SECURITY_CREDENTIAL: z.string().optional(),
+
+  // ── WhatsApp Business API (Meta Cloud API) — all optional ──
+  WHATSAPP_DEV_MODE: z.enum(['true', 'false']).optional().default('true'),
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_BUSINESS_ACCOUNT_ID: z.string().optional(),
+  WHATSAPP_DISPLAY_PHONE: z.string().optional(),
+  WHATSAPP_VERIFY_TOKEN: z.string().optional(),
+  WHATSAPP_API_VERSION: z.string().optional().default('v19.0'),
 });
 
 export function validateEnv() {

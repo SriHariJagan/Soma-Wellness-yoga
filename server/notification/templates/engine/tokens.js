@@ -4,8 +4,8 @@
 // Single source of truth for brand colours, fonts, and spacing.
 // ============================================================
 
-export const STUDIO_NAME = 'Pragya Yoga Alliance';
-export const STUDIO_TAGLINE = 'Authentic Indian Yoga & Holistic Wellness';
+export const STUDIO_NAME = 'Soma Wellness';
+export const STUDIO_TAGLINE = 'Premium Yoga & Holistic Wellness';
 
 export const BRAND = {
   primary:         '#FA8112',

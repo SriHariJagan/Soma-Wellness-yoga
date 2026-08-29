@@ -12,13 +12,13 @@ const DURATION = 30;
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString("en-KE", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 }
 
 function formatTime(d) {
   if (!d) return "";
   const dt = new Date(d);
-  return dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+  return dt.toLocaleTimeString("en-KE", { hour: "numeric", minute: "2-digit", hour12: true });
 }
 
 const C = {
@@ -77,7 +77,7 @@ function PremiumConsultationCard({ consultation, onCancel, busy }) {
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15, color: C.dark, ...row, gap: 8 }}>
-              {consultation.doctor || "Pragya Wellness Team"}
+              {consultation.doctor || "Soma Wellness Team"}
               <span style={{
                 fontSize: 10.5, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
                 background: `${statusColor}1A`, color: statusColor,
@@ -153,7 +153,7 @@ function PremiumConsultationCard({ consultation, onCancel, busy }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
                 </svg>
-                <span style={{ color: "#16A34A", fontWeight: 600 }}>Paid · ₹{consultation.price || 0}</span>
+                <span style={{ color: "#16A34A", fontWeight: 600 }}>Paid · KES {consultation.price || 0}</span>
               </span>
             )}
             {consultation.paymentStatus === "pending" && (
@@ -230,7 +230,7 @@ function PastConsultationCard({ consultation, onRebook }) {
           <span>{consultation.date}</span>
           {consultation.timeSlot && <><span>·</span><span>{consultation.timeSlot}</span></>}
           {consultation.paymentStatus === "paid" && (
-            <><span>·</span><span style={{ color: C.green, fontWeight: 600 }}>₹{consultation.price || 0} paid</span></>
+            <><span>·</span><span style={{ color: C.green, fontWeight: 600 }}>KES {consultation.price || 0} paid</span></>
           )}
         </div>
       </div>
@@ -360,7 +360,7 @@ export default function ConsultationPage({ student, reload }) {
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 16, background: "rgba(46,125,91,0.05)", borderRadius: 12, padding: "14px 16px" }}>
                     <div style={{ flex: 1, minWidth: 140 }}>
                       <div style={{ fontSize: 11, color: "#9C8B78", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Fee</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: "#2D1406" }}>₹{fee}</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: "#2D1406" }}>KES {fee}</div>
                     </div>
                     <div style={{ flex: 1, minWidth: 140 }}>
                       <div style={{ fontSize: 11, color: "#9C8B78", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Duration</div>
@@ -424,7 +424,7 @@ export default function ConsultationPage({ student, reload }) {
                         {date ? formatDate(date) : "—"} · {timeSlot || "—"} · {duration} min
                       </div>
                     </div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: "#2E7D5B" }}>₹{fee}</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "#2E7D5B" }}>KES {fee}</div>
                   </div>
 
                   <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>

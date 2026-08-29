@@ -18,12 +18,12 @@ const row = { display: 'flex', alignItems: 'center', gap: 8 };
 function formatDate(d) {
   if (!d) return '—';
   const date = new Date(d);
-  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function formatPrice(price) {
   if (!price && price !== 0) return '';
-  return '₹' + Number(price).toLocaleString('en-IN');
+  return 'KES ' + Number(price).toLocaleString('en-KE');
 }
 
 export default function UpgradePlanModal({ student, membership, onClose, onSuccess }) {

@@ -6,7 +6,7 @@ export default function render(data = {}) {
   const studentName = escapeHtml(data.studentName || 'Unknown');
   const email = escapeHtml(data.email || '');
   const phone = escapeHtml(data.phone || '');
-  const registrationDate = data.registrationDate || new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const registrationDate = data.registrationDate || new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
 
   const subject = `New Registration — ${STUDIO_NAME}`;
 

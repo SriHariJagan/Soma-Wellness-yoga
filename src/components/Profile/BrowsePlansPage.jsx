@@ -4,7 +4,7 @@ import w from "./widgets/DashboardWidgets.module.css";
 import { Stagger, Item, PageHeader, Pill, PrimaryButton } from "./widgets/DashboardWidgets";
 import { getMembershipPlans, addToCart, getActiveMembership } from "../api/StudentServices.js";
 
-const fmtPrice = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const fmtPrice = (n) => "KES " + Number(n || 0).toLocaleString("en-KE");
 
 const BADGE_TONE = {
   "Most Popular": "orange",

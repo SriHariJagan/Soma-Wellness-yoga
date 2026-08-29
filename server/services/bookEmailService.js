@@ -228,7 +228,7 @@ export async function notifyBookOrderPaymentFailed(paymentId) {
       emailService.sendPaymentFailedAdmin({
         customerName: order.customer?.fullName || '',
         customerEmail: order.customer?.email || '',
-        amount: `₹${((order.total || 0)).toLocaleString('en-IN')}`,
+        amount: `KES ${((order.total || 0)).toLocaleString('en-KE')}`,
         failureReason: 'Payment failed at gateway',
       }),
     ]);

@@ -216,8 +216,8 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   await item.save();
 
   const items = await CartItem.find({ cart: cart._id }).lean();
-  const subtotal = items.reduce((s, i) => s + i.price, 0);
-  const totalDiscount = items.reduce((s, i) => s + i.discount, 0);
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalDiscount = items.reduce((s, i) => s + i.discount * i.quantity, 0);
   const total = items.reduce((s, i) => s + i.finalPrice, 0);
 
   res.json({
@@ -262,7 +262,7 @@ export const applyCoupon = asyncHandler(async (req, res) => {
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
 
   if (coupon.minPurchase > 0 && subtotal < coupon.minPurchase) {
-    throw ApiError.badRequest(`Minimum purchase amount of ₹${coupon.minPurchase} required`);
+    throw ApiError.badRequest(`Minimum purchase amount of KES ${coupon.minPurchase} required`);
   }
 
   let applicableItemIds = [];
@@ -336,8 +336,8 @@ export const removeCoupon = asyncHandler(async (req, res) => {
   }
 
   const updatedItems = await CartItem.find({ cart: cart._id }).lean();
-  const subtotal = updatedItems.reduce((s, i) => s + i.price, 0);
-  const totalDiscount = updatedItems.reduce((s, i) => s + i.discount, 0);
+  const subtotal = updatedItems.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalDiscount = updatedItems.reduce((s, i) => s + i.discount * i.quantity, 0);
   const total = updatedItems.reduce((s, i) => s + i.finalPrice, 0);
 
   res.json({
@@ -373,8 +373,8 @@ export const checkout = asyncHandler(async (req, res) => {
   const items = await CartItem.find({ cart: cart._id }).lean();
   if (items.length === 0) throw ApiError.badRequest('Cart is empty');
 
-  const subtotal = items.reduce((s, i) => s + i.price, 0);
-  const totalDiscount = items.reduce((s, i) => s + i.discount, 0);
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalDiscount = items.reduce((s, i) => s + i.discount * i.quantity, 0);
   const total = items.reduce((s, i) => s + i.finalPrice, 0);
 
   const appliedCoupon = items.find((i) => i.coupon);
@@ -483,7 +483,7 @@ export const checkout = asyncHandler(async (req, res) => {
         description: `Cart checkout – ${items.length} item(s), coupon: ${couponCode || 'none'}`,
         items: paymentItems,
         amount: Math.round(total * 100),
-        currency: 'INR',
+        currency: 'KES',
         gateway: 'razorpay',
         razorpayOrderId: razorpayOrder.id,
         paymentStatus: 'pending',
@@ -588,7 +588,7 @@ export const checkout = asyncHandler(async (req, res) => {
     try {
       await notify(userId, {
         title: 'Order initiated',
-        message: `Your order <strong>#${order.orderNumber}</strong> of ₹${total.toLocaleString('en-IN')} has been initiated. Complete the payment to activate your items.`,
+        message: `Your order <strong>#${order.orderNumber}</strong> of KES ${total.toLocaleString('en-KE')} has been initiated. Complete the payment to activate your items.`,
         type: 'general',
       });
     } catch {}

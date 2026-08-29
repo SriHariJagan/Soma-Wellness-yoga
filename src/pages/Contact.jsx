@@ -7,6 +7,7 @@ import SomaPageHeader from "../components/soma/SomaPageHeader";
 import PageFAQSection from "../components/soma/PageFAQSection";
 import { PAGE_FAQS } from "../config/siteContent";
 import "./Contact.css";
+import { useTranslation } from "react-i18next";
 
 const STUDIO = {
   address: "Spring Valley, Nairobi, Kenya — Integrated Wellness Center",
@@ -22,23 +23,26 @@ const mapsLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURI
 
 const socials = [
   { href: "https://www.instagram.com/somawellness/", label: "Instagram", icon: <FaInstagram /> },
-  { href: "https://www.facebook.com/pragyayoga.in", label: "Facebook", icon: <FaFacebookF /> },
+  { href: "https://www.facebook.com/somawellness", label: "Facebook", icon: <FaFacebookF /> },
   { href: "https://www.youtube.com/c/KapilKesari", label: "YouTube", icon: <FaYoutube /> },
-  { href: "https://twitter.com/PragyayogaIn", label: "Twitter/X", icon: <FaXTwitter /> },
-];
-
-const infoCards = [
-  { icon: <FaMapMarkerAlt />, title: "Visit the studio", lines: [STUDIO.address], action: { label: "Get directions", href: mapsLink, external: true } },
-  { icon: <FaPhoneAlt />, title: "Call us", lines: [STUDIO.phone], action: { label: "Call now", href: `tel:${STUDIO.phoneHref}` } },
-  { icon: <MdEmail />, title: "Email us", lines: [STUDIO.email], action: { label: "Send email", href: `mailto:${STUDIO.email}` } },
-  { icon: <FaClock />, title: "Studio hours", lines: [STUDIO.hours, "Sunday · Closed"] },
+  { href: "https://twitter.com/SomaWellness", label: "Twitter/X", icon: <FaXTwitter /> },
 ];
 
 const Contact = () => {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const infoCards = [
+    { icon: <FaMapMarkerAlt />, title: t("contact.visitStudio"), lines: [STUDIO.address], action: { label: t("contact.getDirections"), href: mapsLink, external: true } },
+    { icon: <FaPhoneAlt />, title: t("contact.callUs"), lines: [STUDIO.phone], action: { label: t("contact.callNow"), href: `tel:${STUDIO.phoneHref}` } },
+    { icon: <MdEmail />, title: t("contact.emailUs"), lines: [STUDIO.email], action: { label: t("contact.sendEmail"), href: `mailto:${STUDIO.email}` } },
+    { icon: <FaClock />, title: t("contact.studioHours"), lines: [t("footer.hours"), t("contact.sundayClosed")] },
+  ];
+
+  const galleryLabels = [t("contact.lightWood"), t("contact.calmSpace"), t("contact.springValley")];
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("section") === "join-community") {
@@ -86,9 +90,9 @@ const Contact = () => {
       </script>
 
       <SomaPageHeader
-        eyebrow="Visit us — Spring Valley, Nairobi"
-        title="Let’s begin <em>together.</em>"
-        subtitle="Questions about memberships, private therapy, life-stage programmes or SOMA DAILY? We respond within one working day, with care."
+        eyebrow={t("contact.eyebrow")}
+        title={t("contact.title")}
+        subtitle={t("contact.subtitle")}
         image="https://images.unsplash.com/photo-1499951360447-b19be2c0e1a8?q=80&w=900&auto=format&fit=crop"
       />
 
@@ -127,28 +131,28 @@ const Contact = () => {
         >
           <motion.div className="contact-form-card" variants={{ hidden: { opacity: 0, y: 20, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}>
             <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)", display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" /> Send a message
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" /> {t("common.sendMessage")}
             </span>
-            <h2 style={{ marginTop: 10, fontSize: 26, letterSpacing: "-0.02em" }}>We’ll get back with care</h2>
-            <p className="contact-form-sub">Fill in the form below — no obligation, just conversation. We reply within one working day.</p>
+            <h2 style={{ marginTop: 10, fontSize: 26, letterSpacing: "-0.02em" }}>{t("contact.sendMessageTitle")}</h2>
+            <p className="contact-form-sub">{t("contact.sendMessageDesc")}</p>
 
-            {sent && <div className="contact-form-note" role="status">Thank you — your message has been sent. We’ll be in touch soon.</div>}
+            {sent && <div className="contact-form-note" role="status">{t("contact.thankYou")}</div>}
             {error && <div className="contact-form-error" role="alert">{error}</div>}
 
             <form className="contact-form" onSubmit={handleSubmit} id="join-community">
               <div className="contact-field-row">
-                <label className="contact-field"><span>Name</span><input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Your full name" required /></label>
-                <label className="contact-field"><span>Phone</span><input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+254 ..." /></label>
+                <label className="contact-field"><span>{t("contact.name")}</span><input type="text" name="name" value={form.name} onChange={handleChange} placeholder={t("contact.namePlaceholder")} required aria-label={t("contact.name")} /></label>
+                <label className="contact-field"><span>{t("contact.phone")}</span><input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder={t("contact.phonePlaceholder")} aria-label={t("contact.phone")} /></label>
               </div>
-              <label className="contact-field"><span>Email</span><input type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required /></label>
-              <label className="contact-field"><span>Message</span><textarea name="message" value={form.message} onChange={handleChange} rows={5} placeholder="How can we help you?" required /></label>
+              <label className="contact-field"><span>{t("contact.emailLabel")}</span><input type="email" name="email" value={form.email} onChange={handleChange} placeholder={t("contact.emailPlaceholder")} required aria-label={t("contact.emailLabel")} /></label>
+              <label className="contact-field"><span>{t("contact.messageLabel")}</span><textarea name="message" value={form.message} onChange={handleChange} rows={5} placeholder={t("contact.messagePlaceholder")} required aria-label={t("contact.messageLabel")} /></label>
               <motion.button type="submit" className="contact-submit" whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.97 }} disabled={loading}>
-                {loading ? "Sending..." : "Send message →"}
+                {loading ? t("common.sending") : t("contact.send")}
               </motion.button>
             </form>
 
             <div className="contact-quick">
-              <a className="contact-quick-btn" href={`tel:${STUDIO.phoneHref}`}><FaPhoneAlt /> Call +254 700 000 000</a>
+              <a className="contact-quick-btn" href={`tel:${STUDIO.phoneHref}`}><FaPhoneAlt /> +254 700 000 000</a>
               <div className="contact-quick-social">
                 {socials.map((s) => <a key={s.label} href={s.href} target="_blank" rel="noreferrer" aria-label={s.label}>{s.icon}</a>)}
               </div>
@@ -160,13 +164,13 @@ const Contact = () => {
               <span style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}><FaMapMarkerAlt /></span>
               <div>
                 <h3>Soma Wellness Studio</h3>
-                <p>{STUDIO.address} · {STUDIO.hours}</p>
-                <a href={mapsLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, color: "var(--soma-primary)", letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 4, display: "inline-block" }}>Get directions →</a>
+                <p>{STUDIO.address} · {t("footer.hours")}</p>
+                <a href={mapsLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, color: "var(--soma-primary)", letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 4, display: "inline-block" }}>{t("contact.getDirections")} →</a>
               </div>
             </div>
-            <iframe className="contact-map" title="Soma Wellness location map" src={mapEmbed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+            <iframe className="contact-map" title={t("contact.mapTitle")} src={mapEmbed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
             <div style={{ padding: 12, background: "var(--soma-ivory)", borderTop: "1px solid var(--soma-line-light)", display: "flex", gap: 8, alignItems: "center", fontSize: 11, color: "var(--soma-warm-gray)" }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2E7D5B", boxShadow: "0 0 0 5px rgba(46,125,91,0.12)", flexShrink: 0 }} aria-hidden="true" /> Open Mon–Sat 6AM–8PM · Sunday closed · Spring Valley
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2E7D5B", boxShadow: "0 0 0 5px rgba(46,125,91,0.12)", flexShrink: 0 }} aria-hidden="true" /> {t("footer.hours")} · Spring Valley
             </div>
           </motion.div>
         </motion.div>
@@ -179,21 +183,17 @@ const Contact = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           style={{ marginTop: 20, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}
         >
-          {[
-            { img: "https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?q=80&w=600&auto=format&fit=crop", label: "Light & wood" },
-            { img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=600&auto=format&fit=crop", label: "Calm space" },
-            { img: "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=600&auto=format&fit=crop", label: "Spring Valley" },
-          ].map((g, i) => (
-            <motion.div key={g.label} initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} whileHover={{ y: -4, scale: 1.02 }} style={{ borderRadius: 16, overflow: "hidden", position: "relative", height: 160, background: "#e8e2d4", border: "1px solid rgba(255,255,255,0.62)", boxShadow: "0 8px 24px rgba(24,61,45,0.06)" }}>
-              <img src={g.img} alt={g.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+          {galleryLabels.map((label, i) => (
+            <motion.div key={label} initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} whileHover={{ y: -4, scale: 1.02 }} style={{ borderRadius: 16, overflow: "hidden", position: "relative", height: 160, background: "#e8e2d4", border: "1px solid rgba(255,255,255,0.62)", boxShadow: "0 8px 24px rgba(24,61,45,0.06)" }}>
+              <img src={["https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?q=80&w=600&auto=format&fit=crop","https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=600&auto=format&fit=crop","https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=600&auto=format&fit=crop"][i]} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 42%, rgba(24,61,45,0.18) 100%)", pointerEvents: "none" }} aria-hidden="true" />
-              <div style={{ position: "absolute", left: 10, bottom: 10, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 9999, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--soma-forest)", boxShadow: "0 4px 14px rgba(0,0,0,0.10)" }}>{g.label}</div>
+              <div style={{ position: "absolute", left: 10, bottom: 10, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 9999, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--soma-forest)", boxShadow: "0 4px 14px rgba(0,0,0,0.10)" }}>{label}</div>
             </motion.div>
           ))}
         </motion.div>
       </section>
 
-      <PageFAQSection title="Visiting & booking — common questions" questions={PAGE_FAQS.contact} compact />
+      <PageFAQSection title={t("contact.faqTitle")} questions={PAGE_FAQS.contact} compact />
     </main>
   );
 };

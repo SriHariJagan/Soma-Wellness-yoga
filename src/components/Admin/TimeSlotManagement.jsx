@@ -132,7 +132,7 @@ export default function TimeSlotManagement() {
         <div className={s.card} style={{ marginBottom: 20 }}>
           <h3 className={s.cardTitle}>
             <span className={s.cardTitleIcon}><LuClock /></span>
-            Add Time Slots for {new Date(selectedDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+            Add Time Slots for {new Date(selectedDate).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}
           </h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {PRESET_TIMES.map((time) => {
@@ -216,7 +216,7 @@ export default function TimeSlotManagement() {
                     <td>
                       <div className={s.cellMeta}>
                         {slot.createdAt
-                          ? new Date(slot.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })
+                          ? new Date(slot.createdAt).toLocaleDateString("en-KE", { day: "2-digit", month: "short" })
                           : "—"}
                       </div>
                     </td>

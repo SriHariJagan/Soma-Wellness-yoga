@@ -21,7 +21,7 @@ export function Counter({ value = 0, prefix = '', suffix = '', duration = 900 })
     return () => cancelAnimationFrame(raf.current);
   }, [target, duration]);
 
-  return <>{prefix}{display.toLocaleString('en-IN')}{suffix}</>;
+  return <>{prefix}{display.toLocaleString('en-KE')}{suffix}</>;
 }
 
 /* ── Sparkline (smooth area) ────────────────────────────────── */

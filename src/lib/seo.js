@@ -62,6 +62,28 @@ const ROUTE_META = {
   "/checkout": { title: "Checkout — Soma Nairobi", description: "Secure checkout." },
 };
 
+const PATH_TO_SEO_KEY = {
+  "/": "home",
+  "/about": "about",
+  "/classes": "join",
+  "/private": "private",
+  "/life-stages": "lifeStages",
+  "/restore": "restore",
+  "/yttc": "yttc",
+  "/faq": "faq",
+  "/contact": "contact",
+};
+
+export const getLocalizedMeta = (path, t) => {
+  const key = PATH_TO_SEO_KEY[path];
+  if (key && t) {
+    const title = t(`seo.${key}Title`, { defaultValue: ROUTE_META[path]?.title });
+    const description = t(`seo.${key}Desc`, { defaultValue: ROUTE_META[path]?.description });
+    if (title !== `seo.${key}Title`) return { title, description };
+  }
+  return ROUTE_META[path] || ROUTE_META["/"];
+};
+
 const applyMeta = ({ title, description }) => {
   document.title = title;
   const setMeta = (name, content) => {
@@ -80,13 +102,29 @@ const applyMeta = ({ title, description }) => {
   setProp("og:url", SITE.url + window.location.pathname.replace(/^\//, ""));
   setProp("twitter:title", title);
   setProp("twitter:description", description);
+  // hreflang for bilingual SEO
+  const setHreflang = (lang, href) => {
+    let el = document.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
+    if (!el) { el = document.createElement("link"); el.setAttribute("rel", "alternate"); el.setAttribute("hreflang", lang); document.head.appendChild(el); }
+    el.setAttribute("href", href);
+  };
+  const base = SITE.url.replace(/\/$/, "");
+  const path = window.location.pathname;
+  setHreflang("en", base + path);
+  setHreflang("sw", base + path + (path.includes("?") ? "&" : "?") + "lang=sw");
+  setHreflang("x-default", base + path);
   let canonical = document.querySelector('link[rel="canonical"]');
   if (!canonical) { canonical = document.createElement("link"); canonical.setAttribute("rel", "canonical"); document.head.appendChild(canonical); }
   canonical.setAttribute("href", SITE.url + window.location.pathname.replace(/^\//, ""));
+  // update html lang if i18n present
+  try {
+    const lng = document.documentElement.lang || "en";
+    setProp("og:locale", lng === "sw" ? "sw_KE" : "en_KE");
+  } catch {}
 };
 
 const usePageMeta = (meta) => {
   useEffect(() => { applyMeta(meta); }, [meta?.title, meta?.description]);
 };
 
-export { SITE, ROUTE_META, applyMeta, usePageMeta };
+export { SITE, ROUTE_META, applyMeta, usePageMeta, PATH_TO_SEO_KEY };

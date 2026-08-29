@@ -6,21 +6,23 @@ import { AnimatePresence, motion } from "framer-motion";
 import { getMembershipStatus } from "../api/StudentServices";
 import styles from "./Navbar.module.css";
 import SomaLogo from "../soma/SomaLogo";
+import LanguageSwitcher from "../common/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
-const navLinks = [
-  { label: "Join", path: "/classes", num: "01" },
-  { label: "One-to-One", path: "/private", num: "02" },
-  { label: "Life Stages", path: "/life-stages", num: "03" },
-  { label: "Restore", path: "/restore", num: "04" },
-  { label: "Learn & Partner", path: "/yttc", num: "05" },
-  { label: "Founding Members", path: "/founding", num: "06" },
+const navLinksConfig = [
+  { key: "navigation.join", path: "/classes", num: "01" },
+  { key: "navigation.private", path: "/private", num: "02" },
+  { key: "navigation.lifeStages", path: "/life-stages", num: "03" },
+  { key: "navigation.restore", path: "/restore", num: "04" },
+  { key: "navigation.academy", path: "/yttc", num: "05" },
+  { key: "navigation.founding", path: "/founding", num: "06" },
 ];
 
 const socialLinks = [
-  { href: "https://www.facebook.com/pragyayoga.in", label: "Facebook", icon: <FaFacebookF /> },
-  { href: "https://www.instagram.com/pragyayogaofficial/", label: "Instagram", icon: <FaInstagram /> },
+  { href: "https://www.facebook.com/somawellness", label: "Facebook", icon: <FaFacebookF /> },
+  { href: "https://www.instagram.com/somawellness/", label: "Instagram", icon: <FaInstagram /> },
   { href: "https://www.youtube.com/c/KapilKesari", label: "YouTube", icon: <FaYoutube /> },
-  { href: "https://twitter.com/PragyayogaIn", label: "Twitter/X", icon: <FaXTwitter /> },
+  { href: "https://twitter.com/SomaWellness", label: "Twitter/X", icon: <FaXTwitter /> },
 ];
 
 const sidebarVariants = {
@@ -41,6 +43,8 @@ const dropdownVariants = {
 };
 
 const Navbar = ({ user, onLogout }) => {
+  const { t } = useTranslation();
+  const navLinks = navLinksConfig.map((c) => ({ ...c, label: t(c.key) }));
   const location = useLocation();
   const navigate = useNavigate();
   const dropRef = useRef(null);
@@ -98,8 +102,8 @@ const Navbar = ({ user, onLogout }) => {
   const solidNav = solidNavPages.includes(location.pathname) || location.pathname.startsWith("/books/");
   const dashboardPath = user?.role === "admin" ? "/yogaadmin" : "/studentdashboard";
   const dropdownItems = [
-    { label: "Dashboard", path: dashboardPath, icon: <DashIcon /> },
-    { label: "Profile", path: "/profile", icon: <UserIcon /> },
+    { label: t("navigation.dashboard"), path: dashboardPath, icon: <DashIcon /> },
+    { label: t("navigation.profile"), path: "/profile", icon: <UserIcon /> },
   ];
 
   return (
@@ -123,7 +127,11 @@ const Navbar = ({ user, onLogout }) => {
               ))}
             </div>
 
-            <div className={styles.userSection}>
+            <div className={styles.navActions} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div className={styles.langSwitcherWrap}>
+                <LanguageSwitcher compact />
+              </div>
+              <div className={styles.userSection}>
               {user ? (
                 <div className={styles.userCluster} ref={dropRef}>
                   <button className={styles.clusterBtn} onClick={() => setDropOpen(!dropOpen)} aria-expanded={dropOpen} aria-haspopup="true">
@@ -131,7 +139,7 @@ const Navbar = ({ user, onLogout }) => {
                     <div className={styles.clusterText}>
                       <span className={styles.clusterName}>{user.name}</span>
                       <span className={styles.clusterPlan}>
-                        {user.role === "admin" ? "Administrator" : user.planMonths ? `${user.planMonths}-month plan` : "Member"}
+                        {user.role === "admin" ? t("navbar.admin") : user.planMonths ? `${user.planMonths}-month plan` : t("navbar.member")}
                       </span>
                     </div>
                     <ChevronIcon className={`${styles.chevron} ${dropOpen ? styles.chevronOpen : ""}`} />
@@ -144,12 +152,12 @@ const Navbar = ({ user, onLogout }) => {
                           <div>
                             <p className={styles.ddName}>{user.name}</p>
                             <p className={styles.ddPlan}>
-                              {user.role === "admin" ? "Admin Access" : user.planMonths ? `${user.planMonths}-month` : "Member"}
+                              {user.role === "admin" ? t("navbar.adminAccess") : user.planMonths ? `${user.planMonths}-month` : t("navbar.member")}
                               {user.role !== "admin" && (
                                 <>
                                   {" · "}
                                   <span className={isPaused ? styles.ddPaused : isPlanActive ? styles.ddActive : styles.ddExpired}>
-                                    {isPaused ? "Paused" : isPlanActive ? "Active" : "Available"}
+                                    {isPaused ? t("navbar.statusPaused") : isPlanActive ? t("navbar.statusActive") : t("navbar.statusAvailable")}
                                   </span>
                                 </>
                               )}
@@ -163,7 +171,7 @@ const Navbar = ({ user, onLogout }) => {
                         ))}
                         <div className={styles.ddDivider} />
                         <button className={`${styles.ddItem} ${styles.ddDanger}`} onClick={handleLogoutClick}>
-                          <LogoutIcon /> Sign out
+                          <LogoutIcon /> {t("navigation.signOut")}
                         </button>
                       </motion.div>
                     )}
@@ -171,10 +179,11 @@ const Navbar = ({ user, onLogout }) => {
                 </div>
               ) : (
                 <div className={styles.guestBtns}>
-                  <Link className={styles.btnGhost} to="/login">Sign in</Link>
-                  <Link className={`${styles.btnOrange} ${isHome && !scrolled ? styles.bookBtnGold : ""}`} to="/contact">Book</Link>
+                  <Link className={styles.btnGhost} to="/login">{t("navigation.signIn")}</Link>
+                  <Link className={`${styles.btnOrange} ${isHome && !scrolled ? styles.bookBtnGold : ""}`} to="/classes">{t("navigation.book")}</Link>
                 </div>
               )}
+              </div>
             </div>
 
             <button className={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen}>
@@ -199,7 +208,7 @@ const Navbar = ({ user, onLogout }) => {
                 <motion.div className={styles.drawerLinks} initial="hidden" animate="open" exit="closed" variants={{ open: { transition: { staggerChildren: 0.06 } } }}>
                   <motion.div variants={drawerLinkVariants}>
                     <Link className={`${styles.drawerLink} ${location.pathname === "/" ? styles.drawerActive : ""}`} to="/" onClick={() => setMenuOpen(false)}>
-                      <span>Home</span><span>— Start here</span>
+                      <span>{t("navigation.home")}</span><span>— {t("navbar.startHere")}</span>
                     </Link>
                   </motion.div>
                   {navLinks.map(({ label, path, num }) => (
@@ -212,31 +221,35 @@ const Navbar = ({ user, onLogout }) => {
                   {user ? (
                     <>
                       <motion.div variants={drawerLinkVariants}>
-                        <Link className={styles.drawerLink} to={dashboardPath} onClick={() => setMenuOpen(false)}><span>Dashboard</span><span>→</span></Link>
+                        <Link className={styles.drawerLink} to={dashboardPath} onClick={() => setMenuOpen(false)}><span>{t("navigation.dashboard")}</span><span>→</span></Link>
                       </motion.div>
                       <motion.div variants={drawerLinkVariants}>
                         <button className={styles.drawerLink} style={{ width: "100%", textAlign: "left", border: "none", background: "none" }} onClick={() => { setMenuOpen(false); handleLogoutClick(); }}>
-                          <span>Sign out</span><span>—</span>
+                          <span>{t("navigation.signOut")}</span><span>—</span>
                         </button>
                       </motion.div>
                     </>
                   ) : (
                     <>
                       <motion.div variants={drawerLinkVariants}>
-                        <Link className={styles.drawerLink} to="/login" onClick={() => setMenuOpen(false)}><span>Sign in</span><span>→</span></Link>
+                        <Link className={styles.drawerLink} to="/login" onClick={() => setMenuOpen(false)}><span>{t("navigation.signIn")}</span><span>→</span></Link>
                       </motion.div>
                       <motion.div variants={drawerLinkVariants}>
-                        <Link className={styles.drawerLink} to="/newuser" onClick={() => setMenuOpen(false)}><span>Begin journey</span><span>✦</span></Link>
+                        <Link className={styles.drawerLink} to="/newuser" onClick={() => setMenuOpen(false)}><span>{t("navigation.beginJourney")}</span><span>✦</span></Link>
                       </motion.div>
                     </>
                   )}
                 </motion.div>
 
+                <div style={{ padding: "12px 0", display: "flex", justifyContent: "center" }}>
+                  <LanguageSwitcher />
+                </div>
+
                 <div className={styles.drawerMeta}>
                   <div>
-                    <p className={styles.drawerMetaLabel}>Visit us</p>
+                    <p className={styles.drawerMetaLabel}>{t("footer.visit")}</p>
                     <p className={styles.drawerContact} style={{ marginTop: 8 }}>
-                      Spring Valley, Nairobi, Kenya<br />Integrated Wellness Center<br />
+                      {t("navbar.address")}<br />{t("navbar.studioType")}<br />
                       <a href="tel:+254700000000">+254 700 000 000</a> · <a href="mailto:hello@somawellness.co.ke">hello@somawellness.co.ke</a>
                     </p>
                   </div>
@@ -245,8 +258,8 @@ const Navbar = ({ user, onLogout }) => {
                       <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label}>{icon}</a>
                     ))}
                   </div>
-                  <Link to="/contact" onClick={() => setMenuOpen(false)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "16px 24px", borderRadius: 9999, background: "#183D2D", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginTop: 8 }}>
-                    Book a session →
+                  <Link to="/classes" onClick={() => setMenuOpen(false)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "16px 24px", borderRadius: 9999, background: "#183D2D", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginTop: 8 }}>
+                    {t("navigation.bookSession")} →
                   </Link>
                 </div>
               </div>

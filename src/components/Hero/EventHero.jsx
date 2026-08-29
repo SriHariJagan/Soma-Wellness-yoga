@@ -52,7 +52,7 @@ const EventHero = () => {
           </motion.span>
           <motion.h1 className={styles.title} variants={item}>Upcoming Yoga Events</motion.h1>
           <motion.p className={styles.desc} variants={item}>
-            Join Pragya Yoga for immersive workshops, retreats, and community
+            Join Soma Wellness for immersive workshops, retreats, and community
             gatherings. Our events bring together practitioners from around the
             world to celebrate authentic Indian yoga, mindfulness, and holistic
             wellness.

@@ -53,7 +53,7 @@ function relativeTime(dateStr) {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function typeMap(type) {
@@ -284,7 +284,7 @@ export default function NotificationsPage({ student, reload }) {
                               {n.priority?.charAt(0).toUpperCase() + n.priority?.slice(1) || "Normal"}
                             </span>
                             <span style={{ fontSize: 10, color: "var(--color-text-muted)" }}>
-                              {n.sender || "Pragya Yoga"}
+                              {n.sender || "Soma Wellness"}
                             </span>
                           </div>
 

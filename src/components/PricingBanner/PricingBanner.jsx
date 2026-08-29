@@ -6,7 +6,7 @@ import { checkTrialEligibility } from "../api/StudentServices.js";
 
 const API_DOMAIN = import.meta.env.VITE_API_URL || "";
 
-const fmtPrice = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const fmtPrice = (n) => "KES " + Number(n || 0).toLocaleString("en-KE");
 
 const Membership = () => {
   const navigate = useNavigate();
@@ -57,10 +57,10 @@ const Membership = () => {
       <div className={styles.container}>
         <motion.header className={styles.header} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
           <p className={styles.headerLabel}>Join Our Community</p>
-          <h2 className={styles.headerTitle}>Transform Your Life with Pragya Yoga</h2>
+          <h2 className={styles.headerTitle}>Transform Your Life with Soma Wellness</h2>
           <p className={styles.headerSub}>
             Over <strong>10,000 members</strong> have embraced{" "}
-            <strong>authentic Indian wellness yoga</strong> with Pragya Yoga
+            <strong>authentic Indian wellness yoga</strong> with Soma Wellness
             Alliance in Jaipur. Rooted in{" "}
             <strong>Bharat's timeless tradition</strong> and supported by{" "}
             <strong>modern scientific wellness practices</strong>, our memberships

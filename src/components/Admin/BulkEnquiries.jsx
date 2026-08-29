@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { adminBulkEnquiriesApi } from "../api/AdminServices.js";
 import s from "./BulkEnquiries.module.css";
 
-const fmtDate = (d) => (d ? new Date(d).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "–");
+const fmtDate = (d) => (d ? new Date(d).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" }) : "–");
 
 const STATUS_META = {
   NEW: { label: "New", cls: "amber" },

@@ -6,7 +6,7 @@ export default function welcome(notification) {
   const data = notification.templateData || {};
   const user = notification.user || {};
   const name = data.name || user.name || 'Yoga Seeker';
-  const dashboardUrl = data.dashboardUrl || 'https://pragyayoga.com/dashboard';
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
 
   const subject = notification.subject || `Welcome to ${STUDIO_NAME}, ${escapeHtml(name)}!`;
 

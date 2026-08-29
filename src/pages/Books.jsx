@@ -3,23 +3,25 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaMagnifyingGlass, FaCartShopping, FaCheck } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getBooks, getCartCount, addBookToCart } from "../components/api/BookServices";
 import { useScrollToSection } from "../hooks/useScrollToSection";
 import styles from "./Books.module.css";
 
-const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const inr = (n, t) => `${t("books.currency")}${Number(n || 0).toLocaleString("en-KE")}`;
 
 const SORTS = [
-  { value: "displayOrder", label: "Featured" },
-  { value: "newest", label: "Newest" },
-  { value: "priceAsc", label: "Price: Low to High" },
-  { value: "priceDesc", label: "Price: High to Low" },
+  { value: "displayOrder", labelKey: "books.sortFeatured" },
+  { value: "newest", labelKey: "books.sortNewest" },
+  { value: "priceAsc", labelKey: "books.sortPriceLow" },
+  { value: "priceDesc", labelKey: "books.sortPriceHigh" },
   { value: "title", label: "Title A–Z" },
   { value: "bestSelling", label: "Best Selling" },
 ];
 
 const Books = () => {
   useScrollToSection();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
@@ -81,17 +83,17 @@ const Books = () => {
     <div className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <span className={styles.heroEyebrow}>Soma Journal · Curated Reads</span>
+          <span className={styles.heroEyebrow}>{t("books.journalEyebrow")}</span>
           <h1 className={styles.heroTitle}>
-            The <span className={styles.heroAccent}>Soma</span> Bookstore
+            The <span className={styles.heroAccent}>Soma</span> {t("books.title")}
           </h1>
           <p className={styles.heroSub}>
-            Curated books on yoga, breathwork and conscious living — written by our teachers and kin, delivered across India.
+            {t("books.desc")}
           </p>
           <div className={styles.heroBadges}>
-            <span>Curated by our teachers</span>
-            <span>Pan-India delivery</span>
-            <span>Secure checkout</span>
+            <span>{t("books.curatedBy")}</span>
+            <span>{t("books.localDelivery")}</span>
+            <span>{t("books.secureCheckout")}</span>
           </div>
         </div>
       </section>
@@ -101,32 +103,32 @@ const Books = () => {
           <FaMagnifyingGlass className={styles.searchIcon} />
           <input
             value={search}
-            placeholder="Search books, authors, topics…"
+            placeholder={t("books.searchPlaceholder")}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") applyFilters({ search }); }}
           />
         </div>
         <select value={category} onChange={(e) => applyFilters({ category: e.target.value })} className={styles.select}>
-          <option value="">All Categories</option>
+          <option value="">{t("books.allCategories")}</option>
           {(data?.categories || []).map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={sort} onChange={(e) => applyFilters({ sort: e.target.value })} className={styles.select}>
-          {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          {SORTS.map((s) => <option key={s.value} value={s.value}>{s.labelKey ? t(s.labelKey) : s.label}</option>)}
         </select>
-        <button className={styles.searchBtn} onClick={() => applyFilters({ search })}>Search</button>
+        <button className={styles.searchBtn} onClick={() => applyFilters({ search })}>{t("books.searchBtn")}</button>
       </section>
 
       <section className={styles.gridWrap}>
-        {isLoading && <p className={styles.stateText}>Loading books…</p>}
+        {isLoading && <p className={styles.stateText}>{t("books.loading")}</p>}
         {isError && (
           <div className={styles.stateText}>
             <p>Could not load the catalogue: {error.message}</p>
-            <button className={styles.retryBtn} onClick={() => refetch()}>Retry</button>
+            <button className={styles.retryBtn} onClick={() => refetch()}>{t("books.retry")}</button>
           </div>
         )}
 
         {!isLoading && !isError && (data?.books?.length === 0) && (
-          <p className={styles.stateText}>No books match your search yet. Try another term.</p>
+          <p className={styles.stateText}>{t("books.noResults")}</p>
         )}
 
         <div className={styles.grid}>
@@ -150,7 +152,7 @@ const Books = () => {
                   )}
                   {book.compareAtPrice > book.price && (
                     <span className={styles.discountBadge}>
-                      {Math.round(((book.compareAtPrice - book.price) / book.compareAtPrice) * 100)}% OFF
+                      {Math.round(((book.compareAtPrice - book.price) / book.compareAtPrice) * 100)}{t("books.off")}
                     </span>
                   )}
                 </div>
@@ -160,24 +162,24 @@ const Books = () => {
                   <p className={styles.cardAuthors}>{(book.authors || []).join(", ")}</p>
                   <div className={styles.cardMeta}>
                     <span className={styles.cardPrice}>
-                      {inr(book.price)}
+                      {inr(book.price, t)}
                       {book.compareAtPrice > book.price && (
-                        <s className={styles.cardMrp}>{inr(book.compareAtPrice)}</s>
+                        <s className={styles.cardMrp}>{inr(book.compareAtPrice, t)}</s>
                       )}
                     </span>
                     {book.trackInventory && !book.allowBackorder && book.stock <= 0 && (
-                      <span className={styles.outOfStock}>Out of stock</span>
+                      <span className={styles.outOfStock}>{t("books.outOfStock")}</span>
                     )}
                   </div>
                   {book.trackInventory && !book.allowBackorder && book.stock <= 0 ? (
-                    <span className={styles.addBtnOut}>Out of stock</span>
+                    <span className={styles.addBtnOut}>{t("books.outOfStock")}</span>
                   ) : (
                     <button
                       className={styles.addBtn}
                       onClick={(e) => handleAdd(book, e)}
                       disabled={addingId === book._id || addedId === book._id}
                     >
-                      {addedId === book._id ? <><FaCheck /> Added</> : <><FaCartShopping /> Add to Cart</>}
+                      {addedId === book._id ? <><FaCheck /> {t("books.added")}</> : <><FaCartShopping /> {t("books.addToCart")}</>}
                     </button>
                   )}
                 </div>
@@ -188,9 +190,9 @@ const Books = () => {
 
         {(data?.pages || 1) > 1 && (
           <div className={styles.pagination}>
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Prev</button>
-            <span>Page {data?.page || page} of {data?.pages || 1}</span>
-            <button disabled={page >= (data?.pages || 1)} onClick={() => setPage((p) => p + 1)}>Next →</button>
+            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>{t("books.prev")}</button>
+            <span>{t("books.pageOf", { current: data?.page || page, total: data?.pages || 1 })}</span>
+            <button disabled={page >= (data?.pages || 1)} onClick={() => setPage((p) => p + 1)}>{t("books.next")}</button>
           </div>
         )}
       </section>

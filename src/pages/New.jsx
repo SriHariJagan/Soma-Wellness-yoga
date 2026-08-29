@@ -1,18 +1,9 @@
 import React from "react";
-import RegisterForm from "../components/Auth/RegisterForm";
-import { useNavigate } from "react-router-dom";
+import AuthCard from "../components/Auth/AuthCard";
 
 const NewUser = () => {
-  const navigate = useNavigate();
   const redirectTo = new URLSearchParams(window.location.search).get("redirectTo") || "";
-
-  return (
-    <RegisterForm
-      redirectTo={redirectTo}
-      onToggleToLogin={() => navigate(redirectTo ? `/login?redirectTo=${encodeURIComponent(redirectTo)}` : "/login")}
-      onRegisterSuccess={() => navigate(redirectTo ? `/login?redirectTo=${encodeURIComponent(redirectTo)}` : "/login")}
-    />
-  );
+  return <AuthCard initialView="register" redirectTo={redirectTo} />;
 };
 
 export default NewUser;

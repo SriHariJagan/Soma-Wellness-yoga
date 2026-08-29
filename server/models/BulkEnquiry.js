@@ -4,7 +4,7 @@ import { BULK_ENQUIRY_STATUSES } from '../shared/constants/index.js';
 // ─────────────────────────────────────────────────────────────
 // BulkEnquiry — institutional / bulk book order enquiries.
 // Bulk customers do not go through the retail checkout; the
-// Pragya Yoga team follows up with a quotation.
+// Soma Wellness team follows up with a quotation.
 // ─────────────────────────────────────────────────────────────
 const BulkEnquirySchema = new mongoose.Schema(
   {

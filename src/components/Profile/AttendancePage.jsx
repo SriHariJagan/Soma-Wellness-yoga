@@ -93,7 +93,7 @@ export default function AttendancePage() {
     const cells = [];
     for (let i = 0; i < firstWeekday; i++) cells.push({ status: 'empty', date: '', record: null });
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = new Date(year, month, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      const dateStr = new Date(year, month, d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' });
       let status;
       let record = null;
       if (byDay.has(d)) {
@@ -107,7 +107,7 @@ export default function AttendancePage() {
       cells.push({ status, date: dateStr, record, day: d });
     }
 
-    const attendanceMonth = today.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    const attendanceMonth = today.toLocaleDateString('en-KE', { month: 'long', year: 'numeric' });
     return { cells, attendanceMonth };
   };
 
@@ -318,7 +318,7 @@ export default function AttendancePage() {
               <div className={styles.modalBody}>
                 <div className={styles.modalRow}>
                   <i className="ti ti-calendar" />
-                  <span>{new Date(selectedRecord.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  <span>{new Date(selectedRecord.date).toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
                 {selectedRecord.invite?.startTime && (
                   <div className={styles.modalRow}>

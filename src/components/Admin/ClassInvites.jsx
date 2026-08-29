@@ -59,14 +59,14 @@ function formatDisplayDate(str) {
   if (!str) return '';
   const d = parseLocalDate(str);
   if (!d) return '';
-  return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function formatDisplayDateLong(str) {
   if (!str) return '';
   const d = parseLocalDate(str);
   if (!d) return '';
-  return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function parseTimeInput(val) {
@@ -1261,7 +1261,7 @@ function Overview({ invites, stats, loading, search, onSearchChange, statusFilte
                     </td>
                     <td className={s.tdMuted}>
                       {inv.date
-                        ? new Date(inv.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                        ? new Date(inv.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })
                         : '—'}
                     </td>
                     <td className={s.tdMuted}>{inv.startTime ? formatTimeDisplay(inv.startTime) : '—'}</td>
@@ -1560,7 +1560,7 @@ function CreateView({
                 >
                   <option value="">-- Choose Workshop --</option>
                   {workshops.filter(w => w.isPublished).map(w => (
-                    <option key={w._id} value={w._id}>{w.name} ({new Date(w.date).toLocaleDateString('en-IN')})</option>
+                    <option key={w._id} value={w._id}>{w.name} ({new Date(w.date).toLocaleDateString('en-KE')})</option>
                   ))}
                 </select>
               </div>
@@ -1813,7 +1813,7 @@ function CreateView({
                             </div>
                             {st.expiryDate && (
                               <div style={{ fontSize: 9.5, color: C.text3 }}>
-                                expires {new Date(st.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                expires {new Date(st.expiryDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
                               </div>
                             )}
                           </div>
@@ -2013,7 +2013,7 @@ function CreateView({
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.text1 }}>
                     {form.title || 'Class Invitation'}
                   </div>
-                  <div style={{ fontSize: 10.5, color: C.text3 }}>From: Pragya Yoga Studio</div>
+                   <div style={{ fontSize: 10.5, color: C.text3 }}>From: Soma Wellness Studio</div>
                 </div>
               </div>
               {form.description && (
@@ -2219,7 +2219,7 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
             {detail.title}
           </h2>
           <p style={{ fontSize: 13, color: C.text2, marginTop: 4 }}>
-            Sent {new Date(detail.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            Sent {new Date(detail.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -2253,7 +2253,7 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
               <div>
                 <div className={s.statLabel}>Date</div>
                 <div style={{ fontWeight: 600, marginTop: 4 }}>
-                  {new Date(detail.date).toLocaleDateString('en-IN', {
+                  {new Date(detail.date).toLocaleDateString('en-KE', {
                     weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
                   })}
                 </div>
@@ -2372,7 +2372,7 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
             <div className={s.healthRow} style={{ borderBottom: 'none' }}>
               <span className={s.healthLabel}>Sent at</span>
               <span style={{ fontWeight: 600 }}>
-                {new Date(detail.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                {new Date(detail.createdAt).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>
@@ -2438,7 +2438,7 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
                         </td>
                         <td style={{ padding: '7px 12px', fontSize: 11, color: C.text2 }}>
                           {r.readAt
-                            ? new Date(r.readAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                            ? new Date(r.readAt).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
                             : '—'}
                         </td>
                       </tr>
@@ -2476,7 +2476,7 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
                       </div>
                       {h.note && <div className={s.timeMeta}>{h.note}</div>}
                       <div className={s.timeMeta}>
-                        {h.at ? new Date(h.at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                        {h.at ? new Date(h.at).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
                       </div>
                     </div>
                   </div>

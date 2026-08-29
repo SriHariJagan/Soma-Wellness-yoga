@@ -8,7 +8,7 @@ export default function render(data = {}) {
   const phone = escapeHtml(data.phone || '');
   const subjectInput = escapeHtml(data.subject || '');
   const message = escapeHtml(data.message || '');
-  const submissionDate = data.submissionDate || new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const submissionDate = data.submissionDate || new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
   const ip = data.ip || 'Not available';
 
   const subject = 'New Website Enquiry';

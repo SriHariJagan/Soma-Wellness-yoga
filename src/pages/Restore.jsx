@@ -6,48 +6,46 @@ import SomaCTA from "../components/soma/SomaCTA";
 import PageFAQSection from "../components/soma/PageFAQSection";
 import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
-
-const signatures = [
-  { name: "STILLNESS", sub: "The deep calm ritual", desc: "Restorative yoga, guided meditation, 60-min relaxation massage + herbal tea", len: "2 hrs", price: "11,000", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=800&auto=format&fit=crop" },
-  { name: "THE ACACIA", sub: "Our premium journey", desc: "Private yoga, meditation, 60-min massage, body treatment, refreshments + unhurried rest", len: "2.5 hrs", price: "18,500", img: "https://images.unsplash.com/photo-1600334089648-bd6e2a7a65a8?q=80&w=800&auto=format&fit=crop" },
-  { name: "FOR TWO", sub: "A journey for two", desc: "Couple yoga/stretch, massage for two, herbal tea + quiet time together", len: "2 hrs", price: "22,500", per: "per couple", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=800&auto=format&fit=crop" },
-  { name: "BREATHE", sub: "Breath & clarity", desc: "Pranayama, breath awareness, gentle movement + herbal tea ritual", len: "90 min", price: "4,500", img: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop" },
-  { name: "NIDRA", sub: "Deep rest journey", desc: "Yoga Nidra, NSDR, sound bath + integration & tea", len: "75 min", price: "3,800", img: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" },
-  { name: "AROMA", sub: "Scent & unwind", desc: "Aromatherapy massage, body scrub, steam + herbal tea", len: "90 min", price: "6,500", img: "https://images.unsplash.com/photo-1591343395082-e120087004b4?q=80&w=800&auto=format&fit=crop" },
-];
+import { useTranslation } from "react-i18next";
+import styles from "./Restore.module.css";
 
 const Restore = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
   const scrollRef = useRef(null);
+
+  const signatures = [
+    { name: "STILLNESS", sub: t("restore.sig.stillness.sub"), desc: t("restore.sig.stillness.desc"), len: "2 hrs", price: "11,000", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=800&auto=format&fit=crop" },
+    { name: "THE ACACIA", sub: t("restore.sig.acacia.sub"), desc: t("restore.sig.acacia.desc"), len: "2.5 hrs", price: "18,500", img: "https://images.unsplash.com/photo-1600334089648-bd6e2a7a65a8?q=80&w=800&auto=format&fit=crop" },
+    { name: "FOR TWO", sub: t("restore.sig.forTwo.sub"), desc: t("restore.sig.forTwo.desc"), len: "2 hrs", price: "22,500", per: t("restore.sig.forTwoPer"), img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=800&auto=format&fit=crop" },
+    { name: "BREATHE", sub: t("restore.sig.breathe.sub"), desc: t("restore.sig.breathe.desc"), len: "90 min", price: "4,500", img: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop" },
+    { name: "NIDRA", sub: t("restore.sig.nidra.sub"), desc: t("restore.sig.nidra.desc"), len: "75 min", price: "3,800", img: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" },
+    { name: "AROMA", sub: t("restore.sig.aroma.sub"), desc: t("restore.sig.aroma.desc"), len: "90 min", price: "6,500", img: "https://images.unsplash.com/photo-1591343395082-e120087004b4?q=80&w=800&auto=format&fit=crop" },
+  ];
   return (
     <div style={{ background: "var(--soma-cream)" }}>
       <SomaPageHeader
-        eyebrow="Restore · Massage · Meditation · Rituals"
-        title="Rest is not a reward.<br /><em>It’s a practice.</em>"
-        subtitle="From 1,800 meditation to 11,000 Stillness. Premium, unhurried, sensory — not clinical. Tell us about pregnancy, surgery or heart concerns before treatment."
+        eyebrow={t("restore.eyebrow")}
+        title={t("restore.title")}
+        subtitle={t("restore.subtitle")}
         image="https://images.unsplash.com/photo-1596178065887-1198b6148b2b?q=80&w=900&auto=format&fit=crop"
       />
 
       {/* Treatments - editorial premium */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "36px clamp(20px,4vw,40px) 0" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 24, alignItems: "start" }}>
+      <section className={styles.section}>
+        <div className={styles.treatmentsGrid}>
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: EASE }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 10px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" />
-              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)" }}>Massage & meditation</span>
+              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)" }}>{t("restore.massageMeditation")}</span>
               <span style={{ fontSize: 10, fontWeight: 700, background: "var(--soma-ivory)", border: "1px solid var(--soma-line-light)", padding: "4px 8px", borderRadius: 9999, color: "var(--soma-warm-gray)" }}>7 treatments</span>
             </div>
-            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 300, color: "var(--soma-forest)", letterSpacing: "-0.02em", lineHeight: 0.95 }}>Unhurried <em style={{ fontStyle: "italic", color: "var(--soma-primary)" }}>touch.</em></h3>
-            <p style={{ fontSize: 13.5, color: "#5a6b63", marginTop: 8, lineHeight: 1.6 }}>Meditation classes included for AMANI/UZIMA/FAMILY. Steam & wellness rituals on request.</p>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.05, delayChildren: reduced ? 0 : 0.12 } } }}
-              style={{ marginTop: 16, background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 100%)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.62)", borderRadius: 18, overflow: "hidden", boxShadow: "0 12px 36px rgba(24,61,45,0.07), inset 0 1px 0 rgba(255,255,255,0.72)" }}
-            >
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 0, background: "linear-gradient(135deg, #183D2D 0%, #1e4d3a 100%)", color: "#fff", padding: "14px 16px", fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", position: "relative" }}>
-                <span>Treatment</span><span style={{ textAlign: "right" }}>Length</span><span style={{ textAlign: "right" }}>Price</span>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 300, color: "var(--soma-forest)", letterSpacing: "-0.02em", lineHeight: 0.95 }}><span dangerouslySetInnerHTML={{ __html: t("restore.unhurriedTouch") }} /></h3>
+            <p style={{ fontSize: 13.5, color: "#5a6b63", marginTop: 8, lineHeight: 1.6 }}>{t("restore.meditationIncluded")}</p>
+            <div className={styles.pricingWrapper}>
+              <div className={styles.pricingScroll}>
+                <div className={styles.pricingHeader}>
+                <span>{t("restore.treatment")}</span><span style={{ textAlign: "right" }}>{t("restore.length")}</span><span style={{ textAlign: "right" }}>{t("restore.price")}</span>
                 <span style={{ position: "absolute", bottom: 0, left: 16, right: 16, height: 1, background: "linear-gradient(90deg, transparent, rgba(244,180,0,0.42), transparent)", pointerEvents: "none" }} aria-hidden="true" />
               </div>
               {RESTORE_TREATMENTS.map((t, i) => (
@@ -55,7 +53,7 @@ const Restore = () => {
                   key={i}
                   variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE } } }}
                   whileHover={reduced ? {} : { x: 2, backgroundColor: i % 2 ? "rgba(244,180,0,0.04)" : "rgba(46,125,91,0.03)" }}
-                  style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 12, padding: "15px 16px", fontSize: 13, borderTop: i ? "1px solid var(--soma-line-light)" : "none", background: i % 2 ? "var(--soma-ivory)" : "#fff", position: "relative", alignItems: "center" }}
+                  className={styles.pricingRow}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--soma-primary)", flexShrink: 0, opacity: 0.9 }} aria-hidden="true" />
@@ -65,15 +63,16 @@ const Restore = () => {
                   <span style={{ textAlign: "right", fontWeight: 800, color: "var(--soma-forest)", letterSpacing: "-0.01em" }}>{t.price} <span style={{ fontSize: 10, fontWeight: 600, color: "var(--soma-warm-gray)" }}>KES</span></span>
                 </motion.div>
               ))}
+                </div>
+              </div>
             </motion.div>
-          </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.65, delay: 0.18, ease: EASE }}
             whileHover={reduced ? {} : { y: -4, scale: 1.01 }}
-            style={{ background: "linear-gradient(135deg, #183D2D 0%, #1c4a34 60%, #1e5c3f 100%)", color: "#fff", borderRadius: 20, padding: 22, position: "sticky", top: 88, overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)", boxShadow: "0 20px 48px rgba(24,61,45,0.20), 0 8px 20px rgba(24,61,45,0.12), inset 0 1px 0 rgba(255,255,255,0.10)" }}
+            className={styles.stickyCard}
           >
             <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, border: "1px solid rgba(255,255,255,0.07)", borderRadius: "50%", pointerEvents: "none" }} aria-hidden="true" />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(112deg, transparent 38%, rgba(255,255,255,0.06) 48%, transparent 62%)", pointerEvents: "none" }} aria-hidden="true" />
@@ -86,9 +85,9 @@ const Restore = () => {
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 14 }}>
               <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em" }}>32,000</span>
               <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.72, letterSpacing: "0.06em" }}>KES</span>
-              <span style={{ fontSize: 10, fontWeight: 700, background: "var(--soma-gold)", color: "var(--soma-forest)", padding: "4px 8px", borderRadius: 9999, marginLeft: 8 }}>Most chosen</span>
+              <span style={{ fontSize: 10, fontWeight: 700, background: "var(--soma-gold)", color: "var(--soma-forest)", padding: "4px 8px", borderRadius: 9999, marginLeft: 8 }}>{t("restore.mostChosen")}</span>
             </div>
-            <div style={{ fontSize: 11, opacity: 0.62, marginTop: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.10)", padding: "8px 10px", borderRadius: 10, backdropFilter: "blur(6px)" }}>Mats, oils, tea & water at reception. Gift vouchers 12 months.</div>
+            <div style={{ fontSize: 11, opacity: 0.62, marginTop: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.10)", padding: "8px 10px", borderRadius: 10, backdropFilter: "blur(6px)" }}>{t("restore.matsOils")}</div>
             <motion.div initial={{ clipPath: "inset(10% 0 0 0)" }} whileInView={{ clipPath: "inset(0% 0 0 0)" }} viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE }} style={{ marginTop: 16, borderRadius: 14, overflow: "hidden", position: "relative", border: "1px solid rgba(255,255,255,0.14)" }}>
               <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop" alt="Reset" style={{ width: "100%", height: 168, objectFit: "cover", display: "block" }} loading="lazy" />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 52%, rgba(24,61,45,0.18) 100%)", pointerEvents: "none" }} aria-hidden="true" />
@@ -99,7 +98,7 @@ const Restore = () => {
       </section>
 
       {/* Signature - premium horizontal */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "36px clamp(20px,4vw,40px) 0" }}>
+      <section className={styles.signatureSection}>
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -110,7 +109,7 @@ const Restore = () => {
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 10px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" />
-              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)" }}>Signature journeys</span>
+              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)" }}>{t("restore.signature")}</span>
               <span style={{ fontSize: 10, background: "var(--soma-ivory)", border: "1px solid var(--soma-line-light)", padding: "4px 8px", borderRadius: 9999, color: "var(--soma-warm-gray)", fontWeight: 700 }}>6 journeys · drag →</span>
             </div>
             <h3 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 300, color: "var(--soma-forest)", letterSpacing: "-0.02em", lineHeight: 0.95 }}>Signature <em style={{ fontStyle: "italic", color: "var(--soma-primary)" }}>experiences</em></h3>
@@ -121,7 +120,7 @@ const Restore = () => {
           </div>
         </motion.div>
 
-        <div style={{ overflow: "hidden", padding: "18px 0 12px", margin: "0 -4px", cursor: reduced ? "default" : "grab" }} ref={scrollRef}>
+        <div className={styles.signatureCarousel} ref={scrollRef}>
           <motion.div
             drag={reduced ? false : "x"}
             dragConstraints={{ left: -1100, right: 0 }}
@@ -132,7 +131,7 @@ const Restore = () => {
             whileInView="visible"
             viewport={{ once: true, margin: "-40px" }}
             variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.07, delayChildren: reduced ? 0 : 0.1 } } }}
-            style={{ display: "flex", gap: 16, width: "max-content", paddingRight: 40 }}
+            className={styles.signatureTrack}
           >
             {signatures.map((s) => (
               <motion.div
@@ -140,7 +139,7 @@ const Restore = () => {
                 variants={{ hidden: { opacity: 0, y: 18, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: EASE } } }}
                 whileHover={reduced ? {} : { y: -6, scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
-                style={{ minWidth: 320, flex: "0 0 320px", background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.90) 100%)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.62)", borderRadius: 20, overflow: "hidden", boxShadow: "0 12px 32px rgba(24,61,45,0.08), inset 0 1px 0 rgba(255,255,255,0.72)", position: "relative", scrollSnapAlign: "start" }}
+                className={styles.signatureCard}
               >
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent)", pointerEvents: "none", zIndex: 2 }} aria-hidden="true" />
                 <div style={{ height: 200, overflow: "hidden", background: "#e8e2d4", position: "relative" }}>
@@ -171,13 +170,13 @@ const Restore = () => {
       </section>
 
       {/* Benefits & safety — premium */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "28px clamp(20px,4vw,40px) 36px" }}>
+      <section className={styles.section}>
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: reduced ? 0 : 0.09, delayChildren: reduced ? 0 : 0.12 } } }}
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}
+          className={styles.benefitsGrid}
         >
           {[
             { t: "Deep calm, not sedation", d: "Restorative yoga + Nidra + massage to down-regulate, not just relax.", icon: "◯" },
@@ -201,13 +200,13 @@ const Restore = () => {
       </section>
 
       {/* Gift vouchers — NEW premium where thin */}
-      <section style={{ maxWidth: 1440, margin: "0 auto", padding: "0 clamp(20px,4vw,40px) 36px" }}>
+      <section className={styles.section}>
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.65, ease: EASE }}
-          style={{ display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 18, alignItems: "stretch" }}
+          className={styles.giftGrid}
         >
           <motion.div
             whileHover={reduced ? {} : { y: -4, scale: 1.01 }}
@@ -217,7 +216,7 @@ const Restore = () => {
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.72, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.32)", flexShrink: 0 }} aria-hidden="true" /> Gift vouchers · 12 months
             </div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 300, marginTop: 10, lineHeight: 0.95, letterSpacing: "-0.02em" }}>Give <em style={{ fontStyle: "italic", color: "#F4B400" }}>stillness.</em></div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 300, marginTop: 10, lineHeight: 0.95, letterSpacing: "-0.02em" }}><span dangerouslySetInnerHTML={{ __html: t("restore.giftTitle") }} /></div>
             <div style={{ fontSize: 13, lineHeight: 1.65, opacity: 0.88, marginTop: 10 }}>Valid 12 months, any treatment or journey. Beautifully wrapped at reception or emailed instantly.</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16 }}>
               {[
@@ -244,24 +243,24 @@ const Restore = () => {
             transition={{ duration: 0.6, delay: 0.12, ease: EASE }}
             style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.90) 100%)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.62)", borderRadius: 20, padding: 22, boxShadow: "0 12px 36px rgba(24,61,45,0.07), inset 0 1px 0 rgba(255,255,255,0.72)", display: "flex", flexDirection: "column", gap: 12 }}
           >
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 400, color: "var(--soma-forest)", letterSpacing: "-0.015em" }}>What to know before you book</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 400, color: "var(--soma-forest)", letterSpacing: "-0.015em" }}>{t("restore.whatToKnow")}</div>
             <ul style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 12.5, color: "#5a6b63", lineHeight: 1.6 }}>
-              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> Tell us about pregnancy, surgery, heart concerns — we’ll adapt.</li>
-              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> Arrive 10 min early · Mats, oils, tea & water provided.</li>
-              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> Mon–Fri 10:00–15:00 · Weekends +20% · 12h cancel (half), no-show full.</li>
+              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> {t("restore.know1")}</li>
+              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> {t("restore.know2")}</li>
+              <li style={{ display: "flex", gap: 8 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", marginTop: 7, flexShrink: 0 }} /> {t("restore.know3")}</li>
             </ul>
             <div style={{ marginTop: 4, background: "var(--soma-ivory)", border: "1px solid var(--soma-line-light)", borderRadius: 12, padding: 12, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--soma-forest)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>✦</span>
-              <span style={{ fontSize: 11, color: "var(--soma-warm-gray)", lineHeight: 1.5 }}><strong style={{ color: "var(--soma-forest)" }}>Need help choosing?</strong> Tell us your goal and time — we’ll craft the right journey.</span>
+              <span style={{ fontSize: 11, color: "var(--soma-warm-gray)", lineHeight: 1.5 }}><strong style={{ color: "var(--soma-forest)" }}>{t("restore.needHelp")}</strong> {t("restore.needHelpDesc")}</span>
             </div>
           </motion.div>
         </motion.div>
       </section>
 
-      <PageFAQSection title="Restore & wellness therapies — common questions" questions={PAGE_FAQS.restore} />
+      <PageFAQSection title={t("restore.faqTitle")} questions={PAGE_FAQS.restore} />
 
       <SomaCTA />
-      <style>{`@media(max-width:900px){div[style*="gridTemplateColumns: 1.2fr 0.8fr"]{grid-template-columns:1fr !important;} div[style*="position: sticky"]{position:relative !important; top:0 !important;}}`}</style>
+
     </div>
   );
 };

@@ -9,12 +9,12 @@ import { getEvents, registerEvent } from "../api/StudentServices.js";
 
 const fmtDate = (d) => {
   if (!d) return "";
-  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
 };
 
 const fmtDateTime = (d) => {
   if (!d) return "";
-  return new Date(d).toLocaleString("en-IN", {
+  return new Date(d).toLocaleString("en-KE", {
     day: "numeric", month: "short", year: "numeric",
     hour: "numeric", minute: "2-digit", hour12: true,
   });

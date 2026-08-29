@@ -10,9 +10,9 @@ import styles from "./ScrollProgress.module.css";
 const ScrollProgress = () => {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
-    stiffness: 140,
+    stiffness: 100,
     damping: 30,
-    restDelta: 0.001,
+    restDelta: 0.005,
   });
 
   return (

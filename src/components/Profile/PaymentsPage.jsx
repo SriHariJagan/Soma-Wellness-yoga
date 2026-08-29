@@ -10,7 +10,7 @@ export default function PaymentsPage({ student }) {
 
   const paidTotal    = payments.filter(p => p.status === "paid").reduce((a, p) => a + (p.amount || 0), 0);
   const pendingTotal = payments.filter(p => p.status !== "paid").reduce((a, p) => a + (p.amount || 0), 0);
-  const inr = (n) => `₹${(n || 0).toLocaleString("en-IN")}`;
+  const inr = (n) => `KES ${(n || 0).toLocaleString("en-KE")}`;
 
   return (
     <>
@@ -18,8 +18,8 @@ export default function PaymentsPage({ student }) {
 
       <Stagger>
         <div className={w.statGrid}>
-          <StatCard tone="green" icon="ti-circle-check" label="Paid"    value={paidTotal}    format={(n) => n.toLocaleString("en-IN")} prefix="₹" index={0} />
-          <StatCard tone="amber" icon="ti-clock"        label="Pending" value={pendingTotal} format={(n) => n.toLocaleString("en-IN")} prefix="₹" index={1} />
+          <StatCard tone="green" icon="ti-circle-check" label="Paid"    value={paidTotal}    format={(n) => n.toLocaleString("en-KE")} prefix="KES " index={0} />
+          <StatCard tone="amber" icon="ti-clock"        label="Pending" value={pendingTotal} format={(n) => n.toLocaleString("en-KE")} prefix="KES " index={1} />
         </div>
 
         <Item>
@@ -58,7 +58,7 @@ export default function PaymentsPage({ student }) {
                       >
                         <span className={styles.txnIcon}><i className="ti ti-credit-card" aria-hidden="true" /></span>
                         <span className={styles.txnLabel}>{p.label}</span>
-                        <span className={styles.txnAmount}>₹{p.amount?.toLocaleString("en-IN")}</span>
+                        <span className={styles.txnAmount}>KES {p.amount?.toLocaleString("en-KE")}</span>
                         <Pill tone={p.status === "paid" ? "green" : "amber"} icon={p.status === "paid" ? "ti-check" : "ti-clock"}>
                           {p.status === "paid" ? "Paid" : "Pending"}
                         </Pill>

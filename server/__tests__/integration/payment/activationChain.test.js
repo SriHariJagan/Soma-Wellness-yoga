@@ -171,13 +171,13 @@ beforeEach(() => {
   paymentStore.length = 0;
   redisStore.clear();
   jest.clearAllMocks();
-  mockRazorpayOrders.create.mockResolvedValue({ id: 'order_abc123', amount: 1000, currency: 'INR', status: 'created' });
+  mockRazorpayOrders.create.mockResolvedValue({ id: 'order_abc123', amount: 1000, currency: 'KES', status: 'created' });
   mockRazorpayPayments.fetch.mockResolvedValue({
     id: 'pay_test123',
     order_id: 'order_abc123',
     status: 'captured',
     amount: 1000,
-    currency: 'INR',
+    currency: 'KES',
   });
 });
 
@@ -231,7 +231,7 @@ describe('Payment Activation Chain', () => {
       const svc = new PaymentService();
       const user = makeUser();
 
-      mockRazorpayOrders.create.mockResolvedValue({ id: 'order_razor123', amount: 50000, currency: 'INR', status: 'created' });
+      mockRazorpayOrders.create.mockResolvedValue({ id: 'order_razor123', amount: 50000, currency: 'KES', status: 'created' });
 
       const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Gold Pass', quantity: 1, unitPrice: 50000, totalPrice: 50000 }];
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
@@ -256,14 +256,14 @@ describe('Payment Activation Chain', () => {
       const items = [{ itemType: 'membership', itemId: planId, name: 'Monthly Pass', quantity: 1, unitPrice: 1000, totalPrice: 1000 }];
 
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
-      mockRazorpayOrders.create.mockResolvedValue({ id: 'order_verify1', amount: 1000, currency: 'INR', status: 'created' });
+      mockRazorpayOrders.create.mockResolvedValue({ id: 'order_verify1', amount: 1000, currency: 'KES', status: 'created' });
 
       // Initiate with user._id to match production flow (controllers pass req.user._id)
       const payment = await svc.initiate({ user: user._id, items, label: 'Monthly Pass' });
 
       // Mock verification helpers
       svc.verificationService.fetchPaymentFromGateway = jest.fn(async () => ({
-        id: 'pay_test123', order_id: 'order_verify1', status: 'captured', amount: 1000, currency: 'INR',
+        id: 'pay_test123', order_id: 'order_verify1', status: 'captured', amount: 1000, currency: 'KES',
       }));
 
       svc.invoiceService.generateInvoiceNumber = jest.fn(async () => 'INV-2026-000001');

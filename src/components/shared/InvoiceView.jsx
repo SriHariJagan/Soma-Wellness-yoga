@@ -1,10 +1,10 @@
 import { useRef } from "react";
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+  d ? new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—";
 const fmtTime = (d) =>
-  d ? new Date(d).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "—";
-const fmtPrice = (n) => `\u20B9${Number(n || 0).toLocaleString("en-IN")}`;
+  d ? new Date(d).toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" }) : "—";
+const fmtPrice = (n) => `\u20B9${Number(n || 0).toLocaleString("en-KE")}`;
 
 const TYPE_LABELS = {
   plan: "Membership",
@@ -44,9 +44,9 @@ export default function InvoiceView({ order, onClose }) {
 
   const { payment, items = [], student, coupon, couponCode, couponDiscount } = order;
   const studio = {
-    name: "Pragya Yoga Studio",
+    name: "Soma Wellness Studio",
     address: "123 Wellness Avenue, Yoga Nagar, Bengaluru, Karnataka 560001",
-    email: "pragyayogaofficial@gmail.com",
+    email: "hello@somawellness.in",
     phone: "+91 98765 43210",
     gst: "29ABCDE1234F1Z5",
   };

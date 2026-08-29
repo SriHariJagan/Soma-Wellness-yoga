@@ -8,9 +8,11 @@ import BackToTop from './components/common/BackToTop';
 
 import PageTransition from './components/common/PageTransition';
 import Home from './pages/Home';
-import { ROUTE_META, applyMeta } from './lib/seo';
+import { ROUTE_META, applyMeta, getLocalizedMeta } from './lib/seo';
 import { getLandingPage } from './data/landingPages';
 import SomaLoader from "./components/soma/SomaLoader";
+import { useTranslation } from "react-i18next";
+import { useAuth } from './context/AuthContext.jsx';
 
 // ── Route-level code splitting: only Home loads eagerly. Everything else is
 //    fetched on demand so the initial bundle stays small. ──
@@ -43,51 +45,58 @@ const FoundingMembers = lazy(() => import('./pages/FoundingMembers'));
 const RouteFallback = () => <SomaLoader compact />;
 
 const App = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, login, logout } = useAuth();
+  const [syncedUser, setSyncedUser] = useState(user);
 
-  // Restore session from localStorage on boot
+  // keep synced with context and also listen to OTP login events
+  useEffect(() => { setSyncedUser(user); }, [user]);
+
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser && savedUser !== "undefined") {
+    const onStorage = () => {
       try {
-        const parsed = JSON.parse(savedUser);
-        // Only restore if role exists — prevents bad sessions from persisting
-        if (parsed && parsed.role) {
-          setUser(parsed);
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.role) setSyncedUser(parsed);
+        } else {
+          setSyncedUser(null);
         }
-      } catch (e) {
-        console.error("Failed to parse saved session:", e);
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      }
-    }
-    setLoading(false);
+      } catch {}
+    };
+    const onAuthLogin = (e) => {
+      if (e.detail?.user) setSyncedUser(e.detail.user);
+    };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('auth-login', onAuthLogin);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('auth-login', onAuthLogin);
+    };
   }, []);
 
   const handleLoginSuccess = (token, userPayload) => {
-    // Persist to state — role must exist for protected routes to work
-    setUser(userPayload);
+    login(token, userPayload);
+    setSyncedUser(userPayload);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
+  const handleLogout = async () => {
+    await logout();
+    setSyncedUser(null);
   };
 
   if (loading) {
     return <SomaLoader />;
   }
 
-  const isAdmin   = user?.role === "admin";
-  const isStudent = user?.role === "student";
+  const effectiveUser = syncedUser || user;
+  const isAdmin   = effectiveUser?.role === "admin";
+  const isStudent = effectiveUser?.role === "student";
   const isDashboard = isAdmin || isStudent;
 
   return (
     <BrowserRouter>
       <AppShell
-        user={user}
+        user={effectiveUser}
         isAdmin={isAdmin}
         isStudent={isStudent}
         isDashboard={isDashboard}
@@ -103,15 +112,16 @@ const App = () => {
  * graceful page transitions — without touching any routing logic or content. */
 const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSuccess }) => {
   const location = useLocation();
+  const { t, i18n } = useTranslation();
 
-  // ── SEO: apply per-route title + meta description on navigation ──
+  // ── SEO: apply per-route title + meta description on navigation (localized) ──
   useEffect(() => {
     const landing = getLandingPage(location.pathname);
     const meta = landing
       ? { title: landing.title, description: landing.description }
-      : ROUTE_META[location.pathname] || ROUTE_META["/"];
+      : getLocalizedMeta(location.pathname, t);
     applyMeta(meta);
-  }, [location.pathname]);
+  }, [location.pathname, i18n.language, t]);
 
   // Reset scroll position on every navigation (instant — avoids fighting the
   // page-transition animation). Skip when a scrollTo is present so that
@@ -125,7 +135,7 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
   // Hide the public chrome (navbar, footer, etc.) only on the actual dashboard
   // routes — not merely because a student/admin is logged in. This lets logged-in
   // users still navigate the public site; the Navbar adapts to show their account.
-  const dashboardRoutes = ["/yogaadmin", "/studentdashboard"];
+  const dashboardRoutes = ["/yogaadmin", "/studentdashboard", "/login", "/forgot-password", "/payment"];
   const onDashboardRoute = dashboardRoutes.includes(location.pathname);
 
   return (

@@ -25,7 +25,7 @@ router.post('/:id/refund', refundLimiter, async (req, res, next) => {
     if (amount != null) {
       amount = Math.round(amount * 100);
       if (amount < 100) {
-        throw ApiError.badRequest('Minimum refund amount is ₹1 (100 paise)');
+        throw ApiError.badRequest('Minimum refund amount is KES 1 (100 paise)');
       }
     }
 

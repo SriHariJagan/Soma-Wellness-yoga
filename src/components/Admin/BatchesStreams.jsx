@@ -181,7 +181,7 @@ export default function BatchesStreams({ onChanged } = {}) {
                     </td>
                     <td><Badge label={b.status} /></td>
                     <td className={s.tdMuted} style={{ fontSize: '11px' }}>
-                      {new Date(b.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(b.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                     <td>
                       <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnDanger}`} onClick={() => handleDelete(b._id, b.name)} disabled={deletingId === b._id}>

@@ -195,7 +195,7 @@ export const resendOrderNotification = asyncHandler(async (req, res) => {
 
   const itemList = items.map((i) => `\u2022 ${i.name}`).join('\n');
   const title = 'Purchase Successful';
-  const message = `You have successfully enrolled in:\n${itemList}\n\nInvoice: ${order.payment?.invoiceNo || order.orderNumber}\nAmount Paid: \u20B9${(order.total || 0).toLocaleString('en-IN')}`;
+  const message = `You have successfully enrolled in:\n${itemList}\n\nInvoice: ${order.payment?.invoiceNo || order.orderNumber}\nAmount Paid: \u20B9${(order.total || 0).toLocaleString('en-KE')}`;
 
   const notif = await Notification.create({ email: order.student?.email || 'system', title, message, type: 'general', sender: order.student?._id, recipientCount: 1 });
   await NotificationRecipient.create({ notification: notif._id, student: order.student?._id });

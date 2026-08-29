@@ -19,7 +19,7 @@ export default function ReferralPage({ student }) {
       <div className={styles.refBox}>
         <div className={styles.refLabel}>Your referral code</div>
         <div className={styles.refCode}>{code}</div>
-        <div className={styles.refSub}>Share and earn ₹500 credit for every friend who joins</div>
+        <div className={styles.refSub}>Share and earn KES 500 credit for every friend who joins</div>
         <div className={styles.shareRow}>
           <button className={s.btnSm} onClick={copy}><i className="ti ti-copy" aria-hidden="true" /> Copy link</button>
           <a href={`mailto:?subject=Join yoga with my referral&body=Use code ${code}: ${link}`}>
@@ -29,7 +29,7 @@ export default function ReferralPage({ student }) {
         <div className={styles.refStats}>
           <div className={styles.refStat}><div className={styles.refStatNum}>{invited}</div><div className={styles.refStatLbl}>Invited</div></div>
           <div className={styles.refStat}><div className={styles.refStatNum}>{joined}</div><div className={styles.refStatLbl}>Joined</div></div>
-          <div className={styles.refStat}><div className={styles.refStatNum}>₹{earned?.toLocaleString("en-IN")}</div><div className={styles.refStatLbl}>Earned</div></div>
+          <div className={styles.refStat}><div className={styles.refStatNum}>KES {earned?.toLocaleString("en-KE")}</div><div className={styles.refStatLbl}>Earned</div></div>
         </div>
       </div>
     </div>

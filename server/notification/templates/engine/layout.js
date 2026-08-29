@@ -94,7 +94,7 @@ function footer() {
   <tr>
     <td class="dm-footer" align="center" style="background:${BRAND.footerBg};border-radius:${RADIUS.lg};padding:${SPACING.md} 24px;font-size:12px;color:${BRAND.textMuted};line-height:1.6;">
       <p style="margin:0 0 4px;">${STUDIO_NAME} &mdash; Jaipur, India</p>
-      <p style="margin:0;">&copy; ${new Date().getFullYear()} Pragya Yoga. All rights reserved.</p>
+      <p style="margin:0;">&copy; ${new Date().getFullYear()} Soma Wellness. All rights reserved.</p>
     </td>
   </tr>
 </table>`;

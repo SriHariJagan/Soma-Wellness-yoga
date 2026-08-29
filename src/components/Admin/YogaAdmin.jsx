@@ -107,6 +107,15 @@ export default function YogaAdmin({ onLogout = () => {} }) {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
+  // Lock body scroll when mobile drawer is open (prevents background scroll bleed)
+  useEffect(() => {
+    if (mobileOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [mobileOpen]);
+
   const NAV_ITEMS = [
     { id: 'insights',       label: 'Dashboard',            icon: <LuLayoutDashboard /> },
     { id: 'students',       label: 'Students',             icon: <LuUsers />,         badge: students.length || null },

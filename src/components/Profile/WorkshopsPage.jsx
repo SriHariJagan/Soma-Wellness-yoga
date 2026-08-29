@@ -10,13 +10,13 @@ import { addToCart, getWorkshopDetail } from "../api/StudentServices.js";
 const fmtDate = (d) => {
   if (!d) return "";
   const dt = new Date(d);
-  return dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return dt.toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
 };
 
 const fmtDateTime = (d) => {
   if (!d) return "";
   const dt = new Date(d);
-  return dt.toLocaleString("en-IN", {
+  return dt.toLocaleString("en-KE", {
     day: "numeric", month: "short", year: "numeric",
     hour: "numeric", minute: "2-digit", hour12: true,
   });
@@ -186,7 +186,7 @@ export default function WorkshopsPage({ student, reload, workshopId: highlightId
                     </div>
                   </div>
                   <div className={c.apptAction}>
-                    {wk.isPaid && <span className={c.price}>₹{wk.price?.toLocaleString("en-IN")}</span>}
+                    {wk.isPaid && <span className={c.price}>KES {wk.price?.toLocaleString("en-KE")}</span>}
                     <PrimaryButton
                       onClick={(e) => { e.stopPropagation(); handleRegister(wk); }}
                       disabled={busyId === fid(wk)}
@@ -292,7 +292,7 @@ export default function WorkshopsPage({ student, reload, workshopId: highlightId
                             fontSize: 13, fontWeight: 700, whiteSpace: "nowrap",
                             fontFamily: "'Outfit', 'Inter', sans-serif",
                           }}>
-                            ₹{detailData.price?.toLocaleString("en-IN")}
+                            KES {detailData.price?.toLocaleString("en-KE")}
                           </span>
                         )}
                         <span style={{

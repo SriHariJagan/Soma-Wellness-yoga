@@ -396,9 +396,9 @@ export const createInvite = asyncHandler(async (req, res) => {
   for (const r of recipients) {
     let notifMessage;
     if (isSingleSessionNotif) {
-      notifMessage = `You have been invited for your <strong>${entityNameForNotif}</strong> session on ${new Date(date).toLocaleDateString('en-IN')} at ${startTime}.${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
+      notifMessage = `You have been invited for your <strong>${entityNameForNotif}</strong> session on ${new Date(date).toLocaleDateString('en-KE')} at ${startTime}.${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
     } else {
-      notifMessage = `You have been invited to "${title}" on ${new Date(date).toLocaleDateString('en-IN')} at ${startTime}.${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
+      notifMessage = `You have been invited to "${title}" on ${new Date(date).toLocaleDateString('en-KE')} at ${startTime}.${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
     }
     await notify(r.user, {
       title: `${inviteCategory === 'yttc' ? 'YTTC Class Invitation' : 'Class Invitation'}: ${title}`,
@@ -462,7 +462,7 @@ export const cancelInvite = asyncHandler(async (req, res) => {
   for (const r of invite.recipients) {
     await notify(r.user, {
       title: `Class Cancelled: ${invite.title}`,
-      message: `The class "${invite.title}" scheduled for ${new Date(invite.date).toLocaleDateString('en-IN')} at ${invite.startTime} has been cancelled.`,
+      message: `The class "${invite.title}" scheduled for ${new Date(invite.date).toLocaleDateString('en-KE')} at ${invite.startTime} has been cancelled.`,
       type: 'class',
     });
   }
@@ -480,7 +480,7 @@ export const resendInvite = asyncHandler(async (req, res) => {
     if (r.status !== 'read' && r.status !== 'joined') {
       await notify(r.user, {
         title: `Reminder: ${invite.title}`,
-        message: `Reminder: "${invite.title}" is scheduled for ${new Date(invite.date).toLocaleDateString('en-IN')} at ${invite.startTime}.${invite.notes ? ` ${invite.notes}` : ''}${invite.meetingPassword ? ` Password: ${invite.meetingPassword}` : ''}`,
+        message: `Reminder: "${invite.title}" is scheduled for ${new Date(invite.date).toLocaleDateString('en-KE')} at ${invite.startTime}.${invite.notes ? ` ${invite.notes}` : ''}${invite.meetingPassword ? ` Password: ${invite.meetingPassword}` : ''}`,
         type: 'class',
         link: invite.meetingLink || '',
         channels: ['inApp', 'email'],

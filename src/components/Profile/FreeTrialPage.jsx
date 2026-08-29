@@ -369,7 +369,7 @@ export default function FreeTrialPage({ student, reload }) {
                       >
                         <td style={td}><strong>{sess.title}</strong></td>
                         <td style={{ ...td, ...muted }}>
-                          {sess.date ? new Date(sess.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}
+                          {sess.date ? new Date(sess.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) : '—'}
                         </td>
                         <td style={{ ...td, ...muted }}>{sess.startTime || '—'}</td>
                         <td style={{ ...td, ...muted }}>{sess.instructor?.name || sess.instructor || '—'}</td>
@@ -418,7 +418,7 @@ export default function FreeTrialPage({ student, reload }) {
                     <div className={styles.notifTitle}>{n.title}</div>
                     {n.body && <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginTop: 2 }}>{n.body}</div>}
                     <div className={styles.notifTime}>
-                      {n.createdAt ? new Date(n.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
+                      {n.createdAt ? new Date(n.createdAt).toLocaleDateString("en-KE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
                     </div>
                   </div>
                 </div>

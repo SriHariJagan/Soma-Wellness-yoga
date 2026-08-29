@@ -347,7 +347,7 @@ export function AddStudentModal({ onClose, onSuccess }) {
       open
       onClose={onClose}
       title="Register New Student"
-      subtitle="Add a student to the Pragya Yoga community"
+      subtitle="Add a student to the Soma Wellness community"
       icon={<LuUserPlus size={20} />}
     >
       <FeedbackRow {...feedback} />
@@ -611,7 +611,7 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
         user: form.studentId, label,
         amount: amountNum, method: form.method, status: 'paid',
       });
-      setFeedback({ message: `₹${amountNum.toLocaleString('en-IN')} payment recorded for ${selectedStudent?.name || 'student'}. Invoice # generated.`, type: 'success' });
+      setFeedback({ message: `KES ${amountNum.toLocaleString('en-KE')} payment recorded for ${selectedStudent?.name || 'student'}. Invoice # generated.`, type: 'success' });
       setTimeout(() => { onSuccess?.(); onClose(); }, 1400);
     } catch (err) {
       setFeedback({ message: err.message || 'Failed to record payment.', type: 'error' });
@@ -642,7 +642,7 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
 
         {/* Payment Details */}
         <SectionCard icon={<LuDollarSign size={18} />} title="Payment Details" col="2">
-          <FieldGroup icon={<LuIndianRupee size={15} />} label="Amount (₹)" required>
+          <FieldGroup icon={<LuIndianRupee size={15} />} label="Amount (KES )" required>
             <FocusInput type="number" min="1" step="1" value={form.amount} onChange={set('amount')} placeholder="e.g. 2500" />
           </FieldGroup>
           <FieldGroup icon={<LuWallet size={15} />} label="Method">
@@ -673,8 +673,8 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
               {[
                 ['Student', selectedStudent.name],
                 ['Plan', form.label || 'Membership'],
-                ['Subtotal', `₹${amountNum.toLocaleString('en-IN')}`],
-                ['GST (18%)', `₹${tax.toLocaleString('en-IN')}`],
+                ['Subtotal', `KES ${amountNum.toLocaleString('en-KE')}`],
+                ['GST (18%)', `KES ${tax.toLocaleString('en-KE')}`],
               ].map(([l, v]) => (
                 <div key={l} style={{
                   display: 'flex', justifyContent: 'space-between',
@@ -693,7 +693,7 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
                 fontSize: '16px', fontWeight: 700, color: '#2D1406',
               }}>
                 <span>Final Amount</span>
-                <span style={{ color: '#2E7D5B' }}>₹{finalAmount.toLocaleString('en-IN')}</span>
+                <span style={{ color: '#2E7D5B' }}>KES {finalAmount.toLocaleString('en-KE')}</span>
               </div>
             </div>
           </motion.div>

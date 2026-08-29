@@ -202,7 +202,7 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
               return <EnrollmentCard
                 item={{ ...memProg, type: "membership", name: memProg.planType }}
                 status={memProg.computedStatus || (memProg.isActive ? 'active' : memProg.status || 'expired')}
-                expiry={memProg.expiryDate ? new Date(memProg.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined}
+                expiry={memProg.expiryDate ? new Date(memProg.expiryDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined}
               />;
             })()}
 
@@ -211,7 +211,7 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
                 key={svc._id}
                 item={{ ...svc, type: "service", name: svc.serviceName }}
                 status={svc.isActive ? 'active' : (svc.status || 'expired')}
-                expiry={svc.expiryDate ? new Date(svc.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined}
+                expiry={svc.expiryDate ? new Date(svc.expiryDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined}
               />
             ))}
 

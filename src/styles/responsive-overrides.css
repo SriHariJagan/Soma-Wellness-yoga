@@ -1,0 +1,180 @@
+/* ─────────────────────────────────────────────────────────
+   Responsive Overrides — fix inline gridTemplateColumns + fixed sizes
+   Loaded after design-tokens.css via index.css
+   Targets inline styles with attribute selectors (avoids JSX churn)
+   Breakpoints: 1024, 900, 768, 640, 480, 375
+   ───────────────────────────────────────────────────────── */
+
+/* ── Global helpers ── */
+img { max-width: 100%; height: auto; }
+
+/* ── CLASSES page (most broken) ── */
+@media (max-width: 1024px) {
+  /* Memberships 4→2 */
+  div[style*="gridTemplateColumns: repeat(4,1fr)"],
+  div[style*="gridTemplateColumns:repeat(4,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 768px) {
+  /* Try us 360px 1fr → 1fr */
+  div[style*="gridTemplateColumns: 360px 1fr"],
+  div[style*="gridTemplateColumns:360px 1fr"] { grid-template-columns: 1fr !important; }
+  /* Memberships 2→1 at 640 handled below */
+  /* Pay-ahead table needs horizontal scroll wrapper */
+}
+@media (max-width: 640px) {
+  div[style*="gridTemplateColumns: repeat(4,1fr)"],
+  div[style*="gridTemplateColumns:repeat(4,1fr)"] { grid-template-columns: 1fr !important; }
+  div[style*="gridTemplateColumns: 150px repeat(4,1fr)"],
+  div[style*="gridTemplateColumns:150px repeat(4,1fr)"] { grid-template-columns: 80px repeat(2, 1fr) !important; font-size: 11px !important; }
+  div[style*="gridTemplateColumns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 480px) {
+  div[style*="gridTemplateColumns: 150px repeat(4,1fr)"],
+  div[style*="gridTemplateColumns:150px repeat(4,1fr)"] { grid-template-columns: 1fr !important; }
+  /* hide header row duplication for pay-ahead — keep via scroll */
+}
+
+/* Pay-ahead wrapper scroll on small */
+@media (max-width: 900px) {
+  div[style*="gridTemplateColumns: 150px repeat(4,1fr)"] { min-width: 520px; }
+  /* parent has no overflow — force via adjacent selector */
+  div[style*="gridTemplateColumns: 150px repeat(4,1fr)"] { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* ── ABOUT page ── */
+@media (max-width: 1024px) {
+  div[style*="gridTemplateColumns: repeat(3,1fr)"],
+  div[style*="gridTemplateColumns:repeat(3,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 768px) {
+  div[style*="gridTemplateColumns: 0.95fr 1.05fr"],
+  div[style*="gridTemplateColumns:0.95fr 1.05fr"],
+  div[style*="gridTemplateColumns: 1.1fr 0.9fr"],
+  div[style*="gridTemplateColumns:1.1fr 0.9fr"] { grid-template-columns: 1fr !important; }
+  section[style*="maxWidth: 1440"] { overflow-x: hidden; }
+}
+@media (max-width: 640px) {
+  div[style*="gridTemplateColumns: repeat(3,1fr)"],
+  div[style*="gridTemplateColumns:repeat(3,1fr)"] { grid-template-columns: 1fr !important; gap: 12px !important; }
+  div[style*="height: 520px"], div[style*="height:520px"] { height: auto !important; min-height: 280px !important; }
+  div[style*="height: 480px"], div[style*="height:480px"] { height: auto !important; min-height: 240px !important; }
+}
+
+/* ── YTTC / PRIVATE / LIFESTAGES ── */
+@media (max-width: 1024px) {
+  div[style*="gridTemplateColumns: 1.4fr 0.9fr"],
+  div[style*="gridTemplateColumns:1.4fr 0.9fr"],
+  div[style*="gridTemplateColumns: 1.1fr 0.9fr"],
+  div[style*="gridTemplateColumns:1.1fr 0.9fr"],
+  div[style*="gridTemplateColumns: 1.15fr 0.85fr"],
+  div[style*="gridTemplateColumns:1.15fr 0.85fr"],
+  div[style*="gridTemplateColumns: 0.9fr 1.1fr"],
+  div[style*="gridTemplateColumns:0.9fr 1.1fr"],
+  div[style*="gridTemplateColumns: 1.2fr 0.8fr"],
+  div[style*="gridTemplateColumns:1.2fr 0.8fr"],
+  div[style*="gridTemplateColumns: 1fr 1fr"][style*="gap: 32"] { grid-template-columns: 1fr !important; }
+  div[style*="gridTemplateColumns: 1.4fr 0.9fr"],
+  div[style*="gridTemplateColumns:1.4fr 0.9fr"] { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 768px) {
+  div[style*="gridTemplateColumns: 140px 1fr"] { grid-template-columns: 1fr !important; }
+  div[style*="gridTemplateColumns: 140px 1fr"] > div:first-child { height: 200px !important; }
+}
+@media (max-width: 640px) {
+  div[style*="gridTemplateColumns: 1fr 1fr"]:not([style*="gap: 32"]):not(.pricingHeader):not(.pricingRow) { grid-template-columns: 1fr !important; }
+  div[style*="gridTemplateColumns: repeat(3,1fr)"] { grid-template-columns: 1fr !important; }
+}
+
+/* ── RESTORE / PRIVATE / YTTC pricing tables — keep as table on mobile with scroll ── */
+@media (max-width: 768px) {
+  section[style*="maxWidth: 1440"] { overflow-x: hidden; }
+  div[style*="gridTemplateColumns: 1fr 80px 90px"],
+  div[style*="gridTemplateColumns:1fr 80px 90px"] {
+    min-width: 360px;
+  }
+}
+@media (max-width: 640px) {
+  div[style*="gridTemplateColumns: 1fr 80px 90px"],
+  div[style*="gridTemplateColumns:1fr 80px 90px"] {
+    grid-template-columns: 1fr 65px 75px !important;
+    gap: 8px !important;
+    min-width: 320px;
+    font-size: 11.5px !important;
+  }
+  /* Restore bento 1.2fr 0.8fr → 1fr */
+  div[style*="gridTemplateColumns: 1.2fr 0.8fr"],
+  div[style*="gridTemplateColumns:1.2fr 0.8fr"] { grid-template-columns: 1fr !important; gap: 16px !important; }
+  div[style*="gridTemplateColumns: 1.2fr 0.8fr"] > div[style*="position: sticky"] { position: relative !important; top: 0 !important; height: auto !important; min-height: 280px; }
+  /* YTTC bento 1.4fr 0.9fr */
+  div[style*="gridTemplateColumns: 1.4fr 0.9fr"],
+  div[style*="gridTemplateColumns:1.4fr 0.9fr"] { grid-template-columns: 1fr !important; }
+  /* Gift 0.95fr 1.05fr */
+  div[style*="gridTemplateColumns: 0.95fr 1.05fr"],
+  div[style*="gridTemplateColumns:0.95fr 1.05fr"] { grid-template-columns: 1fr !important; }
+}
+
+/* ── CONTACT gallery 3col → 1col ── */
+@media (max-width: 640px) {
+  div[style*="gridTemplateColumns: 1fr 1fr 1fr"],
+  div[style*="gridTemplateColumns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+}
+
+/* ── FOUNDING etc ── */
+@media (max-width: 768px) {
+  div[style*="gridTemplateColumns: 140px 1fr"],
+  div[style*="gridTemplateColumns:140px 1fr"] { grid-template-columns: 80px 1fr !important; }
+}
+
+/* ── General: pricing tables at 640 stack ── */
+@media (max-width: 640px) {
+  /* any remaining 1fr 80px 90px etc already handled */
+  /* ensure tables inside cards scroll */
+  div[style*="overflow: hidden"] + div[style*="gridTemplateColumns"] { overflow-x: auto; }
+}
+
+/* ── Fixed px orbs/blobs → responsive clamp ── */
+@media (max-width: 640px) {
+  div[style*="width: 340px"], div[style*="width:340px"] { width: min(340px, 70vw) !important; height: auto !important; aspect-ratio: 1; }
+  div[style*="width: 560px"], div[style*="width:560px"] { width: min(560px, 92vw) !important; }
+  div[style*="width: 120px"], div[style*="height: 120px"] { width: 80px !important; height: 80px !important; }
+}
+
+/* ── Container padding tuning ── */
+@media (max-width: 1024px) {
+  section[style*="maxWidth: 1440"] { padding-left: clamp(16px, 3vw, 24px) !important; padding-right: clamp(16px, 3vw, 24px) !important; }
+}
+@media (max-width: 640px) {
+  section[style*="maxWidth: 1440"] { padding: 20px clamp(12px, 4vw, 16px) 40px !important; }
+}
+
+/* ── LandingPage specific ── */
+@media (max-width: 640px) {
+  .lp-orb--a, .lp-orb--b { width: min(280px, 60vw) !important; height: min(280px, 60vw) !important; }
+}
+
+/* ── Design-tokens global → add 1024 + 640 ── */
+@media (max-width: 1024px) {
+  .container { padding: 0 clamp(16px, 3vw, 32px); }
+}
+@media (max-width: 640px) {
+  .section { padding: clamp(48px, 8vw, 72px) 0; }
+  .display-title { font-size: clamp(1.75rem, 8vw, 2.5rem); }
+}
+
+/* ── Tables/forms: ensure no overflow hidden clips scroll ── */
+@media (max-width: 900px) {
+  div[style*="overflow: hidden"] { overflow: visible !important; }
+  div[style*="overflow: hidden"] > div[style*="gridTemplateColumns"] { overflow-x: auto; }
+}
+
+/* ── Navbar intermediate 1024 gap fix ── */
+@media (max-width: 1024px) and (min-width: 961px) {
+  /* reduce navLinks gap before hamburger */
+  nav { gap: 4px !important; }
+}
+
+/* ── Images: ensure cover not cropped harshly on mobile ── */
+@media (max-width: 768px) {
+  img[style*="height: 520"], img[style*="height:520"] { height: auto !important; max-height: 380px; object-fit: cover; }
+  div[style*="height: 480"], div[style*="height:480"] { height: auto !important; min-height: 280px; }
+}

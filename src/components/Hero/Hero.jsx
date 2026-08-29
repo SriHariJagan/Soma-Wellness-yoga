@@ -10,6 +10,7 @@ import {
 import { Link } from "react-router-dom";
 import styles from "./Hero.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 
 // ──────────────────────────────────────────────────────────────
 // Count-up — animates number when in view, honors reduced motion
@@ -41,25 +42,33 @@ const CountUp = ({ value, suffix = "", decimals = 0, duration = 1.2, reduced = f
 };
 
 // ──────────────────────────────────────────────────────────────
-// MagneticButton — premium follow cursor, spring back
+// MagneticButton — premium follow cursor, spring back (throttled)
 // ──────────────────────────────────────────────────────────────
 const MagneticButton = ({ children, className, reduced, ...props }) => {
   const ref = useRef(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 260, damping: 18, mass: 0.4 });
-  const sy = useSpring(y, { stiffness: 260, damping: 18, mass: 0.4 });
+  const sx = useSpring(x, { stiffness: 140, damping: 18, mass: 0.4 });
+  const sy = useSpring(y, { stiffness: 140, damping: 18, mass: 0.4 });
+  const rafRef = useRef(0);
 
   const onMove = (e) => {
     if (reduced) return;
-    const r = ref.current.getBoundingClientRect();
-    const dx = e.clientX - (r.left + r.width / 2);
-    const dy = e.clientY - (r.top + r.height / 2);
-    // clamp influence to 0.28
-    x.set(dx * 0.28);
-    y.set(dy * 0.35);
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = 0;
+      const r = ref.current?.getBoundingClientRect();
+      if (!r) return;
+      const dx = e.clientX - (r.left + r.width / 2);
+      const dy = e.clientY - (r.top + r.height / 2);
+      x.set(dx * 0.22);
+      y.set(dy * 0.28);
+    });
   };
-  const onLeave = () => { x.set(0); y.set(0); };
+  const onLeave = () => { 
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    x.set(0); y.set(0); 
+  };
 
   return (
     <motion.div
@@ -88,10 +97,10 @@ const RevealWords = ({ text, delay = 0, reduced }) => {
         <motion.span
           key={i}
           className={styles.word}
-          initial={{ y: 42, opacity: 0, filter: "blur(6px)" }}
-          animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-          transition={{ duration: 0.75, delay: delay + i * 0.06, ease: EASE }}
-          style={{ display: "inline-block", willChange: "transform" }}
+          initial={{ y: 28, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.55, delay: delay + i * 0.04, ease: EASE }}
+          style={{ display: "inline-block" }}
         >
           {w}
           {i < words.length - 1 ? "\u00A0" : ""}
@@ -102,20 +111,23 @@ const RevealWords = ({ text, delay = 0, reduced }) => {
 };
 
 const Hero = () => {
+  const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
   const ref = useRef(null);
 
-  // Scroll-linked transforms — only if not reduced
+  // Scroll-linked transforms — disabled on mobile and reduced motion for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const shouldParallax = !reduced && !isMobile;
   const { scrollYProgress } = useScroll({
-    target: ref,
+    target: shouldParallax ? ref : undefined,
     offset: ["start start", "end start"],
   });
 
-  const imageY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : 56]);
-  const imageScale = useTransform(scrollYProgress, [0, 1], [1, reduced ? 1 : 1.04]);
-  const textY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : 18]);
-  const watermarkX = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -80]);
-  const blobY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -32]);
+  const imageY = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? 32 : 0]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, shouldParallax ? 1.02 : 1]);
+  const textY = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? 12 : 0]);
+  const watermarkX = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? -40 : 0]);
+  const blobY = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? -16 : 0]);
 
   // 3D tilt
   const px = useMotionValue(0);
@@ -131,15 +143,21 @@ const Hero = () => {
   const orbSX = useSpring(orbX, { stiffness: 90, damping: 20 });
   const orbSY = useSpring(orbY, { stiffness: 90, damping: 20 });
 
+  const pointerRaf = useRef(0);
   const handlePointer = (e) => {
     if (reduced) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    px.set((e.clientX - rect.left) / rect.width - 0.5);
-    py.set((e.clientY - rect.top) / rect.height - 0.5);
-    orbX.set(e.clientX - rect.left);
-    orbY.set(e.clientY - rect.top);
+    if (pointerRaf.current) return;
+    pointerRaf.current = requestAnimationFrame(() => {
+      pointerRaf.current = 0;
+      const rect = e.currentTarget.getBoundingClientRect();
+      px.set((e.clientX - rect.left) / rect.width - 0.5);
+      py.set((e.clientY - rect.top) / rect.height - 0.5);
+      orbX.set(e.clientX - rect.left);
+      orbY.set(e.clientY - rect.top);
+    });
   };
   const resetPointer = () => {
+    if (pointerRaf.current) cancelAnimationFrame(pointerRaf.current);
     px.set(0);
     py.set(0);
   };
@@ -202,7 +220,7 @@ const Hero = () => {
           animate="visible"
           variants={{
             hidden: {},
-            visible: { transition: { staggerChildren: reduced ? 0 : 0.11, delayChildren: reduced ? 0 : 0.18 } },
+            visible: { transition: { staggerChildren: reduced ? 0 : 0.06, delayChildren: reduced ? 0 : 0.10 } },
           }}
         >
           {/* eyebrow */}
@@ -221,7 +239,7 @@ const Hero = () => {
               style={{ transformOrigin: "left" }}
             />
             <span className={styles.eyebrowDot} />
-            Spring Valley, Nairobi — Yoga · Therapy · Meditation
+            {t("hero.springValley")} — {t("hero.yogaTherapy")}
             <motion.span
               className={styles.eyebrowPulse}
               animate={reduced ? {} : { scale: [1, 1.18, 1], opacity: [0.9, 0.5, 0.9] }}
@@ -229,7 +247,7 @@ const Hero = () => {
             />
           </motion.span>
 
-          {/* headline — split reveal */}
+          {/* headline — split reveal (brand headline stays English for visual identity, subtitle is localized) */}
           <h1 className={styles.headline}>
             <span className={styles.headlineClip}>
               <RevealWords text="RETURN" delay={0.12} reduced={reduced} />
@@ -271,8 +289,7 @@ const Hero = () => {
               visible: { opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.08, ease: EASE } },
             }}
           >
-            A modern approach to <strong>conscious living</strong>. Yoga, breath and stillness — held
-            in a warm, calm, premium space for every body, every season.
+            {t("hero.subtitle")}
           </motion.p>
 
           {/* CTAs — magnetic primary */}
@@ -285,7 +302,7 @@ const Hero = () => {
           >
             <MagneticButton reduced={reduced} to="/classes" className={styles.primaryBtn}>
               <span className={styles.primaryBtnInner}>
-                Explore Soma
+                {t("hero.explorePrograms")}
                 <motion.span
                   className={styles.btnArrow}
                   animate={reduced ? {} : { x: [0, 3, 0] }}
@@ -303,7 +320,7 @@ const Hero = () => {
 
             <motion.div whileHover={reduced ? {} : { y: -2 }} whileTap={{ scale: 0.98 }} transition={spring.snappy}>
               <Link to="/about" className={styles.secondaryBtn}>
-                <span>Our philosophy</span>
+                <span>{t("about.ourStory")}</span>
                 <span className={styles.secondaryArrow}>→</span>
               </Link>
             </motion.div>

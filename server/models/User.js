@@ -14,6 +14,8 @@ const UserSchema = new mongoose.Schema(
 
     // ── Profile ──
     phone:           { type: String, default: '' },
+    phoneVerified:   { type: Boolean, default: false },
+    emailVerified:   { type: Boolean, default: false },
     city:            { type: String, default: '' },
     style:           { type: String, default: 'Hatha' },
     level:           { type: String, default: 'Beginner' },

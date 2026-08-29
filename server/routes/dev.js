@@ -36,7 +36,7 @@ router.post('/send-class-reminder', asyncHandler(async (req, res) => {
     channels: ['inApp', 'email'],
     data: {
       className: data?.className || 'Test Yoga Class',
-      classDate: data?.classDate || new Date().toLocaleDateString('en-IN'),
+      classDate: data?.classDate || new Date().toLocaleDateString('en-KE'),
       classTime: data?.classTime || '7:00 AM',
       instructor: data?.instructor || 'Test Instructor',
       meetLink: data?.meetLink || 'https://zoom.us/test',
@@ -56,7 +56,7 @@ router.post('/send-event-reminder', asyncHandler(async (req, res) => {
     channels: ['inApp', 'email'],
     data: {
       eventName: data?.eventName || 'Test Yoga Event',
-      eventDate: data?.eventDate || new Date().toLocaleDateString('en-IN'),
+      eventDate: data?.eventDate || new Date().toLocaleDateString('en-KE'),
       eventTime: data?.eventTime || '10:00 AM',
       location: data?.location || 'Test Studio',
       meetLink: data?.meetLink || 'https://zoom.us/test',

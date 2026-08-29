@@ -3,13 +3,15 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCheck, FaCartShopping, FaTruckFast, FaBuildingColumns, FaMagnifyingGlassLocation } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getBookBySlug, addBookToCart, checkShippingAvailability } from "../components/api/BookServices";
 import { useScrollToSection } from "../hooks/useScrollToSection";
 import styles from "./BookDetail.module.css";
 
-const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const inr = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
 
 const BookDetail = () => {
+  const { t } = useTranslation();
   useScrollToSection();
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -34,14 +36,14 @@ const BookDetail = () => {
 
   useEffect(() => {
     if (!book) return;
-    document.title = `${book.seoTitle || book.title} — Pragya Yoga`;
+    document.title = `${book.seoTitle || book.title} — Soma Wellness`;
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement("meta");
       meta.name = "description";
       document.head.appendChild(meta);
     }
-    meta.content = book.seoDescription || book.shortDescription || `${book.title} by ${(book.authors || []).join(", ")} — available at the Pragya Yoga bookstore.`;
+    meta.content = book.seoDescription || book.shortDescription || `${book.title} by ${(book.authors || []).join(", ")} — available at the Soma Wellness bookstore.`;
     const jsonLd = document.createElement("script");
     jsonLd.type = "application/ld+json";
     jsonLd.id = "book-jsonld";
@@ -50,7 +52,7 @@ const BookDetail = () => {
       "@type": "Book",
       name: book.title,
       author: (book.authors || []).map((a) => ({ "@type": "Person", name: a })),
-      offers: { "@type": "Offer", price: book.price, priceCurrency: "INR", availability: book.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" },
+      offers: { "@type": "Offer", price: book.price, priceCurrency: "KES", availability: book.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" },
       ...(book.pages ? { numberOfPages: book.pages } : {}),
       ...(book.language ? { inLanguage: book.language } : {}),
     });
@@ -61,9 +63,9 @@ const BookDetail = () => {
     };
   }, [book]);
 
-  if (isLoading) return <div className={styles.statePage}>Loading…</div>;
-  if (isError) return <div className={styles.statePage}>Could not load this book. <Link to="/books">← Back to bookstore</Link></div>;
-  if (!book) return <div className={styles.statePage}>Book not found. <Link to="/books">← Back to bookstore</Link></div>;
+  if (isLoading) return <div className={styles.statePage}>{t("bookDetail.loading")}</div>;
+  if (isError) return <div className={styles.statePage}>{t("bookDetail.loadError")} <Link to="/books">{t("bookDetail.backToStore")}</Link></div>;
+  if (!book) return <div className={styles.statePage}>{t("bookDetail.notFound")} <Link to="/books">{t("bookDetail.backToStore")}</Link></div>;
 
   const available = book.trackInventory && !book.allowBackorder ? Math.max(0, book.stock) : null;
   const outOfStock = available !== null && available <= 0;
@@ -104,7 +106,7 @@ const BookDetail = () => {
   return (
     <div className={styles.page}>
       <div className={styles.breadcrumb}>
-        <Link to="/books">Bookstore</Link> <span>/</span> <span>{book.title}</span>
+        <Link to="/books">{t("bookDetail.breadcrumb")}</Link> <span>/</span> <span>{book.title}</span>
       </div>
 
       <section className={styles.detail}>
@@ -120,7 +122,7 @@ const BookDetail = () => {
             <div className={styles.coverPlaceholder}>
               <span className={styles.placeholderMark}>🕉</span>
               <span className={styles.placeholderTitle}>{book.title}</span>
-              <span className={styles.placeholderAuthor}>{(book.authors || []).join(", ") || "Pragya Yoga"}</span>
+              <span className={styles.placeholderAuthor}>{(book.authors || []).join(", ") || "Soma Wellness"}</span>
             </div>
           )}
         </motion.div>
@@ -129,14 +131,14 @@ const BookDetail = () => {
           <div className={styles.category}>{book.category}</div>
           <h1 className={styles.title}>{book.title}</h1>
           {book.subtitle && <p className={styles.subtitle}>{book.subtitle}</p>}
-          <p className={styles.authors}>by {book.authors?.join(", ") || "Pragya Yoga"}</p>
+          <p className={styles.authors}>{t("bookDetail.by")} {book.authors?.join(", ") || "Soma Wellness"}</p>
 
           <div className={styles.facts}>
             {book.language && <span>{book.language}</span>}
             {book.edition && <span>{book.edition}</span>}
             {book.pages > 0 && <span>{book.pages} pages</span>}
-            {book.isPaperback && <span>Paperback</span>}
-            <span>SKU: {book.sku}</span>
+            {book.isPaperback && <span>{t("bookDetail.paperback")}</span>}
+            <span>{t("bookDetail.sku")} {book.sku}</span>
           </div>
 
           <div className={styles.priceRow}>
@@ -144,12 +146,12 @@ const BookDetail = () => {
             {book.compareAtPrice > book.price && (
               <>
                 <s className={styles.mrp}>{inr(book.compareAtPrice)}</s>
-                <span className={styles.save}>Save {inr(book.compareAtPrice - book.price)}</span>
+                <span className={styles.save}>{t("bookDetail.save")} {inr(book.compareAtPrice - book.price)}</span>
               </>
             )}
           </div>
 
-          {outOfStock && <p className={styles.outStock}>Currently out of stock — check the bulk enquiry page or write to us.</p>}
+          {outOfStock && <p className={styles.outStock}>{t("bookDetail.outOfStockMsg")}</p>}
 
           <div className={styles.buyRow}>
             <div className={styles.qtyBox}>
@@ -158,14 +160,14 @@ const BookDetail = () => {
               <button onClick={() => setQty((q) => Math.min(99, q + 1))}>+</button>
             </div>
             <button className={styles.addBtn} onClick={handleAdd} disabled={adding || added || outOfStock}>
-              {added ? <><FaCheck /> Added to Cart</> : <><FaCartShopping /> {adding ? "Adding…" : "Add to Cart"}</>}
+              {added ? <><FaCheck /> {t("bookDetail.addedToCart")}</> : <><FaCartShopping /> {adding ? t("bookDetail.adding") : t("bookDetail.addToCart")}</>}
             </button>
           </div>
           {error && <p className={styles.error}>{error}</p>}
 
           <div className={styles.perks}>
-            <span><FaTruckFast /> Delivery available across India — check your PIN below</span>
-            <span><FaBuildingColumns /> Secure payment via Razorpay</span>
+            <span><FaTruckFast /> {t("bookDetail.deliveryInfo")}</span>
+            <span><FaBuildingColumns /> {t("bookDetail.securePayment")}</span>
           </div>
 
           <div className={styles.pinBox}>
@@ -173,14 +175,14 @@ const BookDetail = () => {
             <input
               value={pincode}
               maxLength={6}
-              placeholder="Check delivery to your PIN code"
+              placeholder={t("bookDetail.checkDelivery")}
               onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
             />
-            <button onClick={handlePinCheck} disabled={pinLoading}>{pinLoading ? "…" : "Check"}</button>
+            <button onClick={handlePinCheck} disabled={pinLoading}>{pinLoading ? "…" : t("bookDetail.check")}</button>
             {pinResult && (
               pinResult.available ? (
                 <p className={styles.pinOk}>
-                  Available — {pinResult.shippingCharge > 0 ? `${inr(pinResult.shippingCharge)} shipping` : "Free shipping"}
+                  {t("bookDetail.available")} — {pinResult.shippingCharge > 0 ? `${inr(pinResult.shippingCharge)} ${t("bookDetail.shipping")}` : t("bookDetail.freeShipping")}
                   {pinResult.estimatedDelivery ? `, delivery in ${pinResult.estimatedDelivery.minDays}–${pinResult.estimatedDelivery.maxDays} days` : ""}
                 </p>
               ) : (
@@ -190,15 +192,15 @@ const BookDetail = () => {
           </div>
 
           <div className={styles.linksRow}>
-            <Link to="/bulk-orders" className={styles.altLink}>Need 10+ copies? Bulk orders →</Link>
-            <Link to="/order-tracking" className={styles.altLink}>Track an existing order →</Link>
+            <Link to="/bulk-orders" className={styles.altLink}>{t("bookDetail.bulkOrders")}</Link>
+            <Link to="/order-tracking" className={styles.altLink}>{t("bookDetail.trackOrder")}</Link>
           </div>
         </motion.div>
       </section>
 
       {book.shortDescription && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>About this book</h2>
+          <h2 className={styles.sectionTitle}>{t("bookDetail.aboutBook")}</h2>
           <p className={styles.bodyText}>{book.shortDescription}</p>
         </section>
       )}
@@ -211,7 +213,7 @@ const BookDetail = () => {
 
       {book.features?.length > 0 && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>What's inside</h2>
+          <h2 className={styles.sectionTitle}>{t("bookDetail.whatsInside")}</h2>
           <ul className={styles.features}>
             {book.features.map((f, i) => <li key={i}>{f}</li>)}
           </ul>
@@ -220,14 +222,14 @@ const BookDetail = () => {
 
       {book.aboutAuthor && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>About the author</h2>
+          <h2 className={styles.sectionTitle}>{t("bookDetail.aboutAuthor")}</h2>
           <p className={styles.bodyText}>{book.aboutAuthor}</p>
         </section>
       )}
 
       {related.length > 0 && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>You may also like</h2>
+          <h2 className={styles.sectionTitle}>{t("bookDetail.youMayAlsoLike")}</h2>
           <div className={styles.related}>
             {related.map((b) => (
               <Link key={b._id} to={`/books/${b.slug}`} className={styles.relatedCard}>

@@ -6,8 +6,8 @@ const SettingsSchema = new mongoose.Schema(
   {
     key:                { type: String, default: 'global', unique: true },
     announcementBanner: { type: String, default: '' },
-    studioName:         { type: String, default: 'Pragya Yoga' },
-    supportEmail:       { type: String, default: 'pragyayogaofficial@gmail.com' },
+    studioName:         { type: String, default: 'Soma Wellness' },
+    supportEmail:       { type: String, default: 'hello@somawellness.in' },
     supportPhone:       { type: String, default: '+91 9675547597' },
 
     // Integration / system-health flags surfaced on the admin dashboard.

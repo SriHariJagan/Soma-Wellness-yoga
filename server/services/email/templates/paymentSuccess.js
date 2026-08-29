@@ -7,9 +7,9 @@ export default function render(data = {}) {
   const amount = data.amount || '';
   const transactionId = escapeHtml(data.transactionId || '');
   const orderId = escapeHtml(data.orderId || '');
-  const paymentDate = data.paymentDate || new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const paymentDate = data.paymentDate || new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
   const description = escapeHtml(data.description || 'Purchase');
-  const dashboardUrl = data.dashboardUrl || 'https://pragyayoga.com/dashboard';
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
 
   const subject = `Payment Successful — ${STUDIO_NAME}`;
 

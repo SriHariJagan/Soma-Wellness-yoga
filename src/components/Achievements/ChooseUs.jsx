@@ -5,7 +5,7 @@ export default function ChooseUs() {
   return (
     <section className={styles.whyChooseUs}>
       <h2 className={styles.sectionTitle}>
-        Why Choose Pragya Yoga – 200 Hour Yoga Teacher Training
+        Why Choose Soma Wellness – 200 Hour Yoga Teacher Training
       </h2>
       <p className={styles.intro}>
         Our internationally accredited Yoga Teacher Training Course (TTC) in Jaipur, Rajasthan, 
@@ -36,7 +36,7 @@ export default function ChooseUs() {
           <article className={styles.card}>
     <h3>Direct Guidance from Dr. Kapil Dev Ji</h3>
     <p>Receive monthly one‑to‑one question & answer sessions and live assistance directly from 
-       <strong>Dr. Kapil Dev Kesari</strong>, Founder & Director of Pragya Yoga Alliance. 
+       <strong>Dr. Kapil Dev Kesari</strong>, Founder & Director of Soma Wellness. 
        Personalized mentorship ensures authentic learning and professional growth.</p>
   </article>
       </div>
@@ -49,8 +49,8 @@ export default function ChooseUs() {
           "name": "200 Hour Yoga Teacher Training Course",
           "provider": {
             "@type": "Organization",
-            "name": "Pragya Yoga Alliance",
-            "url": "https://pragyayoga.in"
+            "name": "Soma Wellness",
+            "url": "https://somawellness.in"
           },
           "educationalCredentialAwarded": "Yoga Alliance 200 Hour Certification",
           "occupationalCategory": "Yoga Teacher",

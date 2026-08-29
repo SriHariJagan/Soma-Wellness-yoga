@@ -94,6 +94,24 @@ export const schemas = {
     interestType: z.string().max(100).optional().default(''),
     notes: z.string().max(2000).optional().default(''),
   }),
+
+  otpSend: z.object({
+    email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
+    phone: z.string().max(20).trim().optional(),
+    identifier: z.string().max(255).trim().optional(),
+    channel: z.enum(['email', 'sms', 'mobile', 'phone']).optional(),
+    name: z.string().max(100).trim().optional(),
+  }).refine((d) => d.email || d.phone || d.identifier, { message: 'Provide email or phone' }),
+
+  otpVerify: z.object({
+    email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
+    phone: z.string().max(20).trim().optional(),
+    identifier: z.string().max(255).trim().optional(),
+    channel: z.enum(['email', 'sms', 'mobile', 'phone']).optional(),
+    otp: z.string().regex(/^\d{6}$/, 'OTP must be 6 digits'),
+    name: z.string().max(100).trim().optional(),
+    ref: z.string().max(50).trim().optional(),
+  }).refine((d) => d.email || d.phone || d.identifier, { message: 'Provide email or phone' }),
 };
 
 export default validate;

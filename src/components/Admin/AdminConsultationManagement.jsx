@@ -137,7 +137,7 @@ function FeedbackBanner({ message, type, onDismiss }) {
 
 function formatDate(d) {
   if (!d) return "";
-  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function EditConsultationDrawer({ consultation, onClose, onSave }) {
@@ -248,7 +248,7 @@ function EditConsultationDrawer({ consultation, onClose, onSave }) {
                         <LuClock size={12} /> {consultation.duration || 30} min
                       </span>
                       {consultation.price > 0 && (
-                        <span style={{ fontSize: 13, fontWeight: 700, color: C.primary }}>₹{consultation.price}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: C.primary }}>KES {consultation.price}</span>
                       )}
                     </div>
                   </div>
@@ -298,7 +298,7 @@ function EditConsultationDrawer({ consultation, onClose, onSave }) {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
                   <InfoRow icon={<LuCalendar size={14} />} label="Booked On" value={consultation.createdAt ? formatDate(consultation.createdAt) : "—"} />
                   <InfoRow icon={<LuClock size={14} />} label="Last Updated" value={consultation.updatedAt ? formatDate(consultation.updatedAt) : "—"} />
-                  <InfoRow icon={<LuIndianRupee size={14} />} label="Amount Paid" value={consultation.price > 0 ? `₹${consultation.price}` : "Free"} />
+                  <InfoRow icon={<LuIndianRupee size={14} />} label="Amount Paid" value={consultation.price > 0 ? `KES ${consultation.price}` : "Free"} />
                   <InfoRow icon={<LuCheck size={14} />} label="Payment Status" value={consultation.paymentStatus || "pending"} />
                   <InfoRow icon={<LuLink size={14} />} label="Payment Ref" value={consultation.paymentRef?.transactionId || "—"} />
                 </div>
@@ -378,7 +378,7 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
         <KpiCard icon={<LuClock />} label="Upcoming" value={analytics?.upcoming ?? 0} accent="amber" />
         <KpiCard icon={<LuCircleCheck />} label="Completed" value={analytics?.completed ?? 0} accent="green" />
         <KpiCard icon={<LuCircleX />} label="Cancelled" value={analytics?.cancelled ?? 0} accent="blue" />
-        <KpiCard icon={<LuIndianRupee />} label="Revenue" value={analytics?.revenue ?? 0} prefix="₹" accent="orange" />
+        <KpiCard icon={<LuIndianRupee />} label="Revenue" value={analytics?.revenue ?? 0} prefix="KES " accent="orange" />
         <KpiCard icon={<LuTrendingUp />} label="Paid" value={analytics?.paidCount ?? 0} accent="green" />
       </div>
 
@@ -469,7 +469,7 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
                     <td>
                       {c.paymentStatus === "paid" ? (
                         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                          <span style={{ color: "#16A34A", fontWeight: 700, fontSize: 14 }}>₹{c.price || 0}</span>
+                          <span style={{ color: "#16A34A", fontWeight: 700, fontSize: 14 }}>KES {c.price || 0}</span>
                           <Badge label="Paid" />
                         </div>
                       ) : (

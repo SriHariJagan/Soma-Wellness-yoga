@@ -61,7 +61,7 @@ export default function CourseFeatures() {
           "name": "Is the Yoga Teacher Training valid worldwide?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, Pragya Yoga Alliance is Yoga Alliance certified, allowing you to teach globally."
+            "text": "Yes, Soma Wellness is Yoga Alliance certified, allowing you to teach globally."
           }
         },
         {

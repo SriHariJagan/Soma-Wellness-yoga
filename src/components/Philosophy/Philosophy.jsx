@@ -25,7 +25,7 @@ const Philosophy = () => (
         <p className={styles.headerLabel}>Our Philosophy</p>
         <h2 className={styles.headerTitle}>Rooted in Tradition, Guided by Science</h2>
         <p className={styles.headerSub}>
-          At Pragya Yoga Alliance, our philosophy blends{" "}
+          At Soma Wellness, our philosophy blends{" "}
           <strong>Bharat's timeless yogic wisdom</strong>{" "}
           with <strong>modern scientific wellness practices</strong>. We believe
           yoga is not just exercise, but a <em>holistic path</em> to balance mind,
@@ -37,7 +37,7 @@ const Philosophy = () => (
 
       <div className={styles.layout}>
         <motion.div className={styles.imageWrap} initial={{ opacity: 0, x: -40, scale: 0.96 }} whileInView={{ opacity: 1, x: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
-          <img src="/images/services/Home_about.webp" alt="Philosophy of Pragya Yoga — authentic Indian wellness" loading="lazy" decoding="async" width="1400" height="993" />
+          <img src="/images/services/Home_about.webp" alt="Philosophy of Soma Wellness — authentic Indian wellness" loading="lazy" decoding="async" width="1400" height="993" />
           <div className={styles.imageGlow} />
           <div className={styles.imageAccent} />
         </motion.div>

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { BOOK_STATUSES } from '../shared/constants/index.js';
 
 // ─────────────────────────────────────────────────────────────
-// Book — Pragya Yoga physical book catalogue.
+// Book — Soma Wellness physical book catalogue.
 // Prices are stored in rupees (not paise) — the payment layer
 // converts to paise when creating Razorpay orders.
 // ─────────────────────────────────────────────────────────────

@@ -65,8 +65,8 @@ export default function TeacherCourse() {
           "name": "200 Hour Yoga Teacher Training Course",
           "provider": {
             "@type": "Organization",
-            "name": "Pragya Yoga Alliance",
-            "url": "https://pragyayoga.in"
+            "name": "Soma Wellness",
+            "url": "https://somawellness.in"
           },
           "educationalCredentialAwarded": "Yoga Alliance 200 Hour Certification",
           "timeToComplete": "P200H",

@@ -20,8 +20,8 @@ function getAdminEmails() {
 }
 
 function getFrom() {
-  const name = process.env.FROM_NAME || 'Pragya Yoga Alliance';
-  const email = process.env.FROM_EMAIL || process.env.SMTP_USER || 'pragyayogainfo@gmail.com';
+  const name = process.env.FROM_NAME || 'Soma Wellness';
+  const email = process.env.FROM_EMAIL || process.env.SMTP_USER || 'hello@somawellness.in';
   return { name, email };
 }
 
@@ -198,7 +198,7 @@ async function sendPaymentReceivedAdmin(data) {
       ${data.paymentId ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Payment ID</td><td style="padding:6px 12px;color:#3B1D0D;">${data.paymentId}</td></tr>` : ''}
       ${data.razorpayOrderId ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Razorpay Order ID</td><td style="padding:6px 12px;color:#3B1D0D;">${data.razorpayOrderId}</td></tr>` : ''}
     </table>
-    <p style="color:#7C6A58;font-size:12px;">— Pragya Yoga Alliance System</p>
+    <p style="color:#7C6A58;font-size:12px;">— Soma Wellness System</p>
   `;
   const text = [
     'Payment Received',
@@ -210,7 +210,7 @@ async function sendPaymentReceivedAdmin(data) {
     data.paymentId ? `Payment ID: ${data.paymentId}` : '',
     data.razorpayOrderId ? `Razorpay Order ID: ${data.razorpayOrderId}` : '',
     '',
-    '— Pragya Yoga Alliance System',
+    '— Soma Wellness System',
   ].filter(Boolean).join('\n');
   const adminEmails = getAdminEmails();
   const results = await Promise.all(adminEmails.map(email => sendMail(email, subject, html, text)));
@@ -227,7 +227,7 @@ async function sendPaymentFailedAdmin(data) {
       ${data.amount ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Amount</td><td style="padding:6px 12px;color:#DC2626;">${data.amount}</td></tr>` : ''}
       ${data.failureReason ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Reason</td><td style="padding:6px 12px;color:#DC2626;">${data.failureReason}</td></tr>` : ''}
     </table>
-    <p style="color:#7C6A58;font-size:12px;">— Pragya Yoga Alliance System</p>
+    <p style="color:#7C6A58;font-size:12px;">— Soma Wellness System</p>
   `;
   const text = [
     'Payment Failed',
@@ -237,7 +237,7 @@ async function sendPaymentFailedAdmin(data) {
     data.amount ? `Amount: ${data.amount}` : '',
     data.failureReason ? `Reason: ${data.failureReason}` : '',
     '',
-    '— Pragya Yoga Alliance System',
+    '— Soma Wellness System',
   ].filter(Boolean).join('\n');
   const adminEmails = getAdminEmails();
   const results = await Promise.all(adminEmails.map(email => sendMail(email, subject, html, text)));
@@ -258,7 +258,7 @@ async function sendNewPurchaseAdmin(data) {
       ${data.item ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Item</td><td style="padding:6px 12px;color:#3B1D0D;">${data.item}</td></tr>` : ''}
       ${data.amount ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Amount</td><td style="padding:6px 12px;color:#3B1D0D;font-weight:700;">${data.amount}</td></tr>` : ''}
     </table>
-    <p style="color:#7C6A58;font-size:12px;">— Pragya Yoga Alliance System</p>
+    <p style="color:#7C6A58;font-size:12px;">— Soma Wellness System</p>
   `;
   const text = [
     'New Purchase Notification',
@@ -268,7 +268,7 @@ async function sendNewPurchaseAdmin(data) {
     data.item ? `Item: ${data.item}` : '',
     data.amount ? `Amount: ${data.amount}` : '',
     '',
-    '— Pragya Yoga Alliance System',
+    '— Soma Wellness System',
   ].filter(Boolean).join('\n');
   const adminEmails = getAdminEmails();
   const results = await Promise.all(adminEmails.map(email => sendMail(email, subject, html, text)));

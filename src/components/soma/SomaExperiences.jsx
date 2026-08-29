@@ -1,15 +1,52 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { SOMA_EXPERIENCES } from "../../config/siteContent";
 import styles from "./SomaExperiences.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 
 const SomaExperiences = () => {
+  const { t } = useTranslation();
   const [active, setActive] = useState(0);
-  const exp = SOMA_EXPERIENCES[active];
   const reduced = usePrefersReducedMotion();
   const listRef = useRef(null);
+
+  const experiences = [
+    {
+      id: "01",
+      title: t("home.experiences.cards.join.title"),
+      subtitle: t("home.experiences.cards.join.subtitle"),
+      desc: t("home.experiences.cards.join.desc"),
+      image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1200&auto=format&fit=crop",
+      href: "/classes",
+    },
+    {
+      id: "02",
+      title: t("home.experiences.cards.private.title"),
+      subtitle: t("home.experiences.cards.private.subtitle"),
+      desc: t("home.experiences.cards.private.desc"),
+      image: "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?q=80&w=1200&auto=format&fit=crop",
+      href: "/private",
+    },
+    {
+      id: "03",
+      title: t("home.experiences.cards.restore.title"),
+      subtitle: t("home.experiences.cards.restore.subtitle"),
+      desc: t("home.experiences.cards.restore.desc"),
+      image: "https://images.unsplash.com/photo-1600334089648-bd6e2a7a65a8?q=80&w=1200&auto=format&fit=crop",
+      href: "/restore",
+    },
+    {
+      id: "04",
+      title: t("home.experiences.cards.lifeStages.title"),
+      subtitle: t("home.experiences.cards.lifeStages.subtitle"),
+      desc: t("home.experiences.cards.lifeStages.desc"),
+      image: "https://images.unsplash.com/photo-1600618528240-fb9fc964b853?q=80&w=1200&auto=format&fit=crop",
+      href: "/life-stages",
+    },
+  ];
+
+  const exp = experiences[active];
 
   return (
     <section className={styles.section}>
@@ -52,7 +89,7 @@ const SomaExperiences = () => {
                 style={{ transformOrigin: "left" }}
               />
               <span className={styles.eyebrowDot} />
-              Experiences — 04 doors
+              {t("home.experiences.eyebrow")}
             </div>
             <h2 className={styles.title}>
               <span className={styles.watermarkTitle} aria-hidden="true">04</span>
@@ -64,7 +101,7 @@ const SomaExperiences = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.72, ease: EASE }}
                 >
-                  Move the way
+                  {t("home.experiences.titleLine1")}
                 </motion.span>
               </span>
               <span className={styles.titleLineWrap}>
@@ -75,7 +112,7 @@ const SomaExperiences = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.72, delay: 0.1, ease: EASE }}
                 >
-                  <em>you</em> need to.
+                  <em>{t("home.experiences.titleLine2")}</em> {t("home.experiences.titleLine3")}
                 </motion.span>
               </span>
               <motion.span
@@ -105,10 +142,10 @@ const SomaExperiences = () => {
             }}
           >
             <p className={styles.headerCopy}>
-              Not a menu to perform — <strong>a set of doors.</strong> Step through the one that meets you today.
+              {t("home.experiences.headerCopyBefore")} <strong>{t("home.experiences.headerCopyStrong")}</strong> {t("home.experiences.headerCopyAfter")}
             </p>
             <span className={styles.headerHint}>
-              <span className={styles.hintDot} /> Hover to explore · Tap on mobile → 04 practices
+              <span className={styles.hintDot} /> {t("home.experiences.hint")}
             </span>
           </motion.div>
         </motion.div>
@@ -119,7 +156,7 @@ const SomaExperiences = () => {
             ref={listRef}
             className={styles.list}
             role="tablist"
-            aria-label="Soma experiences"
+            aria-label={t("home.experiences.ariaLabel")}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
@@ -128,7 +165,7 @@ const SomaExperiences = () => {
               visible: { transition: { staggerChildren: reduced ? 0 : 0.07, delayChildren: reduced ? 0 : 0.18 } },
             }}
           >
-            {SOMA_EXPERIENCES.map((item, idx) => {
+            {experiences.map((item, idx) => {
               const isActive = active === idx;
               return (
                 <motion.button
@@ -193,7 +230,7 @@ const SomaExperiences = () => {
               >
                 <motion.img
                   src={exp.image}
-                  alt={`${exp.title} — ${exp.subtitle}`}
+                  alt={t("home.experiences.alt", { title: exp.title, subtitle: exp.subtitle })}
                   loading="lazy"
                   decoding="async"
                   initial={reduced ? { scale: 1 } : { scale: 1.08 }}
@@ -218,7 +255,7 @@ const SomaExperiences = () => {
                   <p className={styles.imageDesc}>{exp.desc}</p>
                   <motion.div whileHover={reduced ? {} : { y: -2 }} whileTap={{ scale: 0.98 }}>
                     <Link to={exp.href} className={styles.imageCta}>
-                      Explore {exp.title.toLowerCase()} <span>→</span>
+                      {t("home.experiences.explore", { title: exp.title.toLowerCase() })} <span>→</span>
                     </Link>
                   </motion.div>
                 </motion.div>
@@ -242,14 +279,14 @@ const SomaExperiences = () => {
                 0{active + 1} / 04
               </motion.span>
               <span aria-hidden="true">—</span>
-              <span>Choose your practice</span>
-              <div className={styles.dots} role="tablist" aria-label="Experience pagination">
-                {SOMA_EXPERIENCES.map((_, i) => (
+              <span>{t("home.experiences.counterChoose")}</span>
+              <div className={styles.dots} role="tablist" aria-label={t("home.experiences.paginationLabel")}>
+                {experiences.map((item, i) => (
                   <button
                     key={i}
                     className={`${styles.dot} ${active === i ? styles.dotActive : ""}`}
                     onClick={() => setActive(i)}
-                    aria-label={`Show ${SOMA_EXPERIENCES[i].title}`}
+                    aria-label={t("home.experiences.showLabel", { title: item.title })}
                     aria-selected={active === i}
                     role="tab"
                   >

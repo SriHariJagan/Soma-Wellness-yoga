@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────
 // BookServices.js
-// API helpers for the Pragya Yoga book store.
+// API helpers for the Soma Wellness book store.
 // Public catalogue endpoints live under /api/public; the
 // student-facing cart/checkout endpoints under /api/student
 // use the JWT + refresh-token pattern from StudentServices.

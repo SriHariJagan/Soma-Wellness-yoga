@@ -59,7 +59,7 @@ const AuditEntrySchema = new mongoose.Schema({
 }, { _id: false });
 
 const PaymentSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
   orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null },
   label: { type: String, required: true },
   description: { type: String, default: '' },
@@ -67,7 +67,7 @@ const PaymentSchema = new mongoose.Schema({
   items: { type: [PaymentItemSchema], default: [] },
 
   amount: { type: Number, required: true, min: 0 },
-  currency: { type: String, default: 'INR', uppercase: true },
+  currency: { type: String, default: 'KES', uppercase: true },
   tax: { type: Number, default: 0, min: 0 },
   discount: { type: Number, default: 0, min: 0 },
 

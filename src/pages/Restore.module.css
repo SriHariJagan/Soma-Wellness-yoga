@@ -1,0 +1,159 @@
+/* Restore — fully responsive, premium */
+.section {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 36px clamp(16px, 4vw, 40px) 0;
+}
+
+.treatmentsGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.stickyCard {
+  background: linear-gradient(135deg, #183D2D 0%, #1c4a34 60%, #1e5c3f 100%);
+  color: #fff;
+  border-radius: 20px;
+  padding: 22px;
+  position: sticky;
+  top: 88px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 20px 48px rgba(24,61,45,0.20), 0 8px 20px rgba(24,61,45,0.12), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+.pricingWrapper {
+  margin-top: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.62);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(24,61,45,0.07), inset 0 1px 0 rgba(255,255,255,0.72);
+}
+
+.pricingScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.pricingScroll::-webkit-scrollbar { display: none; }
+
+.pricingHeader,
+.pricingRow {
+  display: grid;
+  grid-template-columns: 1fr 80px 90px;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  align-items: center;
+}
+
+.pricingHeader {
+  gap: 0;
+  background: linear-gradient(135deg, #183D2D 0%, #1e4d3a 100%);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.pricingRow {
+  border-top: 1px solid var(--soma-line-light);
+  background: #fff;
+}
+
+.pricingRow:nth-child(even) { background: var(--soma-ivory); }
+
+.signatureSection {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 36px clamp(16px, 4vw, 40px) 0;
+}
+
+.signatureCarousel {
+  overflow: hidden;
+  padding: 18px 0 12px;
+  margin: 0 -4px;
+  cursor: grab;
+}
+
+.signatureTrack {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  padding-right: 40px;
+}
+
+.signatureCard {
+  min-width: 320px;
+  flex: 0 0 320px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.90) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.62);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(24,61,45,0.08), inset 0 1px 0 rgba(255,255,255,0.72);
+  position: relative;
+}
+
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+.giftGrid {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .benefitsGrid { grid-template-columns: repeat(2, 1fr); }
+  .giftGrid { gap: 14px; }
+}
+
+@media (max-width: 768px) {
+  .section { padding: 28px clamp(14px, 4vw, 20px) 0; overflow-x: hidden; }
+  .signatureSection { padding: 28px clamp(14px, 4vw, 20px) 0; }
+  .treatmentsGrid { grid-template-columns: 1fr; }
+  .stickyCard { position: relative; top: 0; }
+  .benefitsGrid { grid-template-columns: repeat(2, 1fr); }
+  .giftGrid { grid-template-columns: 1fr; }
+  .pricingHeader,
+  .pricingRow { grid-template-columns: 1fr 70px 80px; gap: 8px; min-width: 360px; }
+  .signatureCard { min-width: 300px; flex: 0 0 300px; }
+}
+
+@media (max-width: 640px) {
+  .section { padding: 20px 14px 0; }
+  .signatureSection { padding: 24px 14px 0; }
+  .benefitsGrid { grid-template-columns: 1fr; }
+  .giftGrid { grid-template-columns: 1fr; }
+  .pricingHeader,
+  .pricingRow { grid-template-columns: 1fr 65px 75px; gap: 8px; padding: 12px 14px; font-size: 12px; min-width: 320px; }
+  .signatureCard { min-width: 280px; flex: 0 0 280px; }
+  .signatureTrack { gap: 12px; padding-right: 20px; }
+}
+
+@media (max-width: 480px) {
+  .section { padding: 16px 12px 0; }
+  .signatureSection { padding: 20px 12px 0; }
+  .pricingHeader,
+  .pricingRow { grid-template-columns: 1fr 60px 70px; gap: 6px; padding: 10px 12px; font-size: 11.5px; min-width: 300px; }
+  .signatureCard { min-width: 260px; flex: 0 0 260px; }
+}
+
+@media (max-width: 375px) {
+  .section { padding: 16px 10px 0; }
+  .signatureSection { padding: 20px 10px 0; }
+}

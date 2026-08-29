@@ -7,7 +7,7 @@ export default function serviceEnrollment(notification) {
   const user = notification.user || {};
   const name = data.name || user.name || 'there';
   const serviceName = data.serviceName || 'a new service';
-  const dashboardUrl = data.dashboardUrl || 'https://pragyayoga.com/dashboard';
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
 
   const subject = notification.subject || `Enrolled in ${escapeHtml(serviceName)}`;
 

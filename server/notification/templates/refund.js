@@ -17,7 +17,7 @@ export default function refund(notification) {
   const rows = [
     { label: 'Item', value: escapeHtml(label || 'Purchase') },
   ];
-  if (amount) rows.push({ label: 'Refund Amount', value: `₹${escapeHtml(amount)}` });
+  if (amount) rows.push({ label: 'Refund Amount', value: `KES ${escapeHtml(amount)}` });
   if (refundReceipt) rows.push({ label: 'Refund Receipt', value: escapeHtml(refundReceipt) });
   if (reason) rows.push({ label: 'Reason', value: escapeHtml(reason) });
 
@@ -38,7 +38,7 @@ export default function refund(notification) {
     'A refund has been processed for your recent transaction.',
     '',
     ...(label ? [`Item: ${label}`] : []),
-    ...(amount ? [`Refund Amount: ₹${amount}`] : []),
+    ...(amount ? [`Refund Amount: KES ${amount}`] : []),
     ...(refundReceipt ? [`Refund Receipt: ${refundReceipt}`] : []),
     ...(reason ? [`Reason: ${reason}`] : []),
     '',

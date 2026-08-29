@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import styles from "./LoginForm.module.css";
+import { useTranslation } from "react-i18next";
 
 const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +16,7 @@ const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      alert(t("validation.passwordMismatch"));
       return;
     }
 
@@ -31,7 +33,7 @@ const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
       const data = await res.json();
 
       if (res.ok) {
-        alert(data.msg || "Registered successfully!");
+        alert(data.msg || t("auth.registerSuccess"));
         setName("");
         setEmail("");
         setPassword("");
@@ -40,11 +42,11 @@ const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
         else if (onToggleToLogin) onToggleToLogin();
         else navigate("/login");
       } else {
-        alert(data.error || "Error registering user");
+        alert(data.error || t("errors.registerFailed"));
       }
     } catch (err) {
       console.error("Register error:", err);
-      alert("Connection error. Please try again.");
+      alert(t("errors.network"));
     } finally {
       setLoading(false);
     }
@@ -57,61 +59,61 @@ const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
           <div className={styles.logoMark}>
             <img src="/images/soma/logo.png" alt="Soma Wellness" width="44" height="44" style={{ objectFit: "contain" }} />
           </div>
-          <h2 className={styles.title}>Create Account</h2>
-          <p className={styles.subtitle}>Begin your transformative yoga journey</p>
+          <h2 className={styles.title}>{t("auth.createAccount")}</h2>
+          <p className={styles.subtitle}>{t("auth.registerSuccess")}</p>
         </div>
 
         <form onSubmit={handleRegister} className={styles.form}>
           <div className={styles.inputGroup}>
-            <label className={styles.label}>Full Name</label>
+            <label className={styles.label}>{t("auth.name")}</label>
             <div className={styles.inputWrap}>
               <span className={styles.inputIcon}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </span>
-              <input type="text" placeholder="Enter your full name" value={name} onChange={(e) => setName(e.target.value)} required className={styles.input} />
+              <input type="text" placeholder={t("auth.name")} value={name} onChange={(e) => setName(e.target.value)} required className={styles.input} aria-label={t("auth.name")} />
             </div>
           </div>
 
           <div className={styles.inputGroup}>
-            <label className={styles.label}>Email</label>
+            <label className={styles.label}>{t("auth.email")}</label>
             <div className={styles.inputWrap}>
               <span className={styles.inputIcon}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               </span>
-              <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required className={styles.input} />
+              <input type="email" placeholder={t("auth.email")} value={email} onChange={(e) => setEmail(e.target.value)} required className={styles.input} aria-label={t("auth.email")} />
             </div>
           </div>
 
           <div className={styles.row}>
             <div className={styles.inputGroup}>
-              <label className={styles.label}>Password</label>
+              <label className={styles.label}>{t("auth.password")}</label>
               <div className={styles.inputWrap}>
                 <span className={styles.inputIcon}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </span>
-                <input type="password" placeholder="Create password" value={password} onChange={(e) => setPassword(e.target.value)} required className={styles.input} />
+                <input type="password" placeholder={t("auth.password")} value={password} onChange={(e) => setPassword(e.target.value)} required className={styles.input} aria-label={t("auth.password")} />
               </div>
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.label}>Confirm</label>
+              <label className={styles.label}>{t("auth.confirmPassword")}</label>
               <div className={styles.inputWrap}>
                 <span className={styles.inputIcon}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </span>
-                <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={styles.input} />
+                <input type="password" placeholder={t("auth.confirmPassword")} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={styles.input} aria-label={t("auth.confirmPassword")} />
               </div>
             </div>
           </div>
 
-          <motion.button type="submit" className={styles.submitBtn} disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-            {loading ? "Creating Account..." : "Create Account"}
+          <motion.button type="submit" className={styles.submitBtn} disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} aria-label={t("auth.createAccount")}>
+            {loading ? t("common.loading") : t("auth.createAccount")}
           </motion.button>
         </form>
 
         <p className={styles.toggleText}>
-          Already have an account?{" "}
-          <button type="button" onClick={() => navigate(redirectTo ? `/login?redirectTo=${encodeURIComponent(redirectTo)}` : "/login")}>Sign In</button>
+          {t("auth.alreadyHave")}{" "}
+          <button type="button" onClick={() => navigate(redirectTo ? `/login?redirectTo=${encodeURIComponent(redirectTo)}` : "/login")}>{t("auth.signIn")}</button>
         </p>
       </motion.div>
     </div>

@@ -227,7 +227,7 @@ export default function CouponManagement({ feedback }) {
           <KpiCard icon={<LuTicketPercent />} accent="orange" label="Total Coupons" value={stats.total || 0} />
           <KpiCard icon={<LuCheck />} accent="green" label="Active" value={stats.active || 0} />
           <KpiCard icon={<LuClock />} accent="blue" label="Scheduled" value={stats.scheduled || 0} />
-          <KpiCard icon={<LuIndianRupee />} accent="amber" label="Total Discount Given" value={`₹${(stats.totalDiscount || 0).toLocaleString()}`} />
+          <KpiCard icon={<LuIndianRupee />} accent="amber" label="Total Discount Given" value={`KES ${(stats.totalDiscount || 0).toLocaleString()}`} />
         </div>
       )}
 
@@ -285,7 +285,7 @@ export default function CouponManagement({ feedback }) {
                 <label style={{ fontSize: 11, color: '#6B5E4E', marginBottom: 2, display: 'block' }}>Discount Type</label>
                 <select value={form.discountType} onChange={(e) => setForm({ ...form, discountType: e.target.value })} style={{ height: 34, borderRadius: 8, border: '1px solid #E7D7BE', width: '100%', fontFamily: "'Inter', sans-serif" }}>
                   <option value="Percentage">Percentage (%)</option>
-                  <option value="Flat">Flat (₹)</option>
+                  <option value="Flat">Flat (KES )</option>
                 </select>
               </div>
               <div>
@@ -293,11 +293,11 @@ export default function CouponManagement({ feedback }) {
                 <input type="number" value={form.discountValue} onChange={(e) => setForm({ ...form, discountValue: e.target.value })} placeholder={form.discountType === 'Percentage' ? 'e.g. 20' : 'e.g. 500'} min="0" style={{ height: 34, borderRadius: 8, border: '1px solid #E7D7BE', width: '100%', fontFamily: "'Inter', sans-serif" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: '#6B5E4E', marginBottom: 2, display: 'block' }}>Max Discount (₹)</label>
+                <label style={{ fontSize: 11, color: '#6B5E4E', marginBottom: 2, display: 'block' }}>Max Discount (KES )</label>
                 <input type="number" value={form.maxDiscount} onChange={(e) => setForm({ ...form, maxDiscount: e.target.value })} placeholder="0 = unlimited" min="0" style={{ height: 34, borderRadius: 8, border: '1px solid #E7D7BE', width: '100%', fontFamily: "'Inter', sans-serif" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: '#6B5E4E', marginBottom: 2, display: 'block' }}>Min Purchase (₹)</label>
+                <label style={{ fontSize: 11, color: '#6B5E4E', marginBottom: 2, display: 'block' }}>Min Purchase (KES )</label>
                 <input type="number" value={form.minPurchase} onChange={(e) => setForm({ ...form, minPurchase: e.target.value })} placeholder="0 = no minimum" min="0" style={{ height: 34, borderRadius: 8, border: '1px solid #E7D7BE', width: '100%', fontFamily: "'Inter', sans-serif" }} />
               </div>
               <div>
@@ -384,7 +384,7 @@ export default function CouponManagement({ feedback }) {
                         fontFamily: "'Inter', sans-serif",
                       }}
                     >
-                      + {p.name} (₹{p.price})
+                      + {p.name} (KES {p.price})
                     </button>
                   ))}
                 </div>
@@ -445,8 +445,8 @@ export default function CouponManagement({ feedback }) {
                     {c.code}
                   </td>
                   <td style={{ padding: '10px 14px' }}>
-                    {c.discountType === 'Percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`}
-                    {c.maxDiscount > 0 && <span style={{ color: '#9C8E7C', fontSize: 10 }}> (max ₹{c.maxDiscount})</span>}
+                    {c.discountType === 'Percentage' ? `${c.discountValue}%` : `KES ${c.discountValue}`}
+                    {c.maxDiscount > 0 && <span style={{ color: '#9C8E7C', fontSize: 10 }}> (max KES {c.maxDiscount})</span>}
                   </td>
                   <td style={{ padding: '10px 14px' }}>{statusBadge(c)}</td>
                   <td style={{ padding: '10px 14px', fontSize: 11 }}>
@@ -494,7 +494,7 @@ export default function CouponManagement({ feedback }) {
           </div>
           <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
             <div style={{ fontSize: 12 }}><strong>Total Orders:</strong> {detail.totalOrders}</div>
-            <div style={{ fontSize: 12 }}><strong>Total Discount Given:</strong> ₹{detail.totalDiscount.toLocaleString()}</div>
+            <div style={{ fontSize: 12 }}><strong>Total Discount Given:</strong> KES {detail.totalDiscount.toLocaleString()}</div>
           </div>
           {detail.usageHistory.length === 0 ? (
             <p style={{ color: '#9C8E7C', fontSize: 12 }}>No usage yet.</p>
@@ -511,7 +511,7 @@ export default function CouponManagement({ feedback }) {
                 {detail.usageHistory.map((u) => (
                   <tr key={u._id} style={{ borderTop: '1px solid var(--color-border-light)' }}>
                     <td style={{ padding: '6px 10px' }}>{u.user?.name || 'Unknown'} ({u.user?.email || ''})</td>
-                    <td style={{ padding: '6px 10px' }}>₹{u.discountAmount}</td>
+                    <td style={{ padding: '6px 10px' }}>KES {u.discountAmount}</td>
                     <td style={{ padding: '6px 10px' }}>{new Date(u.usedAt).toLocaleDateString()}</td>
                   </tr>
                 ))}

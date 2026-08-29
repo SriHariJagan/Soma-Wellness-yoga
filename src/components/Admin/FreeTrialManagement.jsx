@@ -539,8 +539,8 @@ export default function FreeTrialManagement({ onChanged } = {}) {
                             </div>
                           </td>
                           <td><Badge label={STATUS_BADGE_MAP[t.status] || t.status} /></td>
-                          <td className={s.tdMuted}>{t.startDate ? new Date(t.startDate).toLocaleDateString('en-IN') : '—'}</td>
-                          <td className={s.tdMuted}>{t.endDate ? new Date(t.endDate).toLocaleDateString('en-IN') : '—'}</td>
+                          <td className={s.tdMuted}>{t.startDate ? new Date(t.startDate).toLocaleDateString('en-KE') : '—'}</td>
+                          <td className={s.tdMuted}>{t.endDate ? new Date(t.endDate).toLocaleDateString('en-KE') : '—'}</td>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <div style={{ flex: 1, height: 6, background: 'var(--surface-3)', borderRadius: 4, overflow: 'hidden', maxWidth: 100 }}>
@@ -660,13 +660,13 @@ export default function FreeTrialManagement({ onChanged } = {}) {
                   <div>
                     <div className={s.statLabel}>Start Date</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-1)', marginTop: 3 }}>
-                      {selectedTrial.startDate ? new Date(selectedTrial.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                      {selectedTrial.startDate ? new Date(selectedTrial.startDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                     </div>
                   </div>
                   <div>
                     <div className={s.statLabel}>End Date</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-1)', marginTop: 3 }}>
-                      {selectedTrial.endDate ? new Date(selectedTrial.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                      {selectedTrial.endDate ? new Date(selectedTrial.endDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                     </div>
                   </div>
                   <div>
@@ -859,7 +859,7 @@ export default function FreeTrialManagement({ onChanged } = {}) {
                         ) : (
                         <tr key={sess._id}>
                           <td><strong>{sess.title}</strong></td>
-                          <td className={s.tdMuted}>{sess.date ? new Date(sess.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}</td>
+                          <td className={s.tdMuted}>{sess.date ? new Date(sess.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) : '—'}</td>
                           <td className={s.tdMuted}>{sess.startTime || '—'}</td>
                           <td className={s.tdMuted}>{sess.instructor?.name || sess.instructor || '—'}</td>
                           <td>
@@ -988,7 +988,7 @@ export default function FreeTrialManagement({ onChanged } = {}) {
                           </div>
                           {n.body && <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 3 }}>{n.body}</div>}
                           <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
-                            {n.createdAt ? new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                            {n.createdAt ? new Date(n.createdAt).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
                           </div>
                         </div>
                       </div>
@@ -1028,7 +1028,7 @@ export default function FreeTrialManagement({ onChanged } = {}) {
                             <div className={s.timeTitle} style={{ textTransform: 'capitalize' }}>{action.replace(/_/g, ' ')}</div>
                             {h.note && <div className={s.timeMeta}>{h.note}</div>}
                             <div className={s.timeMeta}>
-                              {h.at ? new Date(h.at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                              {h.at ? new Date(h.at).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
                               {h.by && <span> &middot; by {h.by}</span>}
                             </div>
                           </div>
@@ -1148,8 +1148,8 @@ export default function FreeTrialManagement({ onChanged } = {}) {
                                           </div>
                                         </div>
                                       </td>
-                                      <td style={{ fontSize: 12, color: 'var(--text-2)' }}>{trial.startDate ? new Date(trial.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '-'}</td>
-                                      <td style={{ fontSize: 12, color: 'var(--text-2)' }}>{trial.endDate ? new Date(trial.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '-'}</td>
+                                      <td style={{ fontSize: 12, color: 'var(--text-2)' }}>{trial.startDate ? new Date(trial.startDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) : '-'}</td>
+                                      <td style={{ fontSize: 12, color: 'var(--text-2)' }}>{trial.endDate ? new Date(trial.endDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) : '-'}</td>
                                       <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                           <div style={{ width: 60, height: 5, background: 'var(--line)', borderRadius: 3, overflow: 'hidden' }}>

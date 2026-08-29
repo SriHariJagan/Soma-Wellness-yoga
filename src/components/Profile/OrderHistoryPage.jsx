@@ -87,9 +87,9 @@ export default function OrderHistoryPage({ reload, onNavigate }) {
   };
 
   const fmtDate = (d) =>
-    d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+    d ? new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
 
-  const fmtPrice = (n) => `\u20B9${Number(n || 0).toLocaleString("en-IN")}`;
+  const fmtPrice = (n) => `\u20B9${Number(n || 0).toLocaleString("en-KE")}`;
 
   return (
     <div style={{ padding: "16px 0" }}>

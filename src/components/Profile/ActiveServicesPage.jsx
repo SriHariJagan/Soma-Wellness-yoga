@@ -8,7 +8,7 @@ import {
 import { getAllEnrollments, renewService } from "../api/StudentServices.js";
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+  d ? new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
 const STATUS_TONE = {
   active: "green",

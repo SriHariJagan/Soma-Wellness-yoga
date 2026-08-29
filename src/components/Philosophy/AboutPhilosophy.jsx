@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AboutPhilosophy.css';
 
-const AboutPragya = ({ founderImage }) => {
+const AboutSoma = ({ founderImage }) => {
   const navigate = useNavigate();
 
   const handleExploreJourney = () => {
@@ -43,14 +43,14 @@ const AboutPragya = ({ founderImage }) => {
 
         <div className="text-side">
           <p className="eyebrow">Our story</p>
-          <h2 className="about-title">About Pragya Yoga </h2>
+          <h2 className="about-title">About Soma Wellness </h2>
           <div className="title-underline" />
           <p className="about-body">
-            Pragya Yoga Alliance was founded with a deep commitment to bringing the transformative power of yoga to individuals seeking holistic wellness.<br />
+            Soma Wellness was founded with a deep commitment to bringing the transformative power of yoga to individuals seeking holistic wellness.<br />
             Established by Dr. Kapil Dev Kesari, a renowned yoga and wellness expert with years of experience, our journey began with a simple yet profound vision: to make the ancient wisdom of yoga accessible to everyone, fostering a balanced and harmonious lifestyle.<br /><br />
-            Dr. Kesari’s extensive background in yoga and wellness, including his work with prestigious institutions like the Indian Yoga Association and Dev Sanskriti University, has been the foundation of Pragya Yoga Alliance.<br />
+            Dr. Kesari's extensive background in yoga and wellness, including his work with prestigious institutions like the Indian Yoga Association and Dev Sanskriti University, has been the foundation of Soma Wellness.<br />
             Under his guidance, we have developed a comprehensive approach to wellness that integrates traditional yoga practices with modern insights. Our mission is to empower individuals through yoga, pranayama, and meditation, helping them achieve physical, mental, and spiritual well-being.<br /> <br />
-            At Pragya Yoga Alliance, we believe in the transformative potential of yoga to enhance the quality of life.<br />
+            At Soma Wellness, we believe in the transformative potential of yoga to enhance the quality of life.<br />
             We are dedicated to providing a nurturing environment where students can explore their inner selves and cultivate a sense of peace, strength, and clarity.<br />
             Join us in our mission to spread the benefits of yoga for holistic wellness, and be a part of our vibrant community committed to personal growth and collective harmony.
           </p>
@@ -80,4 +80,4 @@ const AboutPragya = ({ founderImage }) => {
   );
 };
 
-export default AboutPragya;
+export default AboutSoma;

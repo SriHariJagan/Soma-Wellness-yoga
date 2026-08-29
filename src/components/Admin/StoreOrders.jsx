@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { adminStoreOrdersApi } from "../api/AdminServices.js";
 import s from "./StoreOrders.module.css";
 
-const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
-const fmtDate = (d) => (d ? new Date(d).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "–");
+const inr = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
+const fmtDate = (d) => (d ? new Date(d).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" }) : "–");
 
 const STATUS_META = {
   payment_pending: { label: "Payment Pending", cls: "amber" },

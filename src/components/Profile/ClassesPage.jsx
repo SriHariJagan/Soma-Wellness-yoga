@@ -22,13 +22,13 @@ function formatCountdown(dateStr, timeStr) {
 }
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-IN', {
+  return new Date(dateStr).toLocaleDateString('en-KE', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 }
 
 function formatShortDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-IN', {
+  return new Date(dateStr).toLocaleDateString('en-KE', {
     day: 'numeric', month: 'short',
   });
 }
@@ -254,7 +254,7 @@ export default function ClassesPage() {
                           {new Date(inv.date).getDate()}
                         </span>
                         <span className={styles.dateMonth}>
-                          {new Date(inv.date).toLocaleString('en-IN', { month: 'short' })}
+                          {new Date(inv.date).toLocaleString('en-KE', { month: 'short' })}
                         </span>
                       </div>
 

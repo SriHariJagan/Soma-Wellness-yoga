@@ -16,7 +16,7 @@ const verifyLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, message: 'Too ma
 
 import { VALID_ITEM_TYPES } from '../shared/constants/index.js';
 
-router.post('/create-order', requireAuth, initiateLimiter, async (req, res, next) => {
+router.post('/create-order', initiateLimiter, async (req, res, next) => {
   try {
     const { items, label, description, idempotencyKey } = req.body;
 
@@ -34,7 +34,7 @@ router.post('/create-order', requireAuth, initiateLimiter, async (req, res, next
     }
 
     const result = await paymentService.initiate({
-      user: req.userId,
+      user: req.userId || null,
       items,
       label,
       description,

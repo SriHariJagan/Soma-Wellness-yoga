@@ -31,7 +31,7 @@ const AboutUsHero = () => {
       <div className="overlay">
         <motion.div className="content center-content" variants={container} initial="hidden" animate="visible">
           <motion.span className="hero-eyebrow" variants={item}>
-            <span className="hero-eyebrow-dot" /> Pragya Yoga Alliance
+            <span className="hero-eyebrow-dot" /> Soma Wellness
           </motion.span>
           <motion.h1 variants={item}>
             <span className="hero-title">About Us</span>

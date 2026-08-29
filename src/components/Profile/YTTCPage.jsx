@@ -120,7 +120,7 @@ export default function YTTCPage({ student }) {
           <h1>200 Hours Yoga Teacher Training Course</h1>
           <p>
             Welcome {student?.name || "Student"}, begin your journey to become a
-            confident and certified yoga teacher with Pragya Yoga Alliance.
+            confident and certified yoga teacher with Soma Wellness.
           </p>
 
           {loading ? (
@@ -149,7 +149,7 @@ export default function YTTCPage({ student }) {
                 ? "Already Enrolled"
                 : enrolling
                 ? "Adding…"
-                : `Add to Cart — ₹${selectedMode === "online" ? "35,000" : "45,000"}`}
+                : `Add to Cart — KES ${selectedMode === "online" ? "35,000" : "45,000"}`}
             </button>
 
             <button
@@ -211,7 +211,7 @@ export default function YTTCPage({ student }) {
               <h3>Online Mode</h3>
               <p>Theory and practical both will be conducted online.</p>
             </div>
-            <strong>₹35,000</strong>
+            <strong>KES 35,000</strong>
           </div>
 
           <div
@@ -225,7 +225,7 @@ export default function YTTCPage({ student }) {
               <h3>Hybrid Mode</h3>
               <p>Theory online and practical training will be conducted offline.</p>
             </div>
-            <strong>₹45,000</strong>
+            <strong>KES 45,000</strong>
           </div>
 
           <p className={styles.note}>
@@ -283,13 +283,13 @@ export default function YTTCPage({ student }) {
           <p>
             After successful completion of the course, required attendance,
             practice, assignments, and assessment, students will receive
-            certification from Pragya Yoga Alliance.
+             certification from Soma Wellness.
           </p>
 
           <div className={styles.certBox}>
             <i className="ti ti-certificate" aria-hidden="true" />
             <div>
-              <strong>Pragya Yoga Alliance Certification</strong>
+               <strong>Soma Wellness Certification</strong>
               <span>For sincere practitioners and future yoga teachers</span>
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function YTTCPage({ student }) {
                   <h3>{invite.title}</h3>
                   <p>{invite.description || "YTTC live class session"}</p>
                   <p className={styles.note}>
-                    {new Date(invite.date).toLocaleDateString("en-IN")} •{" "}
+                    {new Date(invite.date).toLocaleDateString("en-KE")} •{" "}
                     {invite.startTime}
                     {invite.endTime ? ` - ${invite.endTime}` : ""}
                   </p>

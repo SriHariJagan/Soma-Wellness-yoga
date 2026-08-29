@@ -187,7 +187,7 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
                     <td><Badge label={getPlanStatus(st)} /></td>
                     <td className={s.tdMuted} style={{ fontSize: '11px' }}>
                       {st.createdAt
-                        ? new Date(st.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                        ? new Date(st.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' })
                         : '—'}
                     </td>
                     <td onClick={e => e.stopPropagation()}>
