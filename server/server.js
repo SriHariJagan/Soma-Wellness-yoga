@@ -98,7 +98,7 @@ app.use(compression({ threshold: 1024, level: 6 }));
 // ── CORS ──
 const allowedOrigins = (
   process.env.CORS_ORIGINS ||
-  "https://somawellness.in,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com"
+  "https://somawellness.in,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app"
 )
   .split(",")
   .map((o) => o.trim());
@@ -115,7 +115,7 @@ app.use(
       return cb(new Error("Blocked by CORS policy"), false);
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: false,
+    credentials: true,
   }),
 );
 
