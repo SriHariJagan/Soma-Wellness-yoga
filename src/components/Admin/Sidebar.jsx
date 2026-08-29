@@ -5,6 +5,7 @@ import s from './YogaAdmin.module.css';
 import {
   LuChevronsLeft, LuChevronsRight, LuPlus, LuLogOut, LuArrowLeft,
 } from 'react-icons/lu';
+import LanguageSwitcher from '../common/LanguageSwitcher.jsx';
 
 export default function Sidebar({
   activeTab, setActiveTab, navItems, user, onSignOut,
@@ -85,6 +86,7 @@ export default function Sidebar({
       </nav>
 
       <div className={s.sbFooter}>
+        {!collapsed && <div style={{ display:'flex', justifyContent:'center' }}><LanguageSwitcher compact /></div>}
         <Link to="/" className={s.sbFooterLink} title={t('adminSidebar.backToWebsite')}>
           <LuArrowLeft size={16} />
           {!collapsed && <span>{t('adminSidebar.backToWebsite')}</span>}

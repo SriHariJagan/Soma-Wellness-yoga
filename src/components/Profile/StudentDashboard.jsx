@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import styles from "./StudentDashboard.module.css";
 import { getStudentProfile, getActiveMembership, getCartCount } from "../api/StudentServices.js";
 import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../common/LanguageSwitcher.jsx";
 
 const ProfilePage = lazy(() => import("./ProfilePage"));
 const ActivePlanPage = lazy(() => import("./ActivePlanPage"));
@@ -317,6 +318,7 @@ export default function StudentDashboard({ onLogout }) {
         </nav>
 
         <div className={styles.sbFooter}>
+          <div style={{ display:'flex', justifyContent:'center' }}><LanguageSwitcher compact /></div>
           <button type="button" className={styles.enrollBtn} onClick={() => handleNav("classes")}>
             <i className="ti ti-plus" aria-hidden="true" />
             <span className={styles.navLabel}>{t("dashboard.enrollBook")}</span>
