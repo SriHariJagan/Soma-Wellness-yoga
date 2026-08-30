@@ -84,7 +84,7 @@
 .metric:hover::after { opacity: 1; }
 
 .metricNum {
-  font-family: var(--font-heading);
+  font-family: var(--font-num);
   font-size: 28px;
   font-weight: 700;
   color: var(--color-dark);

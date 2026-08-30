@@ -88,7 +88,7 @@
 .statAlert { border-color: rgba(217, 119, 6, 0.4); }
 
 .statValue {
-  font-family: var(--font-display);
+  font-family: var(--font-num);
   font-size: 22px;
   font-weight: 700;
   color: var(--text-1);

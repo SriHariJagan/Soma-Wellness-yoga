@@ -66,13 +66,14 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
     : [0, 0, 0, 0, 0, 0];
 
   const activity = [
-    ...recentStudents.slice(0, 4).map((st) => ({
-      icon: <LuUserPlus />, cls: s.timeIcon, title: `${st.name || 'New student'} registered`,
-      meta: `${st.city || st.email || 'Student CRM'} · just now`,
+    ...recentStudents.slice(0, 3).map((st, i) => ({
+      icon: <LuUserPlus />, cls: s.timeIcon, title: `${st.name || 'New student'} joined`,
+      meta: `${st.city || st.email || 'Student CRM'}`,
+      time: i === 0 ? 'Just now' : i === 1 ? '2m ago' : '15m ago',
     })),
-    { icon: <LuCreditCard />, cls: s.timeIconGreen, title: 'Membership payment received', meta: `KES ${(revenue || 0).toLocaleString('en-KE')} total collected` },
-    { icon: <LuCalendarCheck />, cls: s.timeIconBlue, title: `${metrics.pendingBookings ?? 0} bookings pending review`, meta: 'Bookings calendar' },
-    { icon: <LuSparkles />, cls: s.timeIconAmber, title: `${totalLeads} leads in pipeline`, meta: 'Pipeline CRM' },
+    { icon: <LuCreditCard />, cls: s.timeIconGreen, title: 'Payment received', meta: `KES ${(revenue || 0).toLocaleString('en-KE')} collected`, time: '1h ago' },
+    { icon: <LuCalendarCheck />, cls: s.timeIconBlue, title: `${metrics.pendingBookings ?? 0} bookings pending`, meta: 'Needs review', time: '2h ago' },
+    { icon: <LuSparkles />, cls: s.timeIconAmber, title: `${totalLeads} leads in pipeline`, meta: 'Active leads', time: 'Today' },
   ];
 
   const quickActions = [
@@ -128,6 +129,8 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
             <div style={{ color: 'var(--text-1)' }}>
               <AreaChart
                 labels={monthLabels}
+                height={260}
+                formatValue={(v) => `KES ${(v / 1000).toFixed(0)}k`}
                 series={[
                   { color: '#F97316', data: revTrend },
                   { color: '#16A34A', data: memTrend.map(v => v * 40) },
@@ -138,7 +141,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
 
           <ChartCard title="Booking Analytics" subtitle="Sessions booked per month">
             <div style={{ color: 'var(--text-1)' }}>
-              <BarChart labels={monthLabels} data={bookTrend} color="#81B29A" />
+              <BarChart labels={monthLabels} data={bookTrend} color="#81B29A" height={280} formatValue={(v) => String(v)} />
             </div>
           </ChartCard>
         </div>
@@ -155,6 +158,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
                     <div className={s.timeTitle}>{a.title}</div>
                     <div className={s.timeMeta}>{a.meta}</div>
                   </div>
+                  {a.time && <span className={s.timeStamp}>{a.time}</span>}
                 </div>
               ))}
             </div>
@@ -162,10 +166,11 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
 
           <div className={s.card}>
             <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuSparkles /></span>Quick Actions</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className={s.quickActions}>
               {quickActions.map((q, i) => (
-                <button key={i} type="button" className={s.btn} style={{ justifyContent: 'flex-start', padding: '12px' }} onClick={() => onQuickAction?.(q.key)}>
-                  <span className={s.cardTitleIcon}>{q.icon}</span>{q.label}
+                <button key={i} type="button" className={s.quickActionBtn} onClick={() => onQuickAction?.(q.key)}>
+                  <span className={s.quickActionIcon}>{q.icon}</span>
+                  <span className={s.quickActionLabel}>{q.label}</span>
                 </button>
               ))}
             </div>

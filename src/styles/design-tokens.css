@@ -64,6 +64,7 @@
   --font-heading: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'DM Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-accent: 'DM Sans', system-ui, sans-serif;
+  --font-num: 'Inter', 'DM Sans', system-ui, -apple-system, sans-serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -203,6 +204,12 @@ body {
   color: var(--soma-charcoal);
   background-color: #FAF6EC;
   overflow-x: hidden;
+}
+
+/* Utility: apply to any element that shows a number */
+.num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
 }
 
 *, *::before, *::after {

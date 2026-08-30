@@ -441,7 +441,7 @@
   align-self: flex-start;
 }
 .visualMeta span:nth-child(2) { opacity: 0.35; }
-.counter { min-width: 52px; color: var(--soma-forest); }
+.counter { min-width: 52px; color: var(--soma-forest); font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .dots { margin-left: 8px; display: flex; gap: 6px; }
 .dot {
   position: relative;

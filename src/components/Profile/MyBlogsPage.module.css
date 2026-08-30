@@ -16,7 +16,7 @@
 
 .statNum {
   display: block;
-  font-family: var(--font-heading);
+  font-family: var(--font-num);
   font-size: 24px;
   font-weight: 800;
   color: var(--color-dark);

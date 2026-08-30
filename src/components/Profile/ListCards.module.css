@@ -121,7 +121,7 @@
 .apptAction { margin-left: auto; flex-shrink: 0; display: inline-flex; gap: 8px; align-items: center; }
 
 .price {
-  font-family: var(--font-heading);
+  font-family: var(--font-num);
   font-size: 17px;
   font-weight: 700;
   color: var(--color-dark);

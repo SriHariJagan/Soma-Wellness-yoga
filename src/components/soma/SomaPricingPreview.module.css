@@ -102,7 +102,8 @@
 .cardName { font-family: var(--font-display); font-size: 16px; font-weight: 600; letter-spacing: 0.03em; color: var(--soma-forest); }
 .cardSub { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #5a6b63; text-transform: uppercase; }
 .price { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; position: relative; }
-.price span { font-family: var(--font-display); font-size: 28px; font-weight: 600; color: var(--soma-forest); letter-spacing: -0.02em; }
+.price span {
+  font-family: var(--font-num); font-size: 28px; font-weight: 600; color: var(--soma-forest); letter-spacing: -0.02em; }
 .price em { font-size: 11px; font-style: normal; color: #5a6b63; }
 .priceLine { position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: linear-gradient(90deg, var(--soma-gold) 0%, transparent 88%); opacity: 0.42; transition: opacity 0.22s ease, background 0.22s ease; }
 .card:hover .priceLine { opacity: 0.72; }
@@ -141,7 +142,8 @@
 .dailyNote { font-size: 11px; color: var(--soma-warm-gray); margin-top: 12px; line-height: 1.6; border-top: 1px solid var(--soma-line-light); padding-top: 10px; }
 .dailyPrice { background: linear-gradient(180deg, #FFF7E6 0%, #F5EFE0 100%); border: 1px solid rgba(38,51,44,0.07); border-radius: 18px; padding: 18px; text-align: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); }
 .dailyPriceRow { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
-.dailyPrice strong { font-family: var(--font-display); font-size: 26px; color: var(--soma-forest); letter-spacing: -0.02em; }
+.dailyPrice strong {
+  font-family: var(--font-num); font-size: 26px; color: var(--soma-forest); letter-spacing: -0.02em; }
 .dailyPrice span { font-size: 11px; color: #5a6b63; }
 .dailyPrice em { font-size: 11px; font-style: normal; color: var(--soma-primary); font-weight: 700; }
 .dailySep { color: var(--soma-line-strong); font-weight: 300; }

@@ -123,7 +123,7 @@
 .trendDown { color: #b91c1c; background: rgba(239, 68, 68, 0.12); }
 
 .statValue {
-  font-family: var(--font-heading);
+  font-family: var(--font-num);
   font-size: 34px;
   font-weight: 700;
   line-height: 1;

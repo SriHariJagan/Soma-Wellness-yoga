@@ -141,7 +141,8 @@
 .statBox { padding: 1.3rem 0; text-align: center; border-right: 1px solid rgba(34, 34, 34, 0.06); transition: background var(--yp-transition); }
 .statBox:last-child { border-right: none; }
 .statBox:hover { background: var(--yp-cream); }
-.statNum { font-family: var(--yp-font-serif); font-size: 25px; font-weight: 700; color: var(--yp-orange); margin: 0; }
+.statNum {
+  font-family: var(--font-num); font-size: 25px; font-weight: 700; color: var(--yp-orange); margin: 0; }
 .statLbl { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: var(--yp-bark-3); margin: 5px 0 0; text-transform: uppercase; }
 
 /* ── Body ── */
