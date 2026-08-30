@@ -41,6 +41,7 @@ const OrderTracking = lazy(() => import('./pages/OrderTracking'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AdminTestPages = lazy(() => import('./pages/AdminTestPages'));
 const FoundingMembers = lazy(() => import('./pages/FoundingMembers'));
+const SocialSuccess = lazy(() => import('./pages/SocialSuccess'));
 
 const RouteFallback = () => <SomaLoader compact />;
 
@@ -187,6 +188,9 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
             <Route path="/forgot-password"  element={<ForgotPassword />} />
             <Route path="/reset-password"   element={<ResetPassword />} />
             <Route path="/profile"          element={<Profile />} />
+
+            {/* ── OAuth callback ── */}
+            <Route path="/social/success" element={<SocialSuccess />} />
 
             {/* ── Login: redirect if already logged in ── */}
             <Route

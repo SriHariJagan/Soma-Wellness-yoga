@@ -91,10 +91,12 @@ const Navbar = ({ user, onLogout }) => {
 
   const initials = user?.name ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "YS";
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
     setDropOpen(false);
-    onLogout?.();
-    navigate("/login");
+    try {
+      await onLogout?.();
+    } catch {}
+    navigate("/login", { replace: true });
   };
 
   const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/order-tracking", "/checkout", "/books", "/bulk-orders", "/login", "/newuser", "/payment"];

@@ -34,7 +34,7 @@ const NAV_KEYS = [
   { id: "profile",       key: "dashboard.profile",        icon: "ti-user"           },
   { id: "cart",          key: "dashboard.myCart",         icon: "ti-shopping-cart"  },
   { id: "orders",        key: "dashboard.orderHistory",   icon: "ti-receipt-2"      },
-  { id: "browsePlans",   key: "dashboard.browsePlans",    icon: "ti-currency-rupee" },
+  { id: "browsePlans",   key: "dashboard.browsePlans",    icon: "ti-cash" },
   { id: "plan",          key: "dashboard.activePlan",     icon: "ti-shield-check"   },
   { id: "services",      key: "dashboard.activeServices", icon: "ti-package"        },
   { id: "browseServices",key: "dashboard.browseServices", icon: "ti-layout-grid" },

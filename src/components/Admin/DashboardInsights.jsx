@@ -1,30 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
 import { PageHeader, KpiCard, ChartCard, AreaChart, BarChart, Avatar } from './ui/Primitives';
+import { getOverview, getRevenueAnalytics, getStudents, getPayments, getBatches, getLeads } from '../api/AdminServices';
 import {
-  LuRefreshCw, LuUsers, LuFilter, LuRadioTower, LuIndianRupee,
+  LuRefreshCw, LuUsers, LuFilter, LuRadioTower, LuCoins,
   LuUserPlus, LuCreditCard, LuCalendarCheck, LuSparkles, LuActivity,
   LuClock, LuArrowRight, LuPlus, LuBookOpen, LuTruck, LuPackageOpen,
 } from 'react-icons/lu';
 
 export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatches = 0, onRefresh, onQuickAction }) {
+  const [revenueData, setRevenueData] = useState(null);
+  const [recentStudents, setRecentStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const metrics = data.metrics || {};
   const systemHealth = data.systemHealth?.length ? data.systemHealth : [];
   const schedule = data.todaySchedule?.length ? data.todaySchedule : [];
-  const recentStudents = data.recentStudents?.length ? data.recentStudents : [];
 
   const revenue = metrics.revenue || 0;
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-
-  const revTrend = revenue > 0
-    ? [revenue * 0.6, revenue * 0.7, revenue * 0.75, revenue * 0.8, revenue * 0.9, revenue]
-    : [600, 700, 750, 800, 900, 1000];
   const activeMembers = metrics.activeStudents ?? 0;
+
+  // Fetch real revenue analytics and recent students
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [revData, studentsData] = await Promise.all([
+        getRevenueAnalytics().catch(() => null),
+        getStudents().catch(() => null),
+      ]);
+      if (revData) setRevenueData(revData);
+      if (studentsData?.students) setRecentStudents(studentsData.students.slice(0, 5));
+    } catch {}
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Build real monthly data from revenue analytics
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const currentMonth = new Date().getMonth();
+  const monthLabels = Array.from({ length: 6 }, (_, i) => {
+    const m = (currentMonth - 5 + i + 12) % 12;
+    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m];
+  });
+
+  // Use real revenue data if available, otherwise use metrics
+  const revTrend = revenueData?.monthlyRevenue?.length
+    ? revenueData.monthlyRevenue.slice(-6).map(r => r.revenue || 0)
+    : revenue > 0
+      ? [revenue * 0.6, revenue * 0.7, revenue * 0.75, revenue * 0.8, revenue * 0.9, revenue]
+      : [600, 700, 750, 800, 900, 1000];
+
   const memTrend = activeMembers > 0
     ? Array.from({ length: 6 }, (_, i) => Math.round(activeMembers * (0.4 + i * 0.12)))
     : [8, 10, 12, 14, 16, 18];
-  const bookTrend = [2, 3, 4, 5, 5, 6];
+
+  const bookTrend = revenueData?.monthlyBookings?.length
+    ? revenueData.monthlyBookings.slice(-6).map(b => b.count || 0)
+    : [2, 3, 4, 5, 5, 6];
 
   const bookStore = data.bookStore || {};
   const bookTrend2 = bookStore.revenue > 0
@@ -52,7 +86,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
     <div>
       <PageHeader title="Command Center" subtitle="Live operational overview — sourced from MongoDB">
         <span className={`${s.badge} ${s.badgeGreen}`}>Live</span>
-        <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={onRefresh}>
+        <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={() => { onRefresh?.(); fetchData(); }}>
           <LuRefreshCw size={14} /> Refresh
         </button>
       </PageHeader>
@@ -65,7 +99,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           trend={`${metrics.pendingBookings ?? 0} pending`} trendUp spark={[totalLeads * 0.4, totalLeads * 0.5, totalLeads * 0.7, totalLeads * 0.8, totalLeads * 0.9, totalLeads || 1]} />
         <KpiCard icon={<LuRadioTower />} accent="blue" label="Live Batches" value={totalBatches}
           trend={`${metrics.activeMemberships ?? 0} memberships`} trendUp spark={[totalBatches * 0.3, totalBatches * 0.5, totalBatches * 0.6, totalBatches * 0.8, totalBatches * 0.9, totalBatches || 1]} />
-        <KpiCard icon={<LuIndianRupee />} accent="green" label="Gross Revenue" value={revenue} prefix="KES "
+        <KpiCard icon={<LuCoins />} accent="green" label="Gross Revenue" value={revenue} prefix="KES "
           trend="collected" trendUp spark={revTrend} />
       </div>
 
@@ -76,7 +110,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           spark={[1, 2, 3, 4, 5, bookStore.ordersToday ?? 1]} />
         <KpiCard icon={<LuTruck />} accent="amber" label="Awaiting Dispatch" value={bookStore.pendingDispatch ?? 0}
           spark={[bookStore.pendingDispatch * 0.3 || 0, bookStore.pendingDispatch * 0.5 || 0, bookStore.pendingDispatch * 0.7 || 0, bookStore.pendingDispatch * 0.9 || 0, bookStore.pendingDispatch || 0]} />
-        <KpiCard icon={<LuIndianRupee />} accent="green" label="Store Revenue" value={bookStore.revenue ?? 0} prefix="KES "
+        <KpiCard icon={<LuCoins />} accent="green" label="Store Revenue" value={bookStore.revenue ?? 0} prefix="KES "
           trend="confirmed sales" trendUp spark={bookTrend2} />
         <KpiCard icon={<LuPackageOpen />} accent="blue" label="Products" value={bookStore.products ?? 0}
           trend={`${bookStore.lowStock ?? 0} low stock`} trendUp={false} spark={[1, 2, 3, 4, 5, bookStore.products || 1]} />
@@ -93,7 +127,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           >
             <div style={{ color: 'var(--text-1)' }}>
               <AreaChart
-                labels={months}
+                labels={monthLabels}
                 series={[
                   { color: '#F97316', data: revTrend },
                   { color: '#16A34A', data: memTrend.map(v => v * 40) },
@@ -104,7 +138,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
 
           <ChartCard title="Booking Analytics" subtitle="Sessions booked per month">
             <div style={{ color: 'var(--text-1)' }}>
-              <BarChart labels={months} data={bookTrend} color="#81B29A" />
+              <BarChart labels={monthLabels} data={bookTrend} color="#81B29A" />
             </div>
           </ChartCard>
         </div>

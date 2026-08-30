@@ -16,6 +16,14 @@ import {
   updateProfile,
   changePassword,
 } from "../controllers/authController.js";
+import {
+  googleAuth,
+  googleCallback,
+  facebookAuth,
+  facebookCallback,
+  instagramAuth,
+  instagramCallback,
+} from "../controllers/oauthController.js";
 
 const router = express.Router();
 
@@ -60,5 +68,13 @@ router.post(
   validate(schemas.changePassword),
   changePassword,
 );
+
+// ── OAuth routes (Google, Facebook, Instagram) ──────────────
+router.get("/google", googleAuth);
+router.get("/google/callback", ...googleCallback);
+router.get("/facebook", facebookAuth);
+router.get("/facebook/callback", ...facebookCallback);
+router.get("/instagram", instagramAuth);
+router.get("/instagram/callback", ...instagramCallback);
 
 export default router;

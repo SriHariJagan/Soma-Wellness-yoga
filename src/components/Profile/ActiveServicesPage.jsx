@@ -93,7 +93,7 @@ function ActiveSummaryCard({ item }) {
           )}
           {item.price > 0 && (
             <div className={styles.metaRow}>
-              <span className={styles.metaLabel}><i className="ti ti-currency-rupee" aria-hidden="true" />Price</span>
+              <span className={styles.metaLabel}><i className="ti ti-cash" aria-hidden="true" />Price</span>
               <span className={styles.metaValue}>&#8377;{item.price}</span>
             </div>
           )}
@@ -187,7 +187,7 @@ function ArchivedCard({ item }) {
           )}
           {item.price > 0 && (
             <div className={styles.metaRow}>
-              <span className={styles.metaLabel}><i className="ti ti-currency-rupee" aria-hidden="true" />Price</span>
+              <span className={styles.metaLabel}><i className="ti ti-cash" aria-hidden="true" />Price</span>
               <span className={styles.metaValue}>&#8377;{item.price}</span>
             </div>
           )}

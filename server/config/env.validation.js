@@ -35,17 +35,10 @@ const envSchema = z.object({
   JWT_REFRESH_TTL: z.string().default('30d'),
   JWT_REFRESH_SECRET: z.string().optional(),
 
-  // ── Razorpay ──
-  RAZORPAY_KEY_ID: z
-    .string()
-    .min(1, 'RAZORPAY_KEY_ID is required')
-    .startsWith('rzp_', 'RAZORPAY_KEY_ID must start with rzp_'),
-  RAZORPAY_KEY_SECRET: z
-    .string()
-    .min(1, 'RAZORPAY_KEY_SECRET is required'),
-  RAZORPAY_WEBHOOK_SECRET: z
-    .string()
-    .min(1, 'RAZORPAY_WEBHOOK_SECRET is required'),
+  // ── Razorpay (optional — disabled) ──
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
 
   // ── Redis ──
   REDIS_URL: z

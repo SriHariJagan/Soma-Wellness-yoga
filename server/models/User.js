@@ -67,6 +67,12 @@ const UserSchema = new mongoose.Schema(
       enrolledAt: { type: Date, default: null },
     },
 
+    // ── OAuth providers ──
+    oauth: [{
+      provider:   { type: String, enum: ["google", "facebook", "instagram"] },
+      providerId: { type: String },
+    }],
+
     // ── Refresh-token rotation (hashed sessions) ──
     refreshTokens: { type: [String], default: [], select: false },
 

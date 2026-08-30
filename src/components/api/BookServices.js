@@ -102,28 +102,3 @@ export const validateBookCart = () => api("/books/validate-cart", { method: "POS
 export const checkoutBooks = (payload) => api("/books/checkout", { method: "POST", body: payload });
 
 export const getMyBookOrders = () => api("/books/orders");
-
-export const verifyPayment = (payload) => {
-  const token = localStorage.getItem("token");
-  return fetch(`${API_DOMAIN}/api/verify-payment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(payload),
-  }).then(async (res) => {
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || data.error || "Payment verification failed");
-    if (!data.success) throw new Error(data.message || data.error || "Payment verification failed");
-    return data;
-  });
-};
-
-// ── Razorpay script loader ────────────────────────────────
-export const loadRazorpay = () =>
-  new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true);
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });

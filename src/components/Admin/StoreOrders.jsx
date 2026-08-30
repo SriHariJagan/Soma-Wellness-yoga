@@ -262,7 +262,7 @@ function DetailDrawer({ selected, detail, onClose, onChanged, showFlash }) {
 
           <section className={s.block}>
             <h3>Payment</h3>
-            <div className={s.muted}>Method: {order.paymentMethod || "Razorpay"}</div>
+            <div className={s.muted}>Method: {order.paymentMethod || "M-Pesa"}</div>
             <div className={s.muted}>Payment ID: {order.payment || "–"}</div>
           </section>
 

@@ -2,12 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FaTruckFast, FaShieldHalved, FaLock } from "react-icons/fa6";
-import { getCart, updateCartItemQty, removeCartItem, applyCouponToCart, removeCouponFromCart, validateBookCart, checkoutBooks, verifyPayment, loadRazorpay, checkShippingAvailability } from "../components/api/BookServices";
+import { getCart, updateCartItemQty, removeCartItem, applyCouponToCart, removeCouponFromCart, validateBookCart, checkoutBooks, checkShippingAvailability } from "../components/api/BookServices";
 import { useScrollToSection } from "../hooks/useScrollToSection";
 import styles from "./BookCheckout.module.css";
 
 const formatKES = (n) => `KES ${Number(n || 0).toLocaleString()}`;
-const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const emptyAddress = {
   fullName: "", phone: "", email: "", line1: "", line2: "", city: "", state: "", pincode: "", country: "India",
@@ -179,53 +178,15 @@ const BookCheckout = () => {
     }
     setPaying(true);
     try {
-      const ok = await loadRazorpay();
-      if (!ok) throw new Error(t("bookCheckout.couldNotLoadPayment"));
-      if (!RAZORPAY_KEY_ID) throw new Error(t("bookCheckout.paymentNotConfigured"));
-
       const idempotencyKey = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
       const result = await checkoutBooks({ idempotencyKey, address });
 
-      const rzp = new window.Razorpay({
-        key: RAZORPAY_KEY_ID,
-        amount: result.razorpay.amount,
-        currency: result.razorpay.currency,
-        name: "Soma Wellness Store",
-        description: `Order ${result.order.orderNumber}`,
-        order_id: result.razorpay.order_id,
-        prefill: { name: address.fullName, email: address.email, contact: address.phone },
-        theme: { color: "#2E7D5B" },
-        handler: async (response) => {
-          try {
-            const verify = await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
-            setSuccess({ orderNumber: result.order.orderNumber, email: address.email, verify });
-            try { await getCart().then((c) => setCart(c)); } catch {}
-          } catch (err) {
-            setError(err.message);
-          } finally {
-            setPaying(false);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setPaying(false);
-            setError(t("bookCheckout.paymentCancelled"));
-          },
-        },
-      });
-
-      rzp.on("payment.failed", () => {
-        setPaying(false);
-        setError(t("bookCheckout.paymentFailed"));
-      });
-
-      rzp.open();
+      // M-Pesa payment initiated
+      setSuccess({ orderNumber: result.order.orderNumber, email: address.email });
+      try { await getCart().then((c) => setCart(c)); } catch {}
     } catch (err) {
       setError(err.message);
+    } finally {
       setPaying(false);
     }
   };

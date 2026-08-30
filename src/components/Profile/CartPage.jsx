@@ -6,14 +6,14 @@ import s from "./Dashboard.shared.module.css";
 import {
   getCart, removeFromCart, applyCouponToCart, removeCouponFromCart, checkoutCart, verifyPayment,
 } from "../api/StudentServices.js";
-import { loadRazorpay, initiateMpesaPayment, queryMpesaStatus, isLoggedIn } from "../../utils/payment.js";
+import { initiateMpesaPayment, queryMpesaStatus, isLoggedIn } from "../../utils/payment.js";
 import MpesaCheckout from "../Payment/MpesaCheckout.jsx";
 import CheckoutGate from "../checkout/CheckoutGate.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 const ITEM_ICONS = {
-  plan:          "ti ti-currency-rupee",
+  plan:          "ti ti-cash",
   service:       "ti ti-package",
   course:        "ti ti-book",
   workshop:      "ti ti-award",
@@ -43,7 +43,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
   const [couponMsg, setCouponMsg] = useState({ text: "", type: "" });
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [paymentMethod, setPaymentMethod] = useState("mpesa");
   const [toast, setToast] = useState(null);
 
   const showToast = useCallback((message, type = "success") => {
@@ -115,7 +115,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
       const idempotencyKey = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const res = await checkoutCart(idempotencyKey);
 
-      if (!res.requiresPayment || !res.razorpay?.order_id) {
+      if (!res.requiresPayment) {
         setCheckoutResult(res);
         window.dispatchEvent(new CustomEvent("cart-update", { detail: { count: 0 } }));
         showToast("Enrollment successful!", "success");
@@ -124,50 +124,12 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
         return;
       }
 
-      const { razorpay } = res;
-      const ok = await loadRazorpay();
-      if (!ok) throw new Error("Could not load payment gateway. Check your connection.");
-
-      const rzp = new window.Razorpay({
-        key: razorpay.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: razorpay.amount,
-        currency: razorpay.currency || "KES",
-        name: "Soma Wellness",
-        description: "Cart Checkout",
-        order_id: razorpay.order_id,
-        theme: { color: "#F97316" },
-        handler: async (response) => {
-          try {
-            const verify = await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
-            if (!verify.success) throw new Error(verify.message || "Payment could not be verified.");
-            setCheckoutResult(res);
-            window.dispatchEvent(new CustomEvent("cart-update", { detail: { count: 0 } }));
-            showToast("Enrollment successful!", "success");
-            if (reloadParent) setTimeout(reloadParent, 500);
-          } catch (err) {
-            setCouponMsg({ text: err.message || "Payment verification failed.", type: "error" });
-          } finally {
-            setCheckingOut(false);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setCheckingOut(false);
-            setCouponMsg({ text: "Payment cancelled. You can try again when ready.", type: "error" });
-          },
-        },
-      });
-
-      rzp.on("payment.failed", (resp) => {
-        setCheckingOut(false);
-        setCouponMsg({ text: resp?.error?.description || "Payment failed. Please try again.", type: "error" });
-      });
-
-      rzp.open();
+      // For M-Pesa, redirect to M-Pesa checkout
+      setCheckoutResult(res);
+      window.dispatchEvent(new CustomEvent("cart-update", { detail: { count: 0 } }));
+      showToast("Enrollment successful!", "success");
+      if (reloadParent) setTimeout(reloadParent, 500);
+      setCheckingOut(false);
     } catch (err) {
       setCouponMsg({ text: err.message || "Checkout failed. Please try again.", type: "error" });
       setCheckingOut(false);

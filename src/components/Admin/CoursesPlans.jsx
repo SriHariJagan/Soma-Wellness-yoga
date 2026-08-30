@@ -13,7 +13,7 @@ import {
 // ─────────────────────────────────────────────────────────
 const MODE_OPTIONS = ['Online', 'Hybrid', 'Studio', 'Self-paced'];
 const CATEGORY_OPTIONS = ['academy', 'group', 'other'];
-const CURRENCY_OPTIONS = ['KES', 'KES', 'USD'];
+const CURRENCY_OPTIONS = ['KES'];
 const BADGE_OPTIONS = ['', 'Most Popular', 'Recommended', 'Best Value', 'Limited', 'New'];
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public', desc: 'Visible to everyone' },

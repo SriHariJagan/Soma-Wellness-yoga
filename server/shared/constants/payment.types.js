@@ -2,7 +2,7 @@
 export const PAYMENT_STATUSES = ['initiated', 'pending', 'captured', 'failed', 'expired', 'refunding', 'refunded']  ;
 
 // ── Payment Gateway Types ────────────────────────────────────
-export const PAYMENT_GATEWAYS = ['razorpay', 'mpesa', 'offline', 'manual']  ;
+export const PAYMENT_GATEWAYS = ['mpesa', 'offline', 'manual']  ;
 
 // ── Payment Sources ──────────────────────────────────────────
 export const PAYMENT_SOURCES = ['student', 'admin', 'webhook', 'system']  ;

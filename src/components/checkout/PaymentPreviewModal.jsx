@@ -30,7 +30,7 @@ export default function PaymentPreviewModal({ intent, onClose, onContinue }) {
           </div>
           <ul className="checkout-features">
             <li><span className="dot" /> VAT included</li>
-            <li><span className="dot" /> Secure payment via Razorpay / M-Pesa</li>
+            <li><span className="dot" /> Secure payment via M-Pesa</li>
             <li><span className="dot" /> Instant confirmation after verification</li>
           </ul>
         </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
 import { PageHeader, KpiCard, ChartCard, AreaChart, BarChart, Donut, Avatar } from './ui/Primitives';
-import { LuReceipt, LuClock, LuIndianRupee, LuWallet, LuSearch, LuX, LuExternalLink, LuCopy, LuPrinter, LuSend, LuUser, LuFileText, LuShoppingCart, LuCheck, LuCircleX, LuInfo } from 'react-icons/lu';
+import { LuReceipt, LuClock, LuCoins, LuWallet, LuSearch, LuX, LuExternalLink, LuCopy, LuPrinter, LuSend, LuUser, LuFileText, LuShoppingCart, LuCheck, LuCircleX, LuInfo } from 'react-icons/lu';
 import { getAdminOrders, getAdminOrderDetail } from '../api/AdminServices.js';
 import InvoiceView from '../shared/InvoiceView.jsx';
 
@@ -200,7 +200,7 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
       <div className={s.statsGrid}>
         <KpiCard icon={<LuReceipt />} accent="orange" label="Total Invoices" value={count} spark={monthlyCount} />
         <KpiCard icon={<LuClock />} accent="amber" label="Pending" value={pending} prefix="KES " spark={[pending * 0.3, pending * 0.5, pending * 0.7, pending * 0.8, pending * 0.9, pending || 1]} />
-        <KpiCard icon={<LuIndianRupee />} accent="green" label="Revenue Collected" value={revenue} prefix="KES " trend="collected" trendUp spark={monthlyRev} />
+        <KpiCard icon={<LuCoins />} accent="green" label="Revenue Collected" value={revenue} prefix="KES " trend="collected" trendUp spark={monthlyRev} />
         <KpiCard icon={<LuWallet />} accent="blue" label="Avg. Invoice" value={count ? Math.round(revenue / count) : 0} prefix="KES " spark={monthlyCount.length ? monthlyCount : [1, 2, 3, 4, 5, 6]} />
       </div>
 
@@ -263,8 +263,8 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
           </select>
           <select value={pmFilter} onChange={(e) => setPmFilter(e.target.value)}
             style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12, background: '#fff', outline: 'none', cursor: 'pointer' }}>
-            <option value="">All Methods</option><option value="Manual">Manual</option><option value="UPI">UPI</option>
-            <option value="Cash">Cash</option><option value="Card">Card</option><option value="Bank Transfer">Bank Transfer</option>
+            <option value="">All Methods</option><option value="Manual">Manual</option><option value="M-Pesa">M-Pesa</option>
+            <option value="Cash">Cash</option><option value="Bank Transfer">Bank Transfer</option>
           </select>
           <select value={dateRange} onChange={(e) => setDateRange(e.target.value)}
             style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12, background: '#fff', outline: 'none', cursor: 'pointer' }}>

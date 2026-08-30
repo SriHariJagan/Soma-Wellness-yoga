@@ -187,6 +187,10 @@ app.use(
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 
+// ── Passport (OAuth) ──
+import passport from "./config/passport.js";
+app.use(passport.initialize());
+
 // ── Request timeout (prevents hung connections) ──
 app.use(requestTimeout());
 

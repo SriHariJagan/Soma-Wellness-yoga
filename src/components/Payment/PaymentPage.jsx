@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MpesaCheckout from './MpesaCheckout';
-import { parsePrice, openRazorpayCheckout, createRazorpayOrder, isLoggedIn } from '../../utils/payment';
+import { parsePrice, isLoggedIn } from '../../utils/payment';
 import CheckoutGate from '../checkout/CheckoutGate.jsx';
 import './PaymentPage.css';
 
@@ -22,7 +22,6 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('razorpay');
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
@@ -64,39 +63,17 @@ export default function PaymentPage() {
     }
     setLoading(true);
     try {
-      const order = await createRazorpayOrder({
-        items: [{ itemType: 'booking', itemId: 'booking', quantity: 1, unitPrice: Math.round(amount * 100) }],
-        label: course.name,
-        description: `Booking for ${course.name}`,
-      });
-      await openRazorpayCheckout({
-        amount: order.amount,
-        currency: order.currency,
-        orderId: order.order_id,
-        name: 'Soma Wellness',
-        description: course.name,
-        prefill: { name: form.name, email: form.email, contact: form.phone },
-        onSuccess: async (response) => {
-          try {
-            await saveBooking({ paymentMethod: 'Card', transactionId: response.razorpay_payment_id, status: 'Confirmed' });
-            setSuccess(true);
-          } catch (err) {
-            setError(err.message || t('payment.paymentFailed'));
-          }
-          setLoading(false);
-        },
-        onDismiss: () => { setLoading(false); setError(t('payment.paymentCancelled')); },
-        onError: (err) => { setLoading(false); setError(err.description || err.message || t('payment.paymentFailed')); },
-      });
+      await saveBooking({ paymentMethod: 'M-PESA', transactionId: '', status: 'Pending' });
+      setSuccess(true);
     } catch (err) {
       setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
 
   const handlePay = async () => {
     if (!isLoggedIn()) {
-      // will be handled by CheckoutGate wrapper — this is fallback for programmatic calls
       return doPay();
     }
     return doPay();
@@ -146,7 +123,7 @@ export default function PaymentPage() {
 
         {/* ── Progress Steps ── */}
         <div className="pay-steps">
-          {['Method', 'Details', 'Pay'].map((label, i) => {
+          {['Details', 'Pay'].map((label, i) => {
             const num = i + 1;
             const active = step === num;
             const done = step > num;
@@ -156,7 +133,7 @@ export default function PaymentPage() {
                   <span className="pay-step-num">{done ? '✓' : num}</span>
                   <span className="pay-step-label">{label}</span>
                 </div>
-                {i < 2 && <div className={`pay-step-line ${step > num ? 'done' : ''}`} />}
+                {i < 1 && <div className={`pay-step-line ${step > num ? 'done' : ''}`} />}
               </React.Fragment>
             );
           })}
@@ -164,62 +141,8 @@ export default function PaymentPage() {
 
         {error && <div className="pay-error">{error}</div>}
 
-        {/* ═══════════ STEP 1: Payment Method ═══════════ */}
+        {/* ═══════════ STEP 1: Details ═══════════ */}
         {step === 1 && (
-          <div className="pay-step-content">
-            <h2 className="pay-step-title">{t('payment.selectPaymentMethod')}</h2>
-            <p className="pay-step-sub">{t('payment.secureNote')}</p>
-
-            {payable ? (
-              <div className="pay-method-grid">
-                <button
-                  className={`pay-method-card ${paymentMethod === 'razorpay' ? 'selected' : ''}`}
-                  onClick={() => setPaymentMethod('razorpay')}
-                >
-                  <div className="pmc-icon">💳</div>
-                  <div className="pmc-name">Card / UPI / Net Banking</div>
-                  <div className="pmc-desc">Visa · Mastercard · UPI</div>
-                  <span className="pmc-check">{paymentMethod === 'razorpay' ? '✓' : ''}</span>
-                </button>
-                <button
-                  className={`pay-method-card ${paymentMethod === 'mpesa' ? 'selected' : ''}`}
-                  onClick={() => setPaymentMethod('mpesa')}
-                >
-                  <div className="pmc-icon">📱</div>
-                  <div className="pmc-name">M-PESA</div>
-                  <div className="pmc-desc">Safaricom · Lipa Na M-PESA</div>
-                  <span className="pmc-check">{paymentMethod === 'mpesa' ? '✓' : ''}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="pay-free-badge">
-                <span className="pay-free-icon">✓</span>
-                <div>
-                  <div className="pay-free-title">{t('payment.freeItem')}</div>
-                  <div className="pay-free-desc">No payment required — just confirm your details</div>
-                </div>
-              </div>
-            )}
-
-            <div className="pay-summary-strip">
-              <div className="pay-summary-item">
-                <span className="psi-label">{course.name || '—'}</span>
-                <span className="psi-price">{course.price || 'Free'}</span>
-              </div>
-              {course.time && <div className="pay-summary-meta">{course.time}</div>}
-            </div>
-
-            <div className="pay-nav">
-              <button className="pay-btn-ghost" onClick={() => navigate(-1)}>{t('payment.backToCourses')}</button>
-              <button className="pay-btn" onClick={() => setStep(2)}>
-                {payable ? 'Continue' : 'Continue'} →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════ STEP 2: Details ═══════════ */}
-        {step === 2 && (
           <div className="pay-step-content">
             <h2 className="pay-step-title">{t('payment.yourDetails')}</h2>
             <p className="pay-step-sub">{payable ? t('payment.fillInfo') : t('payment.fillInfoEnquiry')}</p>
@@ -250,26 +173,26 @@ export default function PaymentPage() {
             </div>
 
             <div className="pay-nav">
-              <button className="pay-btn-ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="pay-btn-ghost" onClick={() => navigate(-1)}>{t('payment.backToCourses')}</button>
               <button
                 className="pay-btn"
                 onClick={() => {
                   if (!form.name || !form.email || !form.phone) { setError(t('payment.nameEmailRequired')); return; }
                   setError('');
-                  setStep(3);
+                  setStep(2);
                 }}
               >
-                Review & Pay →
+                Continue to Pay →
               </button>
             </div>
           </div>
         )}
 
-        {/* ═══════════ STEP 3: Pay ═══════════ */}
-        {step === 3 && (
+        {/* ═══════════ STEP 2: Pay ═══════════ */}
+        {step === 2 && (
           <div className="pay-step-content">
-            <h2 className="pay-step-title">Confirm & Pay</h2>
-            <p className="pay-step-sub">Review your booking and complete payment</p>
+            <h2 className="pay-step-title">Pay with M-PESA</h2>
+            <p className="pay-step-sub">Complete your booking payment via M-PESA</p>
 
             <div className="pay-review">
               <div className="pay-review-row">
@@ -291,7 +214,7 @@ export default function PaymentPage() {
               </div>
             </div>
 
-            {payable && paymentMethod === 'mpesa' ? (
+            {payable ? (
               isLoggedIn() ? (
                 <MpesaCheckout
                   amount={amount}
@@ -307,27 +230,13 @@ export default function PaymentPage() {
                   </button>
                 </CheckoutGate>
               )
-            ) : isLoggedIn() ? (
-              <button className="pay-btn pay-btn-full" onClick={doPay} disabled={loading}>
-                {loading
-                  ? t('payment.processing')
-                  : payable
-                    ? t('payment.payAmount', { amount: course.price?.split('/')[0]?.trim() || '' })
-                    : t('payment.sendEnquiryConfirm')}
-              </button>
             ) : (
-              <CheckoutGate intent={{ name: course.name, price: course.price || 'Free', sub: course.time, type: 'booking' }} onProceed={doPay}>
-                <button className="pay-btn pay-btn-full" disabled={loading}>
-                  {loading
-                    ? t('payment.processing')
-                    : payable
-                      ? t('payment.payAmount', { amount: course.price?.split('/')[0]?.trim() || '' })
-                      : t('payment.sendEnquiryConfirm')}
-                </button>
-              </CheckoutGate>
+              <button className="pay-btn pay-btn-full" onClick={doPay} disabled={loading}>
+                {loading ? t('payment.processing') : t('payment.sendEnquiryConfirm')}
+              </button>
             )}
 
-            <button className="pay-btn-ghost" onClick={() => setStep(2)}>← Change details</button>
+            <button className="pay-btn-ghost" onClick={() => setStep(1)}>← Change details</button>
           </div>
         )}
       </div>
