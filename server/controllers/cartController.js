@@ -440,7 +440,8 @@ export const checkout = asyncHandler(async (req, res) => {
   const now = new Date();
 
   if (total > 0) {
-    /* ── PAID FLOW: Create Razorpay order + pending payment (no activation yet) ── */
+    /* ── PAID FLOW: Create M-Pesa pending payment (no activation yet) ──
+       Razorpay removed — now uses M-Pesa only. Order is pending until M-Pesa STK callback confirms. */
     // Convert cart itemTypes to payment service itemTypes
     const paymentItems = items.map((item) => ({
       itemType: item.itemType === 'plan' ? 'membership' : item.itemType,
@@ -472,11 +473,11 @@ export const checkout = asyncHandler(async (req, res) => {
 
     // Use idempotency plugin to prevent duplicate checkout
     const initiateCheckout = async () => {
-      // Create Razorpay order with the cart-calculated total (includes coupon discounts)
+      // Create M-Pesa pending order with the cart-calculated total (includes coupon discounts)
       const receipt = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      const razorpayOrder = await orderService.createRazorpayOrder(Math.round(total * 100), receipt);
+      const mpesaOrder = await orderService.createMpesaOrder(Math.round(total * 100), receipt);
 
-      // Create Payment in pending status — NOT paid yet. Fulfillment happens after verify.
+      // Create Payment in pending status — NOT paid yet. Fulfillment happens after M-Pesa callback.
       const payment = await paymentRepo.create({
         user: userId,
         label: `Order ${items.map((i) => i.name).join(', ')}`,
@@ -484,8 +485,9 @@ export const checkout = asyncHandler(async (req, res) => {
         items: paymentItems,
         amount: Math.round(total * 100),
         currency: 'KES',
-        gateway: 'razorpay',
-        razorpayOrderId: razorpayOrder.id,
+        gateway: 'mpesa',
+        mpesaOrderId: mpesaOrder.id,
+        razorpayOrderId: mpesaOrder.id,
         paymentStatus: 'pending',
         pendingAt: now,
         idempotencyKey: idempotencyKey || undefined,
@@ -500,7 +502,7 @@ export const checkout = asyncHandler(async (req, res) => {
         attempts: [{
           attempt: 1,
           action: 'checkout',
-          gatewayResponse: { razorpayOrderId: razorpayOrder.id, amount: razorpayOrder.amount },
+          gatewayResponse: { mpesaOrderId: mpesaOrder.id, amount: mpesaOrder.amount },
           timestamp: now,
         }],
       });
@@ -516,7 +518,7 @@ export const checkout = asyncHandler(async (req, res) => {
         couponCode,
         couponDiscount,
         status: 'pending',
-        paymentMethod: 'Razorpay',
+        paymentMethod: 'M-Pesa',
         transactionId: idempotencyKey || payment._id.toString(),
         payment: payment._id,
         itemCount: items.length,
@@ -572,7 +574,7 @@ export const checkout = asyncHandler(async (req, res) => {
       // Clear the cart
       await CartItem.deleteMany({ cart: cart._id });
 
-      return { payment, order, razorpayOrder };
+      return { payment, order, mpesaOrder };
     };
 
     let result;
@@ -582,20 +584,20 @@ export const checkout = asyncHandler(async (req, res) => {
       result = await initiateCheckout();
     }
 
-    const { payment, order, razorpayOrder } = result;
+    const { payment, order, mpesaOrder } = result;
 
     // Notify that order is pending payment
     try {
       await notify(userId, {
         title: 'Order initiated',
-        message: `Your order <strong>#${order.orderNumber}</strong> of KES ${total.toLocaleString('en-KE')} has been initiated. Complete the payment to activate your items.`,
+        message: `Your order <strong>#${order.orderNumber}</strong> of KES ${total.toLocaleString('en-KE')} has been initiated. Complete the M-Pesa payment to activate your items.`,
         type: 'general',
       });
     } catch {}
 
     res.status(201).json({
       success: true,
-      msg: 'Checkout initiated. Complete payment to activate items.',
+      msg: 'Checkout initiated. Complete M-Pesa payment to activate items.',
       order: {
         _id: order._id,
         orderNumber: order.orderNumber,
@@ -609,12 +611,13 @@ export const checkout = asyncHandler(async (req, res) => {
         status: payment.paymentStatus,
         method: payment.gateway,
       },
-      razorpay: {
-        order_id: razorpayOrder.id,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        key: process.env.RAZORPAY_KEY_ID,
+      mpesa: {
+        order_id: mpesaOrder.id,
+        amount: mpesaOrder.amount,
+        currency: mpesaOrder.currency,
       },
+      // Keep razorpay key for backward compat (null now)
+      razorpay: null,
       requiresPayment: true,
     });
   } else {

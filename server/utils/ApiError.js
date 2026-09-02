@@ -18,6 +18,7 @@ export class ApiError extends Error {
   static forbidden(msg = 'Forbidden', details)       { return new ApiError(403, msg, details); }
   static notFound(msg = 'Resource not found', details) { return new ApiError(404, msg, details); }
   static conflict(msg = 'Conflict', details)         { return new ApiError(409, msg, details); }
+  static tooManyRequests(msg = 'Too many requests', details) { return new ApiError(429, msg, details); }
 }
 
 export default ApiError;

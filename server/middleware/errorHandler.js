@@ -33,9 +33,8 @@ export function errorHandler(err, req, res, next) {
   if (err.name === 'TokenExpiredError') { statusCode = 401; message = 'Token expired'; }
 
   // SECURITY: Strip internal error details from all responses to avoid leaking
-  // gateway internals, stack traces, or Razorpay error details to clients.
-  // Razorpay GatewayError.details can contain API keys and integration internals.
-  if (statusCode >= 500 || err.name === 'GatewayError' || err.razorpayError) {
+  // gateway internals, stack traces, or payment error details to clients.
+  if (statusCode >= 500 || err.name === 'GatewayError') {
     details = undefined;
   }
 

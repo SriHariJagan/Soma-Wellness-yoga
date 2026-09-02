@@ -1,11 +1,10 @@
-import Razorpay from "razorpay";
+// ============================================================
+// Razorpay configuration — REMOVED
+// Project now uses M-Pesa (Safaricom Daraja) as the sole payment gateway.
+// This file is kept as a stub to prevent import errors in legacy code
+// that has not yet been fully migrated.
+// ============================================================
 
-const razorpay =
-  process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
-    ? new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: process.env.RAZORPAY_KEY_SECRET,
-      })
-    : null;
+const razorpay = null;
 
 export default razorpay;

@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { getBookBySlug, addBookToCart, checkShippingAvailability } from "../components/api/BookServices";
 import { useScrollToSection } from "../hooks/useScrollToSection";
+import DOMPurify from "dompurify";
 import styles from "./BookDetail.module.css";
 
 const inr = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
@@ -207,7 +208,7 @@ const BookDetail = () => {
 
       {book.description && (
         <section className={styles.section}>
-          <div className={styles.bodyText} dangerouslySetInnerHTML={{ __html: book.description }} />
+          <div className={styles.bodyText} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(book.description, { ALLOWED_TAGS: ['p','br','b','i','u','em','strong','a','ul','ol','li','h1','h2','h3','h4','blockquote','pre','code','span','div','img','figure','figcaption','hr','table','thead','tbody','tr','th','td'], ALLOWED_ATTR: ['href','src','alt','title','class','id','target','rel','width','height'], ADD_ATTR: ['target'] }) }} />
         </section>
       )}
 

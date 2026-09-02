@@ -20,12 +20,14 @@ const router = express.Router();
 const bookingLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: 'Too many booking attempts, please slow down.' });
 
 router.post('/', bookingLimiter, validate(schemas.booking), asyncHandler(async (req, res) => {
-  const { name, email, phone, city, courseName, coursePrice, courseTime, paymentMethod, transactionId, message } = req.body;
+  const { name, email, phone, city, courseName, coursePrice, courseTime, paymentMethod, transactionId, message, status } = req.body;
+  const allowedStatuses = ['Pending', 'Confirmed'];
+  const bookingStatus = allowedStatuses.includes(status) ? status : 'Pending';
   const booking = await Booking.create({
     name, email, phone, city,
     courseName, coursePrice, courseTime,
     paymentMethod, transactionId, message,
-    status: 'Pending',
+    status: bookingStatus,
   });
 
   // Admin in-app notification.

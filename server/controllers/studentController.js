@@ -664,13 +664,29 @@ export const getClasses = asyncHandler(async (req, res) => {
 export const enrollClass = asyncHandler(async (req, res) => {
   const session = await ClassSession.findById(req.params.id);
   if (!session) throw ApiError.notFound('Class not found');
-  if (session.enrolledUsers.some((id) => id.equals(req.user._id))) {
-    return res.json({ success: true, msg: 'Already enrolled' });
-  }
-  if (session.enrolledUsers.length >= session.capacity) throw ApiError.badRequest('This class is full');
 
-  session.enrolledUsers.push(req.user._id);
-  await session.save();
+  const result = await ClassSession.updateOne(
+    {
+      _id: session._id,
+      status: 'upcoming',
+      date: { $gte: new Date() },
+      enrolledUsers: { $ne: req.user._id },
+      $expr: { $lt: [{ $size: "$enrolledUsers" }, "$capacity"] },
+    },
+    { $push: { enrolledUsers: req.user._id } }
+  );
+
+  if (result.modifiedCount === 0) {
+    const alreadyEnrolled = session.enrolledUsers.some((id) => id.equals(req.user._id));
+    if (alreadyEnrolled) {
+      return res.json({ success: true, msg: 'Already enrolled' });
+    }
+    if (session.enrolledUsers.length >= session.capacity) {
+      throw ApiError.badRequest('This class is full');
+    }
+    throw ApiError.badRequest('This class is not available for enrollment');
+  }
+
   notificationService.send(req.user._id, {
     template: 'class-enrollment',
     channels: ['inApp', 'email'],
@@ -1105,9 +1121,10 @@ export const deleteNotification = asyncHandler(async (req, res) => {
 // ── Referral ─────────────────────────────────────────────────
 export const getReferral = asyncHandler(async (req, res) => {
   const ref = await ensureReferral(req.user);
+  const frontend = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
   res.json({
     code: ref.code,
-    link: `http://localhost:5173/newuser?ref=${ref.code}`,
+    link: `${frontend}/newuser?ref=${ref.code}`,
     earned: ref.earned,
     invited: ref.invited,
     joined: ref.joined,

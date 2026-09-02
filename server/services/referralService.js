@@ -5,6 +5,7 @@
 import crypto from 'crypto';
 import Referral from '../models/Referral.js';
 import User from '../models/User.js';
+import logger from '../notification/logger.js';
 
 const REWARD_PER_JOIN = Number(process.env.REFERRAL_REWARD || 500);
 
@@ -59,7 +60,7 @@ export async function applyReferral(code, newUser) {
       );
     }
   } catch (err) {
-    console.error('Referral reward email failed:', err.message);
+    logger.error('ReferralService', 'Referral reward email failed', { error: err.message });
   }
 }
 

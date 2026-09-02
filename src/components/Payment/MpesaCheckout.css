@@ -1,90 +1,188 @@
 /* ═══════════════════════════════════════════════════════════════
    MpesaCheckout — inline M-PESA payment for staged checkout
+   Premium glossy design matching Soma Wellness design tokens
    ═══════════════════════════════════════════════════════════════ */
 
 .mpesa-inline {
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
+/* ── Form ── */
 .mpesa-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
+/* ── Phone field ── */
 .mpesa-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .mpesa-field label {
-  font-size: 0.72rem;
-  color: #4a5c52;
+  font-size: 0.75rem;
+  color: var(--color-dark-secondary, #4a5c52);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
+  letter-spacing: 0.1em;
+  font-weight: 700;
 }
 
 .mpesa-input-wrap {
   display: flex;
   align-items: center;
-  background: #f8f6f1;
-  border: 1.5px solid #e2ddd3;
-  border-radius: 10px;
+  background: var(--color-bg-secondary, #faf8f5);
+  border: 2px solid var(--color-border-light, #e8e2d8);
+  border-radius: 14px;
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all 0.25s var(--ease-premium, cubic-bezier(0.22, 1, 0.36, 1));
+  box-shadow: var(--shadow-glossy-inset, inset 0 2px 6px rgba(24, 61, 45, 0.04));
+}
+
+.mpesa-input-wrap:hover {
+  border-color: #c8bfb0;
+  box-shadow: 0 2px 8px rgba(24, 61, 45, 0.06);
 }
 
 .mpesa-input-wrap:focus-within {
-  border-color: #183D2D;
-  box-shadow: 0 0 0 3px rgba(24,61,45,0.08);
+  border-color: var(--soma-forest, #183D2D);
+  box-shadow: 0 0 0 4px rgba(46, 125, 91, 0.1), 0 2px 8px rgba(24, 61, 45, 0.06);
 }
 
 .mpesa-prefix {
-  padding: 11px 10px;
-  background: #eee;
-  color: #4a5c52;
-  font-size: 0.88rem;
-  font-weight: 600;
-  border-right: 1px solid #e2ddd3;
+  padding: 14px 14px;
+  background: linear-gradient(135deg, #f0ede6, #e8e2d8);
+  color: var(--color-dark, #183D2D);
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-right: 2px solid var(--color-border-light, #e8e2d8);
   user-select: none;
+  letter-spacing: 0.02em;
 }
 
 .mpesa-input {
   flex: 1;
   border: none !important;
   background: transparent !important;
-  padding: 11px 14px !important;
-  font-size: 0.88rem;
-  color: #183D2D;
+  padding: 14px 16px !important;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-dark, #183D2D);
   outline: none;
   box-shadow: none !important;
+  letter-spacing: 0.04em;
 }
 
-.mpesa-input::placeholder { color: #a8a096; }
+.mpesa-input::placeholder {
+  color: #b5ada2;
+  font-weight: 400;
+}
 
 .mpesa-hint {
-  font-size: 0.72rem;
-  color: #8a9690;
+  font-size: 0.73rem;
+  color: var(--color-text-secondary, #7a8a7e);
+  padding-left: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
+/* ── Pay Button ── */
+.pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-premium, cubic-bezier(0.22, 1, 0.36, 1));
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #2E7D5B 0%, #3a9a73 50%, #4db88a 100%);
+  color: #fff;
+  box-shadow:
+    0 6px 20px rgba(46, 125, 91, 0.28),
+    0 2px 6px rgba(24, 61, 45, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.pay-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.25) 45%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.25) 55%,
+    transparent 80%
+  );
+  transition: left 0.6s ease;
+}
+
+.pay-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 32px rgba(46, 125, 91, 0.35),
+    0 4px 12px rgba(24, 61, 45, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.pay-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.pay-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow:
+    0 4px 12px rgba(46, 125, 91, 0.2),
+    0 1px 4px rgba(24, 61, 45, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pay-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  background: linear-gradient(135deg, #9ca8a0, #b5ada2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pay-btn-full {
+  width: 100%;
+}
+
+/* ── Polling / Loading ── */
 .mpesa-polling {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  background: #f0f7f3;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  color: #183D2D;
+  gap: 12px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(46, 125, 91, 0.06), rgba(58, 154, 115, 0.03));
+  border: 1.5px solid rgba(46, 125, 91, 0.15);
+  border-radius: 14px;
+  font-size: 0.88rem;
+  color: var(--color-dark, #183D2D);
+  font-weight: 500;
 }
 
 .mpesa-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #c8e6d5;
-  border-top-color: #183D2D;
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid rgba(46, 125, 91, 0.15);
+  border-top-color: var(--soma-forest, #183D2D);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
@@ -93,37 +191,59 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .mpesa-poll-count {
-  font-size: 0.72rem;
-  color: #8a9690;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #7a8a7e);
   margin-left: auto;
+  font-weight: 600;
+  background: rgba(46, 125, 91, 0.08);
+  padding: 3px 8px;
+  border-radius: 6px;
 }
 
+/* ── Error ── */
 .mpesa-error-msg {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: linear-gradient(135deg, #fef2f2, #fdf0f0);
+  border: 1.5px solid #fecaca;
   color: #b91c1c;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
   font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+.mpesa-error-msg::before {
+  content: '⚠';
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ── Success ── */
 .mpesa-success {
   text-align: center;
-  padding: 20px;
+  padding: 28px 20px;
+  background: linear-gradient(135deg, rgba(46, 125, 91, 0.04), rgba(58, 154, 115, 0.02));
+  border-radius: 16px;
+  border: 1.5px solid rgba(46, 125, 91, 0.1);
 }
 
 .mpesa-success-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #2E7D5B 0%, #3a9a73 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 12px;
-  font-size: 1.2rem;
+  margin: 0 auto 14px;
+  font-size: 1.4rem;
   color: #fff;
-  animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 8px 24px rgba(46, 125, 91, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 @keyframes pop {
@@ -132,7 +252,14 @@
 }
 
 .mpesa-success p {
-  font-size: 0.88rem;
-  color: #183D2D;
+  font-size: 0.92rem;
+  color: var(--color-dark, #183D2D);
   font-weight: 600;
+  margin: 4px 0;
+}
+
+.mpesa-success p:last-child {
+  font-weight: 400;
+  color: var(--color-text-secondary, #7a8a7e);
+  font-size: 0.82rem;
 }

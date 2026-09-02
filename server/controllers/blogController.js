@@ -202,11 +202,12 @@ export const listBlogs = asyncHandler(async (req, res) => {
   const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
 
   if (search) {
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { content: { $regex: search, $options: 'i' } },
-      { excerpt: { $regex: search, $options: 'i' } },
-      { tags: { $regex: search, $options: 'i' } },
+      { title: { $regex: safeSearch, $options: 'i' } },
+      { content: { $regex: safeSearch, $options: 'i' } },
+      { excerpt: { $regex: safeSearch, $options: 'i' } },
+      { tags: { $regex: safeSearch, $options: 'i' } },
     ];
   }
   if (tag) query.tags = tag.toLowerCase();
@@ -715,9 +716,10 @@ export const getAdminBlogs = asyncHandler(async (req, res) => {
   const query = { deletedAt: null };
   if (status) query.status = status;
   if (search) {
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { content: { $regex: search, $options: 'i' } },
+      { title: { $regex: safeSearch, $options: 'i' } },
+      { content: { $regex: safeSearch, $options: 'i' } },
     ];
   }
 

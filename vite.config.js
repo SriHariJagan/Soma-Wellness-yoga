@@ -20,35 +20,13 @@ export default defineConfig({
     minify: true,
     reportCompressedSize: true,
     chunkSizeWarningLimit: 600,
-    rolldownOptions: {
+    rollupOptions: {
       output: {
-        codeSplitting: {
-          groups: [
-            {
-              name: 'react-vendor',
-              test: /node_modules\/(react|react-dom|react-router|react-router-dom|scheduler|loose-envify|object-assign|js-tokens)/,
-              priority: 50,
-              minSize: 0,
-            },
-            {
-              name: 'motion',
-              test: /node_modules\/(framer-motion|motion-dom|motion-utils)/,
-              priority: 40,
-              minSize: 0,
-            },
-            {
-              name: 'icons',
-              test: /node_modules\/react-icons/,
-              priority: 40,
-              minSize: 0,
-            },
-            {
-              name: 'calendar',
-              test: /node_modules\/react-calendar|get-user-locale|warning|memoize/,
-              priority: 40,
-              minSize: 0,
-            },
-          ],
+        manualChunks: (id) => {
+          if (/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler|loose-envify|object-assign|js-tokens)/.test(id)) return 'react-vendor';
+          if (/node_modules\/(framer-motion|motion-dom|motion-utils)/.test(id)) return 'motion';
+          if (/node_modules\/react-icons/.test(id)) return 'icons';
+          if (/node_modules\/react-calendar|get-user-locale|warning|memoize/.test(id)) return 'calendar';
         },
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || '';

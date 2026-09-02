@@ -11,11 +11,21 @@ const MAX_DAYS = 7;
 const REMINDER_THRESHOLD = 6; // Notify when 6 of 7 sessions completed
 
 function addHistory(trial, action, note, by) {
-  trial.history.push({ action, note, by: by?._id || by, at: new Date() });
+  if (!trial.history) trial.history = [];
+  let byVal = by?._id || by;
+  // 'system' is not a valid ObjectId — store without `by` so validation passes
+  if (byVal === 'system') byVal = undefined;
+  const entry = { action, note, at: new Date() };
+  if (byVal) entry.by = byVal;
+  trial.history.push(entry);
 }
 
 async function createNotification(trialId, userId, type, title, body, createdBy) {
-  return TrialNotification.create({ trial: trialId, user: userId, type, title, body, createdBy: createdBy?._id || createdBy });
+  let creator = createdBy?._id || createdBy;
+  if (creator === 'system') creator = undefined;
+  const doc = { trial: trialId, user: userId, type, title, body };
+  if (creator) doc.createdBy = creator;
+  return TrialNotification.create(doc);
 }
 
 function computeSessionStatus(session, now) {
@@ -222,7 +232,8 @@ export const getTrials = asyncHandler(async (req, res) => {
   const query = {};
   if (status && status !== 'all') query.status = status;
   if (search) {
-    const users = await User.find({ $or: [{ name: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] }).select('_id');
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const users = await User.find({ $or: [{ name: { $regex: safeSearch, $options: 'i' } }, { email: { $regex: safeSearch, $options: 'i' } }] }).select('_id');
     query.user = { $in: users.map((u) => u._id) };
   }
   const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -282,7 +293,7 @@ export const getTrialDetail = asyncHandler(async (req, res) => {
 });
 
 export const createTrialSession = asyncHandler(async (req, res) => {
-  const { trialId, title, description, instructor, date, startTime, time, endTime, duration, meetingPlatform, meetingLink, location, notes, adminNotes } = req.body;
+  const { trialId, title, description, instructor, date, startTime, time, endTime, duration, meetingPlatform, meetingLink, location, notes, adminNotes } = req.body || {};
   const trial = await FreeTrial.findById(trialId);
   if (!trial) return res.status(404).json({ message: 'Trial not found' });
 
@@ -307,32 +318,44 @@ export const createTrialSession = asyncHandler(async (req, res) => {
     notes: notes || '',
     adminNotes: adminNotes || '',
     status: 'scheduled',
-    createdBy: req.user._id,
+    createdBy: req.user?._id || req.user,
   });
 
-  await createNotification(trialId, trial.user, 'session_added', `New session: ${title}`, `A new trial session "${title}" has been scheduled for ${new Date(date).toLocaleDateString()}.`, req.user._id);
+  try {
+    await createNotification(trialId, trial.user, 'session_added', `New session: ${title}`, `A new trial session "${title}" has been scheduled for ${new Date(date).toLocaleDateString()}.`, req.user?._id || req.user);
+  } catch (e) {
+    console.warn('[createTrialSession] notification failed:', e.message);
+  }
 
   const trialDoc = await FreeTrial.findById(trialId);
-  addHistory(trialDoc, 'session_created', `Session "${title}" added`, req.user);
-  await trialDoc.save();
+  if (trialDoc) {
+    addHistory(trialDoc, 'session_created', `Session "${title}" added`, req.user);
+    await trialDoc.save();
+  }
 
   res.json({ success: true, session: enrichSession(session, new Date()) });
 });
 
 export const updateTrialSession = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const updates = req.body;
+  const updates = req.body || {};
   const session = await TrialSession.findById(id);
   if (!session) return res.status(404).json({ message: 'Session not found' });
   const oldTitle = session.title;
-  Object.assign(session, updates, { updatedBy: req.user._id });
+  Object.assign(session, updates, { updatedBy: req.user?._id || req.user });
   await session.save();
 
-  await createNotification(session.trial, session.user, 'session_updated', `Session updated: ${session.title}`, `Details for "${session.title}" have been updated.`, req.user._id);
+  try {
+    await createNotification(session.trial, session.user, 'session_updated', `Session updated: ${session.title}`, `Details for "${session.title}" have been updated.`, req.user?._id || req.user);
+  } catch (e) {
+    console.warn('[updateTrialSession] notification failed:', e.message);
+  }
 
   const trialDoc = await FreeTrial.findById(session.trial);
-  addHistory(trialDoc, 'session_updated', `Session "${oldTitle}" updated`, req.user);
-  await trialDoc.save();
+  if (trialDoc) {
+    addHistory(trialDoc, 'session_updated', `Session "${oldTitle}" updated`, req.user);
+    await trialDoc.save();
+  }
 
   res.json({ success: true, session: enrichSession(session, new Date()) });
 });
@@ -344,22 +367,28 @@ export const cancelTrialSession = asyncHandler(async (req, res) => {
 
   session.cancelled = true;
   session.status = 'cancelled';
-  session.cancelReason = req.body.reason || '';
-  session.updatedBy = req.user._id;
+  session.cancelReason = req.body?.reason || '';
+  session.updatedBy = req.user?._id || req.user;
   await session.save();
 
-  await createNotification(session.trial, session.user, 'session_cancelled', `Session cancelled: ${session.title}`, `"${session.title}" has been cancelled.${session.cancelReason ? ` Reason: ${session.cancelReason}` : ''}`, req.user._id);
+  try {
+    await createNotification(session.trial, session.user, 'session_cancelled', `Session cancelled: ${session.title}`, `"${session.title}" has been cancelled.${session.cancelReason ? ` Reason: ${session.cancelReason}` : ''}`, req.user?._id || req.user);
+  } catch (e) {
+    console.warn('[cancelTrialSession] notification failed:', e.message);
+  }
 
   const trialDoc = await FreeTrial.findById(session.trial);
-  addHistory(trialDoc, 'session_cancelled', `Session "${session.title}" cancelled`, req.user);
-  await trialDoc.save();
+  if (trialDoc) {
+    addHistory(trialDoc, 'session_cancelled', `Session "${session.title}" cancelled`, req.user);
+    await trialDoc.save();
+  }
 
   res.json({ success: true, session: enrichSession(session, new Date()) });
 });
 
 export const markSessionAttendance = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { attendance, status, reason } = req.body;
+  const { attendance, status, reason } = req.body || {};
 
   const session = await TrialSession.findById(id);
   if (!session) return res.status(404).json({ message: 'Session not found' });
@@ -378,48 +407,60 @@ export const markSessionAttendance = asyncHandler(async (req, res) => {
     session.status = 'missed';
   }
 
-  session.updatedBy = req.user._id;
+  session.updatedBy = req.user?._id || req.user;
   await session.save();
 
   const trial = await FreeTrial.findById(session.trial);
-  const processedSessions = await TrialSession.countDocuments({
-    trial: session.trial,
-    status: { $in: ['completed', 'missed'] },
-  });
-  trial.completedSessions = processedSessions;
-  addHistory(trial, 'attendance_updated', `Session "${session.title}" marked as ${session.status}`, req.user);
-  await trial.save();
+  if (trial) {
+    const processedSessions = await TrialSession.countDocuments({
+      trial: session.trial,
+      status: { $in: ['completed', 'missed'] },
+    });
+    trial.completedSessions = processedSessions;
+    addHistory(trial, 'attendance_updated', `Session "${session.title}" marked as ${session.status}`, req.user);
+    await trial.save();
 
-  await checkAndExpireTrial(trial);
-  await checkAndSendCompletionReminder(trial, processedSessions);
+    await checkAndExpireTrial(trial);
+    await checkAndSendCompletionReminder(trial, processedSessions);
+  }
 
-  await createNotification(session.trial, session.user, 'session_updated', `Session "${session.title}" updated to ${session.status}`,
-    `Your session "${session.title}" has been marked as ${session.status}.${reason ? ` Reason: ${reason}` : ''}`, req.user._id);
+  try {
+    await createNotification(session.trial, session.user, 'session_updated', `Session "${session.title}" updated to ${session.status}`,
+      `Your session "${session.title}" has been marked as ${session.status}.${reason ? ` Reason: ${reason}` : ''}`, req.user?._id || req.user);
+  } catch (e) {
+    console.warn('[markSessionAttendance] notification failed:', e.message);
+  }
 
   res.json({ success: true, session: enrichSession(session, new Date()), trial });
 });
 
 export const sendTrialNotification = asyncHandler(async (req, res) => {
-  const { trialId, type, title, body } = req.body;
+  const { trialId, type, title, body } = req.body || {};
   const trial = await FreeTrial.findById(trialId);
   if (!trial) return res.status(404).json({ message: 'Trial not found' });
 
-  const notif = await createNotification(trialId, trial.user, type || 'announcement', title, body, req.user._id);
+  const notif = await createNotification(trialId, trial.user, type || 'announcement', title, body, req.user?._id || req.user);
 
   const trialDoc = await FreeTrial.findById(trialId);
-  addHistory(trialDoc, 'notification_sent', `Notification sent: ${title}`, req.user);
-  await trialDoc.save();
+  if (trialDoc) {
+    addHistory(trialDoc, 'notification_sent', `Notification sent: ${title}`, req.user);
+    await trialDoc.save();
+  }
 
   res.json({ success: true, notification: notif });
 });
 
 export const broadcastToActiveTrials = asyncHandler(async (req, res) => {
-  const { type, title, body } = req.body;
+  const { type, title, body } = req.body || {};
   const activeTrials = await FreeTrial.find({ status: 'active' });
   const notifications = [];
   for (const trial of activeTrials) {
-    const notif = await createNotification(trial._id, trial.user, type || 'announcement', title, body, req.user._id);
-    notifications.push(notif);
+    try {
+      const notif = await createNotification(trial._id, trial.user, type || 'announcement', title, body, req.user?._id || req.user);
+      notifications.push(notif);
+    } catch (e) {
+      console.warn('[broadcastToActiveTrials] notification failed for', String(trial._id), e.message);
+    }
   }
   res.json({ success: true, count: notifications.length });
 });
@@ -430,11 +471,16 @@ export const cancelTrial = asyncHandler(async (req, res) => {
   if (!trial) return res.status(404).json({ message: 'Trial not found' });
   trial.status = 'cancelled';
   trial.cancelledAt = new Date();
-  trial.cancelReason = req.body.reason || '';
-  addHistory(trial, 'cancelled', `Trial cancelled by admin. Reason: ${trial.cancelReason}`, req.user);
+  trial.cancelReason = req.body?.reason || '';
+  addHistory(trial, 'cancelled', `Trial cancelled by admin. Reason: ${trial.cancelReason || 'no reason'}`, req.user);
   await trial.save();
 
-  await createNotification(trial._id, trial.user, 'announcement', 'Free trial ended', 'Your free trial has been ended by the admin.', req.user._id);
+  try {
+    await createNotification(trial._id, trial.user, 'announcement', 'Free trial ended', 'Your free trial has been ended by the admin.', req.user?._id || req.user);
+  } catch (e) {
+    // notification failure must not break the main cancel operation
+    console.warn('[cancelTrial] notification failed:', e.message);
+  }
 
   res.json({ success: true, trial });
 });

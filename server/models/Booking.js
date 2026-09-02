@@ -11,7 +11,7 @@ const BookingSchema = new mongoose.Schema(
 
     // Course details (auto-filled from Book Now)
     courseName:  { type: String, required: true },
-    coursePrice: { type: String, required: true },
+    coursePrice: { type: Number, required: true },
     courseTime:  { type: String, default: '' },
 
     // Payment

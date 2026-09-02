@@ -95,6 +95,12 @@ export async function processDelivery(jobData) {
 
   const resolvedEmail = notification.email || notification.user?.email || '';
 
+  if (channelName === 'email' && !resolvedEmail) {
+    await _markLogFailed(logId, new Error('No email address available for delivery'), { retryable: false });
+    logger.warn(MODULE, 'Email delivery skipped — no email address', { logId, notificationId });
+    return { skipped: true, reason: 'No email address' };
+  }
+
   let result;
   try {
     result = await withTimeout(channel.send(notification), 120000, `channel:${channelName}`);
@@ -191,7 +197,7 @@ export async function deliveryJobHandler(job) {
 
       await _markLogFailed(logId, err);
 
-      await Notification.findByIdAndUpdate(job.data.notificationId, { $set: { status: 'failed', email: resolvedEmail } }).catch(
+      await Notification.findByIdAndUpdate(job.data.notificationId, { $set: { status: 'failed' } }).catch(
         (e) => logger.error(MODULE, 'Failed to mark notification failed', {
           notificationId: job.data.notificationId,
           error: e.message,

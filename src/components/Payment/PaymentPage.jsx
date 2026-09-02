@@ -22,6 +22,7 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [showMpesa, setShowMpesa] = useState(false);
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
@@ -41,42 +42,28 @@ export default function PaymentPage() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || t('payment.bookingFailed'));
+    return data;
   };
 
-  const doPay = async () => {
+  const doPay = async (paymentResult) => {
     setError('');
     if (!form.name || !form.email || !form.phone) {
       setError(t('payment.nameEmailRequired'));
       return;
     }
-    if (!payable) {
-      setLoading(true);
-      try {
-        await saveBooking({ paymentMethod: 'Cash', transactionId: '', status: 'Pending' });
-        setSuccess(true);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
     setLoading(true);
     try {
-      await saveBooking({ paymentMethod: 'M-PESA', transactionId: '', status: 'Pending' });
+      await saveBooking({
+        paymentMethod: 'M-PESA',
+        transactionId: paymentResult?.mpesaReceiptNumber || paymentResult?.checkoutRequestId || '',
+        status: 'Confirmed',
+      });
       setSuccess(true);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePay = async () => {
-    if (!isLoggedIn()) {
-      return doPay();
-    }
-    return doPay();
   };
 
   /* ── Success ── */
@@ -215,16 +202,26 @@ export default function PaymentPage() {
             </div>
 
             {payable ? (
-              isLoggedIn() ? (
+              showMpesa ? (
                 <MpesaCheckout
                   amount={amount}
                   accountRef={course.name}
                   description={`Booking: ${course.name}`}
-                  onSuccess={() => { setLoading(false); setSuccess(true); }}
+                  onSuccess={(result) => doPay(result)}
+                  onError={(err) => { setLoading(false); setError(err.message || t('payment.paymentFailed')); }}
+                />
+              ) : isLoggedIn() ? (
+                <MpesaCheckout
+                  amount={amount}
+                  accountRef={course.name}
+                  description={`Booking: ${course.name}`}
+                  onSuccess={(result) => doPay(result)}
                   onError={(err) => { setLoading(false); setError(err.message || t('payment.paymentFailed')); }}
                 />
               ) : (
-                <CheckoutGate intent={{ name: course.name, price: course.price, sub: course.time, type: 'booking' }} onProceed={doPay}>
+                <CheckoutGate intent={{ name: course.name, price: course.price, sub: course.time, type: 'booking' }} onProceed={() => {
+                  setShowMpesa(true);
+                }}>
                   <button className="pay-btn pay-btn-full" disabled={loading}>
                     {loading ? t('payment.processing') : t('payment.payAmount', { amount: course.price?.split('/')[0]?.trim() || '' })}
                   </button>

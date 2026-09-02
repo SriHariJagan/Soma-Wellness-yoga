@@ -3,8 +3,14 @@ const BASE = '/api/soma';
 const PUB = '/api/public';
 
 async function jget(url) {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`GET ${url} failed: ${r.status}`);
+  const headers = {};
+  const raw = localStorage.getItem('token');
+  if (raw) headers['Authorization'] = `Bearer ${raw}`;
+  const r = await fetch(url, { headers });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    throw new Error(j?.msg || j?.message || j?.error || `GET ${url} failed: ${r.status}`);
+  }
   return r.json();
 }
 async function jpost(url, body, token) {

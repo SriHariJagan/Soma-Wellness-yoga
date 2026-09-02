@@ -5,4 +5,4 @@ Disallow: /yogaadmin
 Disallow: /profile
 Disallow: /payment
 
-Sitemap: https://somawellness.in/sitemap.xml
+Sitemap: https://somawellness.co.ke/sitemap.xml

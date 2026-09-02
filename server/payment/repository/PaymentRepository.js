@@ -5,6 +5,13 @@ const MODULE = 'PaymentRepository';
 
 export class PaymentRepository {
   async create(data) {
+    if (data.idempotencyKey) {
+      const existing = await Payment.findOne({ idempotencyKey: data.idempotencyKey }).lean();
+      if (existing) {
+        logger.info(MODULE, 'Idempotent payment hit', { paymentId: String(existing._id), idempotencyKey: data.idempotencyKey });
+        return existing;
+      }
+    }
     const payment = await Payment.create(data);
     logger.info(MODULE, 'Payment created', { paymentId: String(payment._id), label: payment.label });
     return payment;

@@ -18,15 +18,12 @@ function authHeaders() {
   };
 }
 
-// Attempt to refresh the access token using the stored refresh token.
+// Attempt to refresh the access token using the HttpOnly refresh cookie.
 async function tryRefresh() {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) return false;
   try {
     const res = await fetch(`${AUTH_URL}/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
+      credentials: "include",
     });
     if (!res.ok) return false;
     const data = await res.json();
@@ -57,8 +54,16 @@ async function api(path, { method = "GET", body, base = STUDENT_URL } = {}) {
   }
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : {};
-  if (!res.ok) throw new Error(data.error || data.message || "Request failed");
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text, error: text.slice(0, 200) }; }
+  if (!res.ok) {
+    const detailMsg = data.details ? `: ${data.details.map(d => `${d.field} ${d.message}`).join(', ')}` : '';
+    const msg = (data.error || data.message || "Request failed") + detailMsg;
+    const err = new Error(msg);
+    err.status = res.status;
+    err.details = data.details;
+    throw err;
+  }
   return data;
 }
 
@@ -75,8 +80,8 @@ export const changePassword = (currentPassword, newPassword) =>
 export const getDashboard = () => api("/dashboard");
 
 // ── Membership ─────────────────────────────────────────────
-export const renewMembership = (planMonths) => api("/membership/purchase", { method: "POST", body: { planMonths } });
-export const upgradeMembership = (planMonths) => api("/membership/purchase", { method: "POST", body: { planMonths } });
+export const renewMembership = (planId) => api("/membership/purchase", { method: "POST", body: { planId } });
+export const upgradeMembership = (planId) => api("/membership/purchase", { method: "POST", body: { planId } });
 export const pauseMembership = (days) => api("/membership/pause", { method: "POST", body: { days } });
 export const resumeMembership = () => api("/membership/resume", { method: "POST" });
 
@@ -116,10 +121,27 @@ export const markAllNotificationsRead = () => api("/notifications/read-all", { m
 export const archiveNotification = (id) => api(`/notifications/${id}/archive`, { method: "PATCH" });
 export const deleteNotification = (id) => api(`/notifications/${id}`, { method: "DELETE" });
 
-// ── Payment Verification ────────────────────────────────────
+// ── Payment Verification — M-Pesa only (Razorpay removed) ─────────
 export const verifyPayment = (payload) => {
+  // Razorpay verify is deprecated — now routes to M-Pesa query for backward compat
   const API_DOMAIN = import.meta.env.VITE_API_URL || "";
   const token = localStorage.getItem("token");
+  // If payload contains M-Pesa fields, use mpesa query
+  if (payload.checkoutRequestId || payload.mpesaReceiptNumber) {
+    return fetch(`${API_DOMAIN}/api/mpesa/query`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ checkoutRequestId: payload.checkoutRequestId || payload.mpesaReceiptNumber }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || data.error || "M-Pesa verification failed");
+      return data;
+    });
+  }
+  // Legacy Razorpay path — kept for backward compat, now returns mock success in dev
   return fetch(`${API_DOMAIN}/api/verify-payment`, {
     method: "POST",
     headers: {
@@ -138,7 +160,7 @@ export const verifyPayment = (payload) => {
 // ── Cart ────────────────────────────────────────────────────
 export const getCart = () => api("/cart");
 export const getCartCount = () => api("/cart/count");
-export const addToCart = (itemType, itemId) => api("/cart/add", { method: "POST", body: { itemType, itemId } });
+export const addToCart = (itemType, itemId, quantity) => api("/cart/add", { method: "POST", body: { itemType, itemId, ...(quantity !== undefined && { quantity }) } });
 export const removeFromCart = (itemId) => api(`/cart/item/${itemId}`, { method: "DELETE" });
 export const applyCouponToCart = (code) => api("/cart/apply-coupon", { method: "POST", body: { code } });
 export const removeCouponFromCart = () => api("/cart/remove-coupon", { method: "POST" });
@@ -237,8 +259,16 @@ async function blogApi(path, opts = {}) {
     res = await fetch(`${base}${path}`, fetchOpts);
   }
   const text = await res.text();
-  const data = text ? JSON.parse(text) : {};
-  if (!res.ok) throw new Error(data.error || data.message || "Request failed");
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text, error: text.slice(0, 300) }; }
+  if (!res.ok) {
+    const detailMsg = data.details ? `: ${data.details.map(d => `${d.field} ${d.message}`).join(', ')}` : '';
+    const msg = (data.error || data.message || "Request failed") + detailMsg;
+    const err = new Error(msg);
+    err.status = res.status;
+    err.details = data.details;
+    throw err;
+  }
   return data;
 }
 

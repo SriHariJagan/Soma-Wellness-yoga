@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DOMPurify from "dompurify";
 import s from "./Dashboard.shared.module.css";
 import {
   getNotifications,
@@ -268,9 +269,7 @@ export default function NotificationsPage({ student, reload }) {
                             fontSize: 12.5, color: "var(--color-text-secondary)", lineHeight: 1.5, margin: 0,
                             display: "-webkit-box", WebkitLineClamp: isExpanded ? "unset" : 2,
                             WebkitBoxOrient: "vertical", overflow: isExpanded ? "visible" : "hidden",
-                          }}>
-                            {n.message}
-                          </p>
+                          }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(n.message || '') }} />
 
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
                             <span style={{ fontSize: 11, color: "var(--color-text-muted)", display: "inline-flex", alignItems: "center", gap: 3 }}>

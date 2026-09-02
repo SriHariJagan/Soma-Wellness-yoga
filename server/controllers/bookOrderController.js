@@ -195,7 +195,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
 
   const initiateCheckout = async () => {
     const receipt = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const razorpayOrder = await orderService.createRazorpayOrder(Math.round(total * 100), receipt);
+    const mpesaOrder = await orderService.createMpesaOrder(Math.round(total * 100), receipt);
 
     const paymentItems = lines.map((l) => ({
       itemType: 'book',
@@ -245,8 +245,9 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       items: paymentItems,
       amount: Math.round(total * 100),
       currency: 'KES',
-      gateway: 'razorpay',
-      razorpayOrderId: razorpayOrder.id,
+      gateway: 'mpesa',
+      mpesaOrderId: mpesaOrder.id,
+      razorpayOrderId: mpesaOrder.id,
       paymentStatus: 'pending',
       pendingAt: now,
       idempotencyKey: idempotencyKey || undefined,
@@ -261,7 +262,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       attempts: [{
         attempt: 1,
         action: 'book_checkout',
-        gatewayResponse: { razorpayOrderId: razorpayOrder.id, amount: razorpayOrder.amount },
+        gatewayResponse: { mpesaOrderId: mpesaOrder.id, amount: mpesaOrder.amount },
         timestamp: now,
       }],
     });
@@ -280,7 +281,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       couponCode,
       couponDiscount,
       status: 'payment_pending',
-      paymentMethod: 'Razorpay',
+      paymentMethod: 'M-Pesa',
       transactionId: idempotencyKey || payment._id.toString(),
       payment: payment._id,
       itemCount: bookItems.length,
@@ -346,7 +347,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
 
     await CartItem.deleteMany({ cart: items[0].cart, itemType: 'book' });
 
-    return { payment, order, razorpayOrder };
+    return { payment, order, mpesaOrder };
   };
 
   let result;
@@ -364,11 +365,11 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
     throw err;
   }
 
-  const { payment, order, razorpayOrder } = result;
+  const { payment, order, mpesaOrder } = result;
 
   res.status(201).json({
     success: true,
-    msg: 'Book order initiated. Complete payment to confirm.',
+    msg: 'Book order initiated. Complete M-Pesa payment to confirm.',
     order: {
       _id: order._id,
       orderNumber: order.orderNumber,
@@ -382,11 +383,10 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       status: payment.paymentStatus,
       method: payment.gateway,
     },
-    razorpay: {
-      order_id: razorpayOrder.id,
-      amount: razorpayOrder.amount,
-      currency: razorpayOrder.currency,
-      key: process.env.RAZORPAY_KEY_ID,
+    mpesa: {
+      order_id: mpesaOrder.id,
+      amount: mpesaOrder.amount,
+      currency: mpesaOrder.currency,
     },
     shipping: {
       charge: shipping.shippingCharge,

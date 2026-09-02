@@ -124,39 +124,60 @@ class MpesaClient {
    * @returns {Object} Daraja query response
    */
   async queryStatus(checkoutRequestId) {
+    if (!checkoutRequestId) throw new Error("checkoutRequestId is required");
     const timestamp = this._timestamp();
     const password = this._generatePassword(timestamp);
-    const token = await this.getAccessToken();
-
-    const url = `${DARAJA_BASE}/mpesa/transactionstatus/v1/query`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        Initiator: process.env.MPESA_INITIATOR_NAME || "soma",
-        SecurityCredential: process.env.MPESA_SECURITY_CREDENTIAL || "",
-        CommandID: "TransactionStatusQuery",
-        TransactionID: checkoutRequestId,
-        PartyA: this.shortcode,
-        IdentifierType: "4",
-        ResultURL: this.callbackUrl,
-        QueueTimeOutURL: this.callbackUrl,
-        Remarks: "Status query",
-        Occasion: "Status check",
-      }),
-      signal: AbortSignal.timeout(this.timeout * 1000),
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      logger.error(MODULE, "Query status HTTP error", { status: res.status, body: text });
-      throw new Error(`Daraja query failed: ${res.status}`);
+    let token;
+    try {
+      token = await this.getAccessToken();
+    } catch (err) {
+      logger.error(MODULE, "Query status - failed to get access token", { error: err.message });
+      // Return pending status instead of throwing 500 — allows frontend to keep polling or show retry
+      return { ResultCode: 1037, ResultDesc: "Pending - unable to verify status, please wait", _error: err.message };
     }
 
-    return res.json();
+    const url = `${DARAJA_BASE}/mpesa/transactionstatus/v1/query`;
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Initiator: process.env.MPESA_INITIATOR_NAME || "soma",
+          SecurityCredential: process.env.MPESA_SECURITY_CREDENTIAL || "",
+          CommandID: "TransactionStatusQuery",
+          TransactionID: checkoutRequestId,
+          PartyA: this.shortcode,
+          IdentifierType: "4",
+          ResultURL: this.callbackUrl,
+          QueueTimeOutURL: this.callbackUrl,
+          Remarks: "Status query",
+          Occasion: "Status check",
+        }),
+        signal: AbortSignal.timeout(this.timeout * 1000),
+      });
+
+      const text = await res.text().catch(() => "");
+      let data;
+      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+      if (!res.ok) {
+        logger.warn(MODULE, "Query status returned non-OK, treating as pending", { status: res.status, body: text.slice(0, 500) });
+        // Daraja often returns 400 for pending/unknown transaction — treat as pending, not 500
+        return { ResultCode: 1037, ResultDesc: data.errorMessage || data.errorDesc || `Pending (${res.status})`, _httpStatus: res.status, ...data };
+      }
+
+      return data;
+    } catch (err) {
+      if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+        logger.warn(MODULE, "Query status timeout", { checkoutRequestId });
+        return { ResultCode: 1037, ResultDesc: "Pending - verification timeout, retrying", _error: err.message };
+      }
+      logger.error(MODULE, "Query status error", { error: err.message });
+      return { ResultCode: 1037, ResultDesc: "Pending - verification error, retrying", _error: err.message };
+    }
   }
 
   /** Kenya phone normalisation: strip +, leading 0, etc. → 254xxxxxxxxx */

@@ -5,8 +5,7 @@ import Consultation from '../../models/Consultation.js';
 import Course from '../../models/Course.js';
 import Book from '../../models/Book.js';
 import Settings from '../../models/Settings.js';
-import razorpay from '../../config/razorpay.js';
-import { PaymentInitiationError, GatewayError } from '../errors/PaymentErrors.js';
+import { PaymentInitiationError } from '../errors/PaymentErrors.js';
 import logger from '../../notification/logger.js';
 
 const MODULE = 'OrderService';
@@ -157,30 +156,25 @@ export class OrderService {
     return resolvedItems.reduce((sum, item) => sum + item.totalPrice, 0);
   }
 
+  // M-Pesa only — create a pending order without external gateway call.
+  // Daraja STK Push is initiated separately via /api/mpesa/stkpush and
+  // reconciled via callback. This just creates a local pending record.
   async createRazorpayOrder(amount, receipt) {
-    const options = {
+    logger.info(MODULE, 'Creating M-Pesa pending order (Razorpay removed)', { receipt, amount });
+    return {
+      id: `order_mpesa_${receipt}`,
       amount,
       currency: 'KES',
       receipt,
+      status: 'created',
+      gateway: 'mpesa',
+      _mock: false,
     };
+  }
 
-    try {
-      const order = await razorpay.orders.create(options);
-      logger.info(MODULE, 'Razorpay order created', {
-        razorpayOrderId: order.id,
-        amount: order.amount,
-      });
-      return order;
-    } catch (err) {
-      logger.error(MODULE, 'Razorpay order creation failed', {
-        error: err.message,
-        statusCode: err.statusCode,
-      });
-      throw new GatewayError(
-        err.statusCode === 401 ? 'Razorpay authentication failed' : 'Failed to create payment order',
-        { razorpayError: err.message },
-      );
-    }
+  // Preferred alias for new code
+  async createMpesaOrder(amount, receipt) {
+    return this.createRazorpayOrder(amount, receipt);
   }
 }
 

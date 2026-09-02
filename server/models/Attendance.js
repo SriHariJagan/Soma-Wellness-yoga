@@ -31,6 +31,8 @@ const AttendanceSchema = new mongoose.Schema(
 
 // A student can only have one attendance record per calendar day.
 AttendanceSchema.index({ user: 1, date: 1 }, { unique: true });
+AttendanceSchema.index({ entityType: 1, entityId: 1 });
+AttendanceSchema.index({ invitation: 1 });
 
 const Attendance = mongoose.models.Attendance || mongoose.model('Attendance', AttendanceSchema);
 export default Attendance;

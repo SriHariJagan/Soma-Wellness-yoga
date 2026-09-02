@@ -60,6 +60,11 @@ export class RefundService {
 
       let razorpayRefund;
       try {
+        if (!payment.razorpayPaymentId) {
+          throw new GatewayError('No gateway payment ID — cannot process external refund', {
+            paymentId: String(payment._id),
+          });
+        }
         razorpayRefund = await razorpay.payments.refund(payment.razorpayPaymentId, {
           amount: refundAmount,
           notes: {
@@ -68,6 +73,9 @@ export class RefundService {
             payment_id: String(payment._id),
           },
         });
+        if (!razorpayRefund?.id) {
+          throw new GatewayError('Gateway returned empty refund response', {});
+        }
       } catch (err) {
         await session.abortTransaction();
         logger.error(MODULE, 'Razorpay refund API call failed', {

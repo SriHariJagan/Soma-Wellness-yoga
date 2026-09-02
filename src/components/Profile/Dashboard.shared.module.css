@@ -468,6 +468,22 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Cart layout — responsive ── */
+.cartGrid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .cartGrid {
+    grid-template-columns: 1fr;
+  }
+  .cartGrid > div:nth-child(2) .card {
+    position: static !important;
+  }
+}
+
 /* ─────────────────────────────────────────────
    📱 MOBILE & TABLET
 ───────────────────────────────────────────── */

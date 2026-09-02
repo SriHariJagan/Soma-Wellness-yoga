@@ -123,24 +123,19 @@ app.use(
   }),
 );
 
-// Security headers with strict CSP
+// Security headers with strict CSP — M-Pesa only (Razorpay removed)
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          "https://checkout.razorpay.com",
-        ],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "https://api.razorpay.com"],
+        connectSrc: ["'self'", "https://sandbox.safaricom.co.ke", "https://api.safaricom.co.ke"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
-        frameSrc: ["https://api.razorpay.com"],
       },
     },
     hsts: {
@@ -216,11 +211,11 @@ app.get("/", (req, res) =>
   }),
 );
 
-app.get("/api/health", asyncHandler(monCtrl.healthSummary));
-app.get("/api/health/smtp", asyncHandler(monCtrl.healthSmtp));
-app.get("/api/health/mongodb", asyncHandler(monCtrl.healthMongo));
-app.get("/api/health/queue", asyncHandler(monCtrl.healthQueue));
-app.get("/api/health/scheduler", asyncHandler(monCtrl.healthScheduler));
+app.get("/api/health", requireAuth, requireAdmin, asyncHandler(monCtrl.healthSummary));
+app.get("/api/health/smtp", requireAuth, requireAdmin, asyncHandler(monCtrl.healthSmtp));
+app.get("/api/health/mongodb", requireAuth, requireAdmin, asyncHandler(monCtrl.healthMongo));
+app.get("/api/health/queue", requireAuth, requireAdmin, asyncHandler(monCtrl.healthQueue));
+app.get("/api/health/scheduler", requireAuth, requireAdmin, asyncHandler(monCtrl.healthScheduler));
 
 app.use("/api", paymentRoutes);
 app.use("/api/auth", authRoutes);

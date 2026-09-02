@@ -121,10 +121,11 @@ export const listAssets = asyncHandler(async (req, res) => {
   const query = {};
 
   if (search) {
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query.$or = [
-      { name: new RegExp(search, 'i') },
-      { category: new RegExp(search, 'i') },
-      { originalName: new RegExp(search, 'i') },
+      { name: new RegExp(safeSearch, 'i') },
+      { category: new RegExp(safeSearch, 'i') },
+      { originalName: new RegExp(safeSearch, 'i') },
     ];
   }
   if (type) query.type = type;

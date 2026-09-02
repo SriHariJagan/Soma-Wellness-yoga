@@ -6,6 +6,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { mpesaClient, mpesaCallbackService } from "../payment/gateways/mpesa/index.js";
 import { PaymentRepository } from "../payment/repository/PaymentRepository.js";
+import { PaymentService } from "../payment/PaymentService.js";
 import logger from "../notification/logger.js";
 
 const MODULE = "MpesaCtrl";
@@ -14,7 +15,7 @@ const paymentRepo = new PaymentRepository();
 // ── POST /api/mpesa/stkpush ──────────────────────────────────
 /** Initiate STK Push for a membership/service payment */
 export const initiateStkPush = asyncHandler(async (req, res) => {
-  const { phone, amount, accountRef, description, itemType, itemId } = req.body;
+  const { phone, amount, accountRef, description, itemType, itemId, paymentId, orderId } = req.body;
 
   if (!phone || !amount) {
     throw ApiError.badRequest("phone and amount are required");
@@ -27,15 +28,32 @@ export const initiateStkPush = asyncHandler(async (req, res) => {
     throw ApiError.serviceUnavailable("MPESA payment gateway is not configured");
   }
 
-  // Create a pending payment record first
-  const payment = await paymentRepo.createManualPayment({
-    user: req.user?._id || null,
-    label: description || "MPESA STK Push Payment",
-    amount: Math.round(Number(amount) * 100), // Store in cents
-    description: `MPESA STK: ${description || "Payment"}`,
-    adminId: null,
-    gateway: "mpesa",
-  });
+  let payment;
+
+  if (paymentId) {
+    // Reuse existing payment record (from cart checkout or other flow)
+    payment = await paymentRepo.findById(paymentId);
+    if (!payment) {
+      throw ApiError.badRequest("Payment not found");
+    }
+    // Link orderId if provided
+    if (orderId) {
+      await paymentRepo.addAuditEntry(payment._id, {
+        action: "mpesa_stk_linked_order",
+        orderId: orderId,
+      });
+    }
+  } else {
+    // Create a new pending payment record
+    payment = await paymentRepo.createManualPayment({
+      user: req.user?._id || null,
+      label: description || "MPESA STK Push Payment",
+      amount: Math.round(Number(amount) * 100),
+      description: `MPESA STK: ${description || "Payment"}`,
+      adminId: null,
+      gateway: "mpesa",
+    });
+  }
 
   try {
     const stkResponse = await mpesaClient.stkPush({
@@ -92,16 +110,46 @@ export const stkCallback = asyncHandler(async (req, res) => {
       const payment = await paymentRepo.findByMpesaCheckoutRequestId(result.checkoutRequestId);
       if (payment) {
         if (result.success) {
-          await paymentRepo.markMpesaPaymentSuccess(payment._id, {
-            mpesaReceiptNumber: result.mpesaReceiptNumber,
-            transactionDate: result.transactionDate,
-            phoneNumber: result.phoneNumber,
-            amount: result.amount,
-          });
-          logger.info(MODULE, "MPESA payment reconciled", {
-            paymentId: payment._id,
-            receipt: result.mpesaReceiptNumber,
-          });
+          // If payment has a user, use PaymentService.verify() which handles
+          // both status update AND order fulfillment in one atomic operation
+          if (payment.user) {
+            try {
+              const paymentService = new PaymentService();
+              await paymentService.verify({
+                user: payment.user,
+                mpesaOrderId: payment.mpesaOrderId || payment.razorpayOrderId,
+                mpesaReceiptNumber: result.mpesaReceiptNumber,
+              });
+              logger.info(MODULE, "MPESA payment verified and fulfilled", {
+                paymentId: payment._id,
+                receipt: result.mpesaReceiptNumber,
+              });
+            } catch (verifyErr) {
+              // If verify fails (e.g. already captured), fall back to simple mark
+              logger.warn(MODULE, "PaymentService.verify failed, falling back to markMpesaPaymentSuccess", {
+                paymentId: payment._id,
+                error: verifyErr.message,
+              });
+              await paymentRepo.markMpesaPaymentSuccess(payment._id, {
+                mpesaReceiptNumber: result.mpesaReceiptNumber,
+                transactionDate: result.transactionDate,
+                phoneNumber: result.phoneNumber,
+                amount: result.amount,
+              });
+            }
+          } else {
+            // No user linked — just mark payment as successful
+            await paymentRepo.markMpesaPaymentSuccess(payment._id, {
+              mpesaReceiptNumber: result.mpesaReceiptNumber,
+              transactionDate: result.transactionDate,
+              phoneNumber: result.phoneNumber,
+              amount: result.amount,
+            });
+            logger.info(MODULE, "MPESA payment reconciled (no user)", {
+              paymentId: payment._id,
+              receipt: result.mpesaReceiptNumber,
+            });
+          }
         } else {
           await paymentRepo.updatePaymentStatus(payment._id, "failed", "initiated");
           logger.warn(MODULE, "MPESA payment marked failed", {

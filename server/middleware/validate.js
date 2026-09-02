@@ -23,7 +23,7 @@ export const schemas = {
   register: z.object({
     name: z.string().min(1, 'Name is required').max(100).trim(),
     email: z.string().email('Invalid email').max(255).trim().toLowerCase(),
-    password: z.string().min(6, 'Password must be at least 6 characters').max(128).optional(),
+    password: z.string().min(8, 'Password must be at least 8 characters').max(128).optional(),
     phone: z.string().max(20).optional().default(''),
     city: z.string().max(100).optional().default(''),
     style: z.string().optional().default('Hatha'),
@@ -41,12 +41,12 @@ export const schemas = {
   }),
 
   resetPassword: z.object({
-    newPassword: z.string().min(6, 'Password must be at least 6 characters').max(128),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters').max(128),
   }),
 
   changePassword: z.object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z.string().min(6, 'New password must be at least 6 characters').max(128),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters').max(128),
   }),
 
   updateProfile: z.object({
@@ -56,7 +56,8 @@ export const schemas = {
     style: z.string().optional(),
     level: z.string().optional(),
     bio: z.string().max(500).optional(),
-    newPassword: z.string().min(6).max(128).optional(),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters').max(128).optional(),
+    currentPassword: z.string().min(1).max(128).optional(),
   }),
 
   createOrder: z.object({
@@ -79,7 +80,7 @@ export const schemas = {
     phone: z.string().min(1, 'Phone is required').max(20).trim(),
     city: z.string().max(100).optional().default(''),
     courseName: z.string().min(1, 'Course name is required').max(200).trim(),
-    coursePrice: z.string().min(1, 'Course price is required').max(50),
+    coursePrice: z.union([z.number(), z.string().min(1, 'Course price is required').max(50)]),
     courseTime: z.string().max(100).optional().default(''),
     paymentMethod: z.string().max(50).optional().default('UPI'),
     transactionId: z.string().max(200).optional().default(''),

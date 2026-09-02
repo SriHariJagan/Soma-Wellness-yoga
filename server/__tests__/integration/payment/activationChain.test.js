@@ -227,11 +227,9 @@ describe('Payment Activation Chain', () => {
   });
 
   describe('PaymentService.initiate()', () => {
-    it('should create a pending payment and return Razorpay order', async () => {
+    it('should create a pending payment and return M-Pesa order', async () => {
       const svc = new PaymentService();
       const user = makeUser();
-
-      mockRazorpayOrders.create.mockResolvedValue({ id: 'order_razor123', amount: 50000, currency: 'KES', status: 'created' });
 
       const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Gold Pass', quantity: 1, unitPrice: 50000, totalPrice: 50000 }];
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
@@ -242,48 +240,40 @@ describe('Payment Activation Chain', () => {
       expect(result).toBeDefined();
       expect(result.paymentStatus).toBe('pending');
       expect(result.amount).toBe(50000);
-      expect(result.razorpayOrderId).toBe('order_razor123');
-      // Verify that the Razorpay order was created
-      expect(mockRazorpayOrders.create).toHaveBeenCalled();
+      expect(result.gateway).toBe('mpesa');
+      // M-Pesa order id should be present (either mpesaOrderId or razorpayOrderId for compat)
+      expect(result.mpesaOrderId || result.razorpayOrderId).toBeDefined();
     });
   });
 
   describe('PaymentService.verify()', () => {
-    it('should activate items after successful payment verification', async () => {
+    it('should activate items after successful M-Pesa payment verification', async () => {
       const svc = new PaymentService();
       const user = makeUser();
       const planId = new mongoose.Types.ObjectId();
       const items = [{ itemType: 'membership', itemId: planId, name: 'Monthly Pass', quantity: 1, unitPrice: 1000, totalPrice: 1000 }];
 
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
-      mockRazorpayOrders.create.mockResolvedValue({ id: 'order_verify1', amount: 1000, currency: 'KES', status: 'created' });
 
       // Initiate with user._id to match production flow (controllers pass req.user._id)
       const payment = await svc.initiate({ user: user._id, items, label: 'Monthly Pass' });
-
-      // Mock verification helpers
-      svc.verificationService.fetchPaymentFromGateway = jest.fn(async () => ({
-        id: 'pay_test123', order_id: 'order_verify1', status: 'captured', amount: 1000, currency: 'KES',
-      }));
 
       svc.invoiceService.generateInvoiceNumber = jest.fn(async () => 'INV-2026-000001');
 
       const mockActivate = jest.fn(async () => {});
       svc.fulfillmentService.activateItem = mockActivate;
 
-      // Compute valid HMAC signature
-      const crypto = await import('crypto');
-      process.env.RAZORPAY_KEY_SECRET = 'test_secret';
-      const expectedSig = crypto
-        .createHmac('sha256', 'test_secret')
-        .update('order_verify1|pay_test123')
-        .digest('hex');
+      // M-Pesa verification — uses mpesaReceiptNumber, no Razorpay signature needed
+      const mpesaReceipt = 'QGH7K9L2M1';
+      const orderId = payment.mpesaOrderId || payment.razorpayOrderId;
 
       const result = await svc.verify({
         user: user._id,
-        razorpayOrderId: 'order_verify1',
-        razorpayPaymentId: 'pay_test123',
-        razorpaySignature: expectedSig,
+        mpesaOrderId: orderId,
+        mpesaReceiptNumber: mpesaReceipt,
+        razorpayOrderId: orderId,
+        razorpayPaymentId: mpesaReceipt,
+        razorpaySignature: mpesaReceipt,
       });
 
       expect(result).toBeDefined();

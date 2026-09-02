@@ -9,6 +9,8 @@ import Membership from '../models/Membership.js';
 import UserService from '../models/UserService.js';
 import FreeTrial from '../models/FreeTrial.js';
 import ActivityLog from '../models/ActivityLog.js';
+import Course from '../models/Course.js';
+import Workshop from '../models/Workshop.js';
 import { notify } from './notificationService.js';
 import { isSingleSessionService } from '../utils/serviceHelpers.js';
 
@@ -47,19 +49,25 @@ export async function markAttendanceAtomic(params) {
   const day = fmtDate(date);
   const now = new Date();
 
-  // Upsert the attendance record
+  // Find existing record to check if it is locked
+  const existing = await Attendance.findOne({ user, date: day });
+  if (existing && existing.locked) {
+    return { attendance: existing, updates: [], skipped: true, reason: 'locked' };
+  }
+
+  // Upsert the attendance record (skip if record is locked)
   const record = await Attendance.findOneAndUpdate(
     { user, date: day },
     {
-      user,
-      date: day,
-      status,
-      mode: mode || 'offline',
-      classType: classType || 'General',
-      session: session || null,
-      invitation: invitation || null,
-      entityType: entityType || 'none',
-      entityId: entityId || null,
+      $set: {
+        status,
+        mode: mode || 'offline',
+        classType: classType || 'General',
+        session: session || null,
+        invitation: invitation || null,
+        entityType: entityType || 'none',
+        entityId: entityId || null,
+      },
     },
     { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
   );
@@ -87,6 +95,19 @@ export async function markAttendanceAtomic(params) {
 
   // ---- 2. Update the entity that owns this session ----
   if (entityType && entityId) {
+    // Verify enrollment before recording attendance for course/workshop
+    if (entityType === 'course') {
+      const course = await Course.findById(entityId);
+      if (!course || !course.enrolledUsers.some((uid) => uid.equals(user))) {
+        throw Object.assign(new Error('User is not enrolled in this course'), { statusCode: 403 });
+      }
+    } else if (entityType === 'workshop') {
+      const workshop = await Workshop.findById(entityId);
+      if (!workshop || !workshop.registrations.some((r) => r.user && r.user.equals(user))) {
+        throw Object.assign(new Error('User is not registered for this workshop'), { statusCode: 403 });
+      }
+    }
+
     // A session is "completed" (counted) only when present, zoom, or late
     const isCompleted = status === 'present' || status === 'zoom' || status === 'late';
 

@@ -44,7 +44,9 @@ router.get('/services', publicCache, asyncHandler(async (req, res) => {
     .lean();
   res.json(services);
 }));
-router.get('/courses', publicCache, asyncHandler(async (req, res) => res.json(await Course.find({ active: true }).lean())));
+router.get('/courses', publicCache, asyncHandler(async (req, res) => {
+  res.json(await Course.find({ active: true }).select('-enrolledUsers -earlyEnrolled').lean());
+}));
 router.get('/plans', publicCache, asyncHandler(async (req, res) => res.json(await Plan.find({ active: true }).sort({ displayOrder: 1 }).lean())));
 router.get('/batches', publicCache, asyncHandler(async (req, res) => res.json(await Batch.find({ status: { $ne: 'Closed' } }).sort({ createdAt: -1 }).lean())));
 router.get('/workshops', publicCache, asyncHandler(async (req, res) => res.json(await Workshop.find({ status: 'available', date: { $gte: new Date() } }).sort({ date: 1 }).lean())));

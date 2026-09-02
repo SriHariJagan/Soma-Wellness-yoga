@@ -65,13 +65,12 @@ export function AuthProvider({ children }) {
       const API_URL = import.meta.env.VITE_API_URL || '';
       await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({}),
       });
     } catch {}
     localStorage.removeItem(STORAGE_USER);
     localStorage.removeItem(STORAGE_TOKEN);
-    localStorage.removeItem('refreshToken');
     clearPendingIntent();
     setUser(null);
   }, []);

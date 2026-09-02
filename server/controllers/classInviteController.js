@@ -423,9 +423,10 @@ export const getInvites = asyncHandler(async (req, res) => {
   const query = { inviteCategory };
   if (status && status !== 'all') query.status = status;
   if (search) {
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { instructor: { $regex: search, $options: 'i' } },
+      { title: { $regex: safeSearch, $options: 'i' } },
+      { instructor: { $regex: safeSearch, $options: 'i' } },
     ];
   }
   const skip = (parseInt(page) - 1) * parseInt(limit);

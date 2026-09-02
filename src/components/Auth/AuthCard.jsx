@@ -98,7 +98,6 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
           planActive: data.user?.planActive || (data.user?.planMonths > 0) || false,
         };
         localStorage.setItem("token", data.token || "");
-        if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
         localStorage.setItem("user", JSON.stringify(cleanUser));
         if (onLoginSuccess) onLoginSuccess(data.token || "", cleanUser);
         const rt = redirectTo || new URLSearchParams(window.location.search).get("redirectTo");

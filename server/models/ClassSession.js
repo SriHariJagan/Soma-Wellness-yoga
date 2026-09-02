@@ -13,7 +13,7 @@ const ClassSessionSchema = new mongoose.Schema(
     zoomUrl: { type: String, default: '' },
     batch:   { type: mongoose.Schema.Types.ObjectId, ref: 'Batch', default: null },
 
-    capacity:     { type: Number, default: 30 },
+    capacity:     { type: Number, default: 30, min: 1 },
     enrolledUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
     status:       { type: String, enum: CLASS_SESSION_STATUSES, default: 'upcoming', index: true },

@@ -249,7 +249,7 @@ export const verifyOtp = asyncHandler(async (req, res) => {
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV?.toLowerCase() === 'production',
     sameSite: 'strict',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/api/auth',

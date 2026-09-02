@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 import { ORDER_STATUSES } from '../shared/constants/index.js';
 
 const OrderSchema = new mongoose.Schema(
@@ -77,7 +78,7 @@ const OrderSchema = new mongoose.Schema(
 OrderSchema.pre('save', function () {
   if (!this.orderNumber) {
     const year = new Date().getFullYear();
-    const rand = Math.floor(100000 + Math.random() * 900000);
+    const rand = crypto.randomBytes(4).readUInt32BE(0) % 900000 + 100000;
     this.orderNumber = `ORD-${year}-${rand}`;
   }
 });

@@ -20,13 +20,10 @@ function authHeaders() {
 }
 
 async function tryRefresh() {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) return false;
   try {
     const res = await fetch(`${AUTH_URL}/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
+      credentials: "include",
     });
     if (!res.ok) return false;
     const data = await res.json();

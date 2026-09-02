@@ -43,6 +43,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
   const [couponMsg, setCouponMsg] = useState({ text: "", type: "" });
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState(null);
+  const [mpesaCheckout, setMpesaCheckout] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("mpesa");
   const [toast, setToast] = useState(null);
 
@@ -56,6 +57,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
       setLoading(true);
       const data = await getCart();
       setCartData(data);
+      setCouponMsg({ text: "", type: "" });
     } catch { setCartData(null); }
     finally { setLoading(false); }
   }, []);
@@ -124,16 +126,141 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
         return;
       }
 
-      // For M-Pesa, redirect to M-Pesa checkout
-      setCheckoutResult(res);
+      // For M-Pesa, show the M-Pesa checkout form
+      setMpesaCheckout(res);
       window.dispatchEvent(new CustomEvent("cart-update", { detail: { count: 0 } }));
-      showToast("Enrollment successful!", "success");
-      if (reloadParent) setTimeout(reloadParent, 500);
       setCheckingOut(false);
     } catch (err) {
-      setCouponMsg({ text: err.message || "Checkout failed. Please try again.", type: "error" });
+      const msg = err.message || "Checkout failed. Please try again.";
+      // Map gateway errors to user-friendly message (dev note logged, not shown to user)
+      const isGateway = msg.includes("502") || msg.toLowerCase().includes("gateway") || msg.toLowerCase().includes("razorpay") || err.status === 502;
+      if (isGateway && import.meta.env.DEV) {
+        console.warn("Payment gateway error (dev — will use mock on retry):", msg);
+      }
+      const friendly = isGateway
+        ? "Payment service temporarily unavailable. Your cart is saved — please try again in a moment or contact hello@somawellness.co.ke if it persists."
+        : msg;
+      setCouponMsg({ text: friendly, type: "error" });
       setCheckingOut(false);
     }
+  }
+
+  if (mpesaCheckout) {
+    const mpesaAmount = mpesaCheckout.order?.total || summary?.total || 0;
+    const orderRef = mpesaCheckout.order?.orderNumber || `order_${Date.now()}`;
+
+    return (
+      <div>
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              style={{
+                position: "fixed", top: 16, right: 16, zIndex: 9999,
+                padding: "12px 20px", borderRadius: 12,
+                background: toast.type === "success"
+                  ? "linear-gradient(135deg, #2E7D5B, #3a9a73)"
+                  : "linear-gradient(135deg, #DC2626, #EF4444)",
+                color: "#fff", fontSize: 13, fontWeight: 600,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                display: "flex", alignItems: "center", gap: 8,
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              <i className={`ti ${toast.type === "success" ? "ti-circle-check" : "ti-info-circle"}`} />
+              {toast.message}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <p className={s.pageTitle}>{t("payment.payWithMpesa")}</p>
+
+        <div className={s.card} style={{ padding: 0, overflow: "hidden" }}>
+          {/* M-Pesa Header Banner */}
+          <div style={{
+            background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 60%, #3a9a73 100%)",
+            padding: "24px 24px 20px",
+            position: "relative",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+              background: "linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.08) 55%, transparent 80%)",
+              pointerEvents: "none",
+            }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)",
+                display: "grid", placeItems: "center",
+              }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.64c.09 1.71 1.37 2.66 2.66 2.95V19h2.07v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.79-3.42z" fill="white"/>
+                </svg>
+              </div>
+              <div>
+                <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, margin: 0, fontWeight: 500, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                  Secure Payment
+                </p>
+                <p style={{ color: "#fff", fontSize: 16, margin: 0, fontWeight: 700 }}>
+                  M-PESA STK Push
+                </p>
+              </div>
+            </div>
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "flex-end",
+            }}>
+              <div>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, margin: "0 0 2px", fontWeight: 500 }}>
+                  Order #{orderRef}
+                </p>
+                <p style={{ color: "#fff", fontSize: 28, margin: 0, fontWeight: 800, letterSpacing: "-0.02em" }}>
+                  KES {mpesaAmount.toLocaleString()}
+                </p>
+              </div>
+              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, margin: 0 }}>
+                {mpesaCheckout.items?.length || 0} item(s)
+              </p>
+            </div>
+          </div>
+
+          {/* Payment Form */}
+          <div style={{ padding: "20px 24px 24px" }}>
+            <MpesaCheckout
+              amount={mpesaAmount}
+              accountRef={orderRef}
+              description={`Cart checkout – ${mpesaCheckout.items?.length || 0} item(s)`}
+              paymentId={mpesaCheckout.payment?._id}
+              orderId={mpesaCheckout.order?._id}
+              onSuccess={(result) => {
+                setMpesaCheckout(null);
+                setCheckoutResult(mpesaCheckout);
+                showToast("Payment successful!", "success");
+                if (reloadParent) setTimeout(reloadParent, 500);
+              }}
+              onError={(err) => {
+                showToast(err.message || "Payment failed. Please try again.", "error");
+              }}
+            />
+
+            <button
+              onClick={() => setMpesaCheckout(null)}
+              style={{
+                width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 12,
+                fontSize: 13, fontWeight: 600, border: "2px solid var(--color-border-light, #e8e2d8)",
+                background: "var(--color-bg-secondary, #faf8f5)", color: "var(--color-dark-secondary, #6B5E4E)",
+                cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                transition: "all 0.2s",
+              }}
+            >
+              ← {t("cart.continueShopping")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (checkoutResult) {
@@ -269,7 +396,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
           </div>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20, alignItems: "start" }}>
+        <div className={s.cartGrid}>
           {/* Items */}
           <div>
             <AnimatePresence initial={false}>
@@ -451,12 +578,12 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
               {isLoggedIn() ? (
                 <motion.button
                   onClick={handleCheckout}
-                  disabled={checkingOut || (hasBooks && hasNonBooks)}
+                  disabled={checkingOut || (hasBooks && hasNonBooks) || loading || !summary || summary.itemCount === 0}
                   whileTap={{ scale: 0.97 }}
                   style={{
                     width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 10,
                     fontSize: 13, fontWeight: 700, border: "none",
-                    cursor: checkingOut || (hasBooks && hasNonBooks) ? "not-allowed" : "pointer",
+                    cursor: checkingOut || (hasBooks && hasNonBooks) || loading ? "not-allowed" : "pointer",
                     background: checkingOut ? "#F5F0EB" : "linear-gradient(135deg, #F97316, #EA580C)",
                     color: checkingOut ? "#9C8E7C" : "#fff",
                     fontFamily: "'Inter', sans-serif", transition: "all 0.2s",
@@ -479,11 +606,11 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                   onProceed={handleCheckout}
                 >
                   <button
-                    disabled={checkingOut || (hasBooks && hasNonBooks)}
+                    disabled={checkingOut || (hasBooks && hasNonBooks) || loading}
                     style={{
                       width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 10,
                       fontSize: 13, fontWeight: 700, border: "none",
-                      cursor: checkingOut || (hasBooks && hasNonBooks) ? "not-allowed" : "pointer",
+                      cursor: checkingOut || (hasBooks && hasNonBooks) || loading ? "not-allowed" : "pointer",
                       background: checkingOut ? "#F5F0EB" : "linear-gradient(135deg, #F97316, #EA580C)",
                       color: checkingOut ? "#9C8E7C" : "#fff",
                       fontFamily: "'Inter', sans-serif", transition: "all 0.2s",

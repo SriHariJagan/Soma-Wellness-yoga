@@ -105,7 +105,6 @@ const SomaPricingPreview = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: 0.3 + i * 0.06, ease: EASE }}
                     animate={reduced ? {} : { boxShadow: ["0 0 0 0 rgba(244,180,0,0.0)", "0 0 0 8px rgba(244,180,0,0.10)", "0 0 0 0 rgba(244,180,0,0.0)"] }}
-                    transitionShadow={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
                   >
                     {m.badge}
                   </motion.span>

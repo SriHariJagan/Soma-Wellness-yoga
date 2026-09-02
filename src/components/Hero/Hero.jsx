@@ -147,9 +147,13 @@ const Hero = () => {
   const handlePointer = (e) => {
     if (reduced) return;
     if (pointerRaf.current) return;
+    const target = e.currentTarget;
+    if (!target) return;
     pointerRaf.current = requestAnimationFrame(() => {
       pointerRaf.current = 0;
-      const rect = e.currentTarget.getBoundingClientRect();
+      if (!target || typeof target.getBoundingClientRect !== 'function') return;
+      const rect = target.getBoundingClientRect();
+      if (!rect || rect.width === 0 || rect.height === 0) return;
       px.set((e.clientX - rect.left) / rect.width - 0.5);
       py.set((e.clientY - rect.top) / rect.height - 0.5);
       orbX.set(e.clientX - rect.left);

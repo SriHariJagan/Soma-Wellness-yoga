@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema(
   {
     // ── Basic identity ──
     name:     { type: String, required: true, trim: true },
-    email:    { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
 
     // ── Access control ──

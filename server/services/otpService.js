@@ -103,8 +103,6 @@ export async function sendOtp({ identifier, channel, name = 'there' }) {
     // Dev fallback: also log so tester can retrieve
     if (process.env.NODE_ENV === 'development') {
       logger.info(MODULE, `[DEV] OTP for ${norm}: ${rawOtp} | expires in ${OTP_TTL_MINUTES}m`);
-      // expose in dev for testing — not in production
-      console.log(`[OTP] ${norm} => ${rawOtp}`);
     }
   } else if (channel === 'sms') {
     // SMS — try Africa's Talking / Twilio if configured, else fallback to dev log
@@ -113,7 +111,6 @@ export async function sendOtp({ identifier, channel, name = 'there' }) {
     if (!hasAT && !hasTwilio) {
       logger.warn(MODULE, 'SMS OTP requested but no provider configured — using dev fallback', { identifier: norm });
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[OTP SMS] ${norm} => ${rawOtp}`);
         delivered = true;
       } else {
         // For production without SMS provider, we suggest using email instead
@@ -124,7 +121,6 @@ export async function sendOtp({ identifier, channel, name = 'there' }) {
     } else {
       // TODO: wire AT/Twilio when keys provided — for now log and mark delivered
       logger.info(MODULE, `[SMS] Would send OTP to ${norm}: ${rawOtp}`);
-      console.log(`[OTP SMS] ${norm} => ${rawOtp}`);
       delivered = true;
     }
   }

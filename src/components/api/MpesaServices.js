@@ -21,10 +21,10 @@ async function request(path, options = {}) {
 }
 
 /** Initiate an MPESA STK Push */
-export async function initiateStkPush({ phone, amount, accountRef, description, itemType, itemId }) {
+export async function initiateStkPush({ phone, amount, accountRef, description, itemType, itemId, paymentId, orderId }) {
   return request("/api/mpesa/stkpush", {
     method: "POST",
-    body: JSON.stringify({ phone, amount, accountRef, description, itemType, itemId }),
+    body: JSON.stringify({ phone, amount, accountRef, description, itemType, itemId, paymentId, orderId }),
   });
 }
 

@@ -4,6 +4,8 @@
 // ============================================================
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { JSDOM } from 'jsdom';
+import DOMPurify from 'dompurify';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import { convertTrial } from './freeTrialController.js';
@@ -45,6 +47,9 @@ import { USER_STATUSES, USER_ROLES, ATTENDANCE_STATUSES, MEMBERSHIP_STATUSES, NO
 
 const MODULE = 'AdminCtrl';
 const DAY = 86400000;
+
+const purifyWindow = new JSDOM('').window;
+const purify = DOMPurify(purifyWindow);
 
 async function log(action, req, targetUser = null, meta = {}) {
   try { await ActivityLog.create({ action, performedBy: req.user._id, targetUser, meta }); }
@@ -130,7 +135,7 @@ export const getRevenueAnalytics = asyncHandler(async (req, res) => {
 // ── Students ─────────────────────────────────────────────────
 export const getStudents = asyncHandler(async (req, res) => {
   const { search } = req.query;
-  const q = { role: 'student' };
+  const q = { role: 'student', isDeleted: { $ne: true } };
   if (search) {
     const safe = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     q.$or = [
@@ -154,7 +159,13 @@ export const getStudentById = asyncHandler(async (req, res) => {
     ActivityLog.find({ targetUser: student._id }).sort({ createdAt: -1 }).limit(50),
     UserService.find({ user: student._id }).populate('service instructor').sort({ createdAt: -1 }),
   ]);
-  res.json({ student, membership, payments, attendanceRecords, classSessions, activityLogs, services });
+  const mappedPayments = payments.map((p) => {
+    const obj = typeof p.toObject === 'function' ? p.toObject() : p;
+    const map = { captured: 'paid', pending: 'pending', failed: 'failed', refunded: 'refunded' };
+    return { ...obj, status: map[obj.paymentStatus] || map[p.paymentStatus] || obj.paymentStatus || p.paymentStatus };
+  });
+  const totalPaid = mappedPayments.filter((p) => p.status === 'paid').reduce((s, p) => s + (p.amount || 0), 0);
+  res.json({ student, membership, payments: mappedPayments, attendanceRecords, classSessions, activityLogs, services, totalPaid });
 });
 
 export const createStudent = asyncHandler(async (req, res) => {
@@ -214,17 +225,19 @@ export const updateStudent = asyncHandler(async (req, res) => {
 });
 
 export const deleteStudent = asyncHandler(async (req, res) => {
-  const student = await User.findByIdAndDelete(req.params.id);
+  const student = await User.findByIdAndUpdate(req.params.id, { isDeleted: true, status: 'banned' }, { returnDocument: 'after' });
   if (!student) throw ApiError.notFound('Student not found');
-  await log(`Deleted student: ${student.email}`, req);
-  res.json({ success: true, msg: 'Student deleted' });
+  await log(`Soft-deleted student: ${student.email}`, req, student._id);
+  res.json({ success: true, msg: 'Student deactivated and archived' });
 });
 
 export const setStudentStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
   if (!USER_STATUSES.includes(status)) throw ApiError.badRequest('Invalid status');
-  const student = await User.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
+  const student = await User.findById(req.params.id);
   if (!student) throw ApiError.notFound('Student not found');
+  if (student.role === 'admin') throw ApiError.forbidden('Cannot change another admin status');
+  await User.findByIdAndUpdate(student._id, { status }, { returnDocument: 'after' });
   await log(`Set status=${status} for ${student.email}`, req, student._id);
   res.json(student);
 });
@@ -910,13 +923,23 @@ export const getAllServices = asyncHandler(async (req, res) => {
 });
 
 export const createService = asyncHandler(async (req, res) => {
-  const doc = await Service.create(req.body);
+  const allowedFields = ['name', 'description', 'mode', 'category', 'type', 'price', 'pricingModel', 'totalSessions', 'sessionDuration', 'validityDuration', 'validityUnit', 'scheduleDays', 'scheduleTime', 'timeSlots', 'active', 'isPopular', 'displayOrder', 'contactEmail'];
+  const data = {};
+  for (const key of allowedFields) {
+    if (req.body[key] !== undefined) data[key] = req.body[key];
+  }
+  const doc = await Service.create(data);
   await log(`Created service`, req, null, { id: doc._id });
   res.status(201).json(doc);
 });
 
 export const updateService = asyncHandler(async (req, res) => {
-  const doc = await Service.findByIdAndUpdate(req.params.id, { $set: req.body }, { returnDocument: 'after', runValidators: true });
+  const allowedFields = ['name', 'description', 'mode', 'category', 'type', 'price', 'pricingModel', 'totalSessions', 'sessionDuration', 'validityDuration', 'validityUnit', 'scheduleDays', 'scheduleTime', 'timeSlots', 'active', 'isPopular', 'displayOrder', 'contactEmail'];
+  const updates = {};
+  for (const key of allowedFields) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  const doc = await Service.findByIdAndUpdate(req.params.id, { $set: updates }, { returnDocument: 'after', runValidators: true });
   if (!doc) throw ApiError.notFound('Service not found');
   res.json(doc);
 });
@@ -1126,7 +1149,8 @@ export const getConsultations = asyncHandler(async (req, res) => {
   const q = {};
   if (status) q.status = status;
   if (search) {
-    const users = await User.find({ role: 'student', $or: [{ name: new RegExp(search, 'i') }, { email: new RegExp(search, 'i') }] }).select('_id');
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const users = await User.find({ role: 'student', $or: [{ name: new RegExp(safeSearch, 'i') }, { email: new RegExp(safeSearch, 'i') }] }).select('_id');
     q.user = { $in: users.map((u) => u._id) };
   }
   const consultations = await Consultation.find(q)
@@ -1242,14 +1266,7 @@ export const listNotifications = asyncHandler(async (req, res) => {
 // Strip dangerous HTML tags from admin input to prevent XSS in email clients
 function sanitizeHtml(input) {
   if (typeof input !== 'string') return '';
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
-    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
-    .replace(/on\w+\s*=\s*['"][^'"]*['"]/gi, '')
-    .replace(/on\w+\s*=\s*\S+/gi, '')
-    .replace(/javascript\s*:/gi, '');
+  return purify.sanitize(input, { ALLOWED_TAGS: [] });
 }
 
 export const broadcastNotification = asyncHandler(async (req, res) => {
@@ -1873,9 +1890,9 @@ export const resetAttendance = asyncHandler(async (req, res) => {
   const invite = await ClassInvite.findById(inviteId);
   if (!invite) throw ApiError.notFound('Class invite not found');
 
-  const deleted = await Attendance.deleteMany({ invitation: inviteId });
+  const deleted = await Attendance.deleteMany({ invitation: inviteId, locked: { $ne: true } });
 
-  await log(`Reset attendance (deleted ${deleted.deletedCount}) for invite ${invite.title}`, req);
+  await log(`Reset attendance (deleted ${deleted.deletedCount} unlocked records) for invite ${invite.title}`, req);
   res.json({ success: true, deletedCount: deleted.deletedCount });
 });
 
@@ -1888,8 +1905,13 @@ export const lockAttendance = asyncHandler(async (req, res) => {
   );
   if (!invite) throw ApiError.notFound('Class invite not found');
 
-  await log(`Locked attendance for invite ${invite.title}`, req);
-  res.json({ success: true, invite });
+  const locked = await Attendance.updateMany(
+    { invitation: inviteId, locked: { $ne: true } },
+    { $set: { locked: true } }
+  );
+
+  await log(`Locked attendance (${locked.modifiedCount} records) for invite ${invite.title}`, req);
+  res.json({ success: true, invite, lockedCount: locked.modifiedCount });
 });
 
 export const getAttendanceByDate = asyncHandler(async (req, res) => {

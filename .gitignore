@@ -26,14 +26,22 @@ dist-ssr
 
 .vercel
 
-# Environment files
+# ── Environment files ──────────────────────────────────────
+# NEVER commit real secrets. .env.example is the ONLY tracked env file.
 .env
 .env.local
+.env.development
 .env.production
+.env.test
+.env.*.local
 server/.env
 server/.env.local
+server/.env.development
+server/.env.production
 
-# Vite cache
+# ── Vite ──────────────────────────────────────────────────
+dist
+dist-ssr
 .vite/
 
 # Test coverage (if added)
