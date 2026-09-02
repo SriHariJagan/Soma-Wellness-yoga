@@ -16,6 +16,7 @@ import { useAuth } from './context/AuthContext.jsx';
 
 // ── Route-level code splitting: only Home loads eagerly. Everything else is
 //    fetched on demand so the initial bundle stays small. ──
+const ChatbotWidget = lazy(() => import('./components/chatbot/ChatbotWidget.jsx'));
 const About = lazy(() => import('./pages/About'));
 const Classes = lazy(() => import('./pages/Classes'));
 const YTTC = lazy(() => import('./pages/YTTC'));
@@ -247,6 +248,11 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
 
       {!onDashboardRoute && <Footer />}
       {!onDashboardRoute && <BackToTop />}
+      {!onDashboardRoute && (
+        <Suspense fallback={null}>
+          <ChatbotWidget />
+        </Suspense>
+      )}
     </>
   );
 };

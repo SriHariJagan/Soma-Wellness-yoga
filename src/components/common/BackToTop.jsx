@@ -9,6 +9,7 @@ import styles from "./BackToTop.module.css";
  */
 const BackToTop = () => {
   const [visible, setVisible] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -18,12 +19,22 @@ const BackToTop = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const onChat = (e) => setChatOpen(!!e.detail?.open);
+    window.addEventListener("soma:chat-toggle", onChat);
+    // init from body class (in case chat already open)
+    setChatOpen(document.body.classList.contains("soma-chat-open"));
+    return () => window.removeEventListener("soma:chat-toggle", onChat);
+  }, []);
+
   const toTop = () =>
     window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
 
+  const show = visible && !chatOpen;
+
   return (
     <AnimatePresence>
-      {visible && (
+      {show && (
         <motion.button
           type="button"
           className={styles.btn}

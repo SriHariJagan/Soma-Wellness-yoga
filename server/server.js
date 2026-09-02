@@ -61,6 +61,7 @@ import blogRoutes from "./routes/blogs.js";
 import somaRoutes from "./routes/soma.js";
 import mpesaRoutes from "./routes/mpesaRoutes.js";
 import whatsappRoutes from "./routes/whatsappRoutes.js";
+import chatbotRoutes from "./routes/chatbot.js";
 
 // ── Startup validation for required SMTP env vars ──
 function validateSmtpConfig() {
@@ -232,6 +233,7 @@ app.use("/api/blogs", blogRoutes);
 app.use("/api/soma", somaRoutes);
 app.use("/api/mpesa", mpesaRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
+app.use("/api/chatbot", chatbotRoutes);
 
 // ── Admin Monitoring (authed) ──
 import { requireAuth, requireAdmin } from "./middleware/auth.js";

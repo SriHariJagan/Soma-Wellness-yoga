@@ -27,6 +27,7 @@ export default defineConfig({
           if (/node_modules\/(framer-motion|motion-dom|motion-utils)/.test(id)) return 'motion';
           if (/node_modules\/react-icons/.test(id)) return 'icons';
           if (/node_modules\/react-calendar|get-user-locale|warning|memoize/.test(id)) return 'calendar';
+          if (id.includes('src/components/chatbot')) return 'chatbot';
         },
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || '';
