@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import p from "./ProfilePage.module.css";
 import { Stagger, Item, Panel, PrimaryButton, GhostButton, Pill } from "./widgets/DashboardWidgets";
 import { updateStudentProfile, getMyEnrollments } from "../api/StudentServices";
+import MyAttendanceQR from "./MyAttendanceQR";
 
 const ENROLLMENT_META = {
   membership: { icon: "ti-shield-check", tone: "orange", label: "Plan" },
@@ -274,6 +275,9 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
           ))}
         </div>
       </Panel>
+
+      {/* ── My Attendance QR ── */}
+      <MyAttendanceQR />
     </Stagger>
   );
 }

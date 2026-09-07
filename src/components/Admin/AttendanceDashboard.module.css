@@ -1,0 +1,79 @@
+/* ── AttendanceDashboard.module.css ── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, rgba(38, 51, 44, 0.09));
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--c-primary, #2E7D5B), var(--c-primary-2, #81B29A));
+}
+
+.cardIcon {
+  font-size: 24px;
+  margin-bottom: 0.5rem;
+}
+
+.cardValue {
+  font-family: var(--yp-font-serif, 'Outfit', sans-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-1, #183D2D);
+  margin: 0 0 0.25rem 0;
+}
+
+.cardLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3, #8a9a94);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.skeleton {
+  height: 110px;
+  background: var(--surface-3, #F8F4EC);
+  border-radius: 12px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.error {
+  color: var(--c-danger, #DC2626);
+  text-align: center;
+  padding: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

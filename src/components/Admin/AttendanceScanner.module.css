@@ -1,0 +1,248 @@
+/* ── AttendanceScanner.module.css ── */
+
+.scanner {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.title {
+  font-family: var(--yp-font-serif, 'Outfit', sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1, #183D2D);
+  margin: 0 0 0.5rem 0;
+}
+
+.branchSelect {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2, #5a6b63);
+}
+
+.select {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--line, rgba(38, 51, 44, 0.09));
+  font-size: 14px;
+  background: var(--surface, #fff);
+  color: var(--text-1, #183D2D);
+  cursor: pointer;
+}
+
+.adminInfo {
+  font-size: 13px;
+  color: var(--text-2, #5a6b63);
+}
+
+.permissionError {
+  background: var(--c-danger-soft, rgba(220, 38, 38, 0.08));
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  text-align: center;
+}
+
+.permissionError p {
+  margin: 0.25rem 0;
+  font-size: 14px;
+  color: var(--c-danger, #DC2626);
+}
+
+.errorCard {
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.errorTitle {
+  font-weight: 700;
+  color: var(--c-danger, #DC2626);
+  font-size: 16px;
+  margin: 0 0 0.5rem 0;
+}
+
+.errorCard p {
+  font-size: 14px;
+  color: var(--text-2, #5a6b63);
+  margin: 0.25rem 0;
+}
+
+.retryBtn {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--c-primary, #2E7D5B);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.duplicateCard {
+  background: rgba(244, 180, 0, 0.08);
+  border: 1px solid rgba(244, 180, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.duplicateTitle {
+  font-weight: 700;
+  color: var(--c-warning, #D97706);
+  font-size: 16px;
+  margin: 0 0 0.5rem 0;
+}
+
+.duplicateCard p {
+  font-size: 14px;
+  color: var(--text-2, #5a6b63);
+  margin: 0.25rem 0;
+}
+
+.scannerContainer {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--line, rgba(38, 51, 44, 0.09));
+  background: #000;
+}
+
+.scannerFrame {
+  width: 100%;
+  min-height: 320px;
+}
+
+.scannerPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+}
+
+.startBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #2E7D5B, #3a9a73);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s;
+}
+
+.startBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.scanIcon {
+  font-size: 18px;
+}
+
+.stopBtn {
+  padding: 0.75rem 2rem;
+  border-radius: 10px;
+  border: none;
+  background: var(--c-danger, #DC2626);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.successCard {
+  background: var(--surface, #fff);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  border-radius: 14px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.successIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #16A34A, #22c55e);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.successTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-success, #16A34A);
+  margin: 0 0 1rem 0;
+}
+
+.successDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line-2, rgba(38, 51, 44, 0.06));
+  font-size: 14px;
+}
+
+.detailLabel {
+  color: var(--text-3, #8a9a94);
+}
+
+.detailValue {
+  font-weight: 600;
+  color: var(--text-1, #183D2D);
+}
+
+.nextBtn {
+  padding: 0.6rem 2rem;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2E7D5B, #3a9a73);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .scanner {
+    padding: 1rem;
+  }
+  .scannerFrame {
+    min-height: 260px;
+  }
+}

@@ -108,6 +108,29 @@ export const lockAttendance = (inviteId) =>
 export const getAttendanceByDate = (date) =>
   request(`/attendance/by-date?date=${encodeURIComponent(date)}`);
 
+// ── QR Attendance ──────────────────────────────────────────
+export const getMyAttendanceQR = () => request('/users/me/attendance-qr');
+export const scanQRAttendance = (payload) => request('/admin/attendance/scan', { method: 'POST', body: payload });
+export const getQRAttendanceList = (params = {}) => {
+  const q = new URLSearchParams();
+  if (params.branch) q.set('branch', params.branch);
+  if (params.date) q.set('date', params.date);
+  if (params.page) q.set('page', params.page);
+  if (params.limit) q.set('limit', params.limit);
+  if (params.search) q.set('search', params.search);
+  return request(`/admin/attendance?${q.toString()}`);
+};
+export const getQRAttendanceDetail = (id) => request(`/admin/attendance/${id}`);
+export const getQRAttendanceStats = (branchId) => request(`/admin/attendance/stats?branchId=${branchId}`);
+export const getBranchesForScan = () => request('/admin/attendance/branches');
+export const getMyAttendanceHistory = (params = {}) => {
+  const q = new URLSearchParams();
+  if (params.page) q.set('page', params.page);
+  if (params.limit) q.set('limit', params.limit);
+  return request(`/users/me/attendance?${q.toString()}`);
+};
+export const regenerateAttendanceQR = (userId) => request(`/admin/users/${userId}/regenerate-attendance-qr`, { method: 'POST' });
+
 // ── Enrollment Progress ────────────────────────────────────
 export const getEnrollmentProgress = (studentId) => request(`/enrollment-progress/${studentId}`);
 

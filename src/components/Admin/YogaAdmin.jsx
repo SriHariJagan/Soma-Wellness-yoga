@@ -5,7 +5,7 @@ import {
   LuLayoutDashboard, LuUsers, LuFilter, LuRadioTower, LuGraduationCap,
   LuReceipt, LuCalendarClock, LuFolderLock, LuMegaphone, LuTicketPercent, LuCalendar,
   LuSparkles, LuClock, LuGift, LuMail, LuBookOpen, LuCalendarCheck,
-  LuCalendarDays, LuActivity, LuTruck,
+  LuCalendarDays, LuActivity, LuTruck, LuQrCode, LuScanLine,
 } from 'react-icons/lu';
 
 // Layout Shell Components
@@ -32,6 +32,9 @@ const FreeTrialManagement = lazy(() => import('./FreeTrialManagement'));
 const ClassInvites = lazy(() => import('./ClassInvites'));
 const YTTCInvites = lazy(() => import('./YTTCInvites'));
 const AttendanceManagement = lazy(() => import('./AttendanceManagement'));
+const AttendanceScanner = lazy(() => import('./AttendanceScanner'));
+const AttendanceDashboard = lazy(() => import('./AttendanceDashboard'));
+const AttendanceHistory = lazy(() => import('./AttendanceHistory'));
 const BlogManagement = lazy(() => import('./BlogManagement'));
 const EmailHealth = lazy(() => import('./EmailHealth'));
 const BookManagement = lazy(() => import('./BookManagement'));
@@ -124,6 +127,8 @@ export default function YogaAdmin({ onLogout = () => {} }) {
     { id: 'class-invites',  label: 'Class Invites',        icon: <LuMail /> },
     { id: 'yttc-invites',   label: 'YTTC Invites',         icon: <LuBookOpen /> },
     { id: 'attendance-mgmt',label: 'Attendance',           icon: <LuCalendarCheck /> },
+    { id: 'qr-scan',      label: 'QR Scanner',         icon: <LuScanLine /> },
+    { id: 'attendance-history', label: 'Attendance History', icon: <LuQrCode /> },
     { id: 'workshops',      label: 'Workshops',            icon: <LuCalendar /> },
     { id: 'events',         label: 'Events Management',    icon: <LuCalendarDays /> },
     { id: 'curriculum',     label: 'Courses & Plans',      icon: <LuGraduationCap /> },
@@ -248,6 +253,8 @@ export default function YogaAdmin({ onLogout = () => {} }) {
         {activeTab === 'class-invites' && <Suspense fallback={<TabFallback />}><ClassInvites /></Suspense>}
         {activeTab === 'yttc-invites' && <Suspense fallback={<TabFallback />}><YTTCInvites /></Suspense>}
         {activeTab === 'attendance-mgmt' && <Suspense fallback={<TabFallback />}><AttendanceManagement onChanged={loadAll} /></Suspense>}
+        {activeTab === 'qr-scan' && <Suspense fallback={<TabFallback />}><AttendanceScanner /></Suspense>}
+        {activeTab === 'attendance-history' && <Suspense fallback={<TabFallback />}><AttendanceHistory /></Suspense>}
         {activeTab === 'workshops' && <Suspense fallback={<TabFallback />}><WorkshopManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'events' && <Suspense fallback={<TabFallback />}><EventsManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'curriculum' && <Suspense fallback={<TabFallback />}><CoursesPlans courses={courses} plans={plans} /></Suspense>}

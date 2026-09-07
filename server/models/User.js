@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 import { USER_ROLES, USER_STATUSES, YTTC_ENROLLMENT_STATUSES, YTTC_MODES } from '../shared/constants/index.js';
+
+const QR_TOKEN_PREFIX = 'SW-ATT-';
 
 const UserSchema = new mongoose.Schema(
   {
@@ -76,6 +79,9 @@ const UserSchema = new mongoose.Schema(
     // ── Refresh-token rotation (hashed sessions) ──
     refreshTokens: { type: [String], default: [], select: false },
 
+    // ── QR Attendance ──
+    attendanceQrToken: { type: String, unique: true, sparse: true },
+
     // ── Password reset ──
     resetTokenHash:    { type: String, default: null, select: false },
     resetTokenExpires: { type: Date, default: null, select: false },
@@ -89,6 +95,15 @@ UserSchema.pre('save', function () {
   if (this.dateOfBirth) {
     this.birthMonth = this.dateOfBirth.getMonth() + 1;
     this.birthDay = this.dateOfBirth.getDate();
+  }
+  if (!this.attendanceQrToken && this.isNew) {
+    this.attendanceQrToken = `${QR_TOKEN_PREFIX}${crypto.randomUUID()}`;
+  }
+});
+
+UserSchema.pre('findOneAndUpdate', function () {
+  if (!this.getUpdate().attendanceQrToken && this.getUpdate().status === 'active') {
+    this.getUpdate().attendanceQrToken = `${QR_TOKEN_PREFIX}${crypto.randomUUID()}`;
   }
 });
 

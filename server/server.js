@@ -243,6 +243,10 @@ app.use("/api/admin/monitoring", requireAuth, requireAdmin, monitoringRoutes);
 import systemHealthRoutes from "./routes/systemHealth.js";
 app.use("/api/admin/system", requireAuth, requireAdmin, systemHealthRoutes);
 
+// ── QR Attendance Routes ──
+import attendanceRoutes from "./routes/attendanceRoutes.js";
+app.use("/api", attendanceRoutes);
+
 // ── Bull Board Queue Dashboard (admin only) ──
 app.use("/admin/queues", requireAuth, requireAdmin, getDashboardRouter());
 
