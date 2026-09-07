@@ -23,10 +23,16 @@ router.post('/', bookingLimiter, validate(schemas.booking), asyncHandler(async (
   const { name, email, phone, city, courseName, coursePrice, courseTime, paymentMethod, transactionId, message, status } = req.body;
   const allowedStatuses = ['Pending', 'Confirmed'];
   const bookingStatus = allowedStatuses.includes(status) ? status : 'Pending';
+  // Normalise M-Pesa spellings to the canonical enum value ('M-PESA'/'mpesa' → 'M-Pesa').
+  const normalisedMethod = /m[\s-]?pesa/i.test(String(paymentMethod || '')) ? 'M-Pesa' : paymentMethod;
+  // Coerce display prices like "KES 12,000/mo" to a Number (model requires Number).
+  const numericPrice = typeof coursePrice === 'number'
+    ? coursePrice
+    : Number(String(coursePrice || '').replace(/[^0-9.]/g, '')) || 0;
   const booking = await Booking.create({
     name, email, phone, city,
-    courseName, coursePrice, courseTime,
-    paymentMethod, transactionId, message,
+    courseName, coursePrice: numericPrice, courseTime,
+    paymentMethod: normalisedMethod, transactionId, message,
     status: bookingStatus,
   });
 

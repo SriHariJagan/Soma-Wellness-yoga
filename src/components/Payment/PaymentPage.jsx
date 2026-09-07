@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MpesaCheckout from './MpesaCheckout';
@@ -33,7 +33,7 @@ export default function PaymentPage() {
       body: JSON.stringify({
         ...form,
         courseName: course.name,
-        coursePrice: course.price,
+        coursePrice: parsePrice(course.price),
         courseTime: course.time,
         paymentMethod,
         transactionId,
@@ -54,7 +54,7 @@ export default function PaymentPage() {
     setLoading(true);
     try {
       await saveBooking({
-        paymentMethod: 'M-PESA',
+        paymentMethod: 'M-Pesa',
         transactionId: paymentResult?.mpesaReceiptNumber || paymentResult?.checkoutRequestId || '',
         status: 'Confirmed',
       });
@@ -65,6 +65,16 @@ export default function PaymentPage() {
       setLoading(false);
     }
   };
+
+  /* ── Auto-redirect to the user dashboard after a successful booking ── */
+  useEffect(() => {
+    if (!success) return;
+    let role = null;
+    try { role = JSON.parse(localStorage.getItem('user') || '{}')?.role; } catch { role = null; }
+    const path = role === 'student' ? '/studentdashboard' : '/yogaadmin';
+    const timer = setTimeout(() => navigate(path), 3500);
+    return () => clearTimeout(timer);
+  }, [success, navigate]);
 
   /* ── Success ── */
   if (success) {
@@ -78,6 +88,9 @@ export default function PaymentPage() {
           <p>{t('payment.thankYou', { name: form.name })}</p>
           <p className="pay-success-sub">
             {payable ? t('payment.bookingConfirmed', { course: course.name }) : t('payment.bookingReceivedMsg', { course: course.name })}
+          </p>
+          <p className="pay-success-sub" style={{ fontSize: 13, opacity: 0.75 }}>
+            Redirecting to your dashboard…
           </p>
           {course.founding && (
             <div style={{ background:'rgba(24,61,45,0.06)', border:'1px solid rgba(46,125,91,0.15)', borderRadius:12, padding:'12px 16px', margin:'12px 0', fontSize:13, color:'var(--soma-forest)', fontWeight:600, textAlign:'center' }}>
