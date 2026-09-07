@@ -510,6 +510,20 @@
 
 .pay-success .pay-btn { margin-top: 8px; }
 
+/* ── TEST MODE ONLY: express guest account step ── */
+.pay-test-account {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+  padding: 18px;
+  border: 2px dashed #d97706;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7 60%, #fffbeb);
+}
+
+.pay-test-account .pay-step-sub { margin-bottom: 0; }
+
 /* ── Responsive ── */
 @media (max-width: 560px) {
   .pay-shell { padding: 12px 8px; }

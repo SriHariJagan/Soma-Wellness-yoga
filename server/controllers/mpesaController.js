@@ -63,6 +63,17 @@ export const initiateStkPush = asyncHandler(async (req, res) => {
     if (isTestPaymentMode()) {
       const { buildTestStkIds } = await import("../payment/gateways/test/TestPaymentService.js");
       const testIds = buildTestStkIds();
+      // STK-manual payments carry no gateway order id, which would make
+      // the standard verify() lookup fail. Attach synthetic ids (test only)
+      // so SUCCESS exercises the full capture path (invoice, activity,
+      // notifications) exactly like a reconciled Daraja payment.
+      if (!payment.mpesaOrderId && !payment.razorpayOrderId) {
+        const syntheticOrderId = `TEST_order_${testIds.checkoutRequestId}`;
+        await paymentRepo.setTestOrderIds(payment._id, {
+          mpesaOrderId: syntheticOrderId,
+          razorpayOrderId: syntheticOrderId,
+        });
+      }
       await paymentRepo.addAuditEntry(payment._id, {
         action: "test_stk_initiated",
         checkoutRequestId: testIds.checkoutRequestId,

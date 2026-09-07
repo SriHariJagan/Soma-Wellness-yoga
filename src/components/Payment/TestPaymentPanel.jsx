@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { simulateTestPayment } from "../api/MpesaServices";
+import React, { useState, useEffect } from "react";
+import { simulateTestPayment, getTestIdentity } from "../api/MpesaServices";
 import "./TestPaymentPanel.css";
 
 const SCENARIOS = [
@@ -20,11 +20,46 @@ export default function TestPaymentPanel({ amount, paymentId, checkoutRequestId,
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [recoverable, setRecoverable] = useState(false);
+  // Show who the CURRENT TOKEN belongs to (server truth). localStorage
+  // user objects can go stale (e.g. test DB resets wipe the account while
+  // the browser still caches it) — that skew is the #1 cause of
+  // "Payment does not belong to this user".
+  const [whoami, setWhoami] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!localStorage.getItem("token")) {
+          if (!cancelled) setWhoami("guest (not logged in)");
+          return;
+        }
+        const identity = await getTestIdentity();
+        if (cancelled) return;
+        if (identity?.email) {
+          setWhoami(identity.email);
+          return;
+        }
+        let cachedEmail = "";
+        try {
+          const raw = localStorage.getItem("user");
+          cachedEmail = raw ? (JSON.parse(raw)?.email || "") : "";
+        } catch { /* ignore */ }
+        setWhoami(cachedEmail
+          ? `${cachedEmail} (session invalid — log out and log in again)`
+          : "session invalid — log out and log in again");
+      } catch {
+        if (!cancelled) setWhoami("guest (not logged in)");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Ownership / session problems (e.g. payment was created under a
-  // different login) brick every scenario — offer a fresh payment instead.
+  // different login, or the account was wiped from the test DB while the
+  // browser still holds its token) brick every scenario — offer a fresh
+  // payment instead.
   const isRecoverableError = (err) =>
-    /belong|fresh test payment|expired|invalid token|no token|unauthori[sz]ed|sign in/i.test(err?.message || "");
+    /belong|fresh test payment|expired|invalid token|no token|unauthori[sz]ed|no longer exists|sign in|log in/i.test(err?.message || "");
 
   const runScenario = async (scenario) => {
     setBusy(scenario);
@@ -64,6 +99,9 @@ export default function TestPaymentPanel({ amount, paymentId, checkoutRequestId,
       <div className="testpay-amount-row">
         <span>Amount</span>
         <strong>KES {Number(amount || 0).toLocaleString()}</strong>
+      </div>
+      <div className="testpay-identity" data-testid="test-payment-identity">
+        Testing as: <strong>{whoami || "…"}</strong>
       </div>
 
       <div className="testpay-grid">

@@ -3,8 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MpesaCheckout from './MpesaCheckout';
 import { parsePrice, isLoggedIn } from '../../utils/payment';
+import { getPaymentMode, provisionTestAccount } from '../api/MpesaServices';
+import { useAuth } from '../../context/AuthContext.jsx';
 import CheckoutGate from '../checkout/CheckoutGate.jsx';
 import './PaymentPage.css';
+import './TestPaymentPanel.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -16,6 +19,7 @@ export default function PaymentPage() {
   const course = state || { name: '', price: '', time: '' };
   const amount = parsePrice(course.price);
   const payable = amount > 0;
+  const { login } = useAuth();
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: '', email: '', phone: '', city: '', message: '' });
@@ -23,8 +27,42 @@ export default function PaymentPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [showMpesa, setShowMpesa] = useState(false);
+  // TEST MODE ONLY: express guest checkout (instant account provisioning).
+  const [testMode, setTestMode] = useState(false);
+  const [provisioning, setProvisioning] = useState(false);
+  const [provisionError, setProvisionError] = useState('');
+
+  useEffect(() => {
+    getPaymentMode().then((res) => setTestMode(Boolean(res?.testMode))).catch(() => setTestMode(false));
+  }, []);
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+
+  // TEST MODE ONLY: create the student's account instantly from the
+  // details above (same account OTP verification would create), log in,
+  // and continue to the test payment — no OTP round-trip while testing.
+  const handleProvision = async () => {
+    setProvisionError('');
+    if (!form.name || !form.email || !form.phone) {
+      setProvisionError(t('payment.nameEmailRequired'));
+      return;
+    }
+    setProvisioning(true);
+    try {
+      const res = await provisionTestAccount({ name: form.name, email: form.email, phone: form.phone });
+      if (res?.token && res?.user) {
+        login(res.token, res.user);
+        window.dispatchEvent(new CustomEvent('auth-login', { detail: { user: res.user } }));
+        setShowMpesa(true);
+      } else {
+        throw new Error('Account creation failed. Please try again.');
+      }
+    } catch (err) {
+      setProvisionError(err.message || 'Account creation failed. Please try again.');
+    } finally {
+      setProvisioning(false);
+    }
+  };
 
   const saveBooking = async ({ paymentMethod, transactionId, status }) => {
     const res = await fetch(`${API_URL}/api/bookings`, {
@@ -231,6 +269,20 @@ export default function PaymentPage() {
                   onSuccess={(result) => doPay(result)}
                   onError={(err) => { setLoading(false); setError(err.message || t('payment.paymentFailed')); }}
                 />
+              ) : testMode ? (
+                <div className="pay-test-account">
+                  <div className="testpay-banner">
+                    <span className="testpay-badge">TEST MODE</span>
+                  </div>
+                  <p className="pay-step-sub">
+                    You&apos;re checking out as a new student. We&apos;ll create your Soma Wellness
+                    account instantly from the details above — no OTP needed while testing.
+                  </p>
+                  {provisionError && <div className="pay-error">{provisionError}</div>}
+                  <button className="pay-btn pay-btn-full" onClick={handleProvision} disabled={provisioning}>
+                    {provisioning ? t('payment.processing') : 'Create account & continue to test payment →'}
+                  </button>
+                </div>
               ) : (
                 <CheckoutGate intent={{ name: course.name, price: course.price, sub: course.time, type: 'booking' }} onProceed={() => {
                   setShowMpesa(true);

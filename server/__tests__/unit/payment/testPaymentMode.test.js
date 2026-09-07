@@ -15,6 +15,7 @@ import {
 import {
   getPaymentModeStatus,
   simulateTestPayment,
+  provisionTestAccount,
 } from '../../../controllers/testPaymentController.js';
 
 const OLD_PAYMENT_MODE = process.env.PAYMENT_MODE;
@@ -152,6 +153,33 @@ describe('test payment endpoints', () => {
     );
     expect(next).toHaveBeenCalledTimes(1);
     expect(next.mock.calls[0][0].statusCode).toBe(403);
+  });
+});
+
+describe('test provision endpoint (no DB required)', () => {
+  test('disabled in live mode (403)', async () => {
+    process.env.PAYMENT_MODE = 'live';
+    const next = jest.fn();
+    await provisionTestAccount(
+      { body: { name: 'Test User', email: 'new@test.com', phone: '0712345678' } },
+      mockRes(),
+      next,
+    );
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next.mock.calls[0][0].statusCode).toBe(403);
+  });
+
+  test.each([
+    ['missing name', { email: 'new@test.com', phone: '0712345678' }],
+    ['invalid email', { name: 'Test User', email: 'not-an-email', phone: '0712345678' }],
+    ['missing phone', { name: 'Test User', email: 'new@test.com' }],
+    ['short password', { name: 'Test User', email: 'new@test.com', phone: '0712345678', password: 'short' }],
+  ])('validation rejects %s with 400', async (_label, body) => {
+    process.env.PAYMENT_MODE = 'test';
+    const next = jest.fn();
+    await provisionTestAccount({ body }, mockRes(), next);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next.mock.calls[0][0].statusCode).toBe(400);
   });
 });
 

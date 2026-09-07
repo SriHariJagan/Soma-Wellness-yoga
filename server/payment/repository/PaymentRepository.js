@@ -66,6 +66,17 @@ export class PaymentRepository {
     );
   }
 
+  /** TEST MODE ONLY: attach synthetic gateway order ids so the standard
+      verify() lookup path works for STK-manual payments (which otherwise
+      carry no order id). Ids are unique per payment. */
+  async setTestOrderIds(id, { mpesaOrderId, razorpayOrderId }) {
+    return Payment.findByIdAndUpdate(
+      id,
+      { $set: { mpesaOrderId, razorpayOrderId } },
+      { new: true },
+    );
+  }
+
   async setFulfillmentStatus(id, status, session) {
     const options = { new: true };
     if (session) options.session = session;

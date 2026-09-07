@@ -23,6 +23,27 @@ describe('TestPaymentPanel (TEST MODE ONLY)', () => {
     expect(screen.getByText(/no real m-pesa charge/i)).toBeInTheDocument();
   });
 
+  it('shows which login the simulation acts as (server truth)', async () => {
+    localStorage.setItem('token', 'tok');
+    localStorage.setItem('user', JSON.stringify({ email: 'stale@example.com' }));
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ user: { email: 'tester@example.com' } }) });
+    render(<TestPaymentPanel {...baseProps} />);
+    expect(await screen.findByTestId('test-payment-identity')).toHaveTextContent('tester@example.com');
+  });
+
+  it('shows guest when not logged in', async () => {
+    render(<TestPaymentPanel {...baseProps} />);
+    expect(await screen.findByTestId('test-payment-identity')).toHaveTextContent(/guest/i);
+  });
+
+  it('flags a stale session when the token is not recognised', async () => {
+    localStorage.setItem('token', 'dead');
+    localStorage.setItem('user', JSON.stringify({ email: 'ghost@example.com' }));
+    mockFetch.mockResolvedValue({ ok: false, json: async () => ({ message: 'Invalid token' }) });
+    render(<TestPaymentPanel {...baseProps} />);
+    expect(await screen.findByTestId('test-payment-identity')).toHaveTextContent(/session invalid/i);
+  });
+
   it('shows the amount and all five simulation scenarios', () => {
     render(<TestPaymentPanel {...baseProps} />);
     expect(screen.getByText('KES 500')).toBeInTheDocument();
@@ -78,6 +99,17 @@ describe('TestPaymentPanel (TEST MODE ONLY)', () => {
     const user = userEvent.setup();
     const onReset = vi.fn();
     mockFetch.mockResolvedValue({ ok: false, json: async () => ({ message: 'Payment does not belong to this user — start a fresh test payment as the current login' }) });
+    render(<TestPaymentPanel {...baseProps} onReset={onReset} />);
+    await user.click(screen.getByRole('button', { name: 'Simulate Success' }));
+    const resetBtn = await screen.findByRole('button', { name: /start fresh test payment/i });
+    await user.click(resetBtn);
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('dead-token errors also offer recovery', async () => {
+    const user = userEvent.setup();
+    const onReset = vi.fn();
+    mockFetch.mockResolvedValue({ ok: false, json: async () => ({ message: 'Account no longer exists' }) });
     render(<TestPaymentPanel {...baseProps} onReset={onReset} />);
     await user.click(screen.getByRole('button', { name: 'Simulate Success' }));
     const resetBtn = await screen.findByRole('button', { name: /start fresh test payment/i });

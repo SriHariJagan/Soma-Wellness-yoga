@@ -219,6 +219,35 @@ export class TestPaymentService {
             payment: current,
           };
         }
+        // Manual/STK payments created before synthetic order ids existed
+        // cannot be found by verify()'s order-id lookup. Mirroring the live
+        // Daraja callback fallback: mark them captured when there is nothing
+        // to fulfill (no real items). Payments WITH fulfillable items always
+        // rethrow so fulfillment problems stay loud.
+        const hasFulfillableItems = (fresh.items || []).some(
+          (i) => i.itemType && i.itemType !== 'other',
+        );
+        if (err?.statusCode === 404 && !hasFulfillableItems) {
+          logger.warn(`[${MODULE}]`, 'verify() lookup missed an item-less payment — applying callback-style fallback capture', ctx);
+          const updated = await this.repository.markMpesaPaymentSuccess(fresh._id, {
+            mpesaReceiptNumber: receipt,
+            transactionDate: new Date(),
+            phoneNumber: 'test',
+            amount: fresh.amount,
+          });
+          await this.repository.addAuditEntry(fresh._id, {
+            action: 'test_fallback_capture',
+            metadata: { source: 'test_payment', scenario: 'success', reason: 'verify lookup missed; no fulfillable items' },
+          });
+          return {
+            scenario: 'success',
+            status: 'captured',
+            idempotent: false,
+            message: 'Test payment successful',
+            payment: updated,
+            mpesaReceiptNumber: receipt,
+          };
+        }
         throw err;
       }
     }
