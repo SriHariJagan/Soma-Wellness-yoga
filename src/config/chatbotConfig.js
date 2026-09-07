@@ -3,14 +3,14 @@
 // Falls back gracefully when env vars are not set.
 // ============================================================
 
-// VITE_WHATSAPP_NUMBER should be digits only, e.g. 254700000000 or 254712345678
-// Accepts +254..., 254..., 0700..., will be normalised.
+// VITE_WHATSAPP_NUMBER should be digits only, e.g. 919999976540 or 254712345678
+// Accepts +91..., 91..., 99999..., +254..., 254..., 0700..., will be normalised.
 const ENV_WA = import.meta.env.VITE_WHATSAPP_NUMBER || '';
 const ENV_DISPLAY = import.meta.env.VITE_WHATSAPP_DISPLAY_PHONE || '';
 
 // Default from site content / footer — must stay in sync
-export const FALLBACK_WA_NUMBER = '254700000000';
-export const FALLBACK_WA_DISPLAY = '+254 700 000 000';
+export const FALLBACK_WA_NUMBER = '919999976540';
+export const FALLBACK_WA_DISPLAY = '+91 99999 76540';
 
 // Normalise any phone string to digits-only wa.me format
 export function normalizeWaNumber(raw) {
@@ -19,6 +19,8 @@ export function normalizeWaNumber(raw) {
   // If Kenyan 07... (10 digits starting with 0) -> 254...
   if (digits.length === 10 && digits.startsWith('0')) return `254${digits.slice(1)}`;
   if (digits.length === 9 && digits.startsWith('7')) return `254${digits}`;
+  // If Indian 10-digit mobile (starts 6-9) -> 91...
+  if (digits.length === 10 && /^[6-9]/.test(digits)) return `91${digits}`;
   return digits;
 }
 

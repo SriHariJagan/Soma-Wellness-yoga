@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { spring, usePrefersReducedMotion } from "../../../lib/motion";
 import styles from "./FloatingWhatsApp.module.css";
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "919166046697";
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "919999976540";
 
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 
