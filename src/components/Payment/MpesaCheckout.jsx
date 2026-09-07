@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { initiateStkPush, queryMpesaTransaction } from "../api/MpesaServices";
+import { initiateStkPush, queryMpesaTransaction, getPaymentMode } from "../api/MpesaServices";
+import TestPaymentPanel from "./TestPaymentPanel";
 import "./MpesaCheckout.css";
 
 const POLL_INTERVAL_MS = 4000;
@@ -12,8 +13,49 @@ export default function MpesaCheckout({ amount, accountRef, description, payment
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState("");
+  // TEST MODE ONLY: backend-reported flag (never a VITE_* value).
+  const [testMode, setTestMode] = useState(false);
+  const [modeLoading, setModeLoading] = useState(true);
+  const [testIds, setTestIds] = useState(null);
+  const [testInitError, setTestInitError] = useState("");
   const pollRef = useRef(null);
   const pollCountRef = useRef(0);
+
+  // Ask the backend which payment mode is active.
+  useEffect(() => {
+    let cancelled = false;
+    getPaymentMode()
+      .then((res) => { if (!cancelled) setTestMode(Boolean(res?.testMode)); })
+      .catch(() => { if (!cancelled) setTestMode(false); })
+      .finally(() => { if (!cancelled) setModeLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // In test mode without an existing payment, create the pending payment
+  // record first (no Daraja call on the backend) so the panel has ids.
+  useEffect(() => {
+    if (modeLoading || !testMode || paymentId || testIds) return;
+    let cancelled = false;
+    setTestInitError("");
+    initiateStkPush({
+      phone: "254700000000",
+      amount,
+      accountRef,
+      description,
+      paymentId,
+      orderId,
+    })
+      .then((res) => {
+        if (!cancelled && res?.paymentId) {
+          setTestIds({ paymentId: res.paymentId, checkoutRequestId: res.checkoutRequestId, orderId });
+        } else if (!cancelled) {
+          setTestInitError("Could not create test payment. Please retry.");
+        }
+      })
+      .catch((err) => { if (!cancelled) setTestInitError(err.message || "Could not create test payment."); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modeLoading, testMode]);
 
   const normalisePhone = (raw) => {
     let p = raw.replace(/[\s\-()]/g, "");
@@ -107,6 +149,49 @@ export default function MpesaCheckout({ amount, accountRef, description, payment
   useEffect(() => {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, []);
+
+  // ── TEST MODE UI (only when backend reports PAYMENT_MODE=test) ──
+  if (!modeLoading && testMode) {
+    if (status === "success") {
+      return (
+        <div className="mpesa-inline mpesa-success">
+          <div className="mpesa-success-icon">✓</div>
+          <p>{message}</p>
+        </div>
+      );
+    }
+    const effectivePaymentId = paymentId || testIds?.paymentId;
+    const effectiveCheckoutId = testIds?.checkoutRequestId;
+    if (!effectivePaymentId && !effectiveCheckoutId) {
+      return (
+        <div className="mpesa-inline">
+          <div className="mpesa-polling">
+            <div className="mpesa-spinner" />
+            <span>{testInitError || "Preparing test payment…"}</span>
+          </div>
+          {testInitError && <div className="mpesa-error-msg">{testInitError}</div>}
+        </div>
+      );
+    }
+    return (
+      <TestPaymentPanel
+        amount={amount}
+        paymentId={effectivePaymentId}
+        checkoutRequestId={effectiveCheckoutId}
+        orderId={orderId}
+        onSuccess={(result) => {
+          setStatus("success");
+          setMessage(t("payment.stkPushSuccess"));
+          onSuccess?.(result);
+        }}
+        onError={(err) => {
+          // Stay on the panel so the tester can retry another scenario.
+          if (err?.message) setMessage(err.message);
+          onError?.(err);
+        }}
+      />
+    );
+  }
 
   if (status === "success") {
     return (

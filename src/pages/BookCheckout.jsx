@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FaTruckFast, FaShieldHalved, FaLock } from "react-icons/fa6";
 import { getCart, updateCartItemQty, removeCartItem, applyCouponToCart, removeCouponFromCart, validateBookCart, checkoutBooks, checkShippingAvailability } from "../components/api/BookServices";
+import { getPaymentMode } from "../components/api/MpesaServices";
+import TestPaymentPanel from "../components/Payment/TestPaymentPanel";
 import { useScrollToSection } from "../hooks/useScrollToSection";
 import styles from "./BookCheckout.module.css";
 
@@ -35,6 +37,13 @@ const BookCheckout = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [success, setSuccess] = useState(null);
   const [quantities, setQuantities] = useState({});
+  // TEST MODE ONLY: backend-reported flag + pending payment awaiting simulation.
+  const [testMode, setTestMode] = useState(false);
+  const [pendingTestPay, setPendingTestPay] = useState(null);
+
+  useEffect(() => {
+    getPaymentMode().then((res) => setTestMode(Boolean(res?.testMode))).catch(() => setTestMode(false));
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -181,6 +190,13 @@ const BookCheckout = () => {
       const idempotencyKey = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
       const result = await checkoutBooks({ idempotencyKey, address });
 
+      // TEST MODE: simulate the M-Pesa result before confirming the order.
+      if (testMode && result?.payment?._id) {
+        setPendingTestPay({ result, email: address.email });
+        await getCart().then((c) => setCart(c)).catch(() => {});
+        return;
+      }
+
       // M-Pesa payment initiated
       setSuccess({ orderNumber: result.order.orderNumber, email: address.email });
       try { await getCart().then((c) => setCart(c)); } catch {}
@@ -190,6 +206,36 @@ const BookCheckout = () => {
       setPaying(false);
     }
   };
+
+  if (pendingTestPay) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <h1>{t("bookCheckout.title")}</h1>
+          <p>{t("bookCheckout.securePowered")}</p>
+        </header>
+        <div className={styles.layout}>
+          <div className={styles.left}>
+            <section className={styles.block}>
+              <h2>Order {pendingTestPay.result.order.orderNumber} awaiting payment</h2>
+              <TestPaymentPanel
+                amount={pendingTestPay.result.order.total}
+                paymentId={pendingTestPay.result.payment?._id}
+                onSuccess={() => {
+                  setSuccess({ orderNumber: pendingTestPay.result.order.orderNumber, email: pendingTestPay.email });
+                  setPendingTestPay(null);
+                }}
+                onError={() => {}}
+              />
+              <button className={styles.pinBtn} style={{ marginTop: 12 }} onClick={() => setPendingTestPay(null)}>
+                ← Back to checkout
+              </button>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (success) {
     return (

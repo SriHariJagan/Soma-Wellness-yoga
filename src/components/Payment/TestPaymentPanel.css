@@ -1,0 +1,138 @@
+/* ═══════════════════════════════════════════════════════════════
+   TestPaymentPanel — TEST MODE ONLY styling.
+   High-visibility amber banner so nobody mistakes it for real payment.
+   ═══════════════════════════════════════════════════════════════ */
+
+.testpay {
+  margin-top: 8px;
+  border: 2px dashed #d97706;
+  border-radius: 16px;
+  padding: 18px;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7 60%, #fffbeb);
+}
+
+.testpay-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.testpay-badge {
+  background: #b45309;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.testpay-note {
+  font-size: 0.8rem;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.testpay-amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #78350f;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.testpay-amount-row strong {
+  font-size: 1.1rem;
+}
+
+.testpay-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.testpay-grid .testpay-btn:first-child {
+  grid-column: 1 / -1;
+}
+
+.testpay-btn {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  border: 1.5px solid;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.testpay-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.testpay-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.testpay-success {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.testpay-failure {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+.testpay-pending {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.testpay-cancelled {
+  background: #faf5ff;
+  border-color: #a855f7;
+  color: #6b21a8;
+}
+
+.testpay-timeout {
+  background: #fff7ed;
+  border-color: #f97316;
+  color: #9a3412;
+}
+
+.testpay-msg {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.testpay-msg.error {
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  color: #b91c1c;
+}
+
+.testpay-msg.pending {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.testpay-retry-hint {
+  font-weight: 600;
+}

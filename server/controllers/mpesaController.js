@@ -5,6 +5,7 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { mpesaClient, mpesaCallbackService } from "../payment/gateways/mpesa/index.js";
+import { isTestPaymentMode } from "../config/paymentMode.js";
 import { PaymentRepository } from "../payment/repository/PaymentRepository.js";
 import { PaymentService } from "../payment/PaymentService.js";
 import logger from "../notification/logger.js";
@@ -24,7 +25,9 @@ export const initiateStkPush = asyncHandler(async (req, res) => {
     throw ApiError.badRequest("Amount must be at least KES 1");
   }
 
-  if (!mpesaClient.isConfigured) {
+  // TEST MODE (PAYMENT_MODE=test): Daraja is never contacted. The live
+  // M-Pesa path below is unchanged and runs only when PAYMENT_MODE=live.
+  if (!mpesaClient.isConfigured && !isTestPaymentMode()) {
     throw ApiError.serviceUnavailable("MPESA payment gateway is not configured");
   }
 
@@ -56,6 +59,32 @@ export const initiateStkPush = asyncHandler(async (req, res) => {
   }
 
   try {
+    // ── TEST MODE: return synthetic STK ids, no Daraja call ──
+    if (isTestPaymentMode()) {
+      const { buildTestStkIds } = await import("../payment/gateways/test/TestPaymentService.js");
+      const testIds = buildTestStkIds();
+      await paymentRepo.addAuditEntry(payment._id, {
+        action: "test_stk_initiated",
+        checkoutRequestId: testIds.checkoutRequestId,
+        merchantRequestId: testIds.merchantRequestId,
+        phone: String(phone),
+        amount: Number(amount),
+        metadata: { source: "test_payment" },
+      });
+      logger.info(MODULE, "[TEST PAYMENT] STK push simulated (no Daraja call)", {
+        paymentId: String(payment._id),
+        checkoutRequestId: testIds.checkoutRequestId,
+      });
+      return res.json({
+        success: true,
+        testMode: true,
+        paymentId: payment._id,
+        checkoutRequestId: testIds.checkoutRequestId,
+        merchantRequestId: testIds.merchantRequestId,
+        message: "TEST MODE: no real STK Push sent. Use the test payment panel to simulate a result.",
+      });
+    }
+
     const stkResponse = await mpesaClient.stkPush({
       phone,
       amount: Number(amount),
@@ -176,8 +205,26 @@ export const queryTransaction = asyncHandler(async (req, res) => {
     throw ApiError.badRequest("checkoutRequestId is required");
   }
 
-  if (!mpesaClient.isConfigured) {
+  if (!mpesaClient.isConfigured && !isTestPaymentMode()) {
     throw ApiError.serviceUnavailable("MPESA payment gateway is not configured");
+  }
+
+  // ── TEST MODE: report the local payment status instead of Daraja ──
+  if (isTestPaymentMode()) {
+    const payment = await paymentRepo.findByMpesaCheckoutRequestId(checkoutRequestId);
+    if (!payment) {
+      return res.json({ ResultCode: 1037, ResultDesc: 'Test payment pending', testMode: true, checkoutRequestId });
+    }
+    if (payment.paymentStatus === 'captured') {
+      return res.json({ ResultCode: 0, ResultDesc: 'Test payment successful', testMode: true, checkoutRequestId, paymentId: payment._id });
+    }
+    if (payment.paymentStatus === 'failed') {
+      return res.json({ ResultCode: 1032, ResultDesc: 'Test payment failed/cancelled', testMode: true, checkoutRequestId, paymentId: payment._id });
+    }
+    if (payment.paymentStatus === 'expired') {
+      return res.json({ ResultCode: 1037, ResultDesc: 'Test payment expired (timeout)', testMode: true, checkoutRequestId, paymentId: payment._id });
+    }
+    return res.json({ ResultCode: 1037, ResultDesc: 'Test payment pending', testMode: true, checkoutRequestId, paymentId: payment._id });
   }
 
   const result = await mpesaClient.queryStatus(checkoutRequestId);

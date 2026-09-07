@@ -3,6 +3,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { validate, schemas } from '../middleware/validate.js';
 import { PaymentService } from '../payment/PaymentService.js';
+import { getPaymentModeStatus, simulateTestPayment } from '../controllers/testPaymentController.js';
 import { ApiError } from '../utils/ApiError.js';
 import logger from '../notification/logger.js';
 
@@ -13,8 +14,17 @@ const paymentService = new PaymentService();
 
 const initiateLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, message: 'Too many payment attempts, please try again later.' });
 const verifyLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, message: 'Too many verification attempts, please try again later.' });
+const testLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, message: 'Too many test payment attempts, please try again later.' });
 
 import { VALID_ITEM_TYPES } from '../shared/constants/index.js';
+
+// ── Payment mode (backend source of truth; public so the frontend can
+//    decide whether to show the TEST MODE panel) ──
+router.get('/payment/mode', getPaymentModeStatus);
+
+// ── TEST MODE ONLY (PAYMENT_MODE=test) ──
+// Canonical alias of POST /api/mpesa/test. Auth required; 403 in live mode.
+router.post('/payment/test', requireAuth, testLimiter, simulateTestPayment);
 
 router.post('/create-order', initiateLimiter, async (req, res, next) => {
   try {

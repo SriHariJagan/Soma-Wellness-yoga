@@ -35,3 +35,19 @@ export async function queryMpesaTransaction(checkoutRequestId) {
     body: JSON.stringify({ checkoutRequestId }),
   });
 }
+
+/** Backend-reported payment mode (backend is the source of truth). */
+export async function getPaymentMode() {
+  return request("/api/mpesa/mode", { method: "GET" });
+}
+
+/**
+ * Simulate a test payment result (TEST MODE ONLY — backend returns 403
+ * "Test payment mode is disabled" when PAYMENT_MODE=live).
+ */
+export async function simulateTestPayment({ paymentId, checkoutRequestId, orderId, status }) {
+  return request("/api/mpesa/test", {
+    method: "POST",
+    body: JSON.stringify({ paymentId, checkoutRequestId, orderId, status }),
+  });
+}

@@ -162,6 +162,11 @@ const envSchema = z.object({
   TWILIO_AUTH_TOKEN: z.string().optional(),
   TWILIO_VERIFY_SERVICE_SID: z.string().optional(),
 
+  // ── Payment mode (backend source of truth) ──
+  // test = simulated payment (testing-code branch only)
+  // live = real M-Pesa payment (production default)
+  PAYMENT_MODE: z.enum(['test', 'live']).optional().default('live'),
+
   // ── MPESA (Safaricom Daraja) — all optional, gateway degrades gracefully if missing ──
   MPESA_ENV: z.enum(['sandbox', 'production']).optional().default('sandbox'),
   MPESA_CONSUMER_KEY: z.string().optional(),
