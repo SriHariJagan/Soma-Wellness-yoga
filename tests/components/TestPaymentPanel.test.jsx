@@ -73,4 +73,15 @@ describe('TestPaymentPanel (TEST MODE ONLY)', () => {
     await user.click(screen.getByRole('button', { name: 'Simulate Success' }));
     expect(await screen.findByText(/test payment mode is disabled/i)).toBeInTheDocument();
   });
+
+  it('ownership 403 offers a fresh-payment recovery button that calls onReset', async () => {
+    const user = userEvent.setup();
+    const onReset = vi.fn();
+    mockFetch.mockResolvedValue({ ok: false, json: async () => ({ message: 'Payment does not belong to this user — start a fresh test payment as the current login' }) });
+    render(<TestPaymentPanel {...baseProps} onReset={onReset} />);
+    await user.click(screen.getByRole('button', { name: 'Simulate Success' }));
+    const resetBtn = await screen.findByRole('button', { name: /start fresh test payment/i });
+    await user.click(resetBtn);
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
 });

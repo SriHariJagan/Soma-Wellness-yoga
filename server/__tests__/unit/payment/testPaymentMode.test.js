@@ -10,6 +10,7 @@ import {
   TEST_SCENARIOS,
   normalizeScenario,
   buildTestStkIds,
+  TestPaymentService,
 } from '../../../payment/gateways/test/TestPaymentService.js';
 import {
   getPaymentModeStatus,
@@ -151,5 +152,28 @@ describe('test payment endpoints', () => {
     );
     expect(next).toHaveBeenCalledTimes(1);
     expect(next.mock.calls[0][0].statusCode).toBe(403);
+  });
+});
+
+describe('test payment ownership (no DB required)', () => {
+  const svc = new TestPaymentService();
+
+  test('matching owner passes', () => {
+    expect(() => svc._assertOwnership({ _id: 'p1', user: 'u1' }, 'u1')).not.toThrow();
+  });
+
+  test('guest payment (no owner) passes for any caller', () => {
+    expect(() => svc._assertOwnership({ _id: 'p1', user: null }, 'u2')).not.toThrow();
+  });
+
+  test('mismatched owner is rejected with 403 + recovery hint', () => {
+    expect.assertions(3);
+    try {
+      svc._assertOwnership({ _id: 'p1', user: 'user-A' }, 'user-B');
+    } catch (err) {
+      expect(err.statusCode).toBe(403);
+      expect(err.message).toMatch(/does not belong to this user/);
+      expect(err.message).toMatch(/fresh test payment/);
+    }
   });
 });

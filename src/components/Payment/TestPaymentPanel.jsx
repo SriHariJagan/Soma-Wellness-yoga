@@ -15,15 +15,22 @@ const SCENARIOS = [
  * Rendered only when the backend reports PAYMENT_MODE=test.
  * Drives the full downstream booking/payment flow without real M-Pesa.
  */
-export default function TestPaymentPanel({ amount, paymentId, checkoutRequestId, orderId, onSuccess, onError }) {
+export default function TestPaymentPanel({ amount, paymentId, checkoutRequestId, orderId, onSuccess, onError, onReset }) {
   const [busy, setBusy] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [recoverable, setRecoverable] = useState(false);
+
+  // Ownership / session problems (e.g. payment was created under a
+  // different login) brick every scenario — offer a fresh payment instead.
+  const isRecoverableError = (err) =>
+    /belong|fresh test payment|expired|invalid token|no token|unauthori[sz]ed|sign in/i.test(err?.message || "");
 
   const runScenario = async (scenario) => {
     setBusy(scenario);
     setMessage("");
     setMessageType("");
+    setRecoverable(false);
     try {
       const res = await simulateTestPayment({ paymentId, checkoutRequestId, orderId, status: scenario });
       if (scenario === "success") {
@@ -40,6 +47,7 @@ export default function TestPaymentPanel({ amount, paymentId, checkoutRequestId,
     } catch (err) {
       setMessage(err.message || `Simulation failed for ${scenario}.`);
       setMessageType("error");
+      setRecoverable(isRecoverableError(err));
       onError?.({ message: err.message, testMode: true, scenario });
     } finally {
       setBusy(null);
@@ -76,10 +84,16 @@ export default function TestPaymentPanel({ amount, paymentId, checkoutRequestId,
       {message && (
         <div className={`testpay-msg ${messageType}`} role="status">
           {message}
-          {(messageType === "error" || messageType === "pending") && (
+          {(messageType === "error" || messageType === "pending") && !recoverable && (
             <span className="testpay-retry-hint"> You can retry with another scenario above.</span>
           )}
         </div>
+      )}
+
+      {recoverable && onReset && (
+        <button type="button" className="testpay-btn testpay-pending" style={{ width: "100%", marginTop: 10 }} onClick={() => { setMessage(""); setMessageType(""); setRecoverable(false); onReset?.(); }}>
+          ↻ Start fresh test payment as current login
+        </button>
       )}
     </div>
   );

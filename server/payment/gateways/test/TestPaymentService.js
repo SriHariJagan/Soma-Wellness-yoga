@@ -20,11 +20,11 @@
 // atomic guards enforce this at the DB layer).
 // ============================================================
 import { PaymentRepository } from '../../repository/PaymentRepository.js';
+import ApiError from '../../../utils/ApiError.js';
 import {
   PaymentInitiationError,
   PaymentNotFoundError,
   PaymentStateError,
-  PaymentVerificationError,
 } from '../../errors/PaymentErrors.js';
 import logger from '../../../notification/logger.js';
 
@@ -98,11 +98,14 @@ export class TestPaymentService {
   _assertOwnership(payment, userId) {
     // Guest-created payments (user == null, e.g. public booking STK push)
     // are simulatable by any caller in test mode; owned payments must match.
+    // 403 (not 400) so the test UI can offer a "start fresh payment" recovery.
     if (payment.user && userId && String(payment.user) !== String(userId)) {
       logger.warn(`[${MODULE}]`, 'Ownership mismatch', {
         paymentId: String(payment._id),
       });
-      throw new PaymentVerificationError('Payment does not belong to this user');
+      throw ApiError.forbidden(
+        'Payment does not belong to this user — start a fresh test payment as the current login',
+      );
     }
   }
 

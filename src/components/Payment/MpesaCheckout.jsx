@@ -18,6 +18,7 @@ export default function MpesaCheckout({ amount, accountRef, description, payment
   const [modeLoading, setModeLoading] = useState(true);
   const [testIds, setTestIds] = useState(null);
   const [testInitError, setTestInitError] = useState("");
+  const [testNonce, setTestNonce] = useState(0);
   const pollRef = useRef(null);
   const pollCountRef = useRef(0);
 
@@ -55,7 +56,7 @@ export default function MpesaCheckout({ amount, accountRef, description, payment
       .catch((err) => { if (!cancelled) setTestInitError(err.message || "Could not create test payment."); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modeLoading, testMode]);
+  }, [modeLoading, testMode, testNonce]);
 
   const normalisePhone = (raw) => {
     let p = raw.replace(/[\s\-()]/g, "");
@@ -188,6 +189,14 @@ export default function MpesaCheckout({ amount, accountRef, description, payment
           // Stay on the panel so the tester can retry another scenario.
           if (err?.message) setMessage(err.message);
           onError?.(err);
+        }}
+        onReset={() => {
+          // Discard the orphaned payment and create a fresh one owned by
+          // the current login (fixes ownership/session mismatches).
+          setTestIds(null);
+          setMessage("");
+          setTestInitError("");
+          setTestNonce((n) => n + 1);
         }}
       />
     );
