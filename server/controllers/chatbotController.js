@@ -162,10 +162,10 @@ export const createChatbotEnquiry = asyncHandler(async (req, res) => {
 export const getChatbotConfig = asyncHandler(async (req, res) => {
   const rawDisplay = process.env.WHATSAPP_DISPLAY_PHONE || process.env.WHATSAPP_NUMBER || '';
   // Fallback to site phone if env not set
-  const fallback = '+254700000000';
+  const fallback = '+919999976540';
   const displayPhone = rawDisplay || fallback;
   // Normalise to digits for wa.me (strip + and spaces)
-  const waNumber = displayPhone.replace(/[^0-9]/g, '') || '254700000000';
+  const waNumber = displayPhone.replace(/[^0-9]/g, '') || '919999976540';
 
   res.json({
     whatsappNumber: waNumber,
