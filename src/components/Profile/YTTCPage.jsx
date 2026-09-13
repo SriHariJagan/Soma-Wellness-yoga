@@ -9,13 +9,13 @@ import {
 import styles from "./YTTCPage.module.css";
 
 const learningItems = [
-  "Yoga foundation, philosophy, history, and major paths of yoga",
-  "Patanjali Yoga Sutra, Hatha Yoga Pradipika, Gheranda Samhita, Bhagavad Gita",
+  "Foundations of movement, philosophy, history, and major wellness traditions",
+  "Classical texts on philosophy, breath science, and meditation",
   "Basic anatomy: skeletal, muscular, cardiovascular, respiratory, endocrine systems",
-  "Practical yoga training: mantra chanting, Surya Namaskar, standing, sitting, supine, and prone asanas",
-  "Pranayama, mudra, bandha, meditation, Yoga Nidra, and breath awareness",
-  "Yogic management of common disorders and lifestyle guidance",
-  "Teaching methodology, class sequencing, correction, safety, and practice teaching",
+  "Practical training: chanting, sun salutations, standing, sitting, supine, and prone postures",
+  "Breathwork, meditation, guided deep rest, and breath awareness",
+  "Holistic management of common lifestyle concerns and lifestyle guidance",
+  "Guiding methodology, session sequencing, correction, safety, and practice teaching",
 ];
 
 const courseFeatures = [
@@ -117,10 +117,10 @@ export default function YTTCPage({ student }) {
       >
         <div>
           <span className={styles.badge}>26th Batch • Online & Hybrid</span>
-          <h1>200 Hours Yoga Teacher Training Course</h1>
+          <h1>200-Hour Yoga Teacher Training Course</h1>
           <p>
             Welcome {student?.name || "Student"}, begin your journey to become a
-            confident and certified yoga teacher with Soma Wellness.
+            confident and certified yoga teacher with SomaWellness.
           </p>
 
           {loading ? (
@@ -169,7 +169,7 @@ export default function YTTCPage({ student }) {
         <div className={styles.heroCard}>
           <h3>Course Overview</h3>
           <ul>
-            <li><strong>Course:</strong> 200 Hours Yoga Teacher Training Course</li>
+            <li><strong>Course:</strong> 200-Hour Yoga Teacher Training Course</li>
             <li><strong>Batch:</strong> 26th Batch</li>
             <li><strong>Duration:</strong> 45 Days</li>
             <li><strong>Dates:</strong> 15 July – 30 August 2026</li>
@@ -238,9 +238,9 @@ export default function YTTCPage({ student }) {
       <section className={styles.card}>
         <h2>Who Can Join This Course?</h2>
         <div className={styles.chipWrap}>
-          <span>Yoga practitioners</span>
+            <span>Wellness practitioners</span>
           <span>Beginners</span>
-          <span>Aspiring yoga teachers</span>
+              <span>Aspiring practitioners</span>
           <span>Fitness professionals</span>
           <span>Wellness coaches</span>
           <span>School teachers</span>
@@ -248,7 +248,7 @@ export default function YTTCPage({ student }) {
           <span>Lifestyle consultants</span>
         </div>
         <p className={styles.note}>
-          No advanced yoga background is required. A sincere attitude and regular
+            No advanced background is required. A sincere attitude and regular
           participation are most important.
         </p>
       </section>
@@ -283,14 +283,14 @@ export default function YTTCPage({ student }) {
           <p>
             After successful completion of the course, required attendance,
             practice, assignments, and assessment, students will receive
-             certification from Soma Wellness.
+              certification from SomaWellness.
           </p>
 
           <div className={styles.certBox}>
             <i className="ti ti-certificate" aria-hidden="true" />
             <div>
-               <strong>Soma Wellness Certification</strong>
-              <span>For sincere practitioners and future yoga teachers</span>
+               <strong>SomaWellness Certification</strong>
+              <span>For sincere practitioners and future guides</span>
             </div>
           </div>
         </div>

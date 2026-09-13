@@ -194,6 +194,75 @@ export const RETAIL = [
   { label: 'Water', sku: 'WATER', approxPrice: 200 },
 ];
 
+// ── Service-catalog records (Service collection) ───────────────
+// Approved SOMA Wellness Center offerings only. Used by
+// syncOfficialServices + seed-services.js so the DB catalog can
+// never drift back to legacy items.
+const S = (name, description, mode, category, type, price, pricingModel, extra = {}) => ({
+  name, description, mode, category, type, price, pricingModel,
+  totalSessions: 0, sessionDuration: 60, scheduleDays: [], scheduleTime: 'Flexible',
+  active: true, isPopular: false, displayOrder: 99, ...extra,
+});
+
+export const SOMA_SERVICES = [
+  S('SOMA Discovery', '7 days of unlimited yoga + wellness orientation. New clients only.', 'center', 'Membership', 'Trial', 3000, 'flat', { sessionDuration: 60, isPopular: true, displayOrder: 1 }),
+  S('Single Class', 'One group yoga class.', 'center', 'Membership', 'Drop-in', 2500, 'per_session', { sessionDuration: 60, displayOrder: 2 }),
+  S('SOMA JUA', 'Move · Energise · Shine. 8 group yoga classes/month + member rates on everything else.', 'center', 'Membership', 'Monthly', 12000, 'monthly', { isPopular: true, displayOrder: 3 }),
+  S('SOMA AMANI', 'Move into balance. Unlimited group yoga, meditation & breathwork, SOMA DAILY included.', 'center', 'Membership', 'Monthly', 18500, 'monthly', { isPopular: true, displayOrder: 4 }),
+  S('SOMA UZIMA', 'BEST VALUE. Yoga and recovery, complete. Unlimited yoga & meditation, SOMA DAILY, 2×60-min massages, 1 private yoga/therapy session, priority booking, 2 guest passes, 15% off.', 'center', 'Membership', 'Monthly', 28500, 'monthly', { isPopular: true, displayOrder: 5 }),
+  S('SOMA FAMILY', 'One household, one plan. 2 adults unlimited yoga, 1 children/teen programme, meditation & breathwork, SOMA DAILY, 10% off.', 'center', 'Membership', 'Monthly', 35000, 'monthly', { displayOrder: 6 }),
+  S('5-Class Pass', 'KES 2,200/class. Use within 6 weeks from first use.', 'center', 'Membership', 'Pass', 11000, 'flat', { totalSessions: 5, validityDuration: 6, validityUnit: 'weeks', displayOrder: 7 }),
+  S('10-Class Pass', 'KES 2,100/class. Use within 3 months from first use.', 'center', 'Membership', 'Pass', 21000, 'flat', { totalSessions: 10, validityDuration: 3, validityUnit: 'months', displayOrder: 8 }),
+  S('Therapy Assessment', 'Understand how you move, what hurts, your goals. Required before therapy starts.', 'center', 'Private', 'Assessment', 6500, 'per_session', { sessionDuration: 75, displayOrder: 9 }),
+  S('Single Private Session', 'Private yoga or yoga therapy.', 'center', 'Private', 'One-to-One', 5500, 'per_session', { sessionDuration: 60, displayOrder: 10 }),
+  S('5-Session Package', '5 × 60-minute private sessions.', 'center', 'Private', 'Package', 25000, 'flat', { totalSessions: 5, sessionDuration: 60, displayOrder: 11 }),
+  S('10-Session Package', '10 × 60-minute private sessions.', 'center', 'Private', 'Package', 46000, 'flat', { totalSessions: 10, sessionDuration: 60, displayOrder: 12 }),
+  S('Two People Together', '60-minute private session for two.', 'center', 'Private', 'Duet', 8000, 'per_session', { sessionDuration: 60, displayOrder: 13 }),
+  S('Small Group (3–5)', '60-minute private session for 3–5 people.', 'center', 'Private', 'Small Group', 9500, 'per_session', { sessionDuration: 60, displayOrder: 14 }),
+  S('Home / Hotel Session', 'From KES 9,500. Final quote on distance, group size, duration. Members 15% off.', 'home', 'Private', 'Off-site', 9500, 'contact', { sessionDuration: 60, contactEmail: 'hello@somawellness.co.ke', displayOrder: 15 }),
+  S('SOMA MAMA — 4 Sessions', 'Pregnancy programme block of 4.', 'center', 'Life Stages', 'Pregnancy', 12000, 'flat', { totalSessions: 4, sessionDuration: 60, displayOrder: 16 }),
+  S('SOMA MAMA — 8 Sessions', 'Pregnancy programme block of 8.', 'center', 'Life Stages', 'Pregnancy', 22000, 'flat', { totalSessions: 8, sessionDuration: 60, displayOrder: 17 }),
+  S('SOMA MAMA+ — 4 Sessions', 'After-birth programme block of 4.', 'center', 'Life Stages', 'Postnatal', 11500, 'flat', { totalSessions: 4, sessionDuration: 60, displayOrder: 18 }),
+  S('SOMA MAMA+ — 8 Sessions', 'After-birth programme block of 8.', 'center', 'Life Stages', 'Postnatal', 21000, 'flat', { totalSessions: 8, sessionDuration: 60, displayOrder: 19 }),
+  S('SOMA YOUNG — 4 Sessions', 'Ages 5–17 block of 4.', 'center', 'Life Stages', 'Children', 7000, 'flat', { totalSessions: 4, sessionDuration: 60, displayOrder: 20 }),
+  S('SOMA YOUNG — 8 Sessions', 'Ages 5–17 block of 8.', 'center', 'Life Stages', 'Children', 12000, 'flat', { totalSessions: 8, sessionDuration: 60, displayOrder: 21 }),
+  S('SOMA AGE WELL — 4 Sessions', 'Seniors block of 4.', 'center', 'Life Stages', 'Seniors', 7000, 'flat', { totalSessions: 4, sessionDuration: 60, displayOrder: 22 }),
+  S('SOMA AGE WELL — 8 Sessions', 'Seniors block of 8.', 'center', 'Life Stages', 'Seniors', 12000, 'flat', { totalSessions: 8, sessionDuration: 60, displayOrder: 23 }),
+  S('Single Pregnancy Class', 'One pregnancy class.', 'center', 'Life Stages', 'Pregnancy', 3500, 'per_session', { sessionDuration: 60, displayOrder: 24 }),
+  S('Private Pregnancy Session', '60-minute private pregnancy session.', 'center', 'Life Stages', 'Pregnancy', 5500, 'per_session', { sessionDuration: 60, displayOrder: 25 }),
+  S('School Holiday Camp — 3 Days', 'Ages 5–12.', 'center', 'Life Stages', 'Camp', 9000, 'flat', { displayOrder: 26 }),
+  S('School Holiday Camp — 5 Days', 'Ages 5–12.', 'center', 'Life Stages', 'Camp', 14000, 'flat', { displayOrder: 27 }),
+  S('Relaxation Massage', '60-minute relaxation massage.', 'center', 'Restore', 'Massage', 5500, 'per_session', { sessionDuration: 60, displayOrder: 28 }),
+  S('Aromatherapy Massage', '60-minute aromatherapy massage.', 'center', 'Restore', 'Massage', 6000, 'per_session', { sessionDuration: 60, displayOrder: 29 }),
+  S('Deep Tissue / Sports Massage', '60-minute deep tissue or sports massage.', 'center', 'Restore', 'Massage', 6500, 'per_session', { sessionDuration: 60, displayOrder: 30 }),
+  S('Head & Shoulders / Feet Treatment', '30-minute head & shoulders or feet treatment.', 'center', 'Restore', 'Treatment', 3000, 'per_session', { sessionDuration: 30, displayOrder: 31 }),
+  S('Body Scrub', '45-minute body scrub.', 'center', 'Restore', 'Treatment', 4000, 'per_session', { sessionDuration: 45, displayOrder: 32 }),
+  S('Meditation / Breathwork / Yoga Nidra', '45-minute class. Included for AMANI, UZIMA, FAMILY.', 'center', 'Restore', 'Mindfulness', 1800, 'per_session', { sessionDuration: 45, displayOrder: 33 }),
+  S('STILLNESS', 'The deep calm ritual. Restorative yoga, guided meditation, 60-min massage, herbal tea. 2 hours. Mon–Fri 10:00–15:00; 20% surcharge weekends/evenings.', 'center', 'Signature', 'Journey', 11000, 'per_session', { sessionDuration: 120, displayOrder: 34 }),
+  S('THE ACACIA', 'Our premium journey. Private yoga, meditation, 60-min massage, body treatment, refreshments, rest. 2.5 hours. Mon–Fri 10:00–15:00; 20% surcharge weekends/evenings.', 'center', 'Signature', 'Journey', 18500, 'per_session', { sessionDuration: 150, displayOrder: 35 }),
+  S('FOR TWO', 'A journey for two. Couple yoga/stretching, massage for two, herbal tea, quiet time. 2 hours per couple. Mon–Fri 10:00–15:00; 20% surcharge weekends/evenings.', 'center', 'Signature', 'Journey', 22500, 'per_session', { sessionDuration: 120, displayOrder: 36 }),
+  S('SOMA RESET', 'Six weeks to rebuild. Assessment, 12 yoga sessions, 6 meditation/Yoga Nidra, 2×60-min massages, home plan, closing review.', 'center', 'Signature', 'Programme', 32000, 'flat', { displayOrder: 37 }),
+  S('Yoga Foundations', '25-hour foundation course.', 'hybrid', 'Academy', 'Course', 30000, 'flat', { displayOrder: 38 }),
+  S('SOMA 100 — Foundation Teacher Course', '100-hour foundation teacher course.', 'hybrid', 'Academy', 'Course', 85000, 'flat', { displayOrder: 39 }),
+  S('SOMA 200 — Yoga Teacher Training', '200-hour yoga teacher training. Early enrolment KES 145,000. Instalments available.', 'hybrid', 'Academy', 'Course', 165000, 'flat', { displayOrder: 40 }),
+  S('Corporate Single Session', '60 min yoga & mobility, up to 20 people.', 'hybrid', 'Corporate', 'Corporate', 18000, 'flat', { sessionDuration: 60, contactEmail: 'hello@somawellness.co.ke', displayOrder: 41 }),
+  S('Corporate Monthly — 4 Sessions', '4 sessions/month at your offices.', 'hybrid', 'Corporate', 'Corporate', 65000, 'contact', { contactEmail: 'hello@somawellness.co.ke', displayOrder: 42 }),
+  S('Corporate Monthly — 8 Sessions', '8 sessions/month at your offices.', 'hybrid', 'Corporate', 'Corporate', 120000, 'contact', { contactEmail: 'hello@somawellness.co.ke', displayOrder: 43 }),
+  S('Corporate Wellness Day', 'Half/full day. From KES 150,000.', 'hybrid', 'Corporate', 'Corporate', 150000, 'contact', { contactEmail: 'hello@somawellness.co.ke', displayOrder: 44 }),
+  S('Corporate Annual Contract', 'Weekly sessions + quarterly workshop. From KES 600,000.', 'hybrid', 'Corporate', 'Corporate', 600000, 'contact', { contactEmail: 'hello@somawellness.co.ke', displayOrder: 45 }),
+  S('SOMA DAILY — Monthly', 'Practice beyond the mat. Complete library access.', 'online', 'Daily', 'Subscription', 1500, 'monthly', { displayOrder: 46 }),
+  S('SOMA DAILY — Annual', 'Two months free. Complete library access.', 'online', 'Daily', 'Subscription', 15000, 'flat', { validityDuration: 12, validityUnit: 'months', displayOrder: 47 }),
+];
+
+// Legacy service names retired from the catalog (removed by sync).
+export const LEGACY_SERVICE_NAMES = [
+  'Offline Group Yoga', 'Online Group Yoga', 'Personal Yoga (Center)', 'Personal Yoga (Home)',
+  'Kids Yoga', 'Pregnancy Yoga (Center)', 'Pregnancy Yoga (Home)', 'Yoga for Stress',
+  'Corporate Yoga', 'Advanced Yoga (Center)', 'Therapy Yoga (Center)', 'Therapy Yoga (Home)',
+  'Abhyanga (Ayurvedic Massage)', 'Shirodhara (Forehead Oil-Pulling Therapy)',
+  'Pranayama & Meditation', 'Yoga at Home',
+];
+
 // Helpers
 export function getTierMonthly(tierKey) {
   return MEMBERSHIP_TIERS[tierKey]?.monthly ?? null;

@@ -5,7 +5,7 @@ import {
   LuLayoutDashboard, LuUsers, LuFilter, LuRadioTower, LuGraduationCap,
   LuReceipt, LuCalendarClock, LuFolderLock, LuMegaphone, LuTicketPercent, LuCalendar,
   LuSparkles, LuClock, LuGift, LuMail, LuBookOpen, LuCalendarCheck,
-  LuCalendarDays, LuActivity, LuTruck,
+  LuCalendarDays, LuActivity, LuTruck, LuUserCog,
 } from 'react-icons/lu';
 
 // Layout Shell Components
@@ -34,10 +34,7 @@ const YTTCInvites = lazy(() => import('./YTTCInvites'));
 const AttendanceManagement = lazy(() => import('./AttendanceManagement'));
 const BlogManagement = lazy(() => import('./BlogManagement'));
 const EmailHealth = lazy(() => import('./EmailHealth'));
-const BookManagement = lazy(() => import('./BookManagement'));
-const StoreOrders = lazy(() => import('./StoreOrders'));
-const ShippingManagement = lazy(() => import('./ShippingManagement'));
-const BulkEnquiries = lazy(() => import('./BulkEnquiries'));
+const ReceptionStaffManagement = lazy(() => import('./ReceptionStaffManagement'));
 
 import {
   getOverview, getPayments, getConsultations, getStudents,
@@ -55,8 +52,8 @@ const TabFallback = () => (
   </div>
 );
 
-export default function YogaAdmin({ onLogout = () => {} }) {
-  const [activeTab, setActiveTab] = useState('insights');
+export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
+  const [activeTab, setActiveTab] = useState(isManager ? 'attendance-mgmt' : 'insights');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', type: '' });
   const [collapsed, setCollapsed] = useState(false);
@@ -81,10 +78,10 @@ export default function YogaAdmin({ onLogout = () => {} }) {
   const [batchForm, setBatchForm] = useState({ name: '', timing: '', trainer: '', zoomLink: '' });
 
 
-  const flash = (message, type = 'success') => {
+  const flash = useCallback((message, type = 'success') => {
     setFeedback({ message, type });
     setTimeout(() => setFeedback({ message: '', type: '' }), 4500);
-  };
+  }, []);
 
   const loadAll = useCallback(async () => {
     const safe = (p) => p.then((v) => v).catch(() => null);
@@ -116,9 +113,14 @@ export default function YogaAdmin({ onLogout = () => {} }) {
     }
   }, [mobileOpen]);
 
+  // Center managers see only front-desk tabs: attendance, walk-in booking,
+  // class invites and events. Revenue, coupons, comms and settings stay admin-only.
+  const MANAGER_TABS = ['insights', 'students', 'class-invites', 'attendance-mgmt', 'events'];
+
   const NAV_ITEMS = [
     { id: 'insights',       label: 'Dashboard',            icon: <LuLayoutDashboard /> },
     { id: 'students',       label: 'Students',             icon: <LuUsers />,         badge: students.length || null },
+    { id: 'reception-staff', label: 'Reception Staff',     icon: <LuUserCog />,       adminOnly: true },
     { id: 'leads',          label: 'Pipeline CRM',         icon: <LuFilter />,        badge: (overview.totalLeads ?? leads.length) || null },
     { id: 'batches',        label: 'Batches & Streams',    icon: <LuRadioTower /> },
     { id: 'class-invites',  label: 'Class Invites',        icon: <LuMail /> },
@@ -137,11 +139,11 @@ export default function YogaAdmin({ onLogout = () => {} }) {
     { id: 'free-trials',      label: 'Free Trial',           icon: <LuGift /> },
     { id: 'blog-mgmt',        label: 'Blog Management',      icon: <LuSparkles /> },
     { id: 'email-health',     label: 'Email Health',         icon: <LuActivity /> },
-    { id: 'store-books',      label: 'Store — Books',        icon: <LuBookOpen /> },
-    { id: 'store-orders',     label: 'Store — Orders',       icon: <LuReceipt />,   badge: overview.bookStore?.pendingDispatch || null },
-    { id: 'store-shipping',   label: 'Store — Shipping',     icon: <LuTruck /> },
-    { id: 'store-bulk',       label: 'Store — Bulk',         icon: <LuUsers />,     badge: overview.bookStore?.newBulkEnquiries || null },
   ];
+
+  const visibleNavItems = isManager
+    ? NAV_ITEMS.filter((n) => MANAGER_TABS.includes(n.id))
+    : NAV_ITEMS.filter((n) => !n.adminOnly || !isManager);
 
   // Derived feed data for the topbar (presentation only).
   const recentStudents = overview.recentStudents?.length ? overview.recentStudents : students.slice(0, 4);
@@ -156,10 +158,14 @@ export default function YogaAdmin({ onLogout = () => {} }) {
     (overview.metrics?.newThisMonth ? { title: `${overview.metrics.newThisMonth} new members this month`, meta: 'Growth', color: '#16A34A' } : null),
   ].filter(Boolean);
 
-  const goCreate = () => { setActiveTab('insights'); setQuickModal('student'); setMobileOpen(false); };
+  const goCreate = () => { setActiveTab(isManager ? 'students' : 'insights'); setQuickModal('student'); setMobileOpen(false); };
   const closeModal = () => { setQuickModal(null); };
   const afterCreate = () => { closeModal(); loadAll(); };
-  const handleQuickAction = (key) => { setActiveTab('insights'); setQuickModal(key); };
+  // Managers may only quick-create students (walk-ins); payments/leads/batches stay admin-only.
+  const handleQuickAction = (key) => {
+    if (isManager && key !== 'student') { setActiveTab('students'); return; }
+    setActiveTab('insights'); setQuickModal(key);
+  };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -175,7 +181,7 @@ export default function YogaAdmin({ onLogout = () => {} }) {
       flash('Error: Name, Email, and Phone are mandatory.', 'error');
       return;
     }
-    const planMonths = studentForm.plan === 'Annual Pass' ? 12 : studentForm.plan === 'Quarterly Pass' ? 3 : studentForm.plan === 'Monthly Pass' ? 1 : 0;
+    const planMonths = /SOMA (JUA|AMANI|UZIMA|FAMILY)/.test(studentForm.plan || '') ? 1 : 0;
     try {
       await createStudent({
         name: studentForm.name, email: studentForm.email, phone: studentForm.phone,
@@ -190,7 +196,9 @@ export default function YogaAdmin({ onLogout = () => {} }) {
     }
   };
 
-  const adminUser = { name: 'Studio Admin', role: 'Studio Administrator', avatar: 'SA' };
+  const adminUser = isManager
+    ? { name: 'Center Manager', role: 'Center Manager', avatar: 'CM' }
+    : { name: 'Studio Admin', role: 'Studio Administrator', avatar: 'SA' };
 
   return (
     <AdminQueryProvider>
@@ -199,7 +207,7 @@ export default function YogaAdmin({ onLogout = () => {} }) {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
-        navItems={NAV_ITEMS}
+        navItems={visibleNavItems}
         user={adminUser}
         onSignOut={() => setShowLogoutModal(true)}
         collapsed={collapsed}
@@ -243,6 +251,11 @@ export default function YogaAdmin({ onLogout = () => {} }) {
             />
           </Suspense>
         )}
+        {activeTab === 'reception-staff' && (
+          <Suspense fallback={<TabFallback />}>
+            <ReceptionStaffManagement onFeedback={flash} />
+          </Suspense>
+        )}
         {activeTab === 'leads' && <Suspense fallback={<TabFallback />}><PipelineCRMLeads leads={leads} onChanged={loadAll} /></Suspense>}
         {activeTab === 'batches' && <Suspense fallback={<TabFallback />}><BatchesStreams form={batchForm} setForm={setBatchForm} onChanged={loadAll} /></Suspense>}
         {activeTab === 'class-invites' && <Suspense fallback={<TabFallback />}><ClassInvites /></Suspense>}
@@ -269,10 +282,6 @@ export default function YogaAdmin({ onLogout = () => {} }) {
         {activeTab === 'free-trials' && <Suspense fallback={<TabFallback />}><FreeTrialManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'blog-mgmt' && <Suspense fallback={<TabFallback />}><BlogManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'email-health' && <Suspense fallback={<TabFallback />}><EmailHealth /></Suspense>}
-        {activeTab === 'store-books' && <Suspense fallback={<TabFallback />}><BookManagement /></Suspense>}
-        {activeTab === 'store-orders' && <Suspense fallback={<TabFallback />}><StoreOrders /></Suspense>}
-        {activeTab === 'store-shipping' && <Suspense fallback={<TabFallback />}><ShippingManagement /></Suspense>}
-        {activeTab === 'store-bulk' && <Suspense fallback={<TabFallback />}><BulkEnquiries /></Suspense>}
         </main>
       </div>
 

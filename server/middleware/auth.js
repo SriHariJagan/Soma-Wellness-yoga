@@ -70,6 +70,60 @@ export function requireRole(...roles) {
 
 export const requireAdmin = requireRole('admin');
 
+// Center staff (admin + center manager). Used by /api/staff — attendance,
+// walk-in booking and class invites. Revenue, coupons, comms and settings
+// remain requireAdmin-only.
+export const requireStaff = requireRole('admin', 'manager');
+
+// Reception role — used by /api/reception
+export const requireReception = requireRole('reception');
+
+/**
+ * Middleware factory: checks that the authenticated user has ANY of the
+ * specified permission keys (OR logic). Admin and manager roles bypass
+ * all permission checks. Must be used AFTER requireAuth.
+ *
+ * OR logic is intentional: permission keys come in alias pairs
+ * (e.g. customers.view / users.view, attendance.view / classes.attendance,
+ * bookings.view / sections.view). Granting either alias grants access,
+ * matching the frontend's hasAnyPermission(...) gating.
+ */
+export function requirePermission(...permissionKeys) {
+  return (req, res, next) => {
+    if (!req.user) return next(ApiError.unauthorized());
+    // Admin bypasses all permission checks
+    if (req.user.role === 'admin') return next();
+    // Manager bypasses permission checks (has staff-level access)
+    if (req.user.role === 'manager') return next();
+    // Only reception staff are subject to granular permission checks.
+    // Students (or any other role) must never pass, even if a permissions
+    // array was somehow set on their record.
+    if (req.user.role !== 'reception') {
+      logger.warn(MODULE, 'Non-staff role attempted permission-gated route', {
+        userId: String(req.user._id),
+        role: req.user.role,
+        required: permissionKeys,
+        requestId: req.requestId,
+      });
+      return next(ApiError.forbidden('You do not have permission to perform this action'));
+    }
+    // Check reception permissions (ANY match suffices)
+    const userPerms = req.user.permissions || [];
+    const hasAny = permissionKeys.length === 0 || permissionKeys.some((key) => userPerms.includes(key));
+    if (!hasAny) {
+      logger.warn(MODULE, 'Missing permissions', {
+        userId: String(req.user._id),
+        role: req.user.role,
+        required: permissionKeys,
+        has: userPerms,
+        requestId: req.requestId,
+      });
+      return next(ApiError.forbidden('You do not have permission to perform this action'));
+    }
+    next();
+  };
+}
+
 export async function optionalAuth(req, res, next) {
   try {
     const header = req.header('Authorization') || '';

@@ -234,7 +234,7 @@ export default function EventsManagement({ onChanged } = {}) {
           </div>
           <div>
             <label className={s.fieldLabel}>Location / Venue</label>
-            <input type="text" placeholder="e.g. Rishikesh Ashram or Online (Zoom)" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+            <input type="text" placeholder="e.g. Main studio or Online (Zoom)" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           </div>
           <div>
             <label className={s.fieldLabel}>Host / Instructor</label>

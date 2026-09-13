@@ -12,7 +12,7 @@ const ChatbotWelcomePopup = ({ onDismiss, onCta }) => {
     <div
       className="soma-cb-welcome"
       role="dialog"
-      aria-label="Welcome to Soma Wellness"
+      aria-label="Welcome to SomaWellness"
       aria-live="polite"
     >
       <button
@@ -29,10 +29,10 @@ const ChatbotWelcomePopup = ({ onDismiss, onCta }) => {
 
       <div className="soma-cb-welcome-head">
         <span className="soma-cb-welcome-dot" aria-hidden="true" />
-        <span className="soma-cb-welcome-eyebrow">Soma Wellness · Online</span>
+        <span className="soma-cb-welcome-eyebrow">SomaWellness · Online</span>
       </div>
 
-      <p className="soma-cb-welcome-title">Hi 👋 Welcome to Soma Wellness.</p>
+      <p className="soma-cb-welcome-title">Hi 👋 Welcome to SomaWellness.</p>
       <p className="soma-cb-welcome-body">
         Looking for the right wellness program? I can help you explore our courses, programs and services.
       </p>

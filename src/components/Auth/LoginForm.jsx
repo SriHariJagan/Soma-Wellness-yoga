@@ -41,11 +41,17 @@ const LoginForm = ({ onLoginSuccess }) => {
       const data = await res.json();
 
       if (res.ok) {
+        const role = data.user?.role || "student";
         const cleanUser = {
           id: data.user?.id || data.user?._id || "",
+          _id: data.user?._id || data.user?.id || "",
           email: data.user?.email || email,
           name: data.user?.name || email.split("@")[0].toUpperCase(),
-          role: data.user?.role || "student",
+          role,
+          status: data.user?.status || "active",
+          permissions: data.user?.permissions || [],
+          phone: data.user?.phone || "",
+          city: data.user?.city || "",
           planMonths: data.user?.planMonths || 0,
           planActive: data.user?.planActive || (data.user?.planMonths > 0) || false,
         };
@@ -58,7 +64,9 @@ const LoginForm = ({ onLoginSuccess }) => {
           location.state?.redirectTo ||
           new URLSearchParams(window.location.search).get("redirectTo");
         if (redirectTo) navigate(decodeURIComponent(redirectTo), { replace: true });
-        else navigate(cleanUser.role === "admin" ? "/yogaadmin" : "/studentdashboard", { replace: true });
+        else if (role === "student") navigate("/studentdashboard", { replace: true });
+        else if (role === "reception") navigate("/reception", { replace: true });
+        else navigate("/yogaadmin", { replace: true });
       } else {
         setError(data.error || t("errors.loginFailed"));
       }
@@ -81,7 +89,7 @@ const LoginForm = ({ onLoginSuccess }) => {
         {/* Header */}
         <div className={styles.cardHead}>
           <span className={styles.cardBadge}>
-            <span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI
+            <span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI
           </span>
           <h1 className={styles.cardTitle}>{t("auth.loginHeading")}</h1>
           <p className={styles.cardSub}>{t("auth.loginSub")}</p>

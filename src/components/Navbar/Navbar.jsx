@@ -8,22 +8,20 @@ import styles from "./Navbar.module.css";
 import SomaLogo from "../soma/SomaLogo";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { SOCIAL_LINKS } from "../../config/siteContent";
 
 const navLinksConfig = [
   { key: "navigation.join", path: "/classes", num: "01" },
-  { key: "navigation.private", path: "/private", num: "02" },
+  { key: "navigation.oneToOne", path: "/private", num: "02" },
   { key: "navigation.lifeStages", path: "/life-stages", num: "03" },
   { key: "navigation.restore", path: "/restore", num: "04" },
-  { key: "navigation.academy", path: "/yttc", num: "05" },
+  { key: "navigation.learnPartner", path: "/yttc", num: "05" },
   { key: "navigation.founding", path: "/founding", num: "06" },
+  { key: "navigation.contact", path: "/contact", num: "07" },
 ];
 
-const socialLinks = [
-  { href: "https://www.facebook.com/somawellness", label: "Facebook", icon: <FaFacebookF /> },
-  { href: "https://www.instagram.com/somawellness/", label: "Instagram", icon: <FaInstagram /> },
-  { href: "https://www.youtube.com/c/KapilKesari", label: "YouTube", icon: <FaYoutube /> },
-  { href: "https://twitter.com/SomaWellness", label: "Twitter/X", icon: <FaXTwitter /> },
-];
+const socialIcon = { facebook: <FaFacebookF />, instagram: <FaInstagram />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
+const socialLinks = SOCIAL_LINKS.map((s) => ({ ...s, icon: socialIcon[s.key] || <FaInstagram /> }));
 
 const sidebarVariants = {
   closed: { x: "100%", transition: { type: "spring", damping: 30, stiffness: 260 } },
@@ -55,7 +53,7 @@ const Navbar = ({ user, onLogout }) => {
   const [membershipStatus, setMembershipStatus] = useState(null);
 
   useEffect(() => {
-    if (user && user.role !== "admin") {
+    if (user && user.role !== "admin" && user.role !== "manager" && user.role !== "reception") {
       getMembershipStatus().then((res) => setMembershipStatus(res)).catch(() => {});
     }
   }, [user]);
@@ -99,10 +97,10 @@ const Navbar = ({ user, onLogout }) => {
     navigate("/login", { replace: true });
   };
 
-  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/order-tracking", "/checkout", "/books", "/bulk-orders", "/login", "/newuser", "/payment"];
+  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/login", "/newuser", "/payment"];
   const isHome = location.pathname === "/";
-  const solidNav = solidNavPages.includes(location.pathname) || location.pathname.startsWith("/books/");
-  const dashboardPath = user?.role === "admin" ? "/yogaadmin" : "/studentdashboard";
+  const solidNav = solidNavPages.includes(location.pathname);
+  const dashboardPath = user?.role === "admin" || user?.role === "manager" ? "/yogaadmin" : user?.role === "reception" ? "/reception" : "/studentdashboard";
   const dropdownItems = [
     { label: t("navigation.dashboard"), path: dashboardPath, icon: <DashIcon /> },
     { label: t("navigation.profile"), path: "/profile", icon: <UserIcon /> },
@@ -113,8 +111,8 @@ const Navbar = ({ user, onLogout }) => {
       <header className={`${styles.root} ${scrolled ? styles.scrolled : ""} ${solidNav ? styles.solid : ""}`}>
         <nav className={styles.navbar}>
           <div className={styles.navInner}>
-            <Link className={styles.logo} to="/" aria-label="Soma Wellness — Home">
-              <SomaLogo size={56} variant={isHome && !scrolled && !solidNav ? "dark" : "dark"} />
+            <Link className={styles.logo} to="/" aria-label="SomaWellness — Home">
+              <SomaLogo size={68} variant={isHome && !scrolled && !solidNav ? "dark" : "dark"} withText={false} />
             </Link>
 
             <div className={styles.navLinks}>
@@ -141,7 +139,7 @@ const Navbar = ({ user, onLogout }) => {
                     <div className={styles.clusterText}>
                       <span className={styles.clusterName}>{user.name}</span>
                       <span className={styles.clusterPlan}>
-                        {user.role === "admin" ? t("navbar.admin") : user.planMonths ? `${user.planMonths}-month plan` : t("navbar.member")}
+                        {user.role === "admin" ? t("navbar.admin") : user.role === "manager" ? t("navbar.manager") : user.role === "reception" ? "Reception" : user.planMonths ? `${user.planMonths}-month plan` : t("navbar.member")}
                       </span>
                     </div>
                     <ChevronIcon className={`${styles.chevron} ${dropOpen ? styles.chevronOpen : ""}`} />
@@ -154,8 +152,8 @@ const Navbar = ({ user, onLogout }) => {
                           <div>
                             <p className={styles.ddName}>{user.name}</p>
                             <p className={styles.ddPlan}>
-                              {user.role === "admin" ? t("navbar.adminAccess") : user.planMonths ? `${user.planMonths}-month` : t("navbar.member")}
-                              {user.role !== "admin" && (
+                              {user.role === "admin" ? t("navbar.adminAccess") : user.role === "manager" ? t("navbar.managerAccess") : user.role === "reception" ? "Reception Staff" : user.planMonths ? `${user.planMonths}-month` : t("navbar.member")}
+                              {user.role !== "admin" && user.role !== "manager" && user.role !== "reception" && (
                                 <>
                                   {" · "}
                                   <span className={isPaused ? styles.ddPaused : isPlanActive ? styles.ddActive : styles.ddExpired}>
@@ -182,7 +180,6 @@ const Navbar = ({ user, onLogout }) => {
               ) : (
                 <div className={styles.guestBtns}>
                   <Link className={styles.btnGhost} to="/login">{t("navigation.signIn")}</Link>
-                  <Link className={`${styles.btnOrange} ${isHome && !scrolled ? styles.bookBtnGold : ""}`} to="/classes">{t("navigation.book")}</Link>
                 </div>
               )}
               </div>
@@ -203,16 +200,11 @@ const Navbar = ({ user, onLogout }) => {
             <motion.div className={styles.overlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMenuOpen(false)} />
             <motion.div className={styles.drawer} variants={sidebarVariants} initial="closed" animate="open" exit="closed">
               <div className={styles.drawerHeader}>
-                <SomaLogo size={48} />
+                <SomaLogo size={44} stacked showTagline={false} />
                 <button className={styles.drawerClose} onClick={() => setMenuOpen(false)} aria-label="Close menu"><CloseIcon /></button>
               </div>
               <div className={styles.drawerBody}>
                 <motion.div className={styles.drawerLinks} initial="hidden" animate="open" exit="closed" variants={{ open: { transition: { staggerChildren: 0.06 } } }}>
-                  <motion.div variants={drawerLinkVariants}>
-                    <Link className={`${styles.drawerLink} ${location.pathname === "/" ? styles.drawerActive : ""}`} to="/" onClick={() => setMenuOpen(false)}>
-                      <span>{t("navigation.home")}</span><span>— {t("navbar.startHere")}</span>
-                    </Link>
-                  </motion.div>
                   {navLinks.map(({ label, path, num }) => (
                     <motion.div key={path} variants={drawerLinkVariants}>
                       <Link className={`${styles.drawerLink} ${location.pathname === path ? styles.drawerActive : ""}`} to={path} onClick={() => setMenuOpen(false)}>
@@ -236,9 +228,6 @@ const Navbar = ({ user, onLogout }) => {
                       <motion.div variants={drawerLinkVariants}>
                         <Link className={styles.drawerLink} to="/login" onClick={() => setMenuOpen(false)}><span>{t("navigation.signIn")}</span><span>→</span></Link>
                       </motion.div>
-                      <motion.div variants={drawerLinkVariants}>
-                        <Link className={styles.drawerLink} to="/newuser" onClick={() => setMenuOpen(false)}><span>{t("navigation.beginJourney")}</span><span>✦</span></Link>
-                      </motion.div>
                     </>
                   )}
                 </motion.div>
@@ -260,9 +249,6 @@ const Navbar = ({ user, onLogout }) => {
                       <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label}>{icon}</a>
                     ))}
                   </div>
-                  <Link to="/classes" onClick={() => setMenuOpen(false)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "16px 24px", borderRadius: 9999, background: "#183D2D", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginTop: 8 }}>
-                    {t("navigation.bookSession")} →
-                  </Link>
                 </div>
               </div>
             </motion.div>

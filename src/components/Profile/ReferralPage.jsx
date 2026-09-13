@@ -22,7 +22,7 @@ export default function ReferralPage({ student }) {
         <div className={styles.refSub}>Share and earn KES 500 credit for every friend who joins</div>
         <div className={styles.shareRow}>
           <button className={s.btnSm} onClick={copy}><i className="ti ti-copy" aria-hidden="true" /> Copy link</button>
-          <a href={`mailto:?subject=Join yoga with my referral&body=Use code ${code}: ${link}`}>
+          <a href={`mailto:?subject=Begin wellness with my referral&body=Use code ${code}: ${link}`}>
             <button className={s.btnSm}><i className="ti ti-mail" aria-hidden="true" /> Email</button>
           </a>
         </div>

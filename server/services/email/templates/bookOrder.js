@@ -8,7 +8,7 @@ import layout from '../../../notification/templates/engine/layout.js';
 // admin emails are plain summaries.
 // ─────────────────────────────────────────────────────────────
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://somawellness.in';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://somawellness.co.ke';
 
 function inr(n) {
   return `KES ${Number(n || 0).toLocaleString('en-KE')}`;

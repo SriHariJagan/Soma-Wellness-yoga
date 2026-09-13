@@ -89,60 +89,50 @@ async function run() {
     { key: 'global' },
     {
       $set: {
-        announcementBanner: 'Grand Ashram Intensive Starts Next Week! Enroll now.',
-        studioName: 'Soma Wellness',
-        supportEmail: 'hello@somawellness.in',
-        supportPhone: '+91 9675547597',
+        announcementBanner: 'SOMA Wellness Center — Spring Valley, Nairobi. Now welcoming founding members.',
+        studioName: 'SomaWellness',
+        supportEmail: 'hello@somawellness.co.ke',
+        supportPhone: '+254 700 000 000',
         integrations: { paymentGateway: true, zoom: true, whatsapp: true, emailSmtp: true },
       },
     },
     { upsert: true }
   );
 
-  // ── Plans ──
+  // ── Plans (SOMA tiers) ──
   await Plan.deleteMany({});
   const plans = await Plan.create([
-    { name: '1 Month Membership', description: 'Perfect for beginners to start their yoga journey with essential studio access.', price: 1500, durationMonths: 1, pauseDays: 0, displayOrder: 1, benefits: ['Unlimited Yoga Classes', 'Community Support'], badge: '', isPopular: false, isRecommended: false },
-    { name: '3 Month Membership', description: 'Build a consistent practice with added flexibility to pause when needed.', price: 4000, durationMonths: 3, pauseDays: 15, displayOrder: 2, benefits: ['Unlimited Yoga Classes', 'Community Support', 'Membership Pause up to 15 Days'], badge: 'Recommended', isPopular: false, isRecommended: true },
-    { name: '6 Month Membership', description: 'Our most popular plan with premium content access and a free personal consultation.', price: 7000, durationMonths: 6, pauseDays: 30, displayOrder: 3, benefits: ['Unlimited Yoga Classes', 'Premium Content Access', 'Free 1 Personal Consultation', 'Membership Pause up to 30 Days'], badge: 'Most Popular', isPopular: true, isRecommended: false },
-    { name: '12 Month Membership', description: 'The ultimate commitment to your wellness journey with maximum benefits.', price: 12000, durationMonths: 12, pauseDays: 60, displayOrder: 4, benefits: ['Unlimited Yoga Classes', 'Premium Content Access', 'Workshops Included', 'Free Personal Consultation', 'Free Diet Consultation', 'Membership Pause up to 60 Days'], badge: 'Best Value', isPopular: false, isRecommended: false },
+    { name: 'SOMA JUA', description: 'Move · Energise · Shine. 8 group yoga classes/month + member rates.', price: 12000, durationMonths: 1, pauseDays: 0, displayOrder: 1, benefits: ['8 group yoga classes per month', 'Member rates on everything else'], badge: '', isPopular: false, isRecommended: false },
+    { name: 'SOMA AMANI', description: 'Move into balance. Unlimited group yoga, meditation & breathwork, SOMA DAILY.', price: 18500, durationMonths: 1, pauseDays: 0, displayOrder: 2, benefits: ['Unlimited group yoga', 'Meditation and breathwork', 'SOMA DAILY included', 'Member rates on everything else'], badge: '', isPopular: false, isRecommended: true },
+    { name: 'SOMA UZIMA', description: 'Yoga and recovery, complete.', price: 28500, durationMonths: 1, pauseDays: 0, displayOrder: 3, benefits: ['Unlimited yoga and meditation', 'SOMA DAILY included', '2 sixty-minute massages', '1 private yoga or therapy session', 'Priority booking · 2 guest passes', '15% off everything else'], badge: 'BEST VALUE', isPopular: true, isRecommended: false },
+    { name: 'SOMA FAMILY', description: 'One household, one plan.', price: 35000, durationMonths: 1, pauseDays: 0, displayOrder: 4, benefits: ['2 adults, unlimited yoga', "1 children's or teen programme", 'Meditation and breathwork', 'SOMA DAILY included', '10% off everything else'], badge: '', isPopular: false, isRecommended: false },
   ]);
-  const planByMonths = Object.fromEntries(plans.map((p) => [p.durationMonths, p]));
+  const planByTier = Object.fromEntries(plans.map((p) => [p.name, p]));
 
-  // ── Courses ──
+  // ── Courses (SOMA Academy) ──
   const courses = await Course.create([
-    { title: '21-Day Detox Sadhana', duration: '3 Weeks', mode: 'Online', price: 4500, description: 'Cleanse and reset with guided daily practice.' },
-    { title: '200hr Teacher Training', duration: '3 Months', mode: 'Hybrid', price: 42000, description: 'Yoga Alliance certified foundational TTC.' },
-    { title: 'Weekend Yin Retreat', duration: '2 Days', mode: 'Studio', price: 3200, description: 'Deep restorative weekend immersion.' },
-    { title: 'Pranayama Mastery', duration: '4 Weeks', mode: 'Online', price: 3800, description: 'Breath-work for energy and calm.' },
-  ]);
-
-  // ── Services ──
-  await Service.create([
-    { name: 'Offline Group Yoga', description: 'Community sessions in studio to enhance motivation.', mode: 'center', category: 'Group', type: 'Hatha', price: 2500, pricingModel: 'monthly', totalSessions: 0, sessionDuration: 60, scheduleDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], scheduleTime: '7:00 AM – 8:00 AM, 8:00 AM – 9:00 AM, 5:00 PM – 6:00 PM', active: true, isPopular: true, displayOrder: 1 },
-    { name: 'Online Group Yoga', description: 'Holistic online practice for fitness & clarity.', mode: 'online', category: 'Group', type: 'Vinyasa', price: 1500, pricingModel: 'monthly', totalSessions: 0, sessionDuration: 60, scheduleDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], scheduleTime: '9:00 AM – 10:00 AM, 11:30 AM – 12:30 PM IST', active: true, isPopular: true, displayOrder: 2 },
+    { title: 'Yoga Foundations', duration: '25 Hours', mode: 'Hybrid', price: 30000, description: '25-hour foundation course.' },
+    { title: 'SOMA 100 — Foundation Teacher Course', duration: '100 Hours', mode: 'Hybrid', price: 85000, description: '100-hour foundation teacher course.' },
+    { title: 'SOMA 200 — Yoga Teacher Training', duration: '200 Hours', mode: 'Hybrid', price: 165000, description: '200-hour yoga teacher training. Early enrolment KES 145,000.' },
   ]);
 
   // ── Coupons ──
   await Coupon.create([
-    { code: 'FESTIVE20', discountType: 'Percentage', discountValue: 20, isReferral: false, active: true },
-    { code: 'REFER100', discountType: 'Flat', discountValue: 100, isReferral: true, active: true },
-    { code: 'NEWYOGI15', discountType: 'Percentage', discountValue: 15, isReferral: false, active: true },
+    { code: 'WELCOME10', discountType: 'Percentage', discountValue: 10, isReferral: false, active: true },
+    { code: 'REFER500', discountType: 'Flat', discountValue: 500, isReferral: true, active: true },
   ]);
 
   // ── Batches ──
   const batches = await Batch.create([
-    { name: 'Morning Hatha', timing: '6:00 AM - 7:00 AM', trainer: 'Kapil Kesari', zoomLink: 'https://zoom.us/j/morning-hatha', status: 'Active' },
-    { name: 'Evening Vinyasa', timing: '6:30 PM - 7:30 PM', trainer: 'Anita Rao', zoomLink: 'https://zoom.us/j/evening-vinyasa', status: 'Active' },
-    { name: 'Weekend Ashtanga', timing: 'Sat-Sun 7:00 AM', trainer: 'Rohit Sen', zoomLink: '', status: 'Upcoming' },
+    { name: 'Morning Flow', timing: '7:00 AM - 8:00 AM', trainer: 'Kapil Kesari', zoomLink: 'https://zoom.us/j/morning-flow', status: 'Active' },
+    { name: 'Evening Restore', timing: '5:30 PM - 6:30 PM', trainer: 'SOMA Wellness Team', zoomLink: 'https://zoom.us/j/evening-restore', status: 'Active' },
+    { name: 'Weekend Movement', timing: 'Sat-Sun 8:30 AM', trainer: 'SOMA Wellness Team', zoomLink: '', status: 'Upcoming' },
   ]);
 
-  // ── Workshops ──
+  // ── Workshops (demo fixtures) ──
   const workshops = await Workshop.create([
-    { name: 'Sound Healing Immersion', date: daysAhead(10), duration: '2 hours', price: 1500, instructor: 'Anita Rao', status: 'available', description: 'Tibetan bowls & deep relaxation.' },
-    { name: 'Advanced Inversions', date: daysAhead(18), duration: '3 hours', price: 2500, instructor: 'Rohit Sen', status: 'available', description: 'Headstands, handstands & forearm balances.' },
-    { name: 'Ayurveda for Daily Life', date: daysAhead(25), duration: '4 hours', price: 2000, instructor: 'Dr. Meera Iyer', status: 'available', description: 'Practical dosha-based routines.' },
-    { name: 'Full Moon Meditation', date: daysAgo(8), duration: '90 min', price: 800, instructor: 'Kapil Kesari', status: 'completed' },
+    { name: 'Breathwork Basics (Demo)', date: daysAhead(10), duration: '2 hours', price: 1500, instructor: 'SOMA Wellness Team', status: 'available', description: 'Introductory breathwork session.' },
+    { name: 'Deep Rest Workshop (Demo)', date: daysAhead(18), duration: '2 hours', price: 2500, instructor: 'SOMA Wellness Team', status: 'available', description: 'Guided rest and relaxation.' },
   ]);
 
   // ══════════════════════════════════════════════════════════
@@ -155,7 +145,7 @@ async function run() {
     role: 'admin',
     status: 'active',
     phone: '+91 9675547597',
-    city: 'Jaipur',
+    city: 'Nairobi',
     style: 'Hatha',
     level: 'Master',
   });
@@ -168,48 +158,51 @@ async function run() {
   // ══════════════════════════════════════════════════════════
   const testStudents = [
     {
-      name: 'Priya Sharma',
-      email: 'priya@yoga.com',
-      city: 'Jaipur',
-      style: 'Vinyasa',
+      name: 'Amina Odhiambo',
+      email: 'amina.demo@example.com',
+      city: 'Nairobi',
+      style: 'Hatha',
       level: 'Intermediate',
-      planMonths: 6,
+      tier: 'SOMA AMANI',
+      planMonths: 1,
       purchases: [
-        { type: 'membership', label: '6 Month Membership', amount: 7000, planMonths: 6 },
-        { type: 'course', label: '21-Day Detox Sadhana', amount: 4500, courseIndex: 0 },
-        { type: 'workshop', label: 'Sound Healing Immersion', amount: 1500, workshopIndex: 0 },
+        { type: 'membership', label: 'SOMA AMANI', amount: 18500, planMonths: 1 },
+        { type: 'course', label: 'Yoga Foundations', amount: 30000, courseIndex: 0 },
+        { type: 'workshop', label: 'Breathwork Basics (Demo)', amount: 1500, workshopIndex: 0 },
       ],
     },
     {
-      name: 'Rahul Verma',
-      email: 'rahul@yoga.com',
-      city: 'Delhi',
-      style: 'Ashtanga',
+      name: 'Brian Kiprop',
+      email: 'brian.demo@example.com',
+      city: 'Nairobi',
+      style: 'Hatha',
       level: 'Advanced',
-      planMonths: 12,
+      tier: 'SOMA UZIMA',
+      planMonths: 1,
       purchases: [
-        { type: 'membership', label: '12 Month Membership', amount: 12000, planMonths: 12 },
-        { type: 'course', label: '200hr Teacher Training', amount: 42000, courseIndex: 1 },
-        { type: 'workshop', label: 'Advanced Inversions', amount: 2500, workshopIndex: 1 },
+        { type: 'membership', label: 'SOMA UZIMA', amount: 28500, planMonths: 1 },
+        { type: 'course', label: 'SOMA 100 — Foundation Teacher Course', amount: 85000, courseIndex: 1 },
+        { type: 'workshop', label: 'Deep Rest Workshop (Demo)', amount: 2500, workshopIndex: 1 },
       ],
     },
     {
-      name: 'Anjali Mehta',
-      email: 'anjali@yoga.com',
-      city: 'Mumbai',
+      name: 'Wanjiku Mwangi',
+      email: 'wanjiku.demo@example.com',
+      city: 'Nairobi',
       style: 'Hatha',
       level: 'Beginner',
-      planMonths: 3,
+      tier: 'SOMA JUA',
+      planMonths: 1,
       purchases: [
-        { type: 'membership', label: '3 Month Membership', amount: 4000, planMonths: 3 },
-        { type: 'course', label: 'Pranayama Mastery', amount: 3800, courseIndex: 3 },
-        { type: 'workshop', label: 'Ayurveda for Daily Life', amount: 2000, workshopIndex: 2 },
+        { type: 'membership', label: 'SOMA JUA', amount: 12000, planMonths: 1 },
+        { type: 'course', label: 'Yoga Foundations', amount: 30000, courseIndex: 0 },
+        { type: 'workshop', label: 'Breathwork Basics (Demo)', amount: 1500, workshopIndex: 0 },
       ],
     },
   ];
 
-  const consultationTopics = ['Posture alignment', 'Diet & nutrition', 'Injury recovery', 'Stress management', 'Breathing technique'];
-  const doctors = ['Dr. Meera Iyer', 'Dr. Sanjay Gupta', 'Anita Rao (Senior Instructor)'];
+  const consultationTopics = ['Posture alignment', 'Stress management', 'Breathing technique', 'Recovery support', 'Mobility goals'];
+  const doctors = ['SOMA Wellness Team'];
 
   const students = [];
 
@@ -220,7 +213,7 @@ async function run() {
       password: await hash('Student@123'),
       role: 'student',
       status: 'active',
-      phone: `+91 9${rint(100000000, 999999999)}`,
+      phone: `+254 7${rint(10000000, 99999999)}`,
       city: s.city,
       style: s.style,
       level: s.level,
@@ -233,7 +226,7 @@ async function run() {
 
     // ── Membership (Purchase #1) ──
     if (s.planMonths > 0) {
-      const plan = planByMonths[s.planMonths];
+      const plan = planByTier[s.tier];
       const start = daysAgo(15);
       const expiry = new Date(start.getTime() + s.planMonths * 30 * DAY);
       await Membership.create({
@@ -246,7 +239,7 @@ async function run() {
         expiryDate: expiry,
         zoomAccess: expiry > now,
         benefits: plan.benefits,
-        pauseDaysAllowed: { 1: 0, 3: 15, 6: 30, 12: 60 }[s.planMonths] ?? 0,
+        pauseDaysAllowed: 0,
         history: [{ action: 'created', planMonths: s.planMonths, at: start }],
       });
       await Payment.create(createPayment(student, {
@@ -290,7 +283,7 @@ async function run() {
       attendance.push({
         user: student._id, date: day, status,
         mode: status === 'zoom' ? 'online' : 'offline',
-        classType: ['Hatha', 'Vinyasa', 'Pranayama', 'Meditation'][Math.floor(Math.random() * 4)],
+        classType: ['Movement', 'Breathwork', 'Rest', 'Mindfulness'][Math.floor(Math.random() * 4)],
       });
     }
     if (attendance.length) await Attendance.insertMany(attendance);
@@ -304,7 +297,7 @@ async function run() {
 
     // ── Notifications ──
     const notifDocs = await Notification.create([
-      { email: student.email, user: student._id, title: 'Class reminder', message: 'Your <strong>Morning Hatha</strong> class starts at 6 AM tomorrow.', type: 'reminder', read: false, channels: ['whatsapp', 'email'] },
+      { email: student.email, user: student._id, title: 'Class reminder', message: 'Your <strong>Morning Flow</strong> class starts at 7 AM tomorrow.', type: 'reminder', read: false, channels: ['whatsapp', 'email'] },
       { email: student.email, user: student._id, title: 'Payment received', message: 'We received your membership payment. Thank you!', type: 'success', read: true, channels: ['email'] },
     ]);
     await NotificationRecipient.insertMany(notifDocs.map((n) => ({
@@ -333,7 +326,7 @@ async function run() {
   }
 
   // ── Class sessions (upcoming + completed-with-recordings) ──
-  const classNames = ['Morning Hatha Flow', 'Power Vinyasa', 'Gentle Yin', 'Pranayama & Breath', 'Sunset Meditation', 'Core & Balance'];
+  const classNames = ['Morning Flow', 'Evening Restore', 'Gentle Movement', 'Breathwork & Rest', 'Sunset Mindfulness', 'Core & Balance'];
   const upcoming = [];
   for (let i = 1; i <= 6; i++) {
     const mode = Math.random() > 0.5 ? 'online' : 'offline';
@@ -341,7 +334,7 @@ async function run() {
       name: classNames[Math.floor(Math.random() * classNames.length)],
       time: ['6:00 AM', '7:30 AM', '5:30 PM', '6:30 PM'][Math.floor(Math.random() * 4)],
       date: daysAhead(i), mode,
-      trainer: ['Kapil Kesari', 'Anita Rao', 'Rohit Sen'][Math.floor(Math.random() * 3)],
+      trainer: ['Kapil Kesari', 'SOMA Wellness Team', 'SOMA Wellness Team'][Math.floor(Math.random() * 3)],
       zoomUrl: mode === 'online' ? `https://zoom.us/j/class-${rint(1000, 9999)}` : '',
       batch: batches[Math.floor(Math.random() * batches.length)]._id, status: 'upcoming',
       enrolledUsers: students.filter(() => Math.random() > 0.5).map((s) => s.doc._id),
@@ -354,8 +347,8 @@ async function run() {
     recordings.push({
       name: classNames[Math.floor(Math.random() * classNames.length)],
       time: '6:00 AM', date: daysAgo(i * 2), mode: 'online',
-      trainer: ['Kapil Kesari', 'Anita Rao'][Math.floor(Math.random() * 2)],
-      status: 'completed', recordingUrl: `https://recordings.somawellness.in/session-${rint(1000, 9999)}.mp4`,
+      trainer: ['Kapil Kesari', 'SOMA Wellness Team'][Math.floor(Math.random() * 2)],
+      status: 'completed', recordingUrl: `https://recordings.somawellness.co.ke/session-${rint(1000, 9999)}.mp4`,
     });
   }
   await ClassSession.insertMany(recordings);
@@ -371,32 +364,29 @@ async function run() {
 
   // ── Downloads ──
   await Download.create([
-    { name: 'Asana Blueprint Handbook', type: 'pdf', size: '4.2 MB', url: 'https://files.somawellness.in/asana-handbook.pdf', category: 'Guides', visibility: 'all', downloadCount: 150 },
-    { name: 'Pranayama Video Series', type: 'video', size: '320 MB', url: 'https://files.somawellness.in/pranayama-series.mp4', category: 'Video', visibility: 'all', downloadCount: 89 },
-    { name: 'Meditation Scripts Pack', type: 'guide', size: '1.1 MB', url: 'https://files.somawellness.in/meditation-scripts.pdf', category: 'Guides', visibility: 'all', downloadCount: 200 },
-    { name: 'Morning Chants (Audio)', type: 'audio', size: '48 MB', url: 'https://files.somawellness.in/morning-chants.mp3', category: 'Audio', visibility: 'plan', allowedPlans: ['Annual Pass'], downloadCount: 45 },
+    { name: 'SOMA Practice Guide', type: 'pdf', size: '4.2 MB', url: 'https://files.somawellness.co.ke/practice-guide.pdf', category: 'Guides', visibility: 'all', downloadCount: 150 },
+    { name: 'Breathwork Audio Series', type: 'video', size: '320 MB', url: 'https://files.somawellness.co.ke/breathwork-series.mp4', category: 'Video', visibility: 'all', downloadCount: 89 },
+    { name: 'Mindfulness Scripts Pack', type: 'guide', size: '1.1 MB', url: 'https://files.somawellness.co.ke/mindfulness-scripts.pdf', category: 'Guides', visibility: 'all', downloadCount: 200 },
+    { name: 'Morning Reflections (Audio)', type: 'audio', size: '48 MB', url: 'https://files.somawellness.co.ke/morning-reflections.mp3', category: 'Audio', visibility: 'plan', allowedPlans: ['SOMA DAILY — Annual'], downloadCount: 45 },
   ]);
 
   // ── Global broadcast notification ──
   await Notification.create({
-    email: 'system', user: null, title: 'New Workshop',
-    message: 'Registrations open for <strong>Sound Healing Immersion</strong> — limited seats!',
-    type: 'workshop_update', channels: ['email', 'whatsapp'],
+    email: 'system', user: null, title: 'Welcome to SomaWellness',
+    message: 'SOMA Wellness Center — Spring Valley, Nairobi. Explore memberships, private sessions and signature experiences.',
+    type: 'announcement', channels: ['email', 'whatsapp'],
   });
 
-  // ── Leads ──
+  // ── Leads (demo fixtures) ──
   await Lead.create([
-    { name: 'Karan Malhotra', phone: '+91 9812345670', email: 'karan@mail.com', interestType: '200hr TTC', stage: 'New', notes: 'Enquired via Instagram.' },
-    { name: 'Divya Reddy', phone: '+91 9812345671', email: 'divya@mail.com', interestType: 'Monthly membership', stage: 'Follow up', notes: 'Wants a trial class.' },
-    { name: 'Imran Khan', phone: '+91 9812345672', email: 'imran@mail.com', interestType: 'Weekend retreat', stage: 'Converted', notes: 'Paid for Yin retreat.' },
-    { name: 'Lakshmi Menon', phone: '+91 9812345673', email: 'lakshmi@mail.com', interestType: 'Pranayama course', stage: 'Cold', notes: 'No response in 2 weeks.' },
+    { name: 'Demo Lead One', phone: '+254 700 000 001', email: 'lead1@example.com', interestType: 'SOMA AMANI', stage: 'New', notes: 'Demo fixture.' },
+    { name: 'Demo Lead Two', phone: '+254 700 000 002', email: 'lead2@example.com', interestType: 'SOMA 200', stage: 'Follow up', notes: 'Demo fixture.' },
   ]);
 
   // ── Bookings ──
   await Booking.create([
-    { name: 'Priya Sharma', email: 'priya@yoga.com', phone: '+91 9811111111', city: 'Jaipur', courseName: '21-Day Detox Sadhana', coursePrice: '4500', courseTime: '6:00 AM', paymentMethod: 'Card', transactionId: 'TXN' + rint(100000, 999999), status: 'Confirmed' },
-    { name: 'New Enquirer', email: 'enquirer@mail.com', phone: '+91 9822222222', city: 'Delhi', courseName: '200hr Teacher Training', coursePrice: '42000', courseTime: 'Flexible', paymentMethod: 'Bank Transfer', transactionId: '', status: 'Pending' },
-    { name: 'Sneha Patel', email: 'sneha@yoga.com', phone: '+91 9833333333', city: 'Ahmedabad', courseName: 'Weekend Yin Retreat', coursePrice: '3200', courseTime: 'Sat-Sun', paymentMethod: 'UPI', transactionId: 'TXN' + rint(100000, 999999), status: 'Confirmed' },
+    { name: 'Amina Odhiambo', email: 'amina.demo@example.com', phone: '+254 700 000 011', city: 'Nairobi', courseName: 'Yoga Foundations', coursePrice: '30000', courseTime: '6:00 AM', paymentMethod: 'Card', transactionId: 'TXN' + rint(100000, 999999), status: 'Confirmed' },
+    { name: 'New Enquirer', email: 'enquirer@example.com', phone: '+254 700 000 012', city: 'Nairobi', courseName: 'SOMA 200 — Yoga Teacher Training', coursePrice: '165000', courseTime: 'Flexible', paymentMethod: 'Bank Transfer', transactionId: '', status: 'Pending' },
   ]);
 
   // ── Activity logs ──
@@ -414,7 +404,7 @@ async function run() {
   console.log('══════════════════════════════════════════════════════════');
   console.log('');
   console.log('  ADMIN LOGIN');
-  console.log('  Email:    admin@yoga.com');
+  console.log(`  Email:    ${admin.email}`);
   console.log('  Password: Admin@123');
   console.log('');
   console.log('  TEST STUDENTS');

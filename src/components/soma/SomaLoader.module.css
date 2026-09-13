@@ -102,7 +102,7 @@
 .wordmark { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .somaRow { display: flex; gap: 0.18em; }
 .somaLetter {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: clamp(28px, 5vw, 32px);
   font-weight: 600;
   letter-spacing: 0.32em;
@@ -111,7 +111,7 @@
   line-height: 1;
 }
 .wellness {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.26em;
@@ -123,7 +123,7 @@
 }
 .wellness span { opacity: 0.45; }
 .tagline {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -160,7 +160,7 @@
 .dot:nth-child(3) { background: #F4B400; }
 
 .hint {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -176,7 +176,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.16em;

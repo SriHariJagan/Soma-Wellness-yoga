@@ -39,10 +39,12 @@ export default function SocialSuccess() {
       login(token, user);
 
       // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/yogaadmin", { replace: true });
-      } else {
+      if (user.role === "student") {
         navigate("/studentdashboard", { replace: true });
+      } else if (user.role === "reception") {
+        navigate("/reception", { replace: true });
+      } else {
+        navigate("/yogaadmin", { replace: true });
       }
     } catch (err) {
       console.error("OAuth callback parse error:", err);

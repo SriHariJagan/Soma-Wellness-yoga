@@ -9,11 +9,21 @@ const SomaTeam = () => {
   const reduced = usePrefersReducedMotion();
 
   const team = [
-    { name: t("home.team.members.amina.name"), role: t("home.team.members.amina.role"), cred: t("home.team.members.amina.cred"), img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop", accent: t("home.team.members.amina.accent") },
-    { name: t("home.team.members.daniel.name"), role: t("home.team.members.daniel.role"), cred: t("home.team.members.daniel.cred"), img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop", accent: t("home.team.members.daniel.accent") },
-    { name: t("home.team.members.zawadi.name"), role: t("home.team.members.zawadi.role"), cred: t("home.team.members.zawadi.cred"), img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop", accent: t("home.team.members.zawadi.accent") },
-    { name: t("home.team.members.leah.name"), role: t("home.team.members.leah.role"), cred: t("home.team.members.leah.cred"), img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=600&auto=format&fit=crop", accent: t("home.team.members.leah.accent") },
+    { name: t("home.team.members.amina.name"), role: t("home.team.members.amina.role"), cred: t("home.team.members.amina.cred"), img: "/images/team/amina-juma.webp", accent: t("home.team.members.amina.accent") },
+    { name: t("home.team.members.daniel.name"), role: t("home.team.members.daniel.role"), cred: t("home.team.members.daniel.cred"), img: "/images/team/daniel-ochieng.webp", accent: t("home.team.members.daniel.accent") },
+    { name: t("home.team.members.zawadi.name"), role: t("home.team.members.zawadi.role"), cred: t("home.team.members.zawadi.cred"), img: "/images/team/zawadi-mwangi.webp", accent: t("home.team.members.zawadi.accent") },
+    { name: t("home.team.members.leah.name"), role: t("home.team.members.leah.role"), cred: t("home.team.members.leah.cred"), img: "/images/team/leah-njeri.webp", accent: t("home.team.members.leah.accent") },
   ];
+
+  // Founder profile — photo/bio can be replaced with final assets later
+  const founder = {
+    name: "Kapil Ji",
+    role: "Founder & Lead Wellness Teacher",
+    cred: "500hr Certified · Restorative Practice · 18+ yrs practice",
+    img: "/images/instructor/kapil.webp",
+    accent: "Founder · Wellness",
+    bio: "Kapil Ji founded SomaWellness to bring authentic, restorative wellness to everyday life — breath, movement, rest and mindful living. Share your final photo and bio here and we will update this card.",
+  };
 
   return (
     <section className={styles.section}>
@@ -39,6 +49,28 @@ const SomaTeam = () => {
             <motion.span className={styles.titleUnderline} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.85, delay: 0.4, ease: EASE }} style={{ transformOrigin: "left" }} aria-hidden="true" />
           </h2>
           <p className={styles.sub}>{t("home.team.sub")}</p>
+        </motion.div>
+
+        {/* Founder spotlight — Kapil Ji */}
+        <motion.div
+          className={styles.card}
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, ease: EASE }}
+          style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 20, padding: 20, marginBottom: 18, alignItems: "center" }}
+        >
+          <div className={styles.imgWrap} style={{ height: 220 }}>
+            <img src={founder.img} alt={`${founder.name}, ${founder.role} at SomaWellness`} loading="lazy" width="400" height="440" />
+            <div className={styles.imgOverlay} aria-hidden="true" />
+            <span className={styles.badge}>{founder.accent}</span>
+          </div>
+          <div className={styles.body}>
+            <div className={styles.name}>{founder.name}</div>
+            <div className={styles.role}>{founder.role}</div>
+            <div className={styles.cred}>{founder.cred}</div>
+            <p style={{ fontSize: 16, color: "#5a6b63", lineHeight: 1.65, marginTop: 10 }}>{founder.bio}</p>
+          </div>
         </motion.div>
 
         <motion.div

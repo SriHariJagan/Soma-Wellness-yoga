@@ -168,7 +168,7 @@ const ChatbotEnquiryForm = ({
             id="soma-cb-item"
             name="interestedItem"
             type="text"
-            placeholder="e.g. SOMA 200 — Yoga Teacher Training"
+            placeholder="e.g. SOMA 200 — Practitioner Training"
             value={form.interestedItem}
             onChange={handleChange}
           />
@@ -214,7 +214,7 @@ const ChatbotEnquiryForm = ({
       </div>
 
       <p className="soma-cb-form-footnote">
-        By submitting, you agree to be contacted by Soma Wellness about your enquiry.
+        By submitting, you agree to be contacted by SomaWellness about your enquiry.
       </p>
     </form>
   );

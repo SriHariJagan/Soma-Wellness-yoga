@@ -57,8 +57,8 @@
   --r-lg: 18px;
   --r-xl: 24px;
 
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'DM Sans', 'Inter', system-ui, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
 
   --sidebar-w: 274px;
   --sidebar-w-collapsed: 80px;
@@ -523,6 +523,28 @@
 .topSpacer { flex: 1; }
 
 .topActions { display: flex; align-items: center; gap: 8px; }
+
+.topbarTitle {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+}
+
+.topbarUser {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
 
 .iconBtn {
   width: 40px;
@@ -1659,4 +1681,1255 @@
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+/* ── Reception Staff / Section Layout ────────────────────────── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card);
+  padding: 26px 28px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  pointer-events: none;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 0;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sectionTitle svg { color: var(--c-primary); flex-shrink: 0; }
+
+/* ── Buttons (enhanced) ─────────────────────────────────────── */
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: var(--r-md);
+  background: var(--c-grad);
+  color: #fff;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--sh-glow);
+  transition: transform 0.16s, filter 0.16s, box-shadow 0.16s;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+.btnPrimary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.22) 55%, transparent 80%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+}
+.btnPrimary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 6px 22px rgba(46,125,91,0.35);
+}
+.btnPrimary:hover::after { transform: translateX(100%); }
+.btnPrimary:active { transform: translateY(0); }
+.btnPrimary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 12px;
+  border-radius: var(--r-md);
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.btnGhost:hover {
+  background: var(--surface-3);
+  color: var(--text-1);
+  border-color: var(--c-primary-line);
+}
+
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  color: var(--text-2);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.18s, color 0.18s, transform 0.14s, border-color 0.18s, box-shadow 0.18s;
+}
+.iconBtn:hover {
+  background: var(--surface);
+  color: var(--c-primary);
+  border-color: var(--c-primary-line);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(46,125,91,0.12);
+}
+.iconBtnDanger {
+  color: var(--c-danger);
+  border-color: rgba(220,38,38,0.2);
+  background: rgba(220,38,38,0.05);
+}
+.iconBtnDanger:hover {
+  background: rgba(220,38,38,0.12);
+  color: var(--c-danger);
+  border-color: rgba(220,38,38,0.35);
+  box-shadow: 0 2px 8px rgba(220,38,38,0.12);
+}
+.iconBtnSuccess {
+  color: var(--c-success);
+  border-color: rgba(22,163,74,0.2);
+  background: rgba(22,163,74,0.05);
+}
+.iconBtnSuccess:hover {
+  background: rgba(22,163,74,0.12);
+  color: var(--c-success);
+  border-color: rgba(22,163,74,0.35);
+  box-shadow: 0 2px 8px rgba(22,163,74,0.12);
+}
+
+/* ── Error / Empty / Loading States ─────────────────────────── */
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  margin-bottom: 18px;
+  border-radius: var(--r-md);
+  background: rgba(220,38,38,0.07);
+  border: 1px solid rgba(220,38,38,0.18);
+  color: #DC2626;
+  font-size: 13px;
+  font-weight: 500;
+  animation: pageIn 0.25s ease;
+}
+.errorRetry {
+  margin-left: auto;
+  padding: 5px 14px;
+  border-radius: 8px;
+  background: #DC2626;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  transition: background 0.15s, transform 0.1s;
+}
+.errorRetry:hover { background: #B91C1C; transform: translateY(-1px); }
+.errorRetry:active { transform: scale(0.97); }
+
+.emptyState {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.emptyIconWrap {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(46,125,91,0.10), rgba(129,178,154,0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  color: var(--c-primary);
+  border: 2px dashed var(--c-primary-line);
+  animation: emptyPulse 2.4s ease-in-out infinite;
+}
+@keyframes emptyPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.04); opacity: 0.85; }
+}
+.emptyTitle {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.emptyDesc {
+  margin: 0 0 24px;
+  font-size: 13.5px;
+  color: var(--text-2);
+  max-width: 400px;
+  margin-inline: auto;
+  line-height: 1.6;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.spin { animation: spin 0.7s linear infinite; }
+
+.tabFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 240px;
+  color: var(--text-3);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  animation: pageIn 0.3s ease;
+}
+
+/* ── Table enhancements ─────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.tableWrap::-webkit-scrollbar { height: 5px; }
+.tableWrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 5px; }
+
+/* ── Badges (override for reception inline styles) ───────────── */
+.badgeGreen, .badgeRed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  letter-spacing: 0.02em;
+}
+.badgeGreen::before, .badgeRed::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+.badgeGreen {
+  background: rgba(22,163,74,0.13);
+  color: #16A34A;
+  border-color: rgba(22,163,74,0.22);
+  box-shadow: 0 1px 4px rgba(22,163,74,0.08);
+}
+.badgeRed {
+  background: rgba(220,38,38,0.12);
+  color: #DC2626;
+  border-color: rgba(220,38,38,0.22);
+  box-shadow: 0 1px 4px rgba(220,38,38,0.08);
+}
+
+/* ── Modal (premium glass panel) ────────────────────────────── */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(24,33,28,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.18s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  width: min(480px, 96vw);
+  max-width: 96vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--sh-lg), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  animation: modalSlideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+.modal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  pointer-events: none;
+}
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modalWide { width: min(640px, 96vw); }
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--line-2);
+}
+.modalHeader h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+}
+.modalClose {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  color: var(--text-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.modalClose:hover {
+  background: rgba(220,38,38,0.1);
+  color: var(--c-danger);
+  border-color: rgba(220,38,38,0.25);
+}
+
+.modalBody {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Form Fields (modal) ────────────────────────────────────── */
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.fieldLabel input,
+.fieldLabel select {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-size: 13.5px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.fieldLabel input:focus,
+.fieldLabel input:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px var(--c-primary-soft);
+  background: var(--surface);
+}
+.fieldLabel input::placeholder { color: var(--text-3); font-weight: 400; }
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--line-2);
+}
+
+/* ── Permissions Panel ──────────────────────────────────────── */
+.permGroup {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.permGroupHeader {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--line-2);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.permGroupHeader:hover { background: var(--surface-2); }
+.permGroupLabel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--text-1);
+  cursor: pointer;
+  user-select: none;
+}
+.permGroupLabel strong {
+  font-weight: 700;
+  color: var(--text-1);
+}
+.permGroupLabel input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--c-primary);
+  cursor: pointer;
+}
+.permItems {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px;
+  padding: 6px 8px;
+}
+.permItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  user-select: none;
+}
+.permItem:hover {
+  background: var(--c-primary-soft);
+  color: var(--text-1);
+}
+.permItem input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--c-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Temporary Password Box ─────────────────────────────────── */
+.tempPasswordBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-top: 4px;
+}
+.tempPasswordBox span {
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tempPasswordBox code {
+  font-family: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-primary);
+  background: var(--surface);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--c-primary-line);
+  letter-spacing: 0.04em;
+  word-break: break-all;
+}
+
+.warningText {
+  font-size: 12px;
+  color: var(--c-warning);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* ── Permissions count pill ─────────────────────────────────── */
+.permCountPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 11px;
+  border-radius: 20px;
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid var(--c-primary-line);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+/* ── Table footer row ───────────────────────────────────────── */
+.tableFooter {
+  padding: 12px 18px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  border-top: 1px solid var(--line-2);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tableFooter strong { color: var(--text-2); font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════════════
+   RECEPTION STAFF — Premium Card Grid
+   ═══════════════════════════════════════════════════════════════ */
+.receptionGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.receptionCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(253,251,247,0.92) 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 1px 4px rgba(24,61,45,0.04);
+}
+.receptionCard::before {
+  content: '';
+  position: absolute;
+  top: 12px; left: 0; bottom: 12px;
+  width: 3.5px;
+  border-radius: 0 4px 4px 0;
+  background: var(--c-grad);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.receptionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(24,61,45,0.10), 0 2px 8px rgba(24,61,45,0.06);
+  border-color: var(--c-primary-line);
+}
+.receptionCard:hover::before {
+  opacity: 1;
+}
+.receptionCardInactive {
+  opacity: 0.6;
+}
+.receptionCardInactive:hover {
+  opacity: 0.85;
+}
+
+.receptionCardLeft {
+  flex-shrink: 0;
+}
+
+.receptionAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 19px;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.receptionAvatar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.receptionCardCenter {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.receptionNameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.receptionName {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+}
+
+.receptionMeta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.receptionMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.receptionMetaItem svg {
+  color: var(--text-3);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.receptionTags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.receptionDateTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-3);
+  background: var(--surface-3);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--line-2);
+  font-weight: 500;
+}
+.receptionDateTag svg {
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.receptionCardRight {
+  flex-shrink: 0;
+  display: flex;
+  gap: 5px;
+}
+
+.receptionActionBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  color: var(--text-3);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.18s ease;
+  position: relative;
+}
+.receptionActionBtn:hover {
+  background: var(--surface);
+  color: var(--c-primary);
+  border-color: var(--c-primary-line);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46,125,91,0.14);
+}
+.receptionActionDanger {
+  color: var(--c-danger);
+  border-color: rgba(220,38,38,0.18);
+  background: rgba(220,38,38,0.04);
+}
+.receptionActionDanger:hover {
+  background: rgba(220,38,38,0.10);
+  color: var(--c-danger);
+  border-color: rgba(220,38,38,0.3);
+  box-shadow: 0 4px 12px rgba(220,38,38,0.14);
+}
+.receptionActionSuccess {
+  color: var(--c-success);
+  border-color: rgba(22,163,74,0.18);
+  background: rgba(22,163,74,0.04);
+}
+.receptionActionSuccess:hover {
+  background: rgba(22,163,74,0.10);
+  color: var(--c-success);
+  border-color: rgba(22,163,74,0.3);
+  box-shadow: 0 4px 12px rgba(22,163,74,0.14);
+}
+
+.receptionFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  margin-top: 4px;
+}
+.receptionFooter strong {
+  color: var(--text-2);
+  font-weight: 700;
+}
+
+/* responsive card grid */
+@media (max-width: 768px) {
+  .receptionCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+  .receptionCardLeft { align-self: flex-start; }
+  .receptionCardRight {
+    width: 100%;
+    justify-content: flex-end;
+    border-top: 1px solid var(--line-2);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .receptionMeta { flex-direction: column; gap: 6px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RECEPTION OVERVIEW — Premium Dashboard
+   ═══════════════════════════════════════════════════════════════ */
+.receptionOverview {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100%;
+}
+
+/* ── Welcome Banner ─────────────────────────────────────────── */
+.receptionWelcome {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 26px 28px 22px;
+  background: var(--c-grad);
+  border-radius: var(--r-xl);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(24,61,45,0.22);
+}
+.receptionWelcome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(255,255,255,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(255,255,255,0.08) 0%, transparent 55%);
+  pointer-events: none;
+}
+.receptionWelcome::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  pointer-events: none;
+}
+.receptionWelcomeText { position: relative; z-index: 1; flex: 1; }
+.receptionWelcomeGreeting {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+.receptionWelcomeTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.receptionWelcomeSub {
+  font-size: 14px;
+  opacity: 0.8;
+  margin: 0;
+  font-weight: 400;
+}
+.receptionWelcomeRight {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+.receptionWelcomeTime {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  opacity: 0.8;
+  font-weight: 500;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.15);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.receptionWelcomeQuickAction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.14s;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+}
+.receptionWelcomeQuickAction:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-1px);
+}
+
+/* ── Stat Cards Grid ────────────────────────────────────────── */
+.receptionStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.receptionStatCard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px 18px 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(24,61,45,0.04);
+  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.receptionStatCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(24,61,45,0.10), 0 2px 8px rgba(24,61,45,0.06);
+  border-color: var(--c-primary-line);
+}
+.receptionStatAccent {
+  position: absolute;
+  top: 12px; left: 0; bottom: 12px;
+  width: 3.5px;
+  border-radius: 0 4px 4px 0;
+  opacity: 0.8;
+}
+.receptionStatIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+  border: 1px solid transparent;
+  transition: box-shadow 0.22s ease;
+}
+.receptionStatCard:hover .receptionStatIcon {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.receptionStatBody { position: relative; }
+.receptionStatValue {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--text-1);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.receptionStatLabel {
+  font-size: 11.5px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* ── Two Column Layout ──────────────────────────────────────── */
+.receptionTwoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── Panel (card) ───────────────────────────────────────────── */
+.receptionPanel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(24,61,45,0.04);
+  position: relative;
+}
+.receptionPanel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  pointer-events: none;
+}
+.receptionPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--line-2);
+}
+.receptionPanelTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+.receptionPanelTitle svg {
+  color: var(--c-primary);
+  flex-shrink: 0;
+}
+.receptionPanelLink {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  font-family: var(--font-body);
+}
+.receptionPanelLink:hover { background: var(--c-primary-soft); }
+.receptionActivityCount {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: var(--surface-3);
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--line-2);
+}
+.receptionPanelBody {
+  padding: 8px 0;
+}
+
+/* ── Empty State (panels) ───────────────────────────────────── */
+.receptionEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 44px 24px;
+  text-align: center;
+}
+.receptionEmptyIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  border: 2px dashed var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  margin-bottom: 6px;
+  opacity: 0.6;
+}
+.receptionEmptyText {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.receptionEmptyHint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+  max-width: 240px;
+}
+
+/* ── Student List ───────────────────────────────────────────── */
+.receptionStudentList {
+  display: flex;
+  flex-direction: column;
+}
+.receptionStudentRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  transition: background 0.14s;
+}
+.receptionStudentRow:hover {
+  background: var(--surface-3);
+}
+.receptionStudentRow + .receptionStudentRow {
+  border-top: 1px solid var(--line-2);
+}
+.receptionStudentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+}
+.receptionStudentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.receptionStudentName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.receptionStudentEmail {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Activity Feed ──────────────────────────────────────────── */
+.receptionActivityFeed {
+  display: flex;
+  flex-direction: column;
+}
+.receptionActivityItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  transition: background 0.14s;
+}
+.receptionActivityItem:hover {
+  background: var(--surface-3);
+}
+.receptionActivityItem + .receptionActivityItem {
+  border-top: 1px solid var(--line-2);
+}
+.receptionActivityDot {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.receptionActivityContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.receptionActivityAction {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+}
+.receptionActivityTime {
+  font-size: 11.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+  font-weight: 500;
+  background: var(--surface-3);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .receptionStatsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .receptionWelcome {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px 22px 18px;
+  }
+  .receptionWelcomeTitle { font-size: 19px; }
+  .receptionStatsGrid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .receptionTwoCol { grid-template-columns: 1fr; }
+  .receptionStatCard { padding: 16px 14px 14px; }
+  .receptionStatValue { font-size: 26px; }
+}
+@media (max-width: 520px) {
+  .receptionStatsGrid { grid-template-columns: 1fr; }
+  .receptionWelcomeTime { align-self: flex-start; }
+}
+
+/* ── Reception flat layout (no nested cards) ────────────────────
+   .section itself is a card, so reception tabs use .recPage (plain
+   stacking container) + a single .card panel + .recSummary strip.
+   .recTableScroll restores vertical wheel-chaining that
+   overscroll-behavior:contain on .tableWrap would otherwise trap. */
+.recPage { display: flex; flex-direction: column; gap: 16px; }
+.recSummary {
+  display: flex; flex-wrap: wrap; gap: 0;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.recSummaryCell { flex: 1 1 120px; padding: 10px 18px; }
+.recSummaryCell + .recSummaryCell { border-left: 1px solid var(--line-2); }
+.recSummaryValue { font-size: 21px; font-weight: 800; margin-top: 2px; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.recTableScroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; overscroll-behavior-x: contain; overscroll-behavior-y: auto; }
+@media (max-width: 640px) {
+  .recSummaryCell { flex-basis: 45%; padding: 8px 14px; }
+  .recSummaryCell + .recSummaryCell { border-left: none; }
+  .recSummaryValue { font-size: 18px; }
+}
+
+/* ── Reception modal system (rendered via portal to document.body) ──
+   Full-viewport blocking layer + professionally styled dialog:
+   gradient accent bar, icon header, Escape-to-close, background
+   scroll lock, bottom-sheet behavior on small screens. */
+.recModalBackdrop {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(18, 28, 23, 0.62);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; overflow-y: auto;
+  animation: recFadeIn 0.2s ease;
+}
+.recModal {
+  position: relative; width: 100%; margin: auto;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 24px 80px rgba(10, 25, 18, 0.35), 0 4px 18px rgba(10, 25, 18, 0.18);
+  animation: recPopIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.recModal--sm { max-width: 440px; }
+.recModal--md { max-width: 580px; }
+.recModal--lg { max-width: 760px; }
+.recModalAccent { height: 5px; background: var(--c-grad); }
+.recModalHeader { display: flex; align-items: flex-start; gap: 12px; padding: 20px 22px 0; }
+.recModalIcon {
+  width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--c-primary-soft); color: var(--c-primary);
+  border: 1px solid var(--c-primary-line);
+}
+.recModalIcon--success { background: rgba(22, 163, 74, 0.12); color: #16A34A; border-color: rgba(22, 163, 74, 0.25); }
+.recModalTitleWrap { flex: 1; min-width: 0; }
+.recModalTitle { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-1); }
+.recModalSub { margin: 3px 0 0; font-size: 12.5px; color: var(--text-3); }
+.recModalClose {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  border: 1px solid var(--line-2); background: var(--surface-2); color: var(--text-2);
+  cursor: pointer; display: grid; place-items: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.recModalClose:hover { color: var(--text-1); border-color: var(--line); background: var(--surface-3); }
+.recModalBody { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; }
+.recModalFooter { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; padding-top: 4px; }
+.recModalInfoBox { background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 16px; font-size: 13.5px; line-height: 1.6; }
+@keyframes recFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes recPopIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
+@media (max-width: 560px) {
+  .recModalBackdrop { padding: 0; align-items: flex-end; }
+  .recModal { border-radius: 20px 20px 0 0; max-width: 100%; }
+  .recModalBody { padding: 16px 18px 20px; }
 }

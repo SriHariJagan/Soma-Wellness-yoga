@@ -60,7 +60,7 @@ export const initiateStkPush = asyncHandler(async (req, res) => {
       phone,
       amount: Number(amount),
       accountRef: accountRef || payment._id.toString().slice(-12),
-      description: description || "Soma Wellness",
+      description: description || "SomaWellness",
     });
 
     if (stkResponse.ResponseCode === "0") {

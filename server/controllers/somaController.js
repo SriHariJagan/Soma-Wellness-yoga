@@ -22,11 +22,20 @@ import SomaPass from '../models/SomaPass.js';
 import SomaResetProgress from '../models/SomaResetProgress.js';
 import SomaDailySubscription from '../models/SomaDailySubscription.js';
 import SomaContent from '../models/SomaContent.js';
+import { activeMembershipWithDaily, getDailyAccess, syncDailyWithMembership } from '../services/dailyService.js';
 import UserService from '../models/UserService.js';
 import Settings from '../models/Settings.js';
 
 // ── Public catalog ───────────────────────────────────────────
 export const getCatalog = asyncHandler(async (req, res) => {
+  // Admin overrides (e.g. SOMA DAILY prices) live in settings.soma.
+  let dailyMonthly = catalog.SOMA_DAILY.MONTHLY;
+  let dailyAnnual = catalog.SOMA_DAILY.ANNUAL;
+  try {
+    const s = await Settings.getSingleton();
+    if (s?.soma?.dailyMonthly > 0) dailyMonthly = s.soma.dailyMonthly;
+    if (s?.soma?.dailyAnnual > 0) dailyAnnual = s.soma.dailyAnnual;
+  } catch {}
   res.json({
     currency: catalog.CURRENCY,
     vatInclusive: catalog.VAT_INCLUDED,
@@ -38,7 +47,7 @@ export const getCatalog = asyncHandler(async (req, res) => {
     trial: catalog.TRIAL,
     classPasses: catalog.CLASS_PASSES,
     fees: catalog.FEES,
-    somaDaily: catalog.SOMA_DAILY,
+    somaDaily: { ...catalog.SOMA_DAILY, MONTHLY: dailyMonthly, ANNUAL: dailyAnnual },
     privateRates: catalog.PRIVATE_RATES,
     lifeStages: catalog.LIFE_STAGES,
     lifeStagesExtras: catalog.LIFE_STAGES_EXTRAS,
@@ -399,15 +408,36 @@ export const subscribeDaily = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const { plan } = req.body; // monthly|annual
   if (!['monthly', 'annual'].includes(plan)) throw ApiError.badRequest('plan must be monthly or annual');
+
+  // Membership inclusion first: access comes from the membership,
+  // never a separate charge.
+  const { membership, tier } = await activeMembershipWithDaily(userId);
+  if (membership) {
+    let sub = await SomaDailySubscription.findOne({
+      user: userId, isIncludedWithMembership: true, status: 'active', expiryDate: { $gt: new Date() },
+    }).sort({ createdAt: -1 });
+    if (!sub) {
+      sub = await SomaDailySubscription.create({
+        user: userId, plan, price: 0, currency: 'KES',
+        startDate: new Date(), expiryDate: membership.expiryDate,
+        isIncludedWithMembership: true, membershipTier: tier, status: 'active', autoRenew: false,
+      });
+    }
+    await syncDailyWithMembership(userId);
+    return res.status(200).json({ ...sub.toObject(), charged: false, reason: 'included_with_membership' });
+  }
+
+  // Reuse an existing active paid subscription instead of double-charging.
+  const existing = await SomaDailySubscription.findOne({
+    user: userId, status: 'active', isIncludedWithMembership: false, expiryDate: { $gt: new Date() },
+  }).sort({ createdAt: -1 });
+  if (existing) return res.status(200).json({ ...existing.toObject(), charged: false, reason: 'already_subscribed' });
+
   const price = plan === 'monthly' ? catalog.SOMA_DAILY.MONTHLY : catalog.SOMA_DAILY.ANNUAL;
   const now = new Date();
   const expiry = new Date(now);
   if (plan === 'monthly') expiry.setMonth(expiry.getMonth() + 1);
   else expiry.setFullYear(expiry.getFullYear() + 1);
-
-  // If user already has active membership that includes DAILY, mark as included
-  const membership = await Membership.findOne({ user: userId, status: 'active' }).sort({ createdAt: -1 });
-  const included = membership && catalog.SOMA_DAILY.includedWith.includes(membership.tier);
 
   const sub = await SomaDailySubscription.create({
     user: userId,
@@ -416,11 +446,53 @@ export const subscribeDaily = asyncHandler(async (req, res) => {
     currency: 'KES',
     startDate: now,
     expiryDate: expiry,
-    isIncludedWithMembership: !!included,
-    membershipTier: membership?.tier || '',
+    isIncludedWithMembership: false,
+    membershipTier: '',
     status: 'active',
+    autoRenew: plan === 'monthly',
   });
-  res.status(201).json(sub);
+  res.status(201).json({ ...sub.toObject(), charged: true });
+});
+
+// ── Cancel SOMA DAILY: access remains until the paid period ends ──
+export const cancelDailySubscription = asyncHandler(async (req, res) => {
+  const sub = await SomaDailySubscription.findOne({
+    user: req.user._id, status: 'active', expiryDate: { $gt: new Date() },
+  }).sort({ createdAt: -1 });
+  if (!sub) throw ApiError.notFound('No active SOMA DAILY subscription');
+  sub.status = 'cancelled';
+  sub.autoRenew = false;
+  await sub.save();
+  res.json({ success: true, accessUntil: sub.expiryDate });
+});
+
+// ── Access status (powers downgrade offers + paywalls) ──
+export const getDailyStatus = asyncHandler(async (req, res) => {
+  await syncDailyWithMembership(req.user._id);
+  res.json(await getDailyAccess(req.user._id));
+});
+
+// ── Engagement tracking (opens / listens / completions) ──
+export const trackDailyEvent = asyncHandler(async (req, res) => {
+  const { type } = req.body; // open|listen|complete
+  if (!['open', 'listen', 'complete'].includes(type)) throw ApiError.badRequest('type must be open, listen or complete');
+  const content = await SomaContent.findOne({ _id: req.params.id, published: true });
+  if (!content) throw ApiError.notFound('Content not found');
+  const uid = String(req.user._id);
+  const update = {};
+  if (type === 'open') {
+    update.$inc = { opens: 1 };
+    if (!(content.uniqueOpeners || []).map(String).includes(uid)) {
+      update.$addToSet = { uniqueOpeners: uid };
+      update.$inc.uniqueOpens = 1;
+    }
+  } else if (type === 'listen') {
+    update.$inc = { listens: 1 };
+  } else {
+    update.$inc = { completes: 1 };
+  }
+  await SomaContent.updateOne({ _id: content._id }, update);
+  res.json({ success: true });
 });
 
 export const getDailyContent = asyncHandler(async (req, res) => {

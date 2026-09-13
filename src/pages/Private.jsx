@@ -13,9 +13,9 @@ import styles from "./Private.module.css";
 const Private = () => {
   const { t } = useTranslation();
   const steps = [
-    { n: "01", title: t("private.stepAssessmentTitle"), desc: t("private.stepAssessmentDesc"), img: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop" },
-    { n: "02", title: t("private.stepPlanTitle"), desc: t("private.stepPlanDesc"), img: "https://images.unsplash.com/photo-1591343395082-e120087004b4?q=80&w=800&auto=format&fit=crop" },
-    { n: "03", title: t("private.stepSessionsTitle"), desc: t("private.stepSessionsDesc"), img: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?q=80&w=800&auto=format&fit=crop" },
+    { n: "01", title: t("private.stepAssessmentTitle"), desc: t("private.stepAssessmentDesc"), img: "/images/programs/private-assessment.webp" },
+    { n: "02", title: t("private.stepPlanTitle"), desc: t("private.stepPlanDesc"), img: "/images/programs/private-plan.webp" },
+    { n: "03", title: t("private.stepSessionsTitle"), desc: t("private.stepSessionsDesc"), img: "/images/programs/private-sessions.webp" },
   ];
   return (
     <div style={{ background: "var(--soma-cream)" }}>
@@ -23,14 +23,14 @@ const Private = () => {
         eyebrow={t("private.eyebrow")}
         title={t("private.title")}
         subtitle={t("private.subtitle")}
-        image="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/private-onetoone.webp"
       />
 
       {/* Sticky story */}
       <section className={styles.section}>
         <div className={styles.storyGrid}>
           <div className={styles.stickyCard}>
-            <img src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=800&auto=format&fit=crop" alt="Private yoga attractive" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+            <img src="/images/programs/private-studio.webp" alt="Private wellness session" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(24,61,45,0.55) 100%)" }} />
             <div style={{ position: "absolute", left: 16, right: 16, bottom: 16, background: "rgba(255,255,255,0.94)", backdropFilter: "blur(10px)", borderRadius: 14, padding: "12px 14px" }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--soma-primary)" }}>{t("private.whyPrivate")}</div>

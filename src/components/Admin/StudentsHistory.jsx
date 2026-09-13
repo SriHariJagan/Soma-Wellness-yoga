@@ -114,7 +114,7 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
           </div>
           <div className={s.grid3} style={{ marginBottom: '16px' }}>
             <input type="text" placeholder="City"       value={form.city}  onChange={e => setForm({ ...form, city: e.target.value })}  />
-            <input type="text" placeholder="Yoga Style" value={form.style} onChange={e => setForm({ ...form, style: e.target.value })} />
+            <input type="text" placeholder="Practice Style" value={form.style} onChange={e => setForm({ ...form, style: e.target.value })} />
             <input type="text" placeholder="Level"      value={form.level} onChange={e => setForm({ ...form, level: e.target.value })} />
           </div>
           <button type="submit" className={`${s.btn} ${s.btnPrimary}`}>Save Profile</button>

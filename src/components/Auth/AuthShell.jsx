@@ -27,7 +27,7 @@ export default function AuthShell({ children }) {
       <aside className={styles.showcase}>
         <img
           className={styles.photo}
-          src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=1200&auto=format&fit=crop"
+          src="/images/auth/welcome-calm.webp"
           alt=""
           aria-hidden="true"
         />
@@ -43,7 +43,7 @@ export default function AuthShell({ children }) {
         <div className={styles.inner}>
           {/* top row */}
           <div className={styles.topRow}>
-            <Link to="/" className={styles.logoLink} aria-label="Soma Wellness — home">
+            <Link to="/" className={styles.logoLink} aria-label="SomaWellness — home">
               <SomaLogo size={46} variant="light" />
             </Link>
             <span className={styles.topMeta}>Spring Valley · Nairobi</span>

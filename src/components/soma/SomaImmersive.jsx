@@ -20,7 +20,7 @@ const SomaImmersive = () => {
     <section ref={ref} className={styles.section}>
       <motion.div className={styles.bg} aria-hidden="true" style={{ y: bgYSpring, scale: bgScaleSpring }}>
         <motion.img
-          src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1920&auto=format&fit=crop&fm=webp"
+          src="/images/backgrounds/immersive-spa-calm.webp"
           alt={t("home.immersive.alt")}
           width="1920"
           height="1080"

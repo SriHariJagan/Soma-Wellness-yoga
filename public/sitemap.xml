@@ -56,11 +56,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://somawellness.co.ke/order-tracking</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://somawellness.co.ke/login</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
@@ -79,95 +74,5 @@
     <loc>https://somawellness.co.ke/reset-password</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/personal-yoga-classes-malviya-nagar</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/kids-yoga-malviya-nagar</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/prenatal-yoga-malviya-nagar</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/yoga-for-stress-malviya-nagar</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/corporate-yoga-malviya-nagar</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/corporate-yoga-durgapura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/therapeutic-yoga-malviya-nagar</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/therapeutic-yoga-durgapura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/online-yoga-classes-in-india</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/best-yoga-classes-jaipur</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/personal-yoga-classes-durgapura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/personal-yoga-classes-jagatpura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/kids-yoga-durgapura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/kids-yoga-jagatpura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/prenatal-yoga-durgapura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/prenatal-yoga-jagatpura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/yoga-for-stress-durgapura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://somawellness.co.ke/yoga-for-stress-jagatpura</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
 </urlset>

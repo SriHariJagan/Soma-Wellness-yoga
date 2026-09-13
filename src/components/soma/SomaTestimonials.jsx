@@ -3,6 +3,39 @@ import { motion, AnimatePresence } from "framer-motion";
 import styles from "./SomaTestimonials.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
 import { useTranslation } from "react-i18next";
+import { TESTIMONIAL_MEDIA, getYouTubeId } from "../../config/siteContent";
+
+const TestimonialMedia = ({ media }) => {
+  const [play, setPlay] = useState(false);
+  if (!media) return null;
+  const vid = getYouTubeId(media.youtubeUrl || "");
+  if (vid) {
+    if (!play) {
+      return (
+        <button
+          type="button"
+          onClick={() => setPlay(true)}
+          aria-label="Play video testimonial"
+          style={{ position: "relative", display: "block", width: "100%", borderRadius: 16, overflow: "hidden", border: "1px solid var(--soma-line-light)", cursor: "pointer", padding: 0, background: "#000", marginBottom: 16 }}
+        >
+          <img src={`https://i.ytimg.com/vi/${vid}/hqdefault.jpg`} alt="Video testimonial" style={{ width: "100%", display: "block", aspectRatio: "16/9", objectFit: "cover" }} loading="lazy" />
+          <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(180deg, transparent 40%, rgba(24,61,45,0.45) 100%)" }}>
+            <span style={{ width: 56, height: 56, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "var(--soma-forest)", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}>▶</span>
+          </span>
+        </button>
+      );
+    }
+    return (
+      <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 16, aspectRatio: "16/9", background: "#000" }}>
+        <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`} title="Video testimonial" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ width: "100%", height: "100%", minHeight: 280 }} />
+      </div>
+    );
+  }
+  if (media.image) {
+    return <img src={media.image} alt="Member testimonial" loading="lazy" style={{ width: "100%", borderRadius: 16, objectFit: "cover", maxHeight: 320, marginBottom: 16, border: "1px solid var(--soma-line-light)" }} />;
+  }
+  return null;
+};
 
 const SomaTestimonials = () => {
   const { t } = useTranslation();
@@ -12,6 +45,7 @@ const SomaTestimonials = () => {
   const [paused, setPaused] = useState(false);
   const reduced = usePrefersReducedMotion();
   const cur = list[idx] || {};
+  const curMedia = TESTIMONIAL_MEDIA[idx] || null;
 
   const next = () => setIdx((p) => (p === list.length - 1 ? 0 : p + 1));
   const prev = () => setIdx((p) => (p === 0 ? list.length - 1 : p - 1));
@@ -82,6 +116,7 @@ const SomaTestimonials = () => {
             >
               <div className={styles.cardSheen} aria-hidden="true" />
               <div className={styles.quoteMark} aria-hidden="true">“</div>
+              <TestimonialMedia media={curMedia} />
               <p className={styles.quote}>{cur.quote}</p>
               <div className={styles.author}>
                 <span className={styles.avatar}>{cur.avatar}</span>

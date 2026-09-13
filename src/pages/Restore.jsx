@@ -15,12 +15,9 @@ const Restore = () => {
   const scrollRef = useRef(null);
 
   const signatures = [
-    { name: "STILLNESS", sub: t("restore.sig.stillness.sub"), desc: t("restore.sig.stillness.desc"), len: "2 hrs", price: "11,000", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=800&auto=format&fit=crop" },
-    { name: "THE ACACIA", sub: t("restore.sig.acacia.sub"), desc: t("restore.sig.acacia.desc"), len: "2.5 hrs", price: "18,500", img: "https://images.unsplash.com/photo-1600334089648-bd6e2a7a65a8?q=80&w=800&auto=format&fit=crop" },
-    { name: "FOR TWO", sub: t("restore.sig.forTwo.sub"), desc: t("restore.sig.forTwo.desc"), len: "2 hrs", price: "22,500", per: t("restore.sig.forTwoPer"), img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=800&auto=format&fit=crop" },
-    { name: "BREATHE", sub: t("restore.sig.breathe.sub"), desc: t("restore.sig.breathe.desc"), len: "90 min", price: "4,500", img: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop" },
-    { name: "NIDRA", sub: t("restore.sig.nidra.sub"), desc: t("restore.sig.nidra.desc"), len: "75 min", price: "3,800", img: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" },
-    { name: "AROMA", sub: t("restore.sig.aroma.sub"), desc: t("restore.sig.aroma.desc"), len: "90 min", price: "6,500", img: "https://images.unsplash.com/photo-1591343395082-e120087004b4?q=80&w=800&auto=format&fit=crop" },
+    { name: "STILLNESS", sub: t("restore.sig.stillness.sub"), desc: t("restore.sig.stillness.desc"), len: "2 hrs", price: "11,000", img: "/images/programs/sig-stillness.webp" },
+    { name: "THE ACACIA", sub: t("restore.sig.acacia.sub"), desc: t("restore.sig.acacia.desc"), len: "2.5 hrs", price: "18,500", img: "/images/programs/sig-acacia.webp" },
+    { name: "FOR TWO", sub: t("restore.sig.forTwo.sub"), desc: t("restore.sig.forTwo.desc"), len: "2 hrs", price: "22,500", per: t("restore.sig.forTwoPer"), img: "/images/programs/sig-fortwo.webp" },
   ];
   return (
     <div style={{ background: "var(--soma-cream)" }}>
@@ -28,7 +25,7 @@ const Restore = () => {
         eyebrow={t("restore.eyebrow")}
         title={t("restore.title")}
         subtitle={t("restore.subtitle")}
-        image="https://images.unsplash.com/photo-1596178065887-1198b6148b2b?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/restore-rituals.webp"
       />
 
       {/* Treatments - editorial premium */}
@@ -80,7 +77,7 @@ const Restore = () => {
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.32)", flexShrink: 0 }} aria-hidden="true" /> The Six-Week Reset
             </div>
             <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 300, marginTop: 10, letterSpacing: "-0.02em", lineHeight: 0.95 }}>Six weeks to <em style={{ fontStyle: "italic", color: "#F4B400" }}>rebuild</em></div>
-            <div style={{ fontSize: 13, lineHeight: 1.65, opacity: 0.88, marginTop: 10 }}>Opening assessment · 12 yoga · 6 meditation/Nidra · 2 sixty-min massages · home plan · closing review</div>
+            <div style={{ fontSize: 13, lineHeight: 1.65, opacity: 0.88, marginTop: 10 }}>Opening assessment · 12 movement sessions · 6 mindfulness & deep-rest · 2 sixty-min massages · home plan · closing review</div>
             <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.4, ease: EASE }} style={{ height: 1, background: "linear-gradient(90deg, rgba(244,180,0,0.42) 0%, transparent 88%)", marginTop: 14, transformOrigin: "left" }} aria-hidden="true" />
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 14 }}>
               <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em" }}>32,000</span>
@@ -89,7 +86,7 @@ const Restore = () => {
             </div>
             <div style={{ fontSize: 11, opacity: 0.62, marginTop: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.10)", padding: "8px 10px", borderRadius: 10, backdropFilter: "blur(6px)" }}>{t("restore.matsOils")}</div>
             <motion.div initial={{ clipPath: "inset(10% 0 0 0)" }} whileInView={{ clipPath: "inset(0% 0 0 0)" }} viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE }} style={{ marginTop: 16, borderRadius: 14, overflow: "hidden", position: "relative", border: "1px solid rgba(255,255,255,0.14)" }}>
-              <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop" alt="Reset" style={{ width: "100%", height: 168, objectFit: "cover", display: "block" }} loading="lazy" />
+              <img src="/images/programs/reset-rebuild.webp" alt="Six-week reset journey" style={{ width: "100%", height: 168, objectFit: "cover", display: "block" }} loading="lazy" />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 52%, rgba(24,61,45,0.18) 100%)", pointerEvents: "none" }} aria-hidden="true" />
               <div style={{ position: "absolute", left: 10, bottom: 10, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 9999, fontSize: 10, fontWeight: 700, color: "var(--soma-forest)", letterSpacing: "0.06em", boxShadow: "0 4px 14px rgba(0,0,0,0.12)" }}>6 weeks · 21 sessions</div>
             </motion.div>
@@ -179,7 +176,7 @@ const Restore = () => {
           className={styles.benefitsGrid}
         >
           {[
-            { t: "Deep calm, not sedation", d: "Restorative yoga + Nidra + massage to down-regulate, not just relax.", icon: "◯" },
+            { t: "Deep calm, not sedation", d: "Restorative movement + deep rest + massage to down-regulate, not just relax.", icon: "◯" },
             { t: "Premium, unhurried", d: "2–2.5 hrs, tea, rest, no rushing. Real recovery, not a quick spa slot.", icon: "✦" },
             { t: "Safe & medical-aware", d: "Tell us about pregnancy, surgery, pain or heart concerns. Clearance respected.", icon: "✓" },
           ].map((b) => (

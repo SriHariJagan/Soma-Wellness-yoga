@@ -173,7 +173,7 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "loginHeading": "Welcome back",
-    "loginSub": "Sign in to your Soma Wellness account",
+    "loginSub": "Sign in to your SomaWellness account",
     "orEmail": "or continue with email",
     "rememberMe": "Remember me",
     "dontHave": "Don't have an account?",
@@ -201,7 +201,7 @@
       "headline": "Your wellness journey begins here",
       "ratingLabel": "Rated 4.9★ by our community",
       "q1": "Soma transformed my relationship with my body. I finally feel at home in myself.",
-      "q2": "The teachers here don't just teach yoga — they help you understand yourself.",
+      "q2": "The practitioners here do not just guide sessions — they help you understand yourself.",
       "q3": "After years of back pain, three months at Soma gave me more relief than a decade of medication.",
       "a1": "Amara K.",
       "a2": "James M.",
@@ -295,8 +295,8 @@
     "message": "Message"
   },
   "footer": {
-    "tagline": "Premium wellness in Spring Valley",
-    "description": "Premium wellness in Spring Valley — Yoga, Yoga Therapy, Meditation, Breathwork, Massage & mindful living.",
+    "tagline": "Premium international wellness",
+    "description": "Premium international wellness — mindful movement, restoration, breathwork, massage & conscious living.",
     "quickLinks": "Quick Links",
     "programs": "Programs",
     "contact": "Contact Us",
@@ -316,7 +316,7 @@
     "joined": "Joined!",
     "join": "Join",
     "privacyNote": "We respect your privacy. Unsubscribe anytime.",
-    "copyright": "© {{year}} Soma Wellness. All rights reserved.",
+    "copyright": "© {{year}} SomaWellness. All rights reserved.",
     "madeWith": "Made with care in Nairobi",
     "nairobiKenya": "Nairobi, Kenya",
     "privacy": "Privacy Policy",
@@ -326,22 +326,35 @@
   },
   "navigation": {
     "home": "Home",
-    "join": "Join",
+    "about": "About",
+    "experiences": "Wellness Experiences",
+    "programs": "Programs",
+    "organizations": "For Organizations",
+    "journal": "Journal",
+    "contact": "Contact",
+    "memberships": "Memberships",
+    "privatePrograms": "Private Programs",
+    "lifeStages": "Special Packages",
+    "restore": "Spa & Rituals",
+    "services": "Services",
+    "events": "Events",
+    "blogs": "Blogs",
+    "join": "Services",
     "private": "Private",
-    "lifeStages": "Life Stages",
-    "restore": "Restore",
+    "oneToOne": "Private Sessions",
     "academy": "Academy",
     "faq": "FAQ",
-    "contact": "Contact",
     "dashboard": "Dashboard",
     "profile": "Profile",
     "signOut": "Sign Out",
     "signIn": "Sign In",
     "book": "Book a Session",
+    "journey": "Begin Your Wellness Journey",
     "beginJourney": "Begin Your Journey",
     "bookSession": "Book a Session",
     "backToWebsite": "Back to Website",
-    "founding": "Founding Members"
+    "founding": "Membership",
+    "learnPartner": "Learn & Partner"
   },
   "home": {
     "trust": {
@@ -352,7 +365,7 @@
         "membersMaxLabel": "Active members",
         "membersMaxSub": "in our Spring Valley community",
         "yearsLabel": "Years of practice",
-        "yearsSub": "of yoga and wellness expertise",
+        "yearsSub": "of wellness expertise",
         "communityLabel": "Community rating",
         "communitySub": "average across Google and social",
         "hiddenFeesValue": "Zero",
@@ -360,7 +373,7 @@
         "hiddenFeesSub": "Transparent pricing, always"
       },
       "badges": {
-        "yogaAlliance": "Yoga Alliance certified",
+        "yogaAlliance": "Certified practitioners",
         "medical": "Doctor-referred",
         "max12": "Max 12 per class",
         "pause": "Pause anytime",
@@ -378,13 +391,13 @@
       "titleBefore": "Teachers who",
       "titleEm": "hold",
       "titleAfter": "you.",
-      "sub": "Experienced, certified, and deeply caring. Each teacher brings a unique background in yoga therapy, anatomy, meditation, and breathwork.",
-      "alt": "{{name}}, {{role}} at Soma Wellness",
+      "sub": "Experienced, certified, and deeply caring. Each practitioner brings a unique background in restorative practice, anatomy, mindfulness, and breathwork.",
+      "alt": "{{name}}, {{role}} at SomaWellness",
       "members": {
         "amina": {
           "name": "Amina Juma",
-          "role": "Lead Yoga Therapist",
-          "cred": "500hr E-RYT · Yoga Therapy Certified",
+          "role": "Lead Wellness Therapist",
+          "cred": "500hr Certified · Restorative Practice Specialist",
           "accent": "Therapy & Breathwork"
         },
         "daniel": {
@@ -407,7 +420,7 @@
         }
       },
       "footer": {
-        "yogaAlliance": "Yoga Alliance Certified",
+        "yogaAlliance": "Certified Practitioners",
         "years": "18+ years experience",
         "medical": "Doctor-referred"
       }
@@ -476,15 +489,15 @@
       "steps": {
         "breathe": {
           "word": "Breathe",
-          "desc": "Pranayama and breath awareness to calm the nervous system and build inner focus."
+          "desc": "Breath awareness and breathing practices to calm the nervous system and build inner focus."
         },
         "move": {
           "word": "Move",
-          "desc": "Asana practice tailored to your body — strength, flexibility, and alignment without strain."
+          "desc": "Mindful movement tailored to your body — strength, flexibility, and alignment without strain."
         },
         "rest": {
           "word": "Rest",
-          "desc": "Yoga Nidra, guided relaxation, and restorative poses to deeply restore."
+          "desc": "Guided deep rest, relaxation, and restorative practices to deeply restore."
         },
         "reconnect": {
           "word": "Reconnect",
@@ -496,7 +509,7 @@
       "eyebrow": "Ready to begin?",
       "titleLine1": "Your body is ready.",
       "titleEm": "Let's start.",
-      "copy": "Whether you are new to yoga or deepening a lifelong practice, Soma has a place for you. Spring Valley, Nairobi.",
+      "copy": "Whether you are beginning your wellness journey or deepening a lifelong practice, SomaWellness has a place for you. Spring Valley, Nairobi.",
       "primary": "Book a Discovery Class",
       "secondary": "Explore Memberships",
       "note": "No lock-in. Cancel anytime."
@@ -509,7 +522,7 @@
       "testimonialLabel": "Testimonial {{current}} of {{total}}",
       "previous": "Previous testimonial",
       "next": "Next testimonial",
-      "trust1": "Yoga Alliance certified",
+      "trust1": "Certified practitioners",
       "trust2": "Doctor referred",
       "trust3": "Max 12 per class",
       "items": [
@@ -517,16 +530,16 @@
         { "quote": "I came for back pain, I stayed for the community. The teachers genuinely care.", "name": "James K.", "role": "AMANI member", "avatar": "J" },
         { "quote": "My daughter loves the children's programme. It's the highlight of her week.", "name": "Margaret N.", "role": "FAMILY member", "avatar": "M" },
         { "quote": "The prenatal classes gave me strength and calm during pregnancy. I felt held.", "name": "Aisha M.", "role": "MAMA member", "avatar": "A" },
-        { "quote": "After 6 months, my insomnia is gone. Yoga Nidra changed everything.", "name": "Peter O.", "role": "JUA member", "avatar": "P" }
+        { "quote": "After 6 months, my insomnia is gone. The guided deep-rest sessions changed everything.", "name": "Peter O.", "role": "JUA member", "avatar": "P" }
       ]
     },
     "experiences": {
-      "eyebrow": "Experiences",
-      "titleLine1": "Find the experience",
-      "titleLine2": "that fits",
-      "titleLine3": "your life.",
-      "headerCopyBefore": "Every body is different. Every season of life is different.",
-      "headerCopyStrong": "Choose the experience that meets you where you are.",
+      "eyebrow": "Wellness Experiences",
+      "titleLine1": "Begin",
+      "titleLine2": "where you",
+      "titleLine3": "are.",
+      "headerCopyBefore": "Shared sessions, private guidance, deep restoration,",
+      "headerCopyStrong": "and care for every season of life.",
       "headerCopyAfter": "",
       "hint": "Swipe or use arrows to explore",
       "ariaLabel": "Wellness experiences carousel",
@@ -538,13 +551,13 @@
       "cards": {
         "join": {
           "title": "Join a Class",
-          "subtitle": "Drop-in yoga",
-          "desc": "Book a single class — group yoga, meditation, or breathwork. No commitment."
+          "subtitle": "Drop-in sessions",
+          "desc": "Book a single session — group movement, mindfulness, or breathwork. No commitment."
         },
         "private": {
           "title": "Private Sessions",
           "subtitle": "1-on-1 with a teacher",
-          "desc": "Personalised yoga therapy, private yoga, or massage. Tailored to your body."
+          "desc": "Personalised therapy, private sessions, or massage. Tailored to your body."
         },
         "restore": {
           "title": "Restore",
@@ -559,18 +572,18 @@
       }
     },
     "intro": {
-      "eyebrow": "Welcome to Soma",
-      "titleLine1": "Where yoga",
-      "titleLine2": "meets",
-      "titleLine3": "therapy,",
-      "titleLine4": "and life meets practice.",
-      "lead": "Soma is an integrated wellness centre in Spring Valley, Nairobi — combining yoga, yoga therapy, meditation, breathwork, massage, and mindful living.",
-      "body": "We are not a gym. We are not a trend. We are a place where healing happens slowly, safely, and with great care.",
-      "alt": "Soma Wellness studio interior — warm light, wooden floors, plants",
+      "eyebrow": "Welcome to SomaWellness",
+      "titleLine1": "A more",
+      "titleLine2": "conscious way",
+      "titleLine3": "to live",
+      "titleLine4": "well.",
+      "lead": "SomaWellness is a premium international wellness brand — bringing together mindful movement, restoration, breathwork, massage, and conscious living.",
+      "body": "We are not a gym. We are not a trend. We are a place where change happens slowly, safely, and with great care.",
+      "alt": "SomaWellness studio interior — warm light, wooden floors, plants",
       "captionLabel": "Spring Valley, Nairobi",
       "captionText": "Our home — a calm, warm space designed for practice and healing.",
       "microTitle": "Built for care",
-      "microSub": "Small groups. Certified teachers. Doctor-referred therapy.",
+      "microSub": "Small groups. Certified practitioners. Trusted referrals.",
       "stats": {
         "smallGroupsLabel": "Max 12",
         "smallGroupsSub": "per class",
@@ -581,7 +594,7 @@
       }
     },
     "immersive": {
-      "alt": "Soma wellness experience",
+      "alt": "SomaWellness experience",
       "eyebrow": "Immersive",
       "cardNumber": "01",
       "titleLight": "Light",
@@ -624,17 +637,17 @@
     }
   },
   "join": {
-    "eyebrow": "Join Soma",
+    "eyebrow": "Join SomaWellness",
     "title": "Choose how you want to practice",
     "subtitle": "From a single drop-in class to unlimited memberships, find the plan that fits your life.",
     "tryUsFirst": "Try us first",
-    "discovery": "Discovery Class",
-    "discoveryDesc": "One group yoga class — any level, any style. Meet our teachers, feel the space.",
-    "singleClass": "Single class",
+    "discovery": "SOMA Discovery",
+    "discoveryDesc": "7 days of unlimited yoga + wellness orientation. New clients only.",
+    "singleClass": "7 days · New clients only",
     "pickLevel": "Pick your level",
-    "pickLevelDesc": "Start with a Discovery Class, then choose a membership that fits your practice.",
-    "registrationWaived": "Registration waived",
-    "guestMatTowel": "Mat & towel included",
+    "pickLevelDesc": "Start with SOMA Discovery — or a single class at KES 2,500 — then choose a membership.",
+    "registrationWaived": "Registration fee waived on 3+ month commitments",
+    "guestMatTowel": "Guest pass 1,500 · Mat hire 200 · Towel 300",
     "choose": "Choose {{tier}}",
     "payAhead": "Pay ahead & save",
     "upToOff": "up to 25% off",
@@ -650,13 +663,13 @@
     "payAsYouGoDesc": "Not ready for a membership? Buy a 5 or 10 class pass.",
     "fiveClasses": "5 classes",
     "perClass": "per class",
-    "weeks": "weeks",
+    "weeks": "Use within 6 weeks",
     "shareable": "Shareable",
     "tenClasses": "10 classes",
-    "months": "months",
+    "months": "Use within 3 months",
     "bestValuePass": "Best value pass",
     "anyGroupClass": "Any group class",
-    "shareWithFamily": "Share with family",
+    "shareWithFamily": "Personal to you",
     "validFromFirstUse": "Valid from first use",
     "pauseOnce": "Pause once",
     "somaDaily": "SOMA DAILY ·",
@@ -677,8 +690,8 @@
     "subtitle": "Specialised programmes for pregnancy, postnatal recovery, children, teens, and seniors — with medical-aware teachers and gentle, effective practice.",
     "tabs": {
       "mama": {
-        "sub": "Pregnancy yoga — safe, supportive, strengthening.",
-        "bullets": ["Prenatal yoga for each trimester", "Breathwork for labour preparation", "Gentle movement, no strain", "Small groups, max 8", "Medical clearance respected"],
+        "sub": "Pregnancy wellness — safe, supportive, strengthening.",
+        "bullets": ["Trimester-aware movement for each stage", "Breathwork for labour preparation", "Gentle movement, no strain", "Small groups, max 8", "Medical clearance respected"],
         "price": "KES 12,000"
       },
       "mamaplus": {
@@ -715,12 +728,12 @@
     "allPrices": "All prices in KES, VAT included"
   },
   "yttc": {
-    "eyebrow": "Yoga Teacher Training",
-    "title": "200-Hour Teacher Training",
-    "subtitle": "Transform your practice into a teaching career. Yoga Alliance certified, Spring Valley, Nairobi.",
+    "eyebrow": "Learn & Partner",
+    "title": "SOMA Academy & Corporate Wellness",
+    "subtitle": "Practitioner training and workplace wellness. Internationally recognised curriculum, Spring Valley, Nairobi.",
     "instalments": "Pay in instalments",
-    "whyAcademy": "Why Soma Academy",
-    "whyPoints": ["Yoga Alliance certified (RYT 200)", "Small cohorts — max 12 students", "Medical-aware curriculum", "Practicum with real students", "Business and ethics training", "Lifetime alumni community"],
+    "whyAcademy": "Why SomaWellness Academy",
+    "whyPoints": ["Structured curriculum from foundations to 200 hours", "Small cohorts — max 12 students", "Medical-aware curriculum", "Practicum with real clients", "Business and ethics training", "Lifetime alumni community"],
     "checkIntake": "Check intake dates",
     "corporateTitle": "Corporate & Group Training",
     "quotesOn": "What alumni say",
@@ -740,7 +753,7 @@
   "membershipCompare": {
     "title": "Compare Memberships",
     "feature": "Feature",
-    "groupYoga": "Group Yoga",
+    "groupYoga": "Group Sessions",
     "meditation": "Meditation & Breathwork",
     "massages": "Massages",
     "privateSession": "Private Session",
@@ -758,7 +771,7 @@
     "heartConcerns": "Heart concerns",
     "otherCondition": "Other condition",
     "describePlaceholder": "Please describe your condition...",
-    "consent": "I understand that yoga and therapy are not substitutes for medical care.",
+    "consent": "I understand that wellness sessions and therapy are not substitutes for medical care.",
     "therapyDisclaimer": "This session is not a medical treatment. Please consult your doctor for medical concerns.",
     "requiredNote": "Health disclosure is required for therapy sessions.",
     "completeDisclosure": "Complete health disclosure",
@@ -807,7 +820,7 @@
   "contact": {
     "eyebrow": "Get in touch",
     "title": "Visit us in Spring Valley",
-    "subtitle": "We would love to welcome you to Soma Wellness. Drop in, call, or send us a message.",
+    "subtitle": "We would love to welcome you to SomaWellness. Drop in, call, or send us a message.",
     "visitStudio": "Visit Our Studio",
     "getDirections": "Get Directions",
     "callUs": "Call Us",
@@ -816,9 +829,9 @@
     "sendEmail": "Send Email",
     "studioHours": "Studio Hours",
     "sundayClosed": "Sunday: Closed",
-    "lightWood": "Light & Wood",
-    "calmSpace": "Calm Space",
-    "springValley": "Spring Valley",
+    "lightWood": "Signature Touch",
+    "calmSpace": "Quiet Mind",
+    "springValley": "Warm Welcome",
     "sendMessage": "Send a Message",
     "sendMessageTitle": "We would love to hear from you",
     "sendMessageDesc": "Fill in the form below and we will get back to you within 24 hours.",
@@ -832,21 +845,26 @@
     "messageLabel": "Message",
     "messagePlaceholder": "How can we help you?",
     "send": "Send Message",
-    "mapTitle": "Soma Wellness location",
+    "mapTitle": "SomaWellness location",
     "faqTitle": "Contact FAQ"
   },
   "hero": {
     "springValley": "Spring Valley, Nairobi",
-    "yogaTherapy": "Yoga Therapy & Wellness",
-    "subtitle": "An integrated wellness centre in Spring Valley — Yoga, Yoga Therapy, Meditation, Breathwork, Massage and mindful living.",
-    "explorePrograms": "Explore Programs",
+    "eyebrow": "Premium International Wellness",
+    "titleA": "WELLNESS,",
+    "titleB": "REIMAGINED.",
+    "subtitle": "SomaWellness brings together movement, restoration, mindfulness and holistic wellbeing — meaningful experiences for individuals, organisations and communities around the world.",
+    "primaryCta": "Explore Our Experiences",
+    "secondaryCta": "Discover SomaWellness",
+    "yogaTherapy": "Premium International Wellness",
+    "explorePrograms": "Explore Our Experiences",
     "rebalance": "Rebalance"
   },
   "about": {
     "eyebrow": "Our story",
-    "title": "Where yoga meets therapy, and life meets practice.",
-    "subtitle": "SOMA Wellness Nairobi is an integrated destination in Spring Valley — where Yoga, Yoga Therapy, Meditation, Breathwork, Massage and wellness rituals sit together under one holistic philosophy.",
-    "ourStory": "Our Story",
+    "title": "A more conscious way to live well.",
+    "subtitle": "SomaWellness is a premium international wellness brand — where mindful movement, restoration, breathwork, massage and conscious rituals come together in one holistic philosophy.",
+    "ourStory": "Discover SomaWellness",
     "faqTitle": "About FAQ"
   },
   "errors": {
@@ -863,7 +881,7 @@
     "selectLanguage": "Select Language"
   },
   "dashboard": {
-    "soma": "Soma",
+    "soma": "SomaWellness",
     "profile": "Profile",
     "myCart": "My Cart",
     "orderHistory": "Order History",
@@ -871,7 +889,7 @@
     "activePlan": "Active Plan",
     "activeServices": "Active Services",
     "browseServices": "Browse Services",
-    "yttc": "YTTC",
+    "yttc": "Academy",
     "attendance": "Attendance",
     "payments": "Payments",
     "classes": "Classes",
@@ -898,20 +916,24 @@
   "faq": {
     "eyebrow": "Questions & guidance",
     "title": "Frequently asked questions",
-    "subtitle": "Everything you need to know about classes, memberships, booking, and wellness at Soma.",
+    "subtitle": "Everything you need to know about sessions, memberships, booking, and wellbeing with SomaWellness.",
     "aboutThisFaq": "About this FAQ",
-    "aboutDesc": "We have answered the most common questions about Soma Wellness. If you cannot find what you are looking for, contact us and we will be happy to help.",
+    "aboutDesc": "We have answered the most common questions about SomaWellness. If you cannot find what you are looking for, contact us and we will be happy to help.",
     "stillHave": "Still have questions?",
     "stillDesc": "We are here to help. Reach out and we will get back to you within 24 hours.",
     "replyOneDay": "We reply within one business day",
     "categories": {
+      "all": "All",
+      "about": "About",
+      "therapy": "Private Care",
+      "programs": "Experiences",
       "practical": "Practical"
     }
   },
   "private": {
     "eyebrow": "One-to-One",
     "title": "Private yoga & therapy, at your pace.",
-    "subtitle": "Personal yoga, Yoga Therapy, and massage — tailored to your body, your goals, and your schedule. Same rates for everyone.",
+    "subtitle": "Personal yoga, yoga therapy, and massage — tailored to your body, your goals, and your schedule. Same rates for everyone.",
     "stepAssessmentTitle": "Assessment",
     "stepAssessmentDesc": "A 75-minute therapy assessment to understand your body, history, and goals. Thorough, not rushed.",
     "stepPlanTitle": "Personal plan",
@@ -935,13 +957,10 @@
     "title": "Massage, meditation & ritual.",
     "subtitle": "Professional massage, guided meditation, and signature wellness journeys — designed for deep relaxation and renewal.",
     "sig": {
-      "stillness": { "sub": "Deep stillness, guided journey", "desc": "Massage, breathwork, Yoga Nidra, and silence — a complete reset for body and mind." },
+      "stillness": { "sub": "Deep stillness, guided journey", "desc": "Restorative yoga, guided meditation, 60-min relaxation massage, herbal tea — a complete reset for body and mind." },
       "acacia": { "sub": "Signature full-body journey", "desc": "Our most complete experience — massage, aromatherapy, meditation, and extended rest." },
       "forTwo": { "sub": "Couples wellness experience", "desc": "Side-by-side massage, shared meditation, and a private journey for two." },
-      "forTwoPer": "per couple",
-      "breathe": { "sub": "Breathwork & gentle bodywork", "desc": "Pranayama, breath release, and light massage — focused on the respiratory system." },
-      "nidra": { "sub": "Yoga Nidra deep rest", "desc": "Guided yogic sleep — 45 minutes of Nidra with gentle preparation and integration." },
-      "aroma": { "sub": "Aromatherapy massage", "desc": "Essential oils, slow massage, and breathwork — deeply calming for nervous system." }
+      "forTwoPer": "per couple"
     },
     "massageMeditation": "Massage & Meditation",
     "unhurriedTouch": "Unhurried <em>touch</em>, deep <em>care</em>.",
@@ -963,8 +982,10 @@
   },
   "navbar": {
     "admin": "Administrator",
+    "manager": "Center Manager",
     "member": "Member",
     "adminAccess": "Admin Access",
+    "managerAccess": "Center Manager Access",
     "statusPaused": "Paused",
     "statusActive": "Active",
     "statusAvailable": "Available",
@@ -973,7 +994,7 @@
     "studioType": "Integrated Wellness Center"
   },
   "userNav": {
-    "brand": "Soma Wellness",
+    "brand": "SomaWellness",
     "home": "Home",
     "about": "About",
     "classes": "Classes",
@@ -1002,7 +1023,7 @@
     "sortPriceHigh": "Price: High to Low",
     "journalEyebrow": "Soma Journal · Curated Reads",
     "title": "The Soma Bookstore",
-    "desc": "Curated books on yoga, breathwork and conscious living — written by our teachers and kin, delivered across Kenya.",
+    "desc": "Curated books on breathwork and conscious living — written by our practitioners and kin, delivered across Kenya.",
     "curatedBy": "Curated by our teachers",
     "localDelivery": "Local delivery available",
     "secureCheckout": "Secure checkout",
@@ -1110,7 +1131,7 @@
   "orderTracking": {
     "title": "Track Your Order",
     "subtitle": "Enter your order number and the email used at checkout to see live delivery updates.",
-    "storeName": "Soma Wellness Store",
+    "storeName": "SomaWellness Store",
     "orderNumber": "Order number *",
     "orderPlaceholder": "e.g. ORD-123456",
     "emailLabel": "Email used at checkout *",
@@ -1163,13 +1184,13 @@
     "twoBusinessDays": "2 business days response",
     "formTitle": "Tell us what you need",
     "orgName": "Organisation / studio name *",
-    "orgPlaceholder": "e.g. Nairobi Yoga Studio",
+    "orgPlaceholder": "e.g. Nairobi Wellness Retreat",
     "contactPerson": "Contact person *",
     "contactPlaceholder": "Full name",
     "email": "Email *",
     "phone": "Phone",
     "bookTitle": "Book title(s) *",
-    "booksPlaceholder": "e.g. Breathwork Guide × 20, Yoga Therapy Manual × 50",
+    "booksPlaceholder": "e.g. Breathwork Guide × 20, Restoration Manual × 50",
     "quantity": "Approximate quantity *",
     "quantityPlaceholder": "e.g. 50",
     "deliveryAddress": "Delivery address",
@@ -1181,7 +1202,7 @@
     "backToStore": "← Back to the bookstore",
     "successTitle": "Enquiry received!",
     "successRef": "Your reference number is {{ref}}.",
-    "successMsg": "Our team will contact you within 2 business days. Thank you for your interest in Soma Wellness.",
+    "successMsg": "Our team will contact you within 2 business days. Thank you for your interest in SomaWellness.",
     "submitAnother": "Submit another enquiry"
   },
   "adminSidebar": {
@@ -1190,8 +1211,8 @@
     "communications": "Communications",
     "growthContent": "Growth & Content",
     "bookStore": "Book Store",
-    "brand": "AshramOS",
-    "brandSub": "Soma Wellness Studio",
+    "brand": "SomaWellness",
+    "brandSub": "SomaWellness Studio",
     "expand": "Expand",
     "collapse": "Collapse",
     "quickCreate": "Quick Create",

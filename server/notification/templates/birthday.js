@@ -5,7 +5,7 @@ import layout from './engine/layout.js';
 export default function birthday(notification) {
   const data = notification.templateData || {};
   const user = notification.user || {};
-  const name = data.name || user.name || 'Yoga Seeker';
+  const name = data.name || user.name || 'Valued Member';
 
   const subject = notification.subject || `Happy Birthday, ${escapeHtml(name)}!`;
 
@@ -13,7 +13,7 @@ export default function birthday(notification) {
     ${heading(`Happy Birthday, ${escapeHtml(name)}!`)}
     ${p(`On this special day, the entire <strong>${STUDIO_NAME}</strong> community sends you warm wishes for peace, joy, and vibrant health.`)}
     ${p('May your year ahead be filled with light, growth, and beautiful moments on and off the mat.')}
-    ${p('Thank you for being part of our yoga family.', { muted: true })}
+    ${p('Thank you for being part of our wellness community.', { muted: true })}
     ${p(`— ${STUDIO_NAME} Team`, { muted: true })}
   `;
 
@@ -23,7 +23,7 @@ export default function birthday(notification) {
     `On this special day, the entire ${STUDIO_NAME} community sends you warm wishes for peace, joy, and vibrant health.`,
     'May your year ahead be filled with light, growth, and beautiful moments on and off the mat.',
     '',
-    'Thank you for being part of our yoga family.',
+    'Thank you for being part of our wellness community.',
     '',
     `— ${STUDIO_NAME} Team`,
   ].join('\n');

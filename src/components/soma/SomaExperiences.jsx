@@ -17,7 +17,7 @@ const SomaExperiences = () => {
       title: t("home.experiences.cards.join.title"),
       subtitle: t("home.experiences.cards.join.subtitle"),
       desc: t("home.experiences.cards.join.desc"),
-      image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/programs/exp-join.webp",
       href: "/classes",
     },
     {
@@ -25,7 +25,7 @@ const SomaExperiences = () => {
       title: t("home.experiences.cards.private.title"),
       subtitle: t("home.experiences.cards.private.subtitle"),
       desc: t("home.experiences.cards.private.desc"),
-      image: "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/programs/exp-private.webp",
       href: "/private",
     },
     {
@@ -33,7 +33,7 @@ const SomaExperiences = () => {
       title: t("home.experiences.cards.restore.title"),
       subtitle: t("home.experiences.cards.restore.subtitle"),
       desc: t("home.experiences.cards.restore.desc"),
-      image: "https://images.unsplash.com/photo-1600334089648-bd6e2a7a65a8?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/programs/exp-restore.webp",
       href: "/restore",
     },
     {
@@ -41,7 +41,7 @@ const SomaExperiences = () => {
       title: t("home.experiences.cards.lifeStages.title"),
       subtitle: t("home.experiences.cards.lifeStages.subtitle"),
       desc: t("home.experiences.cards.lifeStages.desc"),
-      image: "https://images.unsplash.com/photo-1600618528240-fb9fc964b853?q=80&w=1200&auto=format&fit=crop",
+      image: "/images/programs/exp-life-stages.webp",
       href: "/life-stages",
     },
   ];
@@ -92,7 +92,6 @@ const SomaExperiences = () => {
               {t("home.experiences.eyebrow")}
             </div>
             <h2 className={styles.title}>
-              <span className={styles.watermarkTitle} aria-hidden="true">04</span>
               <span className={styles.titleLineWrap}>
                 <motion.span
                   className={styles.titleLine}
@@ -101,18 +100,7 @@ const SomaExperiences = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.72, ease: EASE }}
                 >
-                  {t("home.experiences.titleLine1")}
-                </motion.span>
-              </span>
-              <span className={styles.titleLineWrap}>
-                <motion.span
-                  className={styles.titleLine}
-                  initial={{ y: "110%" }}
-                  whileInView={{ y: "0%" }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.72, delay: 0.1, ease: EASE }}
-                >
-                  <em>{t("home.experiences.titleLine2")}</em> {t("home.experiences.titleLine3")}
+                  {t("home.experiences.titleLine1")} <em>{t("home.experiences.titleLine2")}</em> {t("home.experiences.titleLine3")}
                 </motion.span>
               </span>
               <motion.span
@@ -121,15 +109,7 @@ const SomaExperiences = () => {
                 whileInView={{ scaleX: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
-                style={{ transformOrigin: "left" }}
-                aria-hidden="true"
-              />
-              <motion.span
-                className={styles.titleAccentDot}
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.75, ease: EASE }}
+                style={{ transformOrigin: "center" }}
                 aria-hidden="true"
               />
             </h2>

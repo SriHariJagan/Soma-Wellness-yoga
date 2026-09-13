@@ -50,7 +50,7 @@ const INPUT = {
   color: '#2D1406',
   outline: 'none',
   transition: 'border-color 0.15s, box-shadow 0.15s',
-  fontFamily: 'var(--font-body, Inter, sans-serif)',
+  fontFamily: 'var(--font-body, Manrope, sans-serif)',
 };
 
 const BTN_PRIMARY = {
@@ -141,7 +141,7 @@ function QuickDrawer({ open, onClose, title, icon, subtitle, children }) {
                 {subtitle && (
                   <p style={{
                     fontSize: '13px', color: '#7C6A58', margin: '2px 0 0',
-                    fontFamily: 'var(--font-body, Inter, sans-serif)',
+                    fontFamily: 'var(--font-body, Manrope, sans-serif)',
                   }}>{subtitle}</p>
                 )}
               </div>
@@ -311,7 +311,7 @@ export function AddStudentModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', city: '', gender: '', dateOfBirth: '',
     emergencyContact: '', style: 'Hatha', level: 'Beginner',
-    membership: 'Monthly Pass', notes: '',
+    membership: 'SOMA JUA', notes: '',
   });
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', type: '' });
@@ -327,7 +327,7 @@ export function AddStudentModal({ onClose, onSuccess }) {
     setSaving(true);
     setFeedback({ message: '', type: '' });
     try {
-      const planMonths = form.membership === 'Annual Pass' ? 12 : form.membership === 'Quarterly Pass' ? 3 : 1;
+      const planMonths = 1;
       await createStudent({
         name: form.name, email: form.email, phone: form.phone,
         city: form.city || undefined, style: form.style, level: form.level,
@@ -355,21 +355,21 @@ export function AddStudentModal({ onClose, onSuccess }) {
         {/* Personal Details */}
         <SectionCard icon={<LuUser size={18} />} title="Personal Details" col="2">
           <FieldGroup icon={<LuUser size={15} />} label="Full Name" required>
-            <FocusInput value={form.name} onChange={set('name')} placeholder="e.g. Ananya Sharma" />
+            <FocusInput value={form.name} onChange={set('name')} placeholder="e.g. Full name" />
           </FieldGroup>
           <FieldGroup icon={<LuMail size={15} />} label="Email" required>
             <FocusInput type="email" value={form.email} onChange={set('email')} placeholder="student@example.com" />
           </FieldGroup>
           <FieldGroup icon={<LuPhone size={15} />} label="Phone" required>
-            <FocusInput value={form.phone} onChange={set('phone')} placeholder="+91 98765 43210" />
+            <FocusInput value={form.phone} onChange={set('phone')} placeholder="+254 712 345 678" />
           </FieldGroup>
           <FieldGroup icon={<LuMapPin size={15} />} label="City">
-            <FocusInput value={form.city} onChange={set('city')} placeholder="e.g. Pune" />
+            <FocusInput value={form.city} onChange={set('city')} placeholder="e.g. Nairobi" />
           </FieldGroup>
         </SectionCard>
 
-        {/* Yoga Profile */}
-        <SectionCard icon={<LuHeart size={18} />} title="Yoga Profile" col="2">
+        {/* Wellness Profile */}
+        <SectionCard icon={<LuHeart size={18} />} title="Wellness Profile" col="2">
           <FieldGroup icon={<LuActivity size={15} />} label="Style">
             <FocusSelect value={form.style} onChange={set('style')}>
               <option>Hatha</option><option>Vinyasa</option><option>Ashtanga</option><option>Kundalini</option><option>Yin</option>
@@ -383,9 +383,10 @@ export function AddStudentModal({ onClose, onSuccess }) {
           <FieldGroup icon={<LuBookOpen size={15} />} label="Membership Plan">
             <FocusSelect value={form.membership} onChange={set('membership')}>
               <option value="">No Plan</option>
-              <option value="Monthly Pass">Monthly Pass</option>
-              <option value="Quarterly Pass">Quarterly Pass</option>
-              <option value="Annual Pass">Annual Pass</option>
+              <option value="SOMA JUA">SOMA JUA</option>
+              <option value="SOMA AMANI">SOMA AMANI</option>
+              <option value="SOMA UZIMA">SOMA UZIMA</option>
+              <option value="SOMA FAMILY">SOMA FAMILY</option>
             </FocusSelect>
           </FieldGroup>
         </SectionCard>
@@ -452,7 +453,7 @@ export function AddLeadModal({ onClose, onSuccess }) {
             <FocusInput value={form.name} onChange={set('name')} placeholder="e.g. Rahul Verma" />
           </FieldGroup>
           <FieldGroup icon={<LuPhone size={15} />} label="Phone">
-            <FocusInput value={form.phone} onChange={set('phone')} placeholder="+91 98765 43210" />
+            <FocusInput value={form.phone} onChange={set('phone')} placeholder="+254 712 345 678" />
           </FieldGroup>
           <FieldGroup icon={<LuMail size={15} />} label="Email">
             <FocusInput type="email" value={form.email} onChange={set('email')} placeholder="lead@example.com" />
@@ -654,7 +655,7 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
             </FocusSelect>
           </FieldGroup>
           <FieldGroup icon={<LuFileText size={15} />} label="Description" fullWidth>
-            <FocusInput value={form.label} onChange={set('label')} placeholder="e.g. Monthly Pass - June 2026" />
+            <FocusInput value={form.label} onChange={set('label')} placeholder="e.g. SOMA AMANI - June 2026" />
           </FieldGroup>
         </SectionCard>
 

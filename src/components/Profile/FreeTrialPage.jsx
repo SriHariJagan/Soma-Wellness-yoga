@@ -119,7 +119,7 @@ export default function FreeTrialPage({ student, reload }) {
     return (
       <Stagger>
         <Item>
-          <PageHeader title="Free Trial" sub="Experience 7 days of yoga, absolutely free." />
+          <PageHeader title="Free Trial" sub="Experience 7 days of wellness, absolutely free." />
         </Item>
 
         {showPlanBlocked && (
@@ -154,7 +154,7 @@ export default function FreeTrialPage({ student, reload }) {
                 </div>
                 <h2 className={styles.onboardTitle}>Start Your 7-Day Free Trial</h2>
                 <p className={styles.onboardSubtitle}>
-                  Unlock full access to all yoga classes, guided meditations, and wellness workshops —
+                  Unlock full access to all sessions, guided mindfulness sessions, and wellness workshops —
                   zero commitment, no payment required.
                 </p>
 
@@ -163,7 +163,7 @@ export default function FreeTrialPage({ student, reload }) {
                     <div className={styles.benefitIcon}><LuSparkles size={16} /></div>
                     <div>
                       <div className={styles.benefitLabel}>Unlimited Classes</div>
-                      <div className={styles.benefitDesc}>Access all group yoga sessions</div>
+                      <div className={styles.benefitDesc}>Access all group wellness sessions</div>
                     </div>
                   </div>
                   <div className={styles.benefitItem}>

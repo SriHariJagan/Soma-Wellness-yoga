@@ -89,11 +89,17 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
       });
       const data = await res.json();
       if (res.ok) {
+        const role = data.user?.role || "student";
         const cleanUser = {
           id: data.user?.id || data.user?._id || "",
+          _id: data.user?._id || data.user?.id || "",
           email: data.user?.email || email,
           name: data.user?.name || email.split("@")[0].toUpperCase(),
-          role: data.user?.role || "student",
+          role,
+          status: data.user?.status || "active",
+          permissions: data.user?.permissions || [],
+          phone: data.user?.phone || "",
+          city: data.user?.city || "",
           planMonths: data.user?.planMonths || 0,
           planActive: data.user?.planActive || (data.user?.planMonths > 0) || false,
         };
@@ -101,7 +107,10 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
         localStorage.setItem("user", JSON.stringify(cleanUser));
         if (onLoginSuccess) onLoginSuccess(data.token || "", cleanUser);
         const rt = redirectTo || new URLSearchParams(window.location.search).get("redirectTo");
-        navigate(rt ? decodeURIComponent(rt) : cleanUser.role === "admin" ? "/yogaadmin" : "/studentdashboard", { replace: true });
+        if (rt) navigate(decodeURIComponent(rt), { replace: true });
+        else if (role === "student") navigate("/studentdashboard", { replace: true });
+        else if (role === "reception") navigate("/reception", { replace: true });
+        else navigate("/yogaadmin", { replace: true });
       } else {
         setError(data.error || t("errors.loginFailed"));
       }
@@ -189,7 +198,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
             >
               <div className={styles.cardHead}>
-                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI</span>
+                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI</span>
                 <h1 className={styles.cardTitle}>{t("auth.loginHeading")}</h1>
                 <p className={styles.cardSub}>{t("auth.loginSub")}</p>
               </div>
@@ -232,7 +241,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
             >
               <div className={styles.cardHead}>
-                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI</span>
+                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI</span>
                 <h1 className={styles.cardTitle}>{t("auth.createAccount")}</h1>
                 <p className={styles.cardSub}>{t("auth.loginSub")}</p>
               </div>
@@ -272,7 +281,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               {!fpSent ? (
                 <>
                   <div className={styles.cardHead}>
-                    <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI</span>
+                    <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI</span>
                     <h1 className={styles.cardTitle}>{t("auth.forgotTitle")}</h1>
                     <p className={styles.cardSub}>{t("auth.forgotSubtitle")}</p>
                   </div>

@@ -16,7 +16,7 @@ const envSchema = z.object({
     .transform((v) => parseInt(v, 10))
     .pipe(z.number().int().min(1).max(65535))
     .default('5000'),
-  APP_NAME: z.string().default('Soma Wellness'),
+  APP_NAME: z.string().default('SomaWellness'),
 
   // ── Database ──
   MONGO_URI: z
@@ -53,7 +53,7 @@ const envSchema = z.object({
     ),
 
   // ── CORS ──
-  CORS_ORIGINS: z.string().default('https://somawellness.in,http://localhost:5173'),
+  CORS_ORIGINS: z.string().default('https://somawellness.co.ke,http://localhost:5173'),
   FRONTEND_URL: z
     .string()
     .default('http://localhost:5173')
@@ -76,7 +76,7 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   FROM_EMAIL: z.string().optional(),
-  FROM_NAME: z.string().default('Soma Wellness'),
+  FROM_NAME: z.string().default('SomaWellness'),
   REPLY_TO: z.string().optional(),
 
   // ── Admin Email ── (comma-separated allowed)

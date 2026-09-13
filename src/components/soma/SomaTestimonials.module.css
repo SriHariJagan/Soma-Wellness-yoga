@@ -47,7 +47,7 @@
   position: relative; display: block; max-width: 620px; margin-left: auto; margin-right: auto;
   text-wrap: balance; overflow-wrap: break-word;
 }
-.title em { font-style: italic; font-weight: 400; color: var(--soma-primary); white-space: nowrap; }
+.title em { font-style: normal; font-weight: 400; color: var(--soma-primary); white-space: nowrap; }
 .titleUnderline { position: absolute; left: 18%; right: 18%; bottom: -0.14em; height: 0.10em; background: linear-gradient(90deg, transparent 0%, rgba(244,180,0,0.28) 20%, rgba(244,180,0,0.14) 55%, transparent 100%); transform-origin: center; border-radius: 2px; pointer-events: none; }
 
 .cardWrap { margin-top: 32px; position: relative; max-width: 640px; margin-left: auto; margin-right: auto; padding-bottom: 22px; }

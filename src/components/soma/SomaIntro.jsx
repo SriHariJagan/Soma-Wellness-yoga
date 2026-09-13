@@ -72,7 +72,7 @@ const SomaIntro = () => {
             >
               <motion.div className={styles.imageInner} style={{ y: springY, scale: springScale }}>
                 <motion.img
-                  src="https://images.unsplash.com/photo-1528715471578-2e5b6c0bb37a?q=80&w=900&auto=format&fit=crop"
+                  src="/images/intro/soma-intro.webp"
                   alt={t("home.intro.alt")}
                   width="900"
                   height="1100"

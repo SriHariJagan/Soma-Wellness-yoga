@@ -1,5 +1,5 @@
 // ============================================================
-// server.js — Soma Wellness API entrypoint
+// server.js — SomaWellness API entrypoint
 // ============================================================
 
 import dns from "node:dns";
@@ -9,6 +9,7 @@ import express from "express";
 import compression from "compression";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
+import { SOMA_SERVICES, LEGACY_SERVICE_NAMES } from "./config/somaCatalog.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 import asyncHandler from "./utils/asyncHandler.js";
 import { rateLimit } from "./middleware/rateLimit.js";
@@ -22,6 +23,7 @@ import otpRoutes from "./routes/otp.js";
 import studentRoutes from "./routes/student.js";
 import studentsAdminRoutes from "./routes/students.js";
 import adminRoutes from "./routes/admin.js";
+import staffRoutes from "./routes/staff.js";
 import batchRoutes from "./routes/batches.js";
 import bookingRoutes from "./routes/bookings.js";
 import leadRoutes from "./routes/leads.js";
@@ -62,6 +64,7 @@ import somaRoutes from "./routes/soma.js";
 import mpesaRoutes from "./routes/mpesaRoutes.js";
 import whatsappRoutes from "./routes/whatsappRoutes.js";
 import chatbotRoutes from "./routes/chatbot.js";
+import receptionRoutes from "./routes/reception.js";
 
 // ── Startup validation for required SMTP env vars ──
 function validateSmtpConfig() {
@@ -98,7 +101,7 @@ app.use(compression({ threshold: 1024, level: 6 }));
 
 // ── CORS ──
 const BASE_ORIGINS =
-  "https://somawellness.in,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app";
+  "https://somawellness.co.ke,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app";
 
 const allowedOrigins = [
   ...new Set(
@@ -207,7 +210,7 @@ app.use("/api", globalLimiter);
 // ── Routes ──
 app.get("/", (req, res) =>
   res.json({
-    status: "Soma Wellness API is running ✅",
+    status: "SomaWellness API is running ✅",
     time: new Date().toISOString(),
   }),
 );
@@ -224,6 +227,8 @@ app.use("/api/auth/otp", otpRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/students", studentsAdminRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/staff", staffRoutes);
+app.use("/api/reception", receptionRoutes);
 app.use("/api/admin/payments", paymentAdminRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/bookings", bookingRoutes);
@@ -267,84 +272,75 @@ setInterval(() => {
 // ── SOMA cron: allowance reset, voucher expiry, founding window/rollover (every hour) ──
 import { startSomaCron } from "./services/cron/somaCron.js";
 
-// ── Book store: sweep stale orders (every 15 min) ──
-//  - 30 min: release inventory reservations + send "payment cancelled" email
-//  - 1 hour: send "payment incomplete" notice email, then delete the order
-import { sweepExpiredBookOrders } from "./services/bookOrderCleanupService.js";
-import { sendLowStockAlerts } from "./services/bookEmailService.js";
-const STORE_SWEEP_INTERVAL = 15 * 60 * 1000; // 15 minutes
-setInterval(() => {
-  sweepExpiredBookOrders().catch(() => {});
-  sendLowStockAlerts().catch(() => {});
-}, STORE_SWEEP_INTERVAL);
-
-// ── Seed / update official membership plans ──
+// ── Seed / update official membership plans (SOMA tiers) ──
 const OFFICIAL_PLANS = [
   {
-    name: "1 Month Membership",
+    name: "SOMA JUA",
     description:
-      "Perfect for beginners to start their yoga journey with essential studio access.",
-    price: 1500,
+      "Move · Energise · Shine. 8 group yoga classes/month + member rates on everything else.",
+    price: 12000,
     durationMonths: 1,
     pauseDays: 0,
     displayOrder: 1,
-    benefits: ["Unlimited Yoga Classes", "Community Support"],
+    benefits: ["8 group yoga classes per month", "Member rates on everything else"],
     badge: "",
     isPopular: false,
     isRecommended: false,
   },
   {
-    name: "3 Month Membership",
+    name: "SOMA AMANI",
     description:
-      "Build a consistent practice with added flexibility to pause when needed.",
-    price: 4000,
-    durationMonths: 3,
-    pauseDays: 15,
+      "Move into balance. Unlimited group yoga, meditation & breathwork, SOMA DAILY included.",
+    price: 18500,
+    durationMonths: 1,
+    pauseDays: 0,
     displayOrder: 2,
     benefits: [
-      "Unlimited Yoga Classes",
-      "Community Support",
-      "Membership Pause up to 15 Days",
+      "Unlimited group yoga",
+      "Meditation and breathwork",
+      "SOMA DAILY included",
+      "Member rates on everything else",
     ],
-    badge: "Recommended",
+    badge: "",
     isPopular: false,
     isRecommended: true,
   },
   {
-    name: "6 Month Membership",
+    name: "SOMA UZIMA",
     description:
-      "Our most popular plan with premium content access and a free personal consultation.",
-    price: 7000,
-    durationMonths: 6,
-    pauseDays: 30,
+      "Yoga and recovery, complete. Unlimited yoga & meditation, SOMA DAILY, 2×60-min massages, 1 private yoga/therapy session, priority booking, 2 guest passes, 15% off.",
+    price: 28500,
+    durationMonths: 1,
+    pauseDays: 0,
     displayOrder: 3,
     benefits: [
-      "Unlimited Yoga Classes",
-      "Premium Content Access",
-      "Free 1 Personal Consultation",
-      "Membership Pause up to 30 Days",
+      "Unlimited yoga and meditation",
+      "SOMA DAILY included",
+      "2 sixty-minute massages",
+      "1 private yoga or therapy session",
+      "Priority booking · 2 guest passes",
+      "15% off everything else",
     ],
-    badge: "Most Popular",
+    badge: "BEST VALUE",
     isPopular: true,
     isRecommended: false,
   },
   {
-    name: "12 Month Membership",
+    name: "SOMA FAMILY",
     description:
-      "The ultimate commitment to your wellness journey with maximum benefits.",
-    price: 12000,
-    durationMonths: 12,
-    pauseDays: 60,
+      "One household, one plan. 2 adults unlimited yoga, 1 children/teen programme, meditation & breathwork, SOMA DAILY, 10% off.",
+    price: 35000,
+    durationMonths: 1,
+    pauseDays: 0,
     displayOrder: 4,
     benefits: [
-      "Unlimited Yoga Classes",
-      "Premium Content Access",
-      "Workshops Included",
-      "Free Personal Consultation",
-      "Free Diet Consultation",
-      "Membership Pause up to 60 Days",
+      "2 adults, unlimited yoga",
+      "1 children's or teen programme",
+      "Meditation and breathwork",
+      "SOMA DAILY included",
+      "10% off everything else",
     ],
-    badge: "Best Value",
+    badge: "",
     isPopular: false,
     isRecommended: false,
   },
@@ -358,6 +354,10 @@ async function seedDefaultPlans() {
     "Half-Yearly Pass",
     "Annual Pass",
     "2-Year Pass",
+    "1 Month Membership",
+    "3 Month Membership",
+    "6 Month Membership",
+    "12 Month Membership",
   ];
   await Plan.deleteMany({ name: { $in: OLD_DEMO_NAMES } });
 
@@ -371,296 +371,21 @@ async function seedDefaultPlans() {
   }
 }
 
-// ── Seed / update official services ──
-const OFFICIAL_SERVICES = [
-  {
-    name: "Offline Group Yoga",
-    description: "Community sessions in studio to enhance motivation.",
-    mode: "center",
-    category: "Group",
-    type: "Hatha",
-    price: 2500,
-    pricingModel: "monthly",
-    totalSessions: 0,
-    sessionDuration: 60,
-    scheduleDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    scheduleTime: "7:00 AM – 8:00 AM, 8:00 AM – 9:00 AM, 5:00 PM – 6:00 PM",
-    timeSlots: [
-      { day: "Monday – Friday", time: "7:00 AM – 8:00 AM", label: "Neha" },
-      { day: "Monday – Friday", time: "8:00 AM – 9:00 AM", label: "Varsha" },
-      { day: "Monday – Friday", time: "5:00 PM – 6:00 PM", label: "Vinod" },
-    ],
-    active: true,
-    isPopular: true,
-    displayOrder: 1,
-  },
-  {
-    name: "Online Group Yoga",
-    description: "Holistic online practice for fitness & clarity.",
-    mode: "online",
-    category: "Group",
-    type: "Vinyasa",
-    price: 1500,
-    pricingModel: "monthly",
-    totalSessions: 0,
-    sessionDuration: 60,
-    scheduleDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    scheduleTime: "9:00 AM – 10:00 AM, 11:30 AM – 12:30 PM IST",
-    timeSlots: [
-      {
-        day: "Monday – Friday",
-        time: "9:00 AM – 10:00 AM",
-        label: "Dr. Kapil",
-      },
-      {
-        day: "Monday – Friday",
-        time: "11:30 AM – 12:30 PM IST",
-        label: "Shreya",
-      },
-    ],
-    active: true,
-    isPopular: true,
-    displayOrder: 2,
-  },
-  {
-    name: "Personal Yoga (Center)",
-    description:
-      "Tailored one-on-one sessions at our center for your personal goals. Includes 20 sessions within one month.",
-    mode: "center",
-    category: "Personal",
-    type: "Iyengar",
-    price: 10000,
-    pricingModel: "monthly",
-    totalSessions: 20,
-    sessionDuration: 60,
-    validityDuration: 1,
-    validityUnit: "months",
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 3,
-  },
-  {
-    name: "Personal Yoga (Home)",
-    description:
-      "Personalized instruction at your home for maximum convenience. Includes 20 sessions within one month.",
-    mode: "home",
-    category: "Personal",
-    type: "Hatha",
-    price: 12000,
-    pricingModel: "monthly",
-    totalSessions: 20,
-    sessionDuration: 60,
-    validityDuration: 1,
-    validityUnit: "months",
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 4,
-  },
-  {
-    name: "Kids Yoga",
-    description: "Fun & engaging classes for children's well-being.",
-    mode: "center",
-    category: "Group",
-    type: "Vinyasa",
-    price: 1500,
-    pricingModel: "monthly",
-    totalSessions: 15,
-    sessionDuration: 45,
-    scheduleDays: [],
-    scheduleTime: "As per batch assignment",
-    active: true,
-    isPopular: false,
-    displayOrder: 5,
-  },
-  {
-    name: "Pregnancy Yoga (Center)",
-    description:
-      "Safe practices for expectant mothers at our center. Includes 20 sessions within one month.",
-    mode: "center",
-    category: "Specialty",
-    type: "Therapy",
-    price: 10000,
-    pricingModel: "monthly",
-    totalSessions: 20,
-    sessionDuration: 60,
-    validityDuration: 1,
-    validityUnit: "months",
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 6,
-  },
-  {
-    name: "Pregnancy Yoga (Home)",
-    description:
-      "Safe prenatal yoga practices in the comfort of your home. Includes 20 sessions within one month.",
-    mode: "home",
-    category: "Specialty",
-    type: "Therapy",
-    price: 12000,
-    pricingModel: "monthly",
-    totalSessions: 20,
-    sessionDuration: 60,
-    validityDuration: 1,
-    validityUnit: "months",
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 7,
-  },
-  {
-    name: "Yoga for Stress",
-    description:
-      "Targeted sessions for stress relief and mental wellness. Includes 12 sessions within one month.",
-    mode: "online",
-    category: "Specialty",
-    type: "Therapy",
-    price: 1000,
-    pricingModel: "monthly",
-    totalSessions: 12,
-    sessionDuration: 30,
-    scheduleDays: ["Monday", "Wednesday", "Friday"],
-    scheduleTime: "7:30 AM – 8:00 AM",
-    timeSlots: [
-      { day: "Monday", time: "7:30 AM – 8:00 AM", label: "Dr. Kapil" },
-      { day: "Wednesday", time: "7:30 AM – 8:00 AM", label: "Dr. Kapil" },
-      { day: "Friday", time: "7:30 AM – 8:00 AM", label: "Dr. Kapil" },
-    ],
-    active: true,
-    isPopular: false,
-    displayOrder: 8,
-  },
-  {
-    name: "Corporate Yoga",
-    description:
-      "Customized workplace wellness programs for your organization. Pricing depends on number of employees.",
-    mode: "hybrid",
-    category: "Corporate",
-    type: "Hatha",
-    price: 0,
-    pricingModel: "contact",
-    contactEmail: "hello@somawellness.in",
-    totalSessions: 0,
-    sessionDuration: 60,
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 9,
-  },
-  {
-    name: "Advanced Yoga (Center)",
-    description:
-      "Advanced asanas and intensive practice for experienced yogis.",
-    mode: "center",
-    category: "Group",
-    type: "Advanced",
-    price: 5000,
-    pricingModel: "monthly",
-    totalSessions: 20,
-    sessionDuration: 60,
-    scheduleDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    scheduleTime: "11:30 AM – 12:30 PM IST",
-    timeSlots: [
-      {
-        day: "Monday – Friday",
-        time: "11:30 AM – 12:30 PM IST",
-        label: "Vinod",
-      },
-    ],
-    active: true,
-    isPopular: false,
-    displayOrder: 10,
-  },
-  {
-    name: "Therapy Yoga (Center)",
-    description:
-      "Therapeutic yoga practices for healing and recovery at our center. Includes 20 sessions within one month.",
-    mode: "center",
-    category: "Specialty",
-    type: "Therapy",
-    price: 12000,
-    pricingModel: "monthly",
-    totalSessions: 20,
-    sessionDuration: 60,
-    validityDuration: 1,
-    validityUnit: "months",
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 11,
-  },
-  {
-    name: "Therapy Yoga (Home)",
-    description:
-      "Therapeutic yoga sessions in the comfort of your home. Includes 20 sessions within one month.",
-    mode: "home",
-    category: "Specialty",
-    type: "Therapy",
-    price: 15000,
-    pricingModel: "monthly",
-    totalSessions: 20,
-    sessionDuration: 60,
-    validityDuration: 1,
-    validityUnit: "months",
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 12,
-  },
-  {
-    name: "Abhyanga (Ayurvedic Massage)",
-    description:
-      "Traditional Ayurvedic full-body oil massage for rejuvenation.",
-    mode: "center",
-    category: "Therapy",
-    type: "Ayurveda",
-    price: 1200,
-    pricingModel: "per_session",
-    totalSessions: 0,
-    sessionDuration: 60,
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 13,
-  },
-  {
-    name: "Shirodhara (Forehead Oil-Pulling Therapy)",
-    description:
-      "Gentle pouring of warm oil on the forehead for deep relaxation.",
-    mode: "center",
-    category: "Therapy",
-    type: "Ayurveda",
-    price: 1800,
-    pricingModel: "per_session",
-    totalSessions: 0,
-    sessionDuration: 60,
-    scheduleDays: [],
-    scheduleTime: "Flexible",
-    active: true,
-    isPopular: false,
-    displayOrder: 14,
-  },
-];
+// ── Seed / update official services (approved SOMA catalog) ──
+const OFFICIAL_SERVICES = SOMA_SERVICES;
 
 async function seedDefaultServices() {
   const ADMIN_ID = null;
-  const OLD_SERVICE_NAMES = ["Pranayama & Meditation", "Yoga at Home"];
-  await Service.deleteMany({ name: { $in: OLD_SERVICE_NAMES } });
+  await Service.deleteMany({ name: { $in: LEGACY_SERVICE_NAMES } });
 
-  // Rename "Yoga at Home" service enrollments to "Personal Yoga (Home)"
+  // Migrate enrollments pointing at retired names
   await UserService.updateMany(
     { serviceName: "Yoga at Home" },
-    { $set: { serviceName: "Personal Yoga (Home)" } },
+    { $set: { serviceName: "Home / Hotel Session" } },
+  );
+  await UserService.updateMany(
+    { serviceName: "Pranayama & Meditation" },
+    { $set: { serviceName: "Meditation / Breathwork / Yoga Nidra" } },
   );
 
   for (const svc of OFFICIAL_SERVICES) {
@@ -693,34 +418,12 @@ async function seedSomaPlans() {
 }
 
 // ── SOMA: Seed SOMA services (massage, meditation, signatures, life stages) ─
+// Retired: the approved 47-record catalog in somaCatalog.js (seedDefaultServices
+// above) is now the single source — this legacy seeder is intentionally a no-op
+// so boot never reintroduces superseded service names.
 async function seedSomaServices() {
-  const SOMA_SERVICES = [
-    // Restore à la carte
-    { name: 'Relaxation Massage', description: '60 min relaxation massage', mode: 'center', category: 'Therapy', type: 'Massage', price: 5500, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 30 },
-    { name: 'Aromatherapy Massage', description: '60 min aromatherapy massage', mode: 'center', category: 'Therapy', type: 'Massage', price: 6000, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 31 },
-    { name: 'Deep Tissue / Sports Massage', description: '60 min deep tissue / sports', mode: 'center', category: 'Therapy', type: 'Massage', price: 6500, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 32 },
-    { name: 'Short Treatment — Head & Shoulders', description: '30 min head & shoulders or feet', mode: 'center', category: 'Therapy', type: 'Massage', price: 3000, pricingModel: 'per_session', sessionDuration: 30, active: true, displayOrder: 33 },
-    { name: 'Body Scrub', description: '45 min body scrub', mode: 'center', category: 'Therapy', type: 'Scrub', price: 4000, pricingModel: 'per_session', sessionDuration: 45, active: true, displayOrder: 34 },
-    { name: 'Meditation / Breathwork / Yoga Nidra', description: '45 min meditation class — free for AMANI/UZIMA/FAMILY', mode: 'center', category: 'Therapy', type: 'Meditation', price: 1800, pricingModel: 'per_session', sessionDuration: 45, active: true, displayOrder: 35 },
-    // Signatures
-    { name: 'STILLNESS', description: 'Restorative yoga, guided meditation, 60-min relaxation massage, herbal tea — 2 hrs', mode: 'center', category: 'Therapy', type: 'Signature', price: 11000, pricingModel: 'per_session', sessionDuration: 120, active: true, displayOrder: 40 },
-    { name: 'THE ACACIA', description: 'Private yoga, meditation, 60-min massage, body treatment, refreshments, rest — 2.5 hrs (premium)', mode: 'center', category: 'Therapy', type: 'Signature', price: 18500, pricingModel: 'per_session', sessionDuration: 150, active: true, displayOrder: 41 },
-    { name: 'FOR TWO', description: 'Couple yoga/stretching, massage for two, herbal tea, quiet time — 2 hrs per couple', mode: 'center', category: 'Therapy', type: 'Signature', price: 22500, pricingModel: 'per_session', sessionDuration: 120, active: true, displayOrder: 42 },
-    // Life Stages (sold as 4 or 8 blocks — price is 4-block; 8-block handled via variant)
-    { name: 'SOMA MAMA (Pregnancy)', description: 'Pregnancy — 4 sessions 12,000 · 8 sessions 22,000 · Single 3,500 · Private 5,500', mode: 'center', category: 'Specialty', type: 'Therapy', price: 12000, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 50 },
-    { name: 'SOMA MAMA+ (After Birth)', description: 'After birth — 4 sessions 11,500 · 8 sessions 21,000', mode: 'center', category: 'Specialty', type: 'Therapy', price: 11500, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 51 },
-    { name: 'SOMA YOUNG (5–17)', description: 'Children/teens 5–17 — 4 sessions 7,000 · 8 sessions 12,000 · Holiday camp 3d 9K / 5d 14K', mode: 'center', category: 'Specialty', type: 'Group', price: 7000, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 52 },
-    { name: 'SOMA AGE WELL (Seniors)', description: 'Seniors — 4 sessions 7,000 · 8 sessions 12,000', mode: 'center', category: 'Specialty', type: 'Therapy', price: 7000, pricingModel: 'per_session', totalSessions: 4, sessionDuration: 60, active: true, displayOrder: 53 },
-    // Private yoga / therapy
-    { name: 'Therapy Assessment (75 min)', description: 'Required before any therapy programme — 75 min — 6,500', mode: 'center', category: 'Personal', type: 'Therapy', price: 6500, pricingModel: 'per_session', sessionDuration: 75, active: true, displayOrder: 60 },
-    { name: 'Private Yoga / Therapy — Single', description: '60 min private yoga or therapy — 5,500', mode: 'center', category: 'Personal', type: 'Hatha', price: 5500, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 61 },
-    { name: 'SOMA RESET (6-Week Programme)', description: 'Opening assessment, 12 yoga, 6 meditation/Nidra, 2 massages, home plan, closing review — 32,000', mode: 'center', category: 'Therapy', type: 'Therapy', price: 32000, pricingModel: 'per_session', sessionDuration: 60, active: true, displayOrder: 70 },
-  ];
-  for (const svc of SOMA_SERVICES) {
-    await Service.findOneAndUpdate({ name: svc.name }, { $set: svc }, { upsert: true, returnDocument: 'after' });
-  }
+  return;
 }
-
 async function seedFoundingSettings() {
   const FoundingSettings = (await import('./models/FoundingSettings.js')).default;
   await FoundingSettings.getSingleton();

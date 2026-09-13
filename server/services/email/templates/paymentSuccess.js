@@ -9,7 +9,7 @@ export default function render(data = {}) {
   const orderId = escapeHtml(data.orderId || '');
   const paymentDate = data.paymentDate || new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
   const description = escapeHtml(data.description || 'Purchase');
-  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.co.ke/dashboard';
 
   const subject = `Payment Successful — ${STUDIO_NAME}`;
 

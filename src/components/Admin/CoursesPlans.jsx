@@ -755,7 +755,7 @@ export default function CoursesPlans({ onChanged } = {}) {
                 <div className={s.formSectionTitle}><LuAward size={12} /> Features & Benefits</div>
                 <div className={s.formField}>
                   <label className={s.formLabel}>Benefits <span className={s.formLabelHint}>(comma separated, 3-6 recommended)</span></label>
-                  <textarea className={s.formTextarea} placeholder="e.g. Unlimited Yoga Classes, Community Support, Membership Pause up to 30 Days, Free Personal Consultation" value={planForm.benefits} onChange={e=>setPlanForm({...planForm, benefits:e.target.value})} rows={3} />
+                  <textarea className={s.formTextarea} placeholder="e.g. Unlimited group yoga, SOMA DAILY included, 2 sixty-minute massages" value={planForm.benefits} onChange={e=>setPlanForm({...planForm, benefits:e.target.value})} rows={3} />
                   <span className={s.formHelper}>Separate benefits with commas. First 4-5 shown on cards.</span>
                 </div>
               </div>

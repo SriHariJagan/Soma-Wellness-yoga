@@ -102,8 +102,8 @@ export default function PaymentPage() {
         {/* ── Header ── */}
         <div className="pay-header">
           <div className="pay-logo">
-            <img src="/images/soma/logo.png" alt="Soma Wellness" width="24" height="24" style={{ objectFit: "contain" }} />
-            <span>Soma Wellness</span>
+            <img src="/images/soma/logo.png" alt="SomaWellness" width="24" height="24" style={{ objectFit: "contain" }} />
+            <span>SomaWellness</span>
           </div>
           <button className="pay-close" onClick={() => navigate(-1)}>✕</button>
         </div>

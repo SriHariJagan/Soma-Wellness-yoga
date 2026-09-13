@@ -6,7 +6,7 @@ import { getOverview, getRevenueAnalytics, getStudents, getPayments, getBatches,
 import {
   LuRefreshCw, LuUsers, LuFilter, LuRadioTower, LuCoins,
   LuUserPlus, LuCreditCard, LuCalendarCheck, LuSparkles, LuActivity,
-  LuClock, LuArrowRight, LuPlus, LuBookOpen, LuTruck, LuPackageOpen,
+  LuClock, LuArrowRight, LuPlus,
 } from 'react-icons/lu';
 
 export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatches = 0, onRefresh, onQuickAction }) {
@@ -60,11 +60,6 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
     ? revenueData.monthlyBookings.slice(-6).map(b => b.count || 0)
     : [2, 3, 4, 5, 5, 6];
 
-  const bookStore = data.bookStore || {};
-  const bookTrend2 = bookStore.revenue > 0
-    ? [bookStore.revenue * 0.4, bookStore.revenue * 0.55, bookStore.revenue * 0.7, bookStore.revenue * 0.8, bookStore.revenue * 0.9, bookStore.revenue]
-    : [0, 0, 0, 0, 0, 0];
-
   const activity = [
     ...recentStudents.slice(0, 3).map((st, i) => ({
       icon: <LuUserPlus />, cls: s.timeIcon, title: `${st.name || 'New student'} joined`,
@@ -102,19 +97,6 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           trend={`${metrics.activeMemberships ?? 0} memberships`} trendUp spark={[totalBatches * 0.3, totalBatches * 0.5, totalBatches * 0.6, totalBatches * 0.8, totalBatches * 0.9, totalBatches || 1]} />
         <KpiCard icon={<LuCoins />} accent="green" label="Gross Revenue" value={revenue} prefix="KES "
           trend="collected" trendUp spark={revTrend} />
-      </div>
-
-      {/* Book store */}
-      <div className={s.sectionLabel}>Book Store</div>
-      <div className={s.statsGrid}>
-        <KpiCard icon={<LuBookOpen />} accent="orange" label="Orders Today" value={bookStore.ordersToday ?? 0}
-          spark={[1, 2, 3, 4, 5, bookStore.ordersToday ?? 1]} />
-        <KpiCard icon={<LuTruck />} accent="amber" label="Awaiting Dispatch" value={bookStore.pendingDispatch ?? 0}
-          spark={[bookStore.pendingDispatch * 0.3 || 0, bookStore.pendingDispatch * 0.5 || 0, bookStore.pendingDispatch * 0.7 || 0, bookStore.pendingDispatch * 0.9 || 0, bookStore.pendingDispatch || 0]} />
-        <KpiCard icon={<LuCoins />} accent="green" label="Store Revenue" value={bookStore.revenue ?? 0} prefix="KES "
-          trend="confirmed sales" trendUp spark={bookTrend2} />
-        <KpiCard icon={<LuPackageOpen />} accent="blue" label="Products" value={bookStore.products ?? 0}
-          trend={`${bookStore.lowStock ?? 0} low stock`} trendUp={false} spark={[1, 2, 3, 4, 5, bookStore.products || 1]} />
       </div>
 
       {/* Analytics + timeline */}

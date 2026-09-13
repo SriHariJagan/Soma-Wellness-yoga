@@ -8,13 +8,10 @@ import "./Footer.css";
 import { EASE, usePrefersReducedMotion } from "../../lib/motion";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
+import { CONTACT_INFO, SOCIAL_LINKS } from "../../config/siteContent";
 
-const socials = [
-  { href: "https://www.facebook.com/somawellness", label: "Facebook", icon: <FaFacebookF /> },
-  { href: "https://www.instagram.com/somawellness/", label: "Instagram", icon: <FaInstagram /> },
-  { href: "https://www.youtube.com/c/KapilKesari", label: "YouTube", icon: <FaYoutube /> },
-  { href: "https://twitter.com/SomaWellness", label: "Twitter/X", icon: <FaXTwitter /> },
-];
+const socialIcon = { instagram: <FaInstagram />, facebook: <FaFacebookF />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
+const socials = SOCIAL_LINKS.map((s) => ({ ...s, icon: socialIcon[s.key] || <FaInstagram /> }));
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -44,8 +41,8 @@ const Footer = () => {
         </svg>
       </div>
 
-      {/* watermark SOMA — subtle */}
-      <div className="footer-watermark" aria-hidden="true">SOMA</div>
+      {/* Giant brand watermark — MetaDev-style shimmer in Soma theme */}
+      <div className="footer-watermark" aria-hidden="true">SomaWellness</div>
 
       <div className="footer-container">
         <motion.div
@@ -57,7 +54,7 @@ const Footer = () => {
         >
           <motion.div className="footer-about" variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } } }}>
             <motion.div className="footer-logo-wrap" initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: EASE }}>
-              <img src="/images/soma/logo.png" alt="Soma Wellness" className="footer-logo-img" />
+              <img src="/images/soma/logo.png" alt="SomaWellness" className="footer-logo-img" />
             </motion.div>
             <p className="footer-tagline" dangerouslySetInnerHTML={{ __html: t("footer.tagline") }} />
             <p>{t("footer.description")}</p>
@@ -86,11 +83,14 @@ const Footer = () => {
             <h3>{t("footer.explore")}</h3>
             <ul>
               {[
+                { to: "/", label: t("navigation.home") },
                 { to: "/classes", label: t("navigation.join") },
-                { to: "/private", label: t("navigation.private") },
+                { to: "/private", label: t("navigation.oneToOne") },
                 { to: "/life-stages", label: t("navigation.lifeStages") },
                 { to: "/restore", label: t("navigation.restore") },
-                { to: "/yttc", label: t("navigation.academy") },
+                { to: "/yttc", label: t("navigation.learnPartner") },
+                { to: "/founding", label: t("navigation.founding") },
+                { to: "/about", label: t("navigation.about") },
                 { to: "/faq", label: t("navigation.faq") },
                 { to: "/contact", label: t("navigation.contact") },
               ].map((l) => (
@@ -109,11 +109,11 @@ const Footer = () => {
             </div>
             <div className="footer-contact-item">
               <div className="footer-contact-icon"><MdEmail /></div>
-              <span>hello@somawellness.co.ke</span>
+              <span>{CONTACT_INFO.email}</span>
             </div>
             <div className="footer-contact-item">
               <div className="footer-contact-icon"><FaPhoneAlt /></div>
-              <a href="tel:+254700000000" className="footer-phone-link">+254 700 000 000</a>
+              <a href={`tel:${CONTACT_INFO.phoneHref}`} className="footer-phone-link">{CONTACT_INFO.phoneDisplay}</a>
             </div>
             <motion.div className="footer-hours" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: EASE }} style={{ transformOrigin: "left" }}>
               <span className="footer-hours-dot" />

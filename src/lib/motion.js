@@ -1,5 +1,5 @@
 /**
- * Central motion library for Soma Wellness.
+ * Central motion library for SomaWellness.
  *
  * A single, reusable source of truth for premium animation across the site:
  * easing curves, spring presets, entrance variants, and stagger orchestration.

@@ -455,7 +455,7 @@ export default function ActiveServicesPage({ onNavigate }) {
                 <i className="ti ti-building-store" aria-hidden="true" />
                 <div>
                   <strong>Looking for something new?</strong>
-                  <p>Browse our full catalog of yoga services with premium cards, filters, and easy enrollment.</p>
+                  <p>Browse our full catalog of wellness services with premium cards, filters, and easy enrollment.</p>
                 </div>
                 <PrimaryButton icon="ti-arrow-right" onClick={() => onNavigate?.("browseServices")}>
                   Browse services
@@ -475,7 +475,7 @@ export default function ActiveServicesPage({ onNavigate }) {
         <EmptyState
           icon="ti-bundle"
           title="No active services yet"
-          sub="Explore our yoga services and enroll in the one that suits you best."
+                  sub="Explore our wellness services and enroll in the one that suits you best."
           action={
             catalog.length > 0 ? (
               <PrimaryButton icon="ti-building-store" onClick={() => onNavigate?.("browseServices")}>
@@ -497,7 +497,7 @@ export default function ActiveServicesPage({ onNavigate }) {
               <i className="ti ti-building-store" aria-hidden="true" />
               <div>
                 <strong>Ready to start your practice?</strong>
-                <p>Browse our full catalog and find the perfect yoga service for you.</p>
+                <p>Browse our full catalog and find the perfect wellness service for you.</p>
               </div>
               <PrimaryButton icon="ti-arrow-right" onClick={() => onNavigate?.("browseServices")}>
                 Browse services

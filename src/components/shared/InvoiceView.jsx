@@ -44,11 +44,11 @@ export default function InvoiceView({ order, onClose }) {
 
   const { payment, items = [], student, coupon, couponCode, couponDiscount } = order;
   const studio = {
-    name: "Soma Wellness Studio",
-    address: "123 Wellness Avenue, Yoga Nagar, Bengaluru, Karnataka 560001",
-    email: "hello@somawellness.in",
-    phone: "+91 98765 43210",
-    gst: "29ABCDE1234F1Z5",
+    name: "SomaWellness",
+    address: "Spring Valley, Nairobi, Kenya",
+    email: "hello@somawellness.co.ke",
+    phone: "+254 700 000 000",
+    taxNote: "All prices VAT inclusive",
   };
 
   return (
@@ -77,7 +77,7 @@ export default function InvoiceView({ order, onClose }) {
             {studio.address}<br />
             Email: {studio.email}<br />
             Phone: {studio.phone}<br />
-            GST: {studio.gst}
+            {studio.taxNote}
           </div>
           <div style={{ fontSize: 12, color: "#6b7280", textAlign: "right", lineHeight: 1.8 }}>
             <strong style={{ color: "#374151" }}>Bill To:</strong><br />

@@ -26,21 +26,26 @@ describe('Navbar', () => {
 
   it('renders logo with accessible name', () => {
     renderNavbar();
-    expect(screen.getByLabelText(/Soma Wellness — Home/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/SomaWellness — Home/i)).toBeInTheDocument();
   });
 
-  it('renders nav links', () => {
+  it('renders nav links', async () => {
+    const user = userEvent.setup();
     renderNavbar();
-    expect(screen.getAllByRole('link').some(a => a.getAttribute('href') === '/classes')).toBe(true);
-    expect(screen.getAllByRole('link').some(a => a.getAttribute('href') === '/private')).toBe(true);
-    expect(screen.getAllByRole('link').some(a => a.getAttribute('href') === '/restore')).toBe(true);
-    expect(screen.getAllByRole('link').some(a => a.getAttribute('href') === '/founding')).toBe(true);
+    const hrefs = screen.getAllByRole('link').map(a => a.getAttribute('href'));
+    for (const href of ['/classes', '/private', '/life-stages', '/restore', '/yttc', '/founding', '/contact']) {
+      expect(hrefs).toContain(href);
+    }
+    // drawer holds the same sections
+    await user.click(screen.getByLabelText('Toggle menu'));
+    for (const href of ['/classes', '/private', '/life-stages', '/restore', '/yttc', '/founding', '/contact']) {
+      expect(document.querySelector(`a[href="${href}"]`)).not.toBeNull();
+    }
   });
 
-  it('shows Sign In and Book when not authed', () => {
+  it('shows Sign In when not authed', () => {
     renderNavbar({ user: null });
     expect(screen.getByRole('link', { name: /navigation\.signIn/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /navigation\.book/i })).toBeInTheDocument();
   });
 
   it('shows user cluster with initials when authed', () => {
@@ -57,8 +62,8 @@ describe('Navbar', () => {
     expect(btn).toHaveAttribute('aria-expanded', 'false');
     await user.click(btn);
     expect(btn).toHaveAttribute('aria-expanded', 'true');
-    // drawer should appear with Home link
-    expect(screen.getByText('navigation.home')).toBeInTheDocument();
+    // drawer should appear with nav links
+    expect(screen.getAllByText('navigation.join').length).toBeGreaterThan(0);
     // close via button
     await user.click(screen.getByLabelText('Close menu'));
     expect(btn).toHaveAttribute('aria-expanded', 'false');

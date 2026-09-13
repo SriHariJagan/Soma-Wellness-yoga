@@ -19,6 +19,12 @@ const SomaContentSchema = new mongoose.Schema(
     season: { type: String, default: '' }, // e.g. "Spring 2026"
     displayOrder: { type: Number, default: 0 },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    // Engagement (historical — preserved when content is unpublished)
+    opens: { type: Number, default: 0 },
+    uniqueOpens: { type: Number, default: 0 },
+    uniqueOpeners: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    listens: { type: Number, default: 0 },
+    completes: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

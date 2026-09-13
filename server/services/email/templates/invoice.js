@@ -10,7 +10,7 @@ export default function render(data = {}) {
   const invoiceDate = data.invoiceDate || new Date().toLocaleDateString('en-KE', { timeZone: 'Africa/Nairobi' });
   const paymentMethod = escapeHtml(data.paymentMethod || 'Online Payment');
   const invoiceLink = data.invoiceLink || '';
-  const dashboardUrl = data.dashboardUrl || 'https://somawellness.in/dashboard';
+  const dashboardUrl = data.dashboardUrl || 'https://somawellness.co.ke/dashboard';
 
   const subject = `Invoice${invoiceNumber ? ` #${invoiceNumber}` : ''} from ${STUDIO_NAME}`;
 

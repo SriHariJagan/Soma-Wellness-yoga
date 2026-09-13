@@ -6,9 +6,9 @@ const SettingsSchema = new mongoose.Schema(
   {
     key:                { type: String, default: 'global', unique: true },
     announcementBanner: { type: String, default: '' },
-    studioName:         { type: String, default: 'Soma Wellness' },
-    supportEmail:       { type: String, default: 'hello@somawellness.in' },
-    supportPhone:       { type: String, default: '+91 9675547597' },
+    studioName:         { type: String, default: 'SomaWellness' },
+    supportEmail:       { type: String, default: 'hello@somawellness.co.ke' },
+    supportPhone:       { type: String, default: '+254 700 000 000' },
 
     // Integration / system-health flags surfaced on the admin dashboard.
     integrations: {
@@ -39,6 +39,8 @@ const SettingsSchema = new mongoose.Schema(
       foundingCap: { type: Number, default: 100 },
       foundingWindowDays: { type: Number, default: 90 },
       foundingLockMonths: { type: Number, default: 12 },
+      dailyMonthly: { type: Number, default: 1500 },
+      dailyAnnual: { type: Number, default: 15000 },
       openingDate: { type: Date, default: () => new Date('2026-08-01T00:00:00+03:00') },
       upgradeEffective: { type: String, enum: ['next_cycle', 'immediate'], default: 'next_cycle' },
       installmentDefaults: {

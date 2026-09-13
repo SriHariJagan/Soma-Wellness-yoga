@@ -1139,7 +1139,7 @@ export const inviteReferral = asyncHandler(async (req, res) => {
   ref.invited.push({ name: name || '', email });
   await ref.save();
 
-  const referralLink = `${process.env.FRONTEND_URL || 'https://somawellness.in'}/newuser?ref=${ref.code}`;
+  const referralLink = `${process.env.FRONTEND_URL || 'https://somawellness.co.ke'}/newuser?ref=${ref.code}`;
 
   // Send invitation email via NotificationService.
   notificationService.send(null, {
@@ -1151,7 +1151,7 @@ export const inviteReferral = asyncHandler(async (req, res) => {
       senderName: req.user.name || 'A friend',
       referralLink,
     },
-    subject: `${req.user.name} invites you to Soma Wellness!`,
+    subject: `${req.user.name} invites you to SomaWellness!`,
     title: 'You\'re Invited!',
     priority: 'normal',
   }).catch((err) => logger.error(MODULE, 'Referral email failed', { email, error: err.message }));
@@ -1159,17 +1159,17 @@ export const inviteReferral = asyncHandler(async (req, res) => {
   // Send referral invite email via new email service
   emailService.sendMail(
     email,
-    `${req.user.name} invites you to Soma Wellness!`,
+    `${req.user.name} invites you to SomaWellness!`,
     `<h2 style="color:#2D1406;">You're Invited!</h2>
      <p>Hi ${name || 'there'},</p>
-     <p>Your friend <strong>${req.user.name}</strong> invites you to join <strong>Soma Wellness</strong>.</p>
-     <p>Start your wellness journey with authentic Indian yoga and holistic wellness.</p>
+     <p>Your friend <strong>${req.user.name}</strong> invites you to join <strong>SomaWellness</strong>.</p>
+     <p>Start your wellness journey with holistic wellness and mindfulness.</p>
      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:16px 0;">
        <tr>
          <td align="center">
            <table role="presentation" cellpadding="0" cellspacing="0">
              <tr>
-               <td align="center" style="background:#FA8112;border-radius:8px;padding:12px 32px;">
+               <td align="center" style="background:#C8956C;border-radius:8px;padding:12px 32px;">
                  <a href="${referralLink}" style="color:#FFFFFF;font-family:Arial,sans-serif;font-size:15px;font-weight:600;text-decoration:none;">Accept Invitation</a>
                </td>
              </tr>
@@ -1177,8 +1177,8 @@ export const inviteReferral = asyncHandler(async (req, res) => {
          </td>
        </tr>
      </table>
-     <p style="color:#7C6A58;font-size:12px;">— Soma Wellness Team</p>`,
-    `You're Invited!\n\nHi ${name || 'there'},\n\nYour friend ${req.user.name} invites you to join Soma Wellness.\n\nStart your wellness journey with authentic Indian yoga and holistic wellness.\n\nAccept: ${referralLink}\n\n— Soma Wellness Team`,
+     <p style="color:#7C6A58;font-size:12px;">— SomaWellness Team</p>`,
+    `You're Invited!\n\nHi ${name || 'there'},\n\nYour friend ${req.user.name} invites you to join SomaWellness.\n\nStart your wellness journey with holistic wellness and mindfulness.\n\nAccept: ${referralLink}\n\n— SomaWellness Team`,
   ).catch((err) => logger.error(MODULE, 'Referral invite email failed', { email, error: err.message }));
 
   res.json({ success: true, msg: 'Invitation recorded', stats: { invited: ref.invited.length, joined: ref.joined.length, earned: ref.earned } });

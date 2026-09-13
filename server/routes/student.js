@@ -61,7 +61,6 @@ router.patch('/consultations/:id/cancel', s.cancelConsultation);
 
 // Cart
 import * as cartCtrl from '../controllers/cartController.js';
-import * as bookOrderCtrl from '../controllers/bookOrderController.js';
 router.get('/cart', cartCtrl.getCart);
 router.get('/cart/count', cartCtrl.getCartCount);
 router.post('/cart/add', studentWriteLimiter, cartCtrl.addToCart);
@@ -70,11 +69,6 @@ router.delete('/cart/item/:id', studentWriteLimiter, cartCtrl.removeFromCart);
 router.post('/cart/apply-coupon', studentWriteLimiter, cartCtrl.applyCoupon);
 router.post('/cart/remove-coupon', studentWriteLimiter, cartCtrl.removeCoupon);
 router.post('/cart/checkout', studentSensitiveLimiter, cartCtrl.checkout);
-
-// Book store
-router.post('/books/validate-cart', bookOrderCtrl.validateBookCart);
-router.post('/books/checkout', studentSensitiveLimiter, bookOrderCtrl.checkoutBooks);
-router.get('/books/orders', bookOrderCtrl.myBookOrders);
 
 // Orders (student)
 import * as orderCtrl from '../controllers/orderController.js';

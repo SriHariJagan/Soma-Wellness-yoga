@@ -7,9 +7,11 @@ import {
   LuCheck, LuX, LuSave,
 } from "react-icons/lu";
 
+const GROUP_CLASS_TIMES = ["07:00", "08:30", "17:30", "18:30"];
+const GROUP_CLASS_LABEL = "Group classes: 7–8 AM · 8:30–9:30 AM · 5:30–6:30 PM · 6:30–7:30 PM";
 const PRESET_TIMES = [
-  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-  "14:00", "15:00", "16:00", "17:00", "18:00", "19:00",
+  "06:00", "07:00", "08:00", "08:30", "09:00", "10:00", "11:00",
+  "14:00", "15:00", "16:00", "17:00", "17:30", "18:00", "18:30", "19:00",
 ];
 
 export default function TimeSlotManagement() {
@@ -103,7 +105,7 @@ export default function TimeSlotManagement() {
         </div>
       )}
 
-      <PageHeader title="Time Slot Management" subtitle="Create and manage consultation time slots for each date">
+      <PageHeader title="Time Slot Management" subtitle={`Create and manage consultation time slots for each date. ${GROUP_CLASS_LABEL}`}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <div className={s.searchWrap} style={{ maxWidth: 220 }}>
             <LuCalendarDays className={s.searchIcon} />
@@ -117,6 +119,13 @@ export default function TimeSlotManagement() {
           </div>
           <button className={`${s.btn} ${s.btnSm}`} onClick={fetchSlots}>
             <LuRefreshCw size={14} /> Refresh
+          </button>
+          <button
+            className={`${s.btn} ${s.btnPrimary}`}
+            onClick={() => { setSelectedTimes(GROUP_CLASS_TIMES.filter((tm) => !slots.some((sl) => sl.time === tm))); setShowAddPanel(true); }}
+            title={GROUP_CLASS_LABEL}
+          >
+            <LuPlus size={14} /> Add Group Slots
           </button>
           <button
             className={`${s.btn} ${s.btnPrimary}`}
@@ -138,6 +147,7 @@ export default function TimeSlotManagement() {
             {PRESET_TIMES.map((time) => {
               const exists = slots.some((s) => s.time === time);
               const selected = selectedTimes.includes(time);
+              const isGroup = GROUP_CLASS_TIMES.includes(time);
               return (
                 <button
                   key={time}
@@ -157,6 +167,7 @@ export default function TimeSlotManagement() {
                   }}
                 >
                   {time}
+                  {isGroup && !exists && " ★"}
                   {exists && " (exists)"}
                 </button>
               );

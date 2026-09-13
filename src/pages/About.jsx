@@ -47,7 +47,7 @@ const About = () => {
         eyebrow={t("about.eyebrow")}
         title={t("about.title")}
         subtitle={t("about.subtitle")}
-        image="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=1400&auto=format&fit=crop"
+        image="/images/headers/about-story.webp"
       />
 
       {/* ═══════════ STORY SECTION ═══════════ */}
@@ -56,8 +56,8 @@ const About = () => {
           <motion.div className="about-story-img" {...fadeIn(0)}>
             <div className="about-img-wrapper">
               <img
-                src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=800&auto=format&fit=crop"
-                alt="Soma Wellness studio interior"
+                src="/images/about/studio-story.webp"
+                alt="SomaWellness studio interior"
                 loading="lazy"
               />
               <div className="about-img-overlay" />
@@ -79,9 +79,9 @@ const About = () => {
               <em>home</em> for body, breath and mind.
             </h2>
             <p className="about-body">
-              SOMA Wellness Nairobi is an integrated destination in Spring Valley — where Yoga,
-              Yoga Therapy, Meditation, Breathwork, Massage and wellness rituals sit together
-              under one holistic philosophy. We bring movement, breath, mindfulness, therapy,
+              SomaWellness is a premium international wellness brand — where mindful
+              movement, restoration, breathwork, massage and conscious rituals sit together
+              under one holistic philosophy. We bring movement, breath, mindfulness, restoration,
               education and lifestyle together so you can cultivate a healthier relationship
               with your body, breath, mind and everyday life.
             </p>
@@ -132,7 +132,7 @@ const About = () => {
               { title: "Design as care", desc: "Light, wood, linen and silence — a space that lets you arrive.", icon: "✦", color: "#F4B400" },
               { title: "Science + softness", desc: "Nervous-system aware, inclusive, and paced for real lives.", icon: "⬢", color: "#81B29A" },
               { title: "Community over performance", desc: "We practice together. No mirrors, no hustle.", icon: "♥", color: "#E74C3C" },
-              { title: "Every season, every body", desc: "Prenatal, therapeutic, kids, corporate — yoga that meets you.", icon: "✺", color: "#8B5CF6" },
+              { title: "Every season, every body", desc: "Pregnancy, restoration, kids, corporate — wellbeing that meets you.", icon: "✺", color: "#8B5CF6" },
             ].map((v, i) => (
               <motion.div
                 key={v.title}
@@ -165,8 +165,8 @@ const About = () => {
               Guided by <em>practice</em>
             </h3>
             <p className="about-body">
-              Led by teachers rooted in lineage and modern wellness education — yoga therapy,
-              meditation and mindful movement for Nairobi's community. We teach from lived
+              Led by practitioners rooted in tradition and modern wellness education — restorative
+              practice, mindfulness and conscious movement for our community. We guide from lived
               practice, not performance, and adapt every session to your needs, limitations
               and stage of life.
             </p>
@@ -185,8 +185,8 @@ const About = () => {
           <motion.div className="about-founder-img" {...fadeIn(0.15)}>
             <div className="about-img-wrapper about-img-founder">
               <img
-                src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop"
-                alt="Lead yoga teacher"
+                src="/images/about/founder-guide.webp"
+                alt="Lead wellness practitioner"
                 loading="lazy"
               />
               <div className="about-img-overlay" />
@@ -214,11 +214,11 @@ const About = () => {
 
           <div className="about-gallery-grid">
             {[
-              { src: "https://images.unsplash.com/photo-1588286840104-8957b019727f?q=80&w=600&auto=format&fit=crop", alt: "Yoga studio", span: "wide" },
-              { src: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600&auto=format&fit=crop", alt: "Meditation", span: "tall" },
-              { src: "https://images.unsplash.com/photo-1575052814086-f385e2e2ad33?q=80&w=600&auto=format&fit=crop", alt: "Yoga class", span: "normal" },
-              { src: "https://images.unsplash.com/photo-1545389336-cf090694435e?q=80&w=600&auto=format&fit=crop", alt: "Yoga practice", span: "normal" },
-              { src: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=600&auto=format&fit=crop", alt: "Group class", span: "wide" },
+              { src: "/images/about/gallery-group.webp", alt: "Group class", span: "wide" },
+              { src: "/images/about/gallery-calm.webp", alt: "Meditation", span: "tall" },
+              { src: "/images/about/gallery-movement.webp", alt: "Mindful movement", span: "normal" },
+              { src: "/images/about/gallery-practice.webp", alt: "Guided practice", span: "normal" },
+              { src: "/images/about/gallery-community.webp", alt: "Community", span: "wide" },
             ].map((img, i) => (
               <motion.div
                 key={i}
@@ -339,7 +339,7 @@ const About = () => {
           margin-top: 14px; position: relative;
         }
         .about-heading em {
-          font-style: italic; font-weight: 400;
+          font-style: normal; font-weight: 400;
           color: var(--soma-primary);
         }
         .about-body {
@@ -391,7 +391,7 @@ const About = () => {
           color: var(--soma-forest); letter-spacing: -0.02em;
         }
         .about-section-title em {
-          font-style: italic; font-weight: 400;
+          font-style: normal; font-weight: 400;
           color: var(--soma-primary);
         }
 

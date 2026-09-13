@@ -15,10 +15,10 @@ const LifeStages = () => {
   const reduced = usePrefersReducedMotion();
 
   const tabs = [
-    { id: "mama", label: "SOMA MAMA", sub: t("lifeStages.tabs.mama.sub"), img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.mama.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.mama.price") },
-    { id: "mamaplus", label: "SOMA MAMA+", sub: t("lifeStages.tabs.mamaplus.sub"), img: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.mamaplus.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.mamaplus.price") },
-    { id: "young", label: "SOMA YOUNG", sub: t("lifeStages.tabs.young.sub"), img: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.young.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.young.price") },
-    { id: "agewell", label: "SOMA AGE WELL", sub: t("lifeStages.tabs.agewell.sub"), img: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=900&auto=format&fit=crop", bullets: (() => { const b = t("lifeStages.tabs.agewell.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.agewell.price") },
+    { id: "mama", label: "SOMA MAMA", sub: t("lifeStages.tabs.mama.sub"), img: "/images/programs/mama-pregnancy.webp", bullets: (() => { const b = t("lifeStages.tabs.mama.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.mama.price") },
+    { id: "mamaplus", label: "SOMA MAMA+", sub: t("lifeStages.tabs.mamaplus.sub"), img: "/images/programs/mama-postnatal.webp", bullets: (() => { const b = t("lifeStages.tabs.mamaplus.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.mamaplus.price") },
+    { id: "young", label: "SOMA YOUNG", sub: t("lifeStages.tabs.young.sub"), img: "/images/programs/young-children.webp", bullets: (() => { const b = t("lifeStages.tabs.young.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.young.price") },
+    { id: "agewell", label: "SOMA AGE WELL", sub: t("lifeStages.tabs.agewell.sub"), img: "/images/programs/agewell-seniors.webp", bullets: (() => { const b = t("lifeStages.tabs.agewell.bullets", { returnObjects: true }); return Array.isArray(b) ? b : []; })(), price: t("lifeStages.tabs.agewell.price") },
   ];
   const cur = tabs.find((x) => x.id === active);
   return (
@@ -27,7 +27,7 @@ const LifeStages = () => {
         eyebrow={t("lifeStages.eyebrow")}
         title={t("lifeStages.title")}
         subtitle={t("lifeStages.subtitle")}
-        image="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/life-stages.webp"
       />
       <section className={styles.section}>
         <motion.div
@@ -154,6 +154,19 @@ const LifeStages = () => {
             </motion.div>
           ))}
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: EASE }}
+          style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}
+        >
+          {["Single pregnancy class · 3,500", "Private pregnancy session (60 min) · 5,500", "School holiday camp 3 days (5–12) · 9,000", "School holiday camp 5 days (5–12) · 14,000"].map((x) => (
+            <span key={x} style={{ fontSize: 12, fontWeight: 600, color: "var(--soma-forest)", background: "#fff", border: "1px solid var(--soma-line-light)", padding: "9px 14px", borderRadius: 9999 }}>
+              {x} <span style={{ color: "var(--soma-warm-gray)", fontWeight: 500 }}>KES</span>
+            </span>
+          ))}
+        </motion.div>
       </section>
 
       {/* Trust for parents/seniors — premium + NEW safety */}
@@ -178,7 +191,7 @@ const LifeStages = () => {
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(244,180,0,0.28), transparent)", pointerEvents: "none" }} aria-hidden="true" />
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>{t.icon}</div>
               <div style={{ fontWeight: 700, color: "var(--soma-forest)", fontSize: 13, marginTop: 10 }}>{t.label}</div>
-              <div style={{ fontSize: 12.5, color: "#5a6b63", marginTop: 8, lineHeight: 1.6, fontStyle: "italic" }}>{t.quote}</div>
+              <div style={{ fontSize: 12.5, color: "#5a6b63", marginTop: 8, lineHeight: 1.6 }}>{t.quote}</div>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--soma-warm-gray)", marginTop: 8 }}>— {t.name}</div>
             </motion.div>
           ))}

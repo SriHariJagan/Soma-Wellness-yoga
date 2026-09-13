@@ -19,7 +19,6 @@ export default function Sidebar({
     { label: t('adminSidebar.studioManagement'), range: [5, 10] },
     { label: t('adminSidebar.communications'), range: [10, 17] },
     { label: t('adminSidebar.growthContent'), range: [17, 20] },
-    { label: t('adminSidebar.bookStore'), range: [20, 24] },
   ];
 
   return (

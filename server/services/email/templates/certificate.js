@@ -4,7 +4,7 @@ import layout from '../../../notification/templates/engine/layout.js';
 
 export default function render(data = {}) {
   const name = escapeHtml(data.name || 'Valued Student');
-  const certificateName = escapeHtml(data.certificateName || 'Yoga Certificate');
+  const certificateName = escapeHtml(data.certificateName || 'Wellness Certificate');
   const certificateUrl = data.certificateUrl || '#';
   const issueDate = data.issueDate || new Date().toLocaleDateString('en-KE', { timeZone: 'Africa/Nairobi' });
 
@@ -24,9 +24,9 @@ export default function render(data = {}) {
     'Certificate Ready!',
     '',
     `Congratulations, ${data.name || 'Valued Student'}!`,
-    `Your ${data.certificateName || 'Yoga Certificate'} certificate is now available for download.`,
+    `Your ${data.certificateName || 'Wellness Certificate'} certificate is now available for download.`,
     '',
-    `Certificate: ${data.certificateName || 'Yoga Certificate'}`,
+    `Certificate: ${data.certificateName || 'Wellness Certificate'}`,
     `Issue Date: ${issueDate}`,
     '',
     `Download: ${certificateUrl}`,

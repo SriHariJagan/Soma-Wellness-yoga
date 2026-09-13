@@ -7,7 +7,7 @@ export default function referralInvite(notification) {
 
   const inviteeName = escapeHtml(data.inviteeName || 'there');
   const senderName = escapeHtml(data.senderName || 'A friend');
-  const referralLink = data.referralLink || 'https://somawellness.in';
+  const referralLink = data.referralLink || 'https://somawellness.co.ke';
   const subject = `You're invited to ${STUDIO_NAME}!`;
 
   const body = `

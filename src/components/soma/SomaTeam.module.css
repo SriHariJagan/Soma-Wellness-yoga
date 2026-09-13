@@ -37,7 +37,7 @@
   font-family: var(--font-display); font-size: clamp(30px, 4vw, 42px); font-weight: 300; line-height: 0.92; letter-spacing: -0.032em; color: var(--soma-forest);
   position: relative; display: inline-block;
 }
-.title em { font-style: italic; font-weight: 400; color: var(--soma-primary); }
+.title em { font-style: normal; font-weight: 400; color: var(--soma-primary); }
 .titleUnderline { position: absolute; left: 14%; right: 14%; bottom: 0.04em; height: 0.12em; background: linear-gradient(90deg, rgba(244,180,0,0.28) 0%, transparent 88%); transform-origin: center; border-radius: 2px; pointer-events: none; }
 .sub { margin-top: 12px; font-size: 14.5px; line-height: 1.6; color: #5a6b63; max-width: 52ch; margin-left: auto; margin-right: auto; }
 

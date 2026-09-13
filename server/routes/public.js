@@ -12,10 +12,6 @@ import Workshop from '../models/Workshop.js';
 import Settings from '../models/Settings.js';
 import Service from '../models/Service.js';
 import { publicGetEvents } from '../controllers/eventController.js';
-import * as bookCtrl from '../controllers/bookController.js';
-import * as shippingCtrl from '../controllers/shippingController.js';
-import * as bulkCtrl from '../controllers/bulkEnquiryController.js';
-import * as bookOrderCtrl from '../controllers/bookOrderController.js';
 
 const router = express.Router();
 
@@ -52,12 +48,6 @@ router.get('/batches', publicCache, asyncHandler(async (req, res) => res.json(aw
 router.get('/workshops', publicCache, asyncHandler(async (req, res) => res.json(await Workshop.find({ status: 'available', date: { $gte: new Date() } }).sort({ date: 1 }).lean())));
 router.get('/events', publicCache, publicGetEvents);
 
-// Book store
-router.get('/books', publicCache, bookCtrl.listBooks);
-router.get('/books/:slug', publicCache, bookCtrl.getBookBySlug);
-router.post('/shipping/check-availability', shippingCtrl.checkAvailability);
-router.post('/bulk-orders', bulkCtrl.submitBulkEnquiry);
-router.get('/order-tracking/:orderNumber', bookOrderCtrl.trackOrder);
 router.get('/settings', publicCache, asyncHandler(async (req, res) => {
   const s = await Settings.getSingleton();
   res.json({ announcementBanner: s.announcementBanner, studioName: s.studioName, supportEmail: s.supportEmail, supportPhone: s.supportPhone });

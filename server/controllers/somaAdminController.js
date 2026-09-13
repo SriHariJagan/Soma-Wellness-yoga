@@ -154,9 +154,26 @@ export const updateDailyContentAdmin = asyncHandler(async (req, res) => {
   res.json(doc);
 });
 export const deleteDailyContentAdmin = asyncHandler(async (req, res) => {
-  const doc = await SomaContent.findByIdAndDelete(req.params.id);
+  // Unpublish instead of hard-delete: historical engagement analytics are preserved.
+  const doc = await SomaContent.findByIdAndUpdate(req.params.id, { $set: { published: false } }, { returnDocument: 'after' });
   if (!doc) throw ApiError.notFound('Content not found');
-  res.json({ success: true });
+  res.json({ success: true, unpublished: true });
+});
+export const getDailyAnalyticsAdmin = asyncHandler(async (req, res) => {
+  const content = await SomaContent.find().sort({ opens: -1 }).lean();
+  const subsByTier = await SomaDailySubscription.aggregate([
+    { $match: { status: 'active', expiryDate: { $gt: new Date() } } },
+    { $group: { _id: { included: '$isIncludedWithMembership', tier: '$membershipTier', plan: '$plan' }, count: { $sum: 1 } } },
+  ]);
+  res.json({
+    content: content.map((c) => ({ _id: c._id, title: c.title, type: c.type, published: c.published, opens: c.opens || 0, uniqueOpens: c.uniqueOpens || 0, listens: c.listens || 0, completes: c.completes || 0 })),
+    subscriptionsByTier: subsByTier,
+    totals: {
+      opens: content.reduce((a, c) => a + (c.opens || 0), 0),
+      listens: content.reduce((a, c) => a + (c.listens || 0), 0),
+      completes: content.reduce((a, c) => a + (c.completes || 0), 0),
+    },
+  });
 });
 
 // ── Catalog overrides admin (simple) ─────────────────────────

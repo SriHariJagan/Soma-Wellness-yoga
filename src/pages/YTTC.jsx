@@ -7,25 +7,27 @@ import PageFAQSection from "../components/soma/PageFAQSection";
 import { PAGE_FAQS } from "../config/siteContent";
 import { Link } from "react-router-dom";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
+import { useScrollToSection } from "../hooks/useScrollToSection";
 import styles from "./YTTC.module.css";
 import { useTranslation } from "react-i18next";
 
 const faculty = [
-  { name: "Amina J.", role: "Therapy & Breath Lead", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=400&auto=format&fit=crop" },
-  { name: "Daniel K.", role: "Movement & Anatomy", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=400&auto=format&fit=crop" },
-  { name: "Zawadi M.", role: "Meditation & Philosophy", img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=400&auto=format&fit=crop" },
+  { name: "Amina J.", role: "Therapy & Breath Lead", img: "/images/team/amina-yttc.webp" },
+  { name: "Daniel K.", role: "Movement & Anatomy", img: "/images/team/daniel-yttc.webp" },
+  { name: "Zawadi M.", role: "Meditation & Philosophy", img: "/images/team/zawadi-yttc.webp" },
 ];
 
 const YTTC = () => {
   const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
+  useScrollToSection();
   return (
     <div style={{ background: "var(--soma-cream)" }}>
       <SomaPageHeader
         eyebrow={t("yttc.eyebrow")}
         title={t("yttc.title")}
         subtitle={t("yttc.subtitle")}
-        image="https://images.unsplash.com/photo-1588286840104-8957b019727f?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/yttc-academy.webp"
       />
       {/* Bento academy — premium */}
       <section className={styles.section}>
@@ -96,7 +98,7 @@ const YTTC = () => {
           >
             <div style={{ height: 180, overflow: "hidden", position: "relative" }}>
               <motion.img
-                src="https://images.unsplash.com/photo-1447452001602-7090c7ab2db3?q=80&w=800&auto=format&fit=crop"
+                src="/images/yttc/academy-study.webp"
                 alt="Academy"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 loading="lazy"
@@ -129,7 +131,7 @@ const YTTC = () => {
           <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--soma-primary)", display: "inline-flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" /> Faculty — lineage & care
           </span>
-          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 300, color: "var(--soma-forest)", marginTop: 8, letterSpacing: "-0.02em" }}>Teachers who <em style={{ fontStyle: "italic", color: "var(--soma-primary)" }}>hold</em> you.</h3>
+          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 300, color: "var(--soma-forest)", marginTop: 8, letterSpacing: "-0.02em" }}>Teachers who <em style={{ fontStyle: "normal", color: "var(--soma-primary)" }}>hold</em> you.</h3>
         </motion.div>
         <motion.div
           initial="hidden"
@@ -168,7 +170,7 @@ const YTTC = () => {
       </section>
 
       {/* Corporate — premium */}
-      <section className={styles.corporateSection}>
+      <section className={styles.corporateSection} id="corporate">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -224,7 +226,7 @@ const YTTC = () => {
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--soma-gold)", display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.28)", flexShrink: 0 }} aria-hidden="true" /> {t("yttc.alumni")}
             </div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 16, lineHeight: 1.5, color: "var(--soma-forest)", marginTop: 10, fontStyle: "italic", fontWeight: 400 }}>{t("yttc.alumniQuote")}</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 16, lineHeight: 1.5, color: "var(--soma-forest)", marginTop: 10, fontWeight: 400 }}>{t("yttc.alumniQuote")}</div>
             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--soma-warm-gray)", marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 28, height: 1, background: "var(--soma-line-strong)", flexShrink: 0 }} aria-hidden="true" /> — Alumni 2024, now teaching in Westlands
             </div>
@@ -264,9 +266,9 @@ const YTTC = () => {
             <div style={{ position: "relative", paddingLeft: 22 }}>
               <div style={{ position: "absolute", left: 6, top: 8, bottom: 8, width: 1, background: "linear-gradient(180deg, var(--soma-line-strong) 0%, rgba(244,180,0,0.22) 100%)", borderRadius: 999 }} aria-hidden="true" />
               {[
-                { step: "01", title: "Foundations 25h", desc: "Weekend intensive · Breath, alignment, philosophy", meta: "30,000 KES · 3 days" },
-                { step: "02", title: "SOMA 100 — Foundation Teacher", desc: "Anatomy, sequencing, hands-on adjustments, practicum", meta: "85,000 KES · 3 months" },
-                { step: "03", title: "SOMA 200 — Teacher Training", desc: "Full certification · Mentorship, teaching labs, corporate track", meta: "165,000 KES · Early 145,000 · 6 months", accent: true },
+                { step: "01", title: "Yoga Foundations 25h", desc: "Weekend intensive · Breath, movement, philosophy", meta: "30,000 KES · 3 days" },
+                { step: "02", title: "SOMA 100 — Foundation Teacher Course", desc: "Anatomy, sequencing, hands-on guidance, practicum", meta: "85,000 KES · 3 months" },
+                { step: "03", title: "SOMA 200 — Yoga Teacher Training", desc: "Full training · Mentorship, practice labs, corporate track", meta: "165,000 KES · Early 145,000 · 6 months", accent: true },
               ].map((s, i) => (
                 <motion.div
                   key={s.step}

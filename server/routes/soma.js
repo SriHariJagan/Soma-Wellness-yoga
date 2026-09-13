@@ -33,6 +33,9 @@ router.get('/gift-vouchers/:code', requireAuth, soma.getVoucherByCode);
 
 router.get('/me/dashboard', requireAuth, soma.getMySomaDashboard);
 router.post('/daily/subscribe', requireAuth, soma.subscribeDaily);
+router.post('/daily/cancel', requireAuth, soma.cancelDailySubscription);
+router.get('/daily/status', requireAuth, soma.getDailyStatus);
+router.post('/daily/content/:id/event', requireAuth, userLimiter, soma.trackDailyEvent);
 router.post('/passes/purchase', requireAuth, soma.purchasePass);
 router.post('/passes/:id/consume', requireAuth, soma.consumePass);
 router.post('/reset/purchase', requireAuth, soma.purchaseReset);
@@ -66,6 +69,7 @@ adminRouter.get('/daily-content', somaAdmin.listDailyContentAdmin);
 adminRouter.post('/daily-content', somaAdmin.createDailyContentAdmin);
 adminRouter.put('/daily-content/:id', somaAdmin.updateDailyContentAdmin);
 adminRouter.delete('/daily-content/:id', somaAdmin.deleteDailyContentAdmin);
+adminRouter.get('/daily-analytics', somaAdmin.getDailyAnalyticsAdmin);
 
 adminRouter.get('/catalog', somaAdmin.getCatalogAdmin);
 adminRouter.put('/catalog', somaAdmin.updateCatalogAdmin);

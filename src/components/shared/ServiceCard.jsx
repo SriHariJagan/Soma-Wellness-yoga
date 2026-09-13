@@ -87,7 +87,7 @@ function ServiceCard({
   const handleCta = () => {
     if (pricingModel === "contact") {
       if (onContact) onContact(service);
-      else window.location.href = `mailto:${contactEmail || "hello@somawellness.in"}`;
+      else window.location.href = `mailto:${contactEmail || "hello@somawellness.co.ke"}`;
     } else {
       if (onEnroll) onEnroll(_id);
     }

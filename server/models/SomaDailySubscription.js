@@ -20,7 +20,8 @@ const SomaDailySubscriptionSchema = new mongoose.Schema(
 SomaDailySubscriptionSchema.index({ user: 1, status: 1 });
 
 SomaDailySubscriptionSchema.virtual('isActive').get(function () {
-  if (this.status !== 'active') return false;
+  // Cancelled subscriptions keep access until the paid period ends.
+  if (!['active', 'cancelled'].includes(this.status)) return false;
   return new Date() < this.expiryDate;
 });
 

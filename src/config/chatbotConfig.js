@@ -3,14 +3,14 @@
 // Falls back gracefully when env vars are not set.
 // ============================================================
 
-// VITE_WHATSAPP_NUMBER should be digits only, e.g. 919999976540 or 254712345678
-// Accepts +91..., 91..., 99999..., +254..., 254..., 0700..., will be normalised.
+// VITE_WHATSAPP_NUMBER should be digits only, e.g. 254700000000
+// Accepts +254..., 254..., 0700..., will be normalised.
 const ENV_WA = import.meta.env.VITE_WHATSAPP_NUMBER || '';
 const ENV_DISPLAY = import.meta.env.VITE_WHATSAPP_DISPLAY_PHONE || '';
 
 // Default from site content / footer — must stay in sync
-export const FALLBACK_WA_NUMBER = '919999976540';
-export const FALLBACK_WA_DISPLAY = '+91 99999 76540';
+export const FALLBACK_WA_NUMBER = '254700000000';
+export const FALLBACK_WA_DISPLAY = '+254 700 000 000';
 
 // Normalise any phone string to digits-only wa.me format
 export function normalizeWaNumber(raw) {
@@ -19,8 +19,6 @@ export function normalizeWaNumber(raw) {
   // If Kenyan 07... (10 digits starting with 0) -> 254...
   if (digits.length === 10 && digits.startsWith('0')) return `254${digits.slice(1)}`;
   if (digits.length === 9 && digits.startsWith('7')) return `254${digits}`;
-  // If Indian 10-digit mobile (starts 6-9) -> 91...
-  if (digits.length === 10 && /^[6-9]/.test(digits)) return `91${digits}`;
   return digits;
 }
 
@@ -60,20 +58,20 @@ export const QUICK_ACTIONS = [
   { id: 'courses', label: 'Explore Courses', icon: 'book', view: CHAT_VIEW.COURSES },
   { id: 'programs', label: 'Explore Programs', icon: 'sparkles', view: CHAT_VIEW.PROGRAMS },
   { id: 'packages', label: 'Packages & Pricing', icon: 'wallet', view: CHAT_VIEW.PACKAGES },
-  { id: 'about', label: 'About Soma Wellness', icon: 'leaf', view: CHAT_VIEW.ABOUT },
+  { id: 'about', label: 'About SomaWellness', icon: 'leaf', view: CHAT_VIEW.ABOUT },
   { id: 'enquiry', label: 'Make an Enquiry', icon: 'mail', view: CHAT_VIEW.ENQUIRY },
   { id: 'whatsapp', label: 'Chat on WhatsApp', icon: 'whatsapp', view: 'WHATSAPP' },
 ];
 
 // About content — concise, mirrors site copy, not duplicative
 export const ABOUT_COPY = {
-  title: 'Soma Wellness Nairobi',
+  title: 'SomaWellness',
   intro:
-    'Soma Wellness is an integrated wellness home in Spring Valley, Nairobi — bringing together yoga, yoga therapy, meditation, breathwork, massage and mindful living.',
+    'SomaWellness is a premium international wellness brand — bringing together mindful movement, restoration, breathwork, massage and conscious living.',
   points: [
     'Rebalance · Renew · Restore · Reconnect — body, breath and mind as one.',
-    'Group yoga, one-to-one therapy, prenatal & senior programmes, and signature rituals like Stillness & The Acacia.',
-    'Calm, premium, unhurried — not a gym, not a spa, but a place to return to your centre.',
+    'Group sessions, one-to-one programs, pregnancy & senior programmes, and signature rituals like Stillness & The Acacia.',
+    'Calm, premium, unhurried — a place to return to your centre.',
   ],
   ctas: [
     { label: 'Learn more', to: '/about' },
@@ -85,7 +83,7 @@ export const ABOUT_COPY = {
 // WhatsApp message builders
 export function buildGenericWaMessage() {
   return [
-    'Hi Soma Wellness \u{1F44B}',
+    'Hi SomaWellness \u{1F44B}',
     '',
     "I visited your website and I'm interested in learning more about your wellness programs.",
     '',
@@ -96,7 +94,7 @@ export function buildGenericWaMessage() {
 export function buildCourseWaMessage(courseName) {
   const name = courseName || 'your courses';
   return [
-    'Hi Soma Wellness \u{1F44B}',
+    'Hi SomaWellness \u{1F44B}',
     '',
     `I visited your website and I'm interested in your ${name}.`,
     '',
@@ -107,7 +105,7 @@ export function buildCourseWaMessage(courseName) {
 export function buildProgramWaMessage(programName) {
   const name = programName || 'your programs';
   return [
-    'Hi Soma Wellness \u{1F44B}',
+    'Hi SomaWellness \u{1F44B}',
     '',
     `I visited your website and I'm interested in your ${name}.`,
     '',
@@ -118,7 +116,7 @@ export function buildProgramWaMessage(programName) {
 export function buildPackageWaMessage(packageName) {
   const name = packageName || 'wellness packages';
   return [
-    'Hi Soma Wellness \u{1F44B}',
+    'Hi SomaWellness \u{1F44B}',
     '',
     `I visited your website and I'm interested in the ${name} package.`,
     '',
@@ -130,7 +128,7 @@ export function buildEnquiryWaMessage({ name, interestedItem, interestedType }) 
   const item = interestedItem ? ` about ${interestedItem}` : '';
   const type = interestedType && interestedType !== 'general' ? ` (${interestedType})` : '';
   return [
-    `Hi Soma Wellness \u{1F44B} — this is ${name || 'a visitor'} from your website.`,
+    `Hi SomaWellness \u{1F44B} — this is ${name || 'a visitor'} from your website.`,
     '',
     `I submitted an enquiry${item}${type} and would love to continue on WhatsApp.`,
     '',

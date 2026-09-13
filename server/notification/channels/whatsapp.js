@@ -117,7 +117,7 @@ export class WhatsAppChannel extends NotificationChannel {
     // Priority 3: Template's subject as a short notice
     if (rendered.subject) return rendered.subject;
 
-    return 'You have a new notification from Soma Wellness.';
+    return 'You have a new notification from SomaWellness.';
   }
 
   /**

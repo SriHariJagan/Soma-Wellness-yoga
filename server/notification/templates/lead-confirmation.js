@@ -6,7 +6,7 @@ export default function leadConfirmation(notification) {
   const data = notification.templateData || {};
 
   const name = escapeHtml(data.name || 'there');
-  const interestType = escapeHtml(data.interestType || 'yoga');
+  const interestType = escapeHtml(data.interestType || 'wellness');
 
   const subject = 'Thank you for reaching out!';
 
@@ -23,7 +23,7 @@ export default function leadConfirmation(notification) {
     'Thank you for reaching out!',
     '',
     `Hi ${data.name || 'there'},`,
-    `Thank you for your interest in ${data.interestType || 'yoga'} at ${STUDIO_NAME}.`,
+    `Thank you for your interest in ${data.interestType || 'wellness'} at ${STUDIO_NAME}.`,
     'One of our team members will get back to you shortly — usually within 24 hours.',
     'If you have any urgent questions, feel free to reply to this email.',
     '',

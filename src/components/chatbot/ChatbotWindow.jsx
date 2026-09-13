@@ -24,7 +24,7 @@ import {
 } from '../../lib/chatbotApi.js';
 import ChatbotEnquiryForm from './ChatbotEnquiryForm.jsx';
 
-const BOT_GREETING = 'Hi 👋 Welcome to Soma Wellness.\n\nI\'m here to help you discover our wellness programs, courses and services.\n\nWhat would you like to explore?';
+const BOT_GREETING = 'Hi 👋 Welcome to SomaWellness.\n\nI\'m here to help you discover our wellness programs, courses and services.\n\nWhat would you like to explore?';
 
 // ── Premium icons — filled + stroke, 18px, distinct per action ──
 const IconBook = () => (
@@ -338,7 +338,7 @@ const ChatbotWindow = ({ isOpen, onClose, onMinimize }) => {
       setView(CHAT_VIEW.SUCCESS);
       setStack((s) => [...s, CHAT_VIEW.ENQUIRY]);
       pushHistory('user', `Enquiry: ${payload.interestedItem || payload.interestedType}`);
-      pushHistory('bot', 'Thank you! 🌿\n\nWe\'ve received your enquiry.\n\nOur Soma Wellness team will get in touch with you shortly.');
+      pushHistory('bot', 'Thank you! 🌿\n\nWe\'ve received your enquiry.\n\nOur SomaWellness team will get in touch with you shortly.');
     } catch (err) {
       const msg = err.details?.[0]?.message || err.message || 'Something went wrong while submitting your enquiry. Please try again or contact us on WhatsApp.';
       setEnquiryError(msg);
@@ -656,15 +656,15 @@ const ChatbotWindow = ({ isOpen, onClose, onMinimize }) => {
       <div className="soma-cb-section soma-cb-success" role="status" aria-live="polite">
         <div className="soma-cb-success-icon" aria-hidden="true">🌿</div>
         <h3 className="soma-cb-success-title">Thank you! 🌿</h3>
-        <p className="soma-cb-success-body">We&apos;ve received your enquiry.<br />Our Soma Wellness team will get in touch with you shortly.</p>
+        <p className="soma-cb-success-body">We&apos;ve received your enquiry.<br />Our SomaWellness team will get in touch with you shortly.</p>
         <div className="soma-cb-success-actions">
           <button
             type="button"
             className="soma-cb-btn-primary"
             onClick={() => {
               const msg = name
-                ? `Hi Soma Wellness 👋\n\nI just submitted an enquiry${item ? ` about ${item}` : ''} via your website chat (this is ${name}).\n\nCould you please share next steps?`
-                : `Hi Soma Wellness 👋\n\nI just submitted an enquiry${item ? ` about ${item}` : ''} via your website chat.\n\nCould you please share next steps?`;
+                ? `Hi SomaWellness 👋\n\nI just submitted an enquiry${item ? ` about ${item}` : ''} via your website chat (this is ${name}).\n\nCould you please share next steps?`
+                : `Hi SomaWellness 👋\n\nI just submitted an enquiry${item ? ` about ${item}` : ''} via your website chat.\n\nCould you please share next steps?`;
               const wa = buildWaUrl(getCachedWaNumber(), msg);
               trackChatbotEvent('chatbot_whatsapp_click', { source: 'enquiry_success', item });
               window.open(wa, '_blank', 'noopener,noreferrer');
@@ -701,7 +701,7 @@ const ChatbotWindow = ({ isOpen, onClose, onMinimize }) => {
       className="soma-cb-window"
       role="dialog"
       aria-modal="true"
-      aria-label="Soma Wellness assistant"
+      aria-label="SomaWellness assistant"
       aria-describedby="soma-cb-desc"
     >
       {/* Header */}
@@ -712,7 +712,7 @@ const ChatbotWindow = ({ isOpen, onClose, onMinimize }) => {
             <span className="soma-cb-avatar-letter">S</span>
           </div>
           <div className="soma-cb-header-text">
-            <span className="soma-cb-header-title">Soma Wellness</span>
+            <span className="soma-cb-header-title">SomaWellness</span>
             <span className="soma-cb-header-sub">Your wellness journey starts here.</span>
           </div>
         </div>
@@ -743,7 +743,7 @@ const ChatbotWindow = ({ isOpen, onClose, onMinimize }) => {
 
       {/* Body */}
       <div ref={bodyRef} className="soma-cb-body" tabIndex={0} aria-label="Conversation">
-        <p id="soma-cb-desc" className="soma-cb-sr-only">Soma Wellness concierge — explore courses, programs, packages and enquire or continue on WhatsApp.</p>
+        <p id="soma-cb-desc" className="soma-cb-sr-only">SomaWellness concierge — explore courses, programs, packages and enquire or continue on WhatsApp.</p>
 
         {/* History bubbles */}
         <div className="soma-cb-history" role="log" aria-live="polite" aria-relevant="additions">

@@ -38,7 +38,7 @@ const ChatbotButton = ({ isOpen, onClick, hasUnread = false, label = 'Chat with 
   <button
     type="button"
     onClick={onClick}
-    aria-label={isOpen ? 'Close Soma wellness assistant' : label}
+    aria-label={isOpen ? 'Close SomaWellness assistant' : label}
     aria-expanded={isOpen}
     aria-haspopup="dialog"
     className={`soma-cb-btn ${isOpen ? 'soma-cb-btn--open' : ''}`}

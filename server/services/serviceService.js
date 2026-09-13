@@ -218,7 +218,7 @@ export async function purchaseService(userId, serviceId, options = {}) {
     data: {
       name: userDoc?.name || 'Student',
       serviceName: service.name,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.in'}/dashboard`,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.co.ke'}/dashboard`,
     },
     subject: `Enrolled in ${service.name}`,
     priority: 'normal',
@@ -291,7 +291,7 @@ export async function renewUserService(userServiceId, options = {}) {
     data: {
       name: userDoc?.name || 'Student',
       serviceName: us.serviceName,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.in'}/dashboard`,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.co.ke'}/dashboard`,
     },
     subject: `Service renewed: ${us.serviceName}`,
     priority: 'normal',

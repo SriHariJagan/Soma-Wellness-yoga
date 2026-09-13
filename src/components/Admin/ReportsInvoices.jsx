@@ -31,7 +31,24 @@ function monthlyBuckets(payments = []) {
   return buckets;
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function downloadCsv(filename, rows) {
+  const esc = (v) => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = rows.map((r) => r.map(esc).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, []);
@@ -52,6 +69,18 @@ function Toast({ message, type, onClose }) {
 }
 
 export default function ReportsInvoices({ payments = [], metrics = {}, onViewStudent }) {
+  const currentYear = new Date().getFullYear();
+  const [reportYear, setReportYear] = useState(currentYear);
+  const [reportMonth, setReportMonth] = useState('all');
+
+  const availableYears = useMemo(() => {
+    const years = new Set([currentYear]);
+    for (const p of payments) {
+      if (p.date) years.add(new Date(p.date).getFullYear());
+    }
+    return [...years].sort((a, b) => b - a);
+  }, [payments, currentYear]);
+
   const { collected, pending, count, byStatus, monthlyRev, monthlyCount } = useMemo(() => {
     let collected = 0, pending = 0;
     const byStatus = { paid: 0, pending: 0, failed: 0, refunded: 0 };
@@ -62,15 +91,15 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
     }
     const buckets = monthlyBuckets(payments);
     const monthlyRev = MONTHS.map((_, i) => {
-      const key = `2026-${String(i + 1).padStart(2, '0')}`;
+      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
       return buckets[key]?.total || 0;
     });
     const monthlyCount = MONTHS.map((_, i) => {
-      const key = `2026-${String(i + 1).padStart(2, '0')}`;
+      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
       return buckets[key]?.count || 0;
     });
     return { collected, pending, count: payments.length, byStatus, monthlyRev, monthlyCount };
-  }, [payments]);
+  }, [payments, reportYear]);
 
   const revenue = metrics.revenue ?? collected;
 
@@ -196,6 +225,71 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
       )}
 
       <PageHeader title="Revenue Analytics" subtitle="Invoice management & collection insights — live from MongoDB" />
+
+      {/* Annual / monthly export bar */}
+      <div className={`${s.card}`} style={{ marginBottom: 16, padding: '12px 16px', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <strong style={{ fontSize: 13 }}>Reports:</strong>
+        <select value={reportYear} onChange={(e) => setReportYear(Number(e.target.value))}
+          style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12, background: '#fff', cursor: 'pointer' }}
+          aria-label="Report year">
+          {availableYears.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+        <select value={reportMonth} onChange={(e) => setReportMonth(e.target.value)}
+          style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12, background: '#fff', cursor: 'pointer' }}
+          aria-label="Report month">
+          <option value="all">Full year (annual)</option>
+          {MONTHS.map((m, i) => <option key={m} value={i}>{m} {reportYear}</option>)}
+        </select>
+        <button type="button" onClick={() => {
+          if (reportMonth === 'all') {
+            downloadCsv(`soma-annual-report-${reportYear}.csv`, [
+              ['Month', 'Revenue Collected (KES)', 'Invoices'],
+              ...MONTHS.map((m, i) => [m, monthlyRev[i], monthlyCount[i]]),
+              ['TOTAL', monthlyRev.reduce((a, b) => a + b, 0), monthlyCount.reduce((a, b) => a + b, 0)],
+            ]);
+            showToast(`Annual report ${reportYear} exported`);
+          } else {
+            const mi = Number(reportMonth);
+            const rows = payments.filter((p) => {
+              if (!p.date) return false;
+              const d = new Date(p.date);
+              return d.getFullYear() === reportYear && d.getMonth() === mi;
+            });
+            downloadCsv(`soma-monthly-report-${reportYear}-${String(mi + 1).padStart(2, '0')}.csv`, [
+              ['Date', 'Status', 'Amount (KES)'],
+              ...rows.map((p) => [p.date ? new Date(p.date).toLocaleDateString('en-KE') : '', p.status || '', p.amount || 0]),
+              ['TOTAL', '', rows.filter((p) => p.status === 'paid').reduce((a, p) => a + (p.amount || 0), 0)],
+            ]);
+            showToast(`${MONTHS[mi]} ${reportYear} report exported`);
+          }
+        }}
+          style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid #2E7D5B', background: '#2E7D5B', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+          Export {reportMonth === 'all' ? 'Annual' : 'Monthly'} CSV
+        </button>
+        <button type="button" onClick={() => {
+          downloadCsv(`soma-ledger-${new Date().toISOString().slice(0, 10)}.csv`, [
+            ['Invoice', 'Student', 'Items', 'Coupon', 'Total (KES)', 'Method', 'Date', 'Status'],
+            ...orders.map((o) => [
+              o.orderNumber || String(o._id).slice(-6).toUpperCase(),
+              o.student?.name || '',
+              (o.items || []).map((i) => i.name).join('; '),
+              o.couponCode || '',
+              o.total || 0,
+              o.paymentMethod || 'Manual',
+              o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-KE') : '',
+              o.status || '',
+            ]),
+          ]);
+          showToast('Ledger exported');
+        }}
+          style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#374151' }}>
+          Export Ledger CSV
+        </button>
+        <button type="button" onClick={() => window.print()}
+          style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#374151' }}>
+          Print / PDF
+        </button>
+      </div>
 
       <div className={s.statsGrid}>
         <KpiCard icon={<LuReceipt />} accent="orange" label="Total Invoices" value={count} spark={monthlyCount} />

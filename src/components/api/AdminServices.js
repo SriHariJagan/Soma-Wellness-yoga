@@ -7,7 +7,28 @@
 
 const API_DOMAIN = import.meta.env.VITE_API_URL || "";
 const ADMIN_URL = `${API_DOMAIN}/api/admin`;
+const STAFF_URL = `${API_DOMAIN}/api/staff`;
 const ROOT_URL = `${API_DOMAIN}/api`;
+
+// Paths a center manager may call — routed to /api/staff automatically
+// when the signed-in user has the manager role. Everything else stays
+// admin-only (and is hidden from the manager dashboard).
+const MANAGER_PREFIXES = ["/overview", "/students", "/attendance", "/class-invites", "/events"];
+
+function storedRole() {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}")?.role || "";
+  } catch {
+    return "";
+  }
+}
+
+function resolveBase(path, base) {
+  if (base !== ADMIN_URL) return base;
+  if (storedRole() !== "manager") return base;
+  if (MANAGER_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`) || path.startsWith(`${p}?`))) return STAFF_URL;
+  return base;
+}
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -33,15 +54,27 @@ async function tryRefresh() {
 }
 
 async function request(path, { method = "GET", body, base = ADMIN_URL } = {}) {
+  const resolvedBase = resolveBase(path, base);
+  const unreachable = () =>
+    new Error(`Cannot reach the server (${resolvedBase}). Make sure the backend is running, then press Refresh.`);
   const opts = {
     method,
     headers: authHeaders(),
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   };
-  let res = await fetch(`${base}${path}`, opts);
+  let res;
+  try {
+    res = await fetch(`${resolvedBase}${path}`, opts);
+  } catch {
+    throw unreachable();
+  }
   if (res.status === 401 && (await tryRefresh())) {
     opts.headers = authHeaders();
-    res = await fetch(`${base}${path}`, opts);
+    try {
+      res = await fetch(`${resolvedBase}${path}`, opts);
+    } catch {
+      throw unreachable();
+    }
   }
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
@@ -238,6 +271,12 @@ export const serviceAssignmentsApi = {
   update: (id, payload) => request(`/service-assignments/${id}`, { method: "PUT", body: payload }),
   renew: (id) => request(`/service-assignments/${id}/renew`, { method: "POST" }),
   remove: (id) => request(`/service-assignments/${id}`, { method: "DELETE" }),
+};
+
+// ── SOMA catalog overrides (e.g. SOMA DAILY pricing) ─────────
+export const somaCatalogAdminApi = {
+  get: () => request("/soma/admin/catalog", { base: ROOT_URL }),
+  update: (soma) => request("/soma/admin/catalog", { method: "PUT", body: { soma }, base: ROOT_URL }),
 };
 
 // ── Consultations ──────────────────────────────────────────
@@ -448,80 +487,102 @@ export const getAdminOrders = (params = {}) => {
 };
 export const getAdminOrderDetail = (id) => request(`/orders/${id}`);
 
-// ── Book store ─────────────────────────────────────────────
-export const adminBooksApi = {
-  list: (params = {}) => {
-    const q = new URLSearchParams();
-    if (params.search) q.set("search", params.search);
-    if (params.status) q.set("status", params.status);
-    if (params.category) q.set("category", params.category);
-    if (params.page) q.set("page", params.page);
-    if (params.limit) q.set("limit", params.limit);
-    return request(`/books?${q.toString()}`);
-  },
-  stats: () => request("/books/stats"),
-  create: (payload) => request("/books", { method: "POST", body: payload }),
-  update: (id, payload) => request(`/books/${id}`, { method: "PUT", body: payload }),
-  setStatus: (id, status) => request(`/books/${id}/status`, { method: "PATCH", body: { status } }),
-  adjustStock: (id, stock) => request(`/books/${id}/stock`, { method: "PATCH", body: { stock } }),
-  remove: (id) => request(`/books/${id}`, { method: "DELETE" }),
-  uploadCover: async (file) => {
-    const form = new FormData();
-    form.append("cover", file);
-    const token = localStorage.getItem("token");
-    let res = await fetch(`${ADMIN_URL}/books/upload-cover`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: form,
-    });
-    if (res.status === 401 && (await tryRefresh())) {
-      res = await fetch(`${ADMIN_URL}/books/upload-cover`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        body: form,
-      });
-    }
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || data.message || "Upload failed");
-    return data;
-  },
+// ── Reception Staff Management ────────────────────────────────
+export const receptionStaffApi = {
+  list: () => request("/reception"),
+  get: (id) => request(`/reception/${id}`),
+  create: (payload) => request("/reception", { method: "POST", body: payload }),
+  update: (id, payload) => request(`/reception/${id}`, { method: "PUT", body: payload }),
+  updatePermissions: (id, permissions) => request(`/reception/${id}/permissions`, { method: "PUT", body: { permissions } }),
+  resetPassword: (id) => request(`/reception/${id}/reset-password`, { method: "POST" }),
+  setStatus: (id, status) => request(`/reception/${id}/status`, { method: "PATCH", body: { status } }),
 };
 
-export const adminStoreOrdersApi = {
-  list: (params = {}) => {
-    const q = new URLSearchParams();
-    if (params.status) q.set("status", params.status);
-    if (params.search) q.set("search", params.search);
-    if (params.page) q.set("page", params.page);
-    if (params.limit) q.set("limit", params.limit);
-    return request(`/orders/books?${q.toString()}`);
+// ── Reception API (for reception users) ───────────────────────
+export const receptionApi = {
+  profile: () => request("/profile", { base: `${API_DOMAIN}/api/reception` }),
+  overview: () => request("/overview", { base: `${API_DOMAIN}/api/reception` }),
+  students: {
+    list: (params = {}) => {
+      const q = new URLSearchParams();
+      if (params.search) q.set("search", params.search);
+      if (params.page) q.set("page", params.page);
+      if (params.limit) q.set("limit", params.limit);
+      return request(`/students?${q.toString()}`, { base: `${API_DOMAIN}/api/reception` });
+    },
+    get: (id) => request(`/students/${id}`, { base: `${API_DOMAIN}/api/reception` }),
+    create: (payload) => request("/students", { method: "POST", body: payload, base: `${API_DOMAIN}/api/reception` }),
+    update: (id, payload) => request(`/students/${id}`, { method: "PUT", body: payload, base: `${API_DOMAIN}/api/reception` }),
   },
-  detail: (id) => request(`/orders/books/${id}`),
-  setStatus: (id, status, reason) => request(`/orders/books/${id}/status`, { method: "PATCH", body: { status, reason } }),
-  dispatch: (id, courier, trackingNumber) => request(`/orders/books/${id}/dispatch`, { method: "PATCH", body: { courier, trackingNumber } }),
-  addNote: (id, note) => request(`/orders/books/${id}/notes`, { method: "POST", body: { note } }),
-};
-
-export const adminShippingApi = {
-  list: () => request("/shipping/rules"),
-  create: (payload) => request("/shipping/rules", { method: "POST", body: payload }),
-  update: (id, payload) => request(`/shipping/rules/${id}`, { method: "PUT", body: payload }),
-  toggle: (id, status) => request(`/shipping/rules/${id}/status`, { method: "PATCH", body: { status } }),
-  remove: (id) => request(`/shipping/rules/${id}`, { method: "DELETE" }),
-  saveSettings: (payload) => request("/shipping/settings", { method: "PUT", body: payload }),
-};
-
-export const adminBulkEnquiriesApi = {
-  list: (params = {}) => {
-    const q = new URLSearchParams();
-    if (params.status) q.set("status", params.status);
-    if (params.search) q.set("search", params.search);
-    if (params.page) q.set("page", params.page);
-    if (params.limit) q.set("limit", params.limit);
-    return request(`/bulk-enquiries?${q.toString()}`);
+  attendance: {
+    overview: () => request("/attendance/overview", { base: `${API_DOMAIN}/api/reception` }),
+    invites: (params = {}) => {
+      const q = new URLSearchParams();
+      if (params.date) q.set("date", params.date);
+      const qs = q.toString();
+      return request(`/attendance/invites${qs ? `?${qs}` : ""}`, { base: `${API_DOMAIN}/api/reception` });
+    },
+    students: (inviteId) => request(`/attendance/students/${inviteId}`, { base: `${API_DOMAIN}/api/reception` }),
+    byDate: (params = {}) => {
+      const q = new URLSearchParams();
+      if (params.date) q.set("date", params.date);
+      return request(`/attendance/by-date?${q.toString()}`, { base: `${API_DOMAIN}/api/reception` });
+    },
+    mark: (payload) => request("/attendance", { method: "POST", body: payload, base: `${API_DOMAIN}/api/reception` }),
+    bulkMark: (payload) => request("/attendance/bulk", { method: "POST", body: payload, base: `${API_DOMAIN}/api/reception` }),
+    markAll: (inviteId) => request("/attendance/mark-all", { method: "POST", body: { inviteId }, base: `${API_DOMAIN}/api/reception` }),
   },
-  detail: (id) => request(`/bulk-enquiries/${id}`),
-  setStatus: (id, status, notes) => request(`/bulk-enquiries/${id}/status`, { method: "PATCH", body: { status, notes } }),
+  classInvites: {
+    list: async (params = {}) => {
+      const q = new URLSearchParams();
+      if (params.search) q.set("search", params.search);
+      if (params.status) q.set("status", params.status);
+      if (params.page) q.set("page", params.page);
+      if (params.limit) q.set("limit", params.limit);
+      const qs = q.toString();
+      const data = await request(`/class-invites${qs ? `?${qs}` : ""}`, { base: `${API_DOMAIN}/api/reception` });
+      // Backend returns { invites, total, page, pages } — unwrap to array
+      // for backwards compatibility; attach pagination as properties.
+      if (data && Array.isArray(data.invites)) {
+        const arr = data.invites;
+        arr.total = data.total;
+        arr.page = data.page;
+        arr.pages = data.pages;
+        return arr;
+      }
+      return Array.isArray(data) ? data : [];
+    },
+    listDetailed: (params = {}) => {
+      const q = new URLSearchParams();
+      if (params.search) q.set("search", params.search);
+      if (params.status) q.set("status", params.status);
+      if (params.page) q.set("page", params.page);
+      if (params.limit) q.set("limit", params.limit);
+      const qs = q.toString();
+      return request(`/class-invites${qs ? `?${qs}` : ""}`, { base: `${API_DOMAIN}/api/reception` });
+    },
+    stats: () => request("/class-invites/stats", { base: `${API_DOMAIN}/api/reception` }),
+    create: (payload) => request("/class-invites", { method: "POST", body: payload, base: `${API_DOMAIN}/api/reception` }),
+    get: (id) => request(`/class-invites/${id}`, { base: `${API_DOMAIN}/api/reception` }),
+    cancel: (id, reason) => request(`/class-invites/${id}/cancel`, { method: "PATCH", body: reason ? { reason } : {}, base: `${API_DOMAIN}/api/reception` }),
+    resend: (id) => request(`/class-invites/${id}/resend`, { method: "POST", base: `${API_DOMAIN}/api/reception` }),
+  },
+  courses: {
+    list: () => request("/courses", { base: `${API_DOMAIN}/api/reception` }),
+  },
+  catalog: () => request("/catalog", { base: `${API_DOMAIN}/api/reception` }),
+  purchases: {
+    list: (studentId) => request(`/students/${studentId}/purchases`, { base: `${API_DOMAIN}/api/reception` }),
+    create: (studentId, payload) => request(`/students/${studentId}/purchases`, { method: "POST", body: payload, base: `${API_DOMAIN}/api/reception` }),
+  },
+  events: {
+    list: () => request("/events", { base: `${API_DOMAIN}/api/reception` }),
+    registrations: (id) => request(`/events/${id}/registrations`, { base: `${API_DOMAIN}/api/reception` }),
+  },
+  classes: {
+    list: () => request("/classes", { base: `${API_DOMAIN}/api/reception` }),
+  },
+  activityLog: () => request("/activity-log", { base: `${API_DOMAIN}/api/reception` }),
 };
 
 // ── System Health & Email Monitoring ──────────────────────────

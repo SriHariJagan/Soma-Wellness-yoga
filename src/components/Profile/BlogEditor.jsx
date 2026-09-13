@@ -312,7 +312,7 @@ export default function BlogEditor({ blogId, student, onNavigate, reload }) {
           </div>
           <div className={es.metaField}>
             <label>Tags (comma separated)</label>
-            <input type="text" placeholder="yoga, meditation, wellness" value={tags} onChange={e => setTags(e.target.value)} className={es.metaInput} />
+            <input type="text" placeholder="breathwork, mindfulness, wellness" value={tags} onChange={e => setTags(e.target.value)} className={es.metaInput} />
           </div>
           <div className={es.metaField}>
             <label>Categories</label>

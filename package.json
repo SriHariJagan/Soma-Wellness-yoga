@@ -1,7 +1,7 @@
 {
-  "name": "yoga",
+  "name": "soma-wellness",
   "version": "1.0.0",
-  "description": "Soma Wellness — React + Vite frontend",
+  "description": "SomaWellness — React + Vite frontend",
   "main": "main.jsx",
   "dependencies": {
     "@tabler/icons-webfont": "^3.30.0",
@@ -34,10 +34,7 @@
     "globals": "^17.4.0",
     "jest": "^29.7.0",
     "jsdom": "^26.1.0",
-    "lightningcss": "^1.32.0",
-    "msw": "^2.7.0",
     "sharp": "^0.35.3",
-    "supertest": "^7.2.2",
     "vite": "^8.0.12",
     "vitest": "^3.2.4"
   },

@@ -17,43 +17,36 @@ const categoriesKeys = [
 ];
 
 const catMap = {
-  // A. About SOMA (1-5)
-  "What is SOMA Wellness?": "about",
+  // A. About SomaWellness (1-5)
+  "What is SomaWellness?": "about",
   "Where are you located?": "about",
-  "What services are available at SOMA Wellness?": "about",
-  "What services do you offer?": "about",
-  "Is SOMA Wellness only for people who practise Yoga?": "about",
-  "What makes SOMA Wellness different from a regular gym, Yoga studio or spa?": "about",
-  // B. Yoga, Therapy & Personalized Care (6-11)
-  "Do I need previous Yoga experience to join?": "therapy",
-  "Do I need yoga experience?": "therapy",
+  "What experiences are available at SomaWellness?": "about",
+  "Is SomaWellness only for experienced practitioners?": "about",
+  "What makes SomaWellness different from a regular gym, studio or spa?": "about",
+  // B. Private & Personalized Care (6-11)
+  "Do I need yoga experience to join?": "therapy",
   "What is Yoga Therapy?": "therapy",
-  "How is Yoga Therapy different from a regular Yoga class?": "therapy",
-  "Do I need a consultation before starting Yoga Therapy?": "therapy",
-  "Can people with medical conditions join SOMA Wellness?": "therapy",
-  "Are private Yoga sessions available?": "therapy",
-  "Are private sessions available?": "therapy",
-  // C. Meditation, Specialized Programs & Wellness Therapies (12-17)
-  "Do you offer meditation and breathing classes?": "programs",
-  "Do you offer prenatal and postnatal Yoga?": "programs",
-  "Do you offer prenatal and postnatal yoga?": "programs",
-  "Is Yoga available for children?": "programs",
-  "Do you have programs for senior citizens?": "programs",
-  "Do you have programmes for children and seniors?": "programs",
-  "Do you provide massage and wellness therapies?": "programs",
-  "Can I combine Yoga, massage, meditation and other therapies in one package?": "programs",
-  // D. Corporate, Education & Community (18-19)
+  "What is the difference between Yoga and Yoga Therapy?": "therapy",
+  "Do I need a therapy assessment before starting Yoga Therapy?": "therapy",
+  "Can people with medical conditions join SomaWellness?": "therapy",
+  "Is Private Yoga available?": "therapy",
+  // C. Mindfulness, Life Stages & Restorative Therapies (12-17)
+  "Do you offer mindfulness and breathing sessions?": "programs",
+  "Do you offer Prenatal Yoga and Postnatal Yoga?": "programs",
+  "Is Children's Yoga available?": "programs",
+  "Do you have programs for seniors?": "programs",
+  "Do you provide massage and restorative therapies?": "programs",
+  "Can I combine sessions, massage and mindfulness in one package?": "programs",
+  // D. Academy & Organizations (18-19)
   "Do you offer corporate wellness programs?": "programs",
-  "Do you conduct Yoga Teacher Training and workshops?": "programs",
+  "Do you offer Yoga Teacher Training and workshops?": "programs",
   // E. Visiting, Booking & Practical (20-25)
-  "What should I wear for a Yoga session?": "practical",
-  "What should I wear / bring?": "practical",
-  "Do I need to bring my own Yoga mat or props?": "practical",
+  "What should I wear for a session?": "practical",
+  "Do I need to bring my own yoga mat or props?": "practical",
   "How long is a typical session?": "practical",
   "How do I know which program is right for me?": "practical",
   "How can I book a session?": "practical",
-  "How do I book?": "practical",
-  "Can I visit the centre before taking a membership?": "practical",
+  "Can I visit before becoming a member?": "practical",
 };
 
 const FAQ = () => {
@@ -78,7 +71,7 @@ const FAQ = () => {
         eyebrow={t("faq.eyebrow")}
         title={t("faq.title")}
         subtitle={t("faq.subtitle")}
-        image="https://images.unsplash.com/photo-1494172961521-33799ddd43a5?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/faq-help.webp"
       />
       <section style={{ maxWidth: 960, margin: "0 auto", padding: "28px clamp(20px,4vw,40px) 0" }}>
         <div style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, #FFFBF8 100%)", border: "1px solid var(--soma-line-light)", borderRadius: 16, padding: 16, marginBottom: 18, boxShadow: "0 6px 20px rgba(24,61,45,0.04)" }}>

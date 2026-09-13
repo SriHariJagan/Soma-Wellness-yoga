@@ -59,12 +59,15 @@
   --color-error: #B42318;
   --color-warning: #F4B400;
 
-  /* ── Typography ── */
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-heading: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'DM Sans', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-accent: 'DM Sans', system-ui, sans-serif;
-  --font-num: 'Inter', 'DM Sans', system-ui, -apple-system, sans-serif;
+  /* ── Typography — PREMIUM EDITORIAL SYSTEM ──
+     Headings: Playfair Display (high-contrast luxury serif with true italics).
+     Body/UI/numbers: Manrope (geometric humanist sans).
+     Two families only. Base body = 16px. */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-accent: 'Manrope', system-ui, sans-serif;
+  --font-num: 'Manrope', system-ui, sans-serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -177,7 +180,7 @@
   --container-2xl: 1440px;
   --container-max: 1440px;
 
-  --header-height: 72px;
+  --header-height: 80px;
   --topbar-height: 0px;
 
   /* ── Z-Index ── */
@@ -199,7 +202,7 @@ html {
 
 body {
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: 16px;
   line-height: var(--leading-relaxed);
   color: var(--soma-charcoal);
   background-color: #FAF6EC;
@@ -239,7 +242,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
   line-height: var(--leading-tight);
   color: var(--soma-forest);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: -0.02em;
 }
 
 /* ── Scrollbar ── */
@@ -318,14 +321,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .display-title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 4.5vw, 3.5rem);
-  font-weight: 300;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  font-weight: 400;
   line-height: 0.95;
   letter-spacing: -0.03em;
   color: var(--soma-forest);
 }
+h1 em, h2 em, h3 em, h4 em, h5 em, h6 em,
 .display-title em {
-  font-style: italic;
+  font-style: normal;
+}
+.display-title em {
   font-weight: 400;
   color: var(--soma-primary);
 }

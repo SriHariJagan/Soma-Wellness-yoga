@@ -1,5 +1,8 @@
 import transporter from './transporter.js';
 import logger from '../../notification/logger.js';
+import { STUDIO_NAME } from '../../notification/templates/engine/tokens.js';
+import { p, heading, card, infoTable } from '../../notification/templates/engine/components.js';
+import layout from '../../notification/templates/engine/layout.js';
 
 import welcomeTemplate from './templates/welcome.js';
 import enquiryTemplate from './templates/enquiry.js';
@@ -20,8 +23,8 @@ function getAdminEmails() {
 }
 
 function getFrom() {
-  const name = process.env.FROM_NAME || 'Soma Wellness';
-  const email = process.env.FROM_EMAIL || process.env.SMTP_USER || 'hello@somawellness.in';
+  const name = process.env.FROM_NAME || 'SomaWellness';
+  const email = process.env.FROM_EMAIL || process.env.SMTP_USER || 'hello@somawellness.co.ke';
   return { name, email };
 }
 
@@ -187,58 +190,56 @@ async function sendBulkEnquiryConfirmation(data) {
 }
 
 async function sendPaymentReceivedAdmin(data) {
-  const subject = 'Payment Received';
-  const html = `
-    <h2 style="color:#2D1406;">Payment Received</h2>
-    <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-      ${data.customerName ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Customer</td><td style="padding:6px 12px;color:#3B1D0D;">${data.customerName}</td></tr>` : ''}
-      ${data.customerEmail ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Email</td><td style="padding:6px 12px;color:#3B1D0D;">${data.customerEmail}</td></tr>` : ''}
-      ${data.order ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Order</td><td style="padding:6px 12px;color:#3B1D0D;">${data.order}</td></tr>` : ''}
-      ${data.amount ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Amount</td><td style="padding:6px 12px;color:#3B1D0D;font-weight:700;">${data.amount}</td></tr>` : ''}
-      ${data.paymentId ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Payment ID</td><td style="padding:6px 12px;color:#3B1D0D;">${data.paymentId}</td></tr>` : ''}
-      ${data.razorpayOrderId ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Razorpay Order ID</td><td style="padding:6px 12px;color:#3B1D0D;">${data.razorpayOrderId}</td></tr>` : ''}
-    </table>
-    <p style="color:#7C6A58;font-size:12px;">— Soma Wellness System</p>
+  const subject = `Payment Received — ${STUDIO_NAME}`;
+  const rows = [
+    data.customerName ? { label: 'Customer', value: data.customerName } : null,
+    data.customerEmail ? { label: 'Email', value: data.customerEmail } : null,
+    data.order ? { label: 'Order', value: data.order } : null,
+    data.amount ? { label: 'Amount', value: `<strong>${data.amount}</strong>` } : null,
+    data.paymentId ? { label: 'Payment ID', value: data.paymentId } : null,
+    data.razorpayOrderId ? { label: 'Razorpay Order ID', value: data.razorpayOrderId } : null,
+  ].filter(Boolean);
+  const body = `
+    ${heading('Payment Received')}
+    ${p('A payment has been successfully received. Details below.')}
+    ${card({ title: 'Payment Details', content: infoTable(rows) })}
+    ${p(`— ${STUDIO_NAME} System`, { muted: true, small: true })}
   `;
+  const html = layout({ body, previewText: 'Payment received' });
   const text = [
     'Payment Received',
     '',
-    data.customerName ? `Customer: ${data.customerName}` : '',
-    data.customerEmail ? `Email: ${data.customerEmail}` : '',
-    data.order ? `Order: ${data.order}` : '',
-    data.amount ? `Amount: ${data.amount}` : '',
-    data.paymentId ? `Payment ID: ${data.paymentId}` : '',
-    data.razorpayOrderId ? `Razorpay Order ID: ${data.razorpayOrderId}` : '',
+    ...(rows.map(r => `${r.label}: ${r.value.replace(/<[^>]*>/g, '')}`)),
     '',
-    '— Soma Wellness System',
-  ].filter(Boolean).join('\n');
+    `— ${STUDIO_NAME} System`,
+  ].join('\n');
   const adminEmails = getAdminEmails();
   const results = await Promise.all(adminEmails.map(email => sendMail(email, subject, html, text)));
   return results.every(r => r.success) ? { success: true } : { success: false, results };
 }
 
 async function sendPaymentFailedAdmin(data) {
-  const subject = 'Payment Failed';
-  const html = `
-    <h2 style="color:#2D1406;">Payment Failed</h2>
-    <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-      ${data.customerName ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Customer</td><td style="padding:6px 12px;color:#3B1D0D;">${data.customerName}</td></tr>` : ''}
-      ${data.customerEmail ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Email</td><td style="padding:6px 12px;color:#3B1D0D;">${data.customerEmail}</td></tr>` : ''}
-      ${data.amount ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Amount</td><td style="padding:6px 12px;color:#DC2626;">${data.amount}</td></tr>` : ''}
-      ${data.failureReason ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Reason</td><td style="padding:6px 12px;color:#DC2626;">${data.failureReason}</td></tr>` : ''}
-    </table>
-    <p style="color:#7C6A58;font-size:12px;">— Soma Wellness System</p>
+  const subject = `Payment Failed — ${STUDIO_NAME}`;
+  const rows = [
+    data.customerName ? { label: 'Customer', value: data.customerName } : null,
+    data.customerEmail ? { label: 'Email', value: data.customerEmail } : null,
+    data.amount ? { label: 'Amount', value: data.amount } : null,
+    data.failureReason ? { label: 'Reason', value: data.failureReason } : null,
+  ].filter(Boolean);
+  const body = `
+    ${heading('Payment Failed')}
+    ${p('A payment could not be processed. Details below.')}
+    ${card({ title: 'Failure Details', content: infoTable(rows) })}
+    ${p(`— ${STUDIO_NAME} System`, { muted: true, small: true })}
   `;
+  const html = layout({ body, previewText: 'Payment failed' });
   const text = [
     'Payment Failed',
     '',
-    data.customerName ? `Customer: ${data.customerName}` : '',
-    data.customerEmail ? `Email: ${data.customerEmail}` : '',
-    data.amount ? `Amount: ${data.amount}` : '',
-    data.failureReason ? `Reason: ${data.failureReason}` : '',
+    ...(rows.map(r => `${r.label}: ${r.value.replace(/<[^>]*>/g, '')}`)),
     '',
-    '— Soma Wellness System',
-  ].filter(Boolean).join('\n');
+    `— ${STUDIO_NAME} System`,
+  ].join('\n');
   const adminEmails = getAdminEmails();
   const results = await Promise.all(adminEmails.map(email => sendMail(email, subject, html, text)));
   return results.every(r => r.success) ? { success: true } : { success: false, results };
@@ -249,27 +250,27 @@ async function sendRegistrationAdmin(data) {
 }
 
 async function sendNewPurchaseAdmin(data) {
-  const subject = 'New Purchase Notification';
-  const html = `
-    <h2 style="color:#2D1406;">New Purchase</h2>
-    <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-      ${data.customerName ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Customer</td><td style="padding:6px 12px;color:#3B1D0D;">${data.customerName}</td></tr>` : ''}
-      ${data.customerEmail ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Email</td><td style="padding:6px 12px;color:#3B1D0D;">${data.customerEmail}</td></tr>` : ''}
-      ${data.item ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Item</td><td style="padding:6px 12px;color:#3B1D0D;">${data.item}</td></tr>` : ''}
-      ${data.amount ? `<tr><td style="padding:6px 12px;color:#7C6A58;">Amount</td><td style="padding:6px 12px;color:#3B1D0D;font-weight:700;">${data.amount}</td></tr>` : ''}
-    </table>
-    <p style="color:#7C6A58;font-size:12px;">— Soma Wellness System</p>
+  const subject = `New Purchase — ${STUDIO_NAME}`;
+  const rows = [
+    data.customerName ? { label: 'Customer', value: data.customerName } : null,
+    data.customerEmail ? { label: 'Email', value: data.customerEmail } : null,
+    data.item ? { label: 'Item', value: data.item } : null,
+    data.amount ? { label: 'Amount', value: `<strong>${data.amount}</strong>` } : null,
+  ].filter(Boolean);
+  const body = `
+    ${heading('New Purchase')}
+    ${p('A new purchase has been made. Details below.')}
+    ${card({ title: 'Purchase Details', content: infoTable(rows) })}
+    ${p(`— ${STUDIO_NAME} System`, { muted: true, small: true })}
   `;
+  const html = layout({ body, previewText: 'New purchase' });
   const text = [
-    'New Purchase Notification',
+    'New Purchase',
     '',
-    data.customerName ? `Customer: ${data.customerName}` : '',
-    data.customerEmail ? `Email: ${data.customerEmail}` : '',
-    data.item ? `Item: ${data.item}` : '',
-    data.amount ? `Amount: ${data.amount}` : '',
+    ...(rows.map(r => `${r.label}: ${r.value.replace(/<[^>]*>/g, '')}`)),
     '',
-    '— Soma Wellness System',
-  ].filter(Boolean).join('\n');
+    `— ${STUDIO_NAME} System`,
+  ].join('\n');
   const adminEmails = getAdminEmails();
   const results = await Promise.all(adminEmails.map(email => sendMail(email, subject, html, text)));
   return results.every(r => r.success) ? { success: true } : { success: false, results };

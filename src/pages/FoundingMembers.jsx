@@ -61,7 +61,7 @@ export default function FoundingMembers() {
         eyebrow={t('founding.eyebrow')}
         title={t('founding.title')}
         subtitle={t('founding.subtitle')}
-        image="https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/founding-beginnings.webp"
       />
       <section className={styles.section}>
         {founding ? (

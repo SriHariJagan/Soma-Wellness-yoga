@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { USER_ROLES, USER_STATUSES, YTTC_ENROLLMENT_STATUSES, YTTC_MODES } from '../shared/constants/index.js';
+import { ALL_PERMISSIONS } from '../shared/constants/permissions.js';
 
 const UserSchema = new mongoose.Schema(
   {
@@ -11,6 +12,16 @@ const UserSchema = new mongoose.Schema(
     // ── Access control ──
     role:   { type: String, enum: USER_ROLES, default: 'student', index: true },
     status: { type: String, enum: USER_STATUSES, default: 'active', index: true },
+
+    // ── Granular permissions (reception role only) ──
+    permissions: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (v) => v.every((p) => ALL_PERMISSIONS.includes(p)),
+        message: (props) => `Invalid permission key: ${props.value}`,
+      },
+    },
 
     // ── Profile ──
     phone:           { type: String, default: '' },
@@ -103,5 +114,5 @@ UserSchema.set('toJSON', {
   },
 });
 
-const User = mongoose.models.User || mongoose.model('User', UserSchema, 'User');
+const User = mongoose.models.User || mongoose.model('User', UserSchema, 'users');
 export default User;

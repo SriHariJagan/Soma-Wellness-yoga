@@ -147,8 +147,8 @@ export default function StudentDashboard({ onLogout }) {
           return;
         }
 
-        // 🎯 FIX FOR ADMINS: If an admin hits this route, redirect to the Admin Portal.
-        if (savedUser.role === "admin") {
+        // 🎯 FIX FOR ADMINS/STAFF: If staff hits this route, redirect to the Admin Portal.
+        if (savedUser.role === "admin" || savedUser.role === "manager") {
           navigate("/yogaadmin", { replace: true });
           return;
         }

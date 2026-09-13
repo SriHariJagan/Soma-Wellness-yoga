@@ -82,7 +82,7 @@ export default function AvailableServicesPage({ onNavigate, reload: parentReload
     <>
       <PageHeader
         title="Available class services"
-        sub="Browse our yoga services and start your journey today."
+        sub="Browse our wellness services and start your journey today."
       />
 
       {msg.text && (
@@ -152,7 +152,7 @@ export default function AvailableServicesPage({ onNavigate, reload: parentReload
         <EmptyState
           icon="ti-bundle-off"
           title="No services available right now"
-          sub="Check back later for new yoga services and programs."
+          sub="Check back later for new wellness services and programs."
         />
       ) : filtered.length === 0 ? (
         <EmptyState

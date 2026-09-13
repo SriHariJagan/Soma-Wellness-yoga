@@ -7,7 +7,7 @@ const SomaLoader = ({ compact = false }) => {
   const reduced = usePrefersReducedMotion();
 
   return (
-    <div className={`${styles.wrap} ${compact ? styles.compact : ""}`} role="status" aria-label="Loading Soma Wellness" aria-live="polite">
+    <div className={`${styles.wrap} ${compact ? styles.compact : ""}`} role="status" aria-label="Loading SomaWellness" aria-live="polite">
       <div className={styles.glow} aria-hidden="true" />
       <div className={styles.ringBg} aria-hidden="true" />
       <div className={styles.ringBg2} aria-hidden="true" />
@@ -54,7 +54,7 @@ const SomaLoader = ({ compact = false }) => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <img src="/images/soma/logo.png" alt="Soma Wellness" width="110" height="110" style={{ objectFit: "contain" }} />
+            <img src="/images/soma/logo.png" alt="SomaWellness" width="110" height="110" style={{ objectFit: "contain" }} />
           </motion.div>
 
           {/* orbiting dots */}
@@ -144,7 +144,7 @@ const SomaLoader = ({ compact = false }) => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.5 }}
           >
-            Spring Valley · Yoga · Therapy · Meditation
+            Spring Valley · Movement · Restoration · Mindfulness
           </motion.p>
         )}
       </motion.div>

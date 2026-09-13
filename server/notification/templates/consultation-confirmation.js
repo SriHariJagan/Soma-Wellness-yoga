@@ -7,7 +7,7 @@ export default function consultationConfirmation(notification) {
   const user = notification.user || {};
   const name = data.name || user.name || 'there';
   const consultationDate = data.consultationDate || '';
-  const doctor = data.doctor || 'Soma Wellness Team';
+  const doctor = data.doctor || 'SomaWellness Team';
   const topic = data.topic || 'General consultation';
 
   const subject = notification.subject || 'Consultation Booked';

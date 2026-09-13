@@ -126,7 +126,6 @@ const Hero = () => {
   const imageY = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? 32 : 0]);
   const imageScale = useTransform(scrollYProgress, [0, 1], [1, shouldParallax ? 1.02 : 1]);
   const textY = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? 12 : 0]);
-  const watermarkX = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? -40 : 0]);
   const blobY = useTransform(scrollYProgress, [0, 1], [0, shouldParallax ? -16 : 0]);
 
   // 3D tilt
@@ -210,10 +209,7 @@ const Hero = () => {
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       />
 
-      {/* watermark kinetic type */}
-      <motion.div className={styles.watermarkWrap} style={{ x: watermarkX }} aria-hidden="true">
-        <span className={styles.watermark}>SOMA — RETURN TO YOUR CENTER — SOMA — RETURN TO YOUR CENTER —</span>
-      </motion.div>
+      {/* watermark removed per brand feedback — clean wellness look */}
 
       <div className={styles.content}>
         {/* ── Text ── */}
@@ -243,7 +239,7 @@ const Hero = () => {
               style={{ transformOrigin: "left" }}
             />
             <span className={styles.eyebrowDot} />
-            {t("hero.springValley")} — {t("hero.yogaTherapy")}
+            {t("hero.eyebrow")}
             <motion.span
               className={styles.eyebrowPulse}
               animate={reduced ? {} : { scale: [1, 1.18, 1], opacity: [0.9, 0.5, 0.9] }}
@@ -251,28 +247,19 @@ const Hero = () => {
             />
           </motion.span>
 
-          {/* headline — split reveal (brand headline stays English for visual identity, subtitle is localized) */}
+          {/* headline — brand positioning */}
           <h1 className={styles.headline}>
             <span className={styles.headlineClip}>
-              <RevealWords text="RETURN" delay={0.12} reduced={reduced} />
+              <RevealWords text={t("hero.titleA")} delay={0.12} reduced={reduced} />
             </span>
             <span className={styles.headlineClip}>
-              <motion.span
-                className={styles.headlineTo}
-                initial={reduced ? { opacity: 1 } : { y: 44, opacity: 0, filter: "blur(8px)" }}
-                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                transition={{ duration: 0.8, delay: 0.32, ease: EASE }}
-                style={{ display: "inline-block" }}
-              >
-                TO YOUR&nbsp;
-              </motion.span>
               <motion.em
                 initial={reduced ? { opacity: 1 } : { y: 44, opacity: 0, filter: "blur(10px)" }}
                 animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                transition={{ duration: 0.85, delay: 0.46, ease: EASE }}
+                transition={{ duration: 0.85, delay: 0.4, ease: EASE }}
                 style={{ display: "inline-block" }}
               >
-                CENTER
+                {t("hero.titleB")}
               </motion.em>
             </span>
             {/* accent underline draw */}
@@ -338,7 +325,7 @@ const Hero = () => {
             }}
           >
             <span className={styles.noteDot} />
-            Small groups · Conscious teachers · No performative wellness
+            Movement · Restoration · Mindfulness — for individuals & organisations
           </motion.div>
 
           {/* meta stats — count-up */}
@@ -405,8 +392,8 @@ const Hero = () => {
               transition={spring.gentle}
             >
               <motion.img
-                src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200&auto=format&fit=crop"
-                alt="Attractive wellness practitioner in serene yoga flow — Soma Wellness Nairobi"
+                src="/images/backgrounds/immersive-spa-calm.webp"
+                alt="Premium spa massage therapy in warm calm light at SomaWellness"
                 width="1200"
                 height="1400"
                 fetchPriority="high"
@@ -430,12 +417,6 @@ const Hero = () => {
               animate={reduced ? {} : { scale: [1, 1.25, 1], opacity: [1, 0.7, 1] }}
               transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
             />
-            <motion.span
-              className={styles.accentDot + " " + styles.accentDotBL}
-              aria-hidden="true"
-              animate={reduced ? {} : { scale: [1, 1.2, 1], opacity: [1, 0.65, 1] }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-            />
 
             {/* floating cards — infinite subtle float */}
             <motion.div
@@ -453,8 +434,8 @@ const Hero = () => {
                 ✦
               </motion.span>
               <div>
-                <div className={styles.floatTitle}>Morning Flow · 7:30 AM</div>
-                <div className={styles.floatSub}>Spring Valley · Limited to 12 · 300 members</div>
+                <div className={styles.floatTitle}>Group Classes · 7–8 AM · 8:30–9:30 AM</div>
+                <div className={styles.floatSub}>Evening 5:30–6:30 PM · 6:30–7:30 PM · Spring Valley</div>
               </div>
               {/* live dot */}
               <span className={styles.liveDot} aria-hidden="true" />
@@ -475,6 +456,19 @@ const Hero = () => {
                 <div className={styles.floatSub}>Your center, remembered.</div>
               </div>
             </motion.div>
+
+            {/* rotating brand seal */}
+            <div className={styles.seal} aria-hidden="true">
+              <svg viewBox="0 0 120 120">
+                <defs>
+                  <path id="somaSealCircle" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0" fill="none" />
+                </defs>
+                <text>
+                  <textPath href="#somaSealCircle">SomaWellness · Premium Wellness ·</textPath>
+                </text>
+              </svg>
+              <span className={styles.sealCenter}>✦</span>
+            </div>
 
             {/* floating subtle y loop */}
             {!reduced && (
@@ -504,13 +498,13 @@ const Hero = () => {
         <div className={styles.marqueeTrack}>
           {Array.from({ length: 2 }).map((_, dup) => (
             <div key={dup} className={styles.marqueeGroup}>
-              <span>SOMA WELLNESS — SPRING VALLEY, NAIROBI</span>
+              <span>SOMAWELLNESS — WELLNESS, THOUGHTFULLY EXPERIENCED</span>
               <span className={styles.marqueeDot}>•</span>
               <span>300 MEMBERS · NEVER CROWDED</span>
               <span className={styles.marqueeDot}>•</span>
-              <span>YOGA · THERAPY · MEDITATION · MASSAGE</span>
+              <span>MOVEMENT · RESTORATION · MINDFULNESS · MASSAGE</span>
               <span className={styles.marqueeDot}>•</span>
-              <span>SMALL GROUPS · CONSCIOUS TEACHERS</span>
+              <span>SMALL GROUPS · CERTIFIED PRACTITIONERS</span>
               <span className={styles.marqueeDot}>•</span>
               <span>RATED 4.9★ BY OUR COMMUNITY</span>
               <span className={styles.marqueeDot}>•</span>

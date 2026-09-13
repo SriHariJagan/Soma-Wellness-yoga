@@ -23,7 +23,7 @@ export default function render(data = {}) {
     ${p(`Hi ${escapeHtml(name)},`)}
     ${p('Your M-PESA payment has been received and confirmed. Here are the details:')}
     ${card(infoTable(rows))}
-    ${p('Thank you for choosing Soma Wellness!', { muted: true })}
+    ${p(`Thank you for choosing ${STUDIO_NAME}!`, { muted: true })}
     ${p(`— ${STUDIO_NAME} Team`, { muted: true })}
   `;
 
@@ -38,7 +38,7 @@ export default function render(data = {}) {
     `Date: ${paymentDate}`,
     `Description: ${description}`,
     '',
-    'Thank you for choosing Soma Wellness!',
+    `Thank you for choosing ${STUDIO_NAME}!`,
     '',
     `— ${STUDIO_NAME} Team`,
   ].join('\n');

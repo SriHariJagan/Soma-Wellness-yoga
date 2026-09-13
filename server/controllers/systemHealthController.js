@@ -88,11 +88,10 @@ export async function testSmtp(req, res) {
   try {
     const info = await transporter.sendMail({
       to: adminEmail,
-      subject: 'Soma Wellness — SMTP Health Check',
-      text: `This is a test email from Soma Wellness's admin system.\n\nIf you received this, your SMTP configuration is working correctly.\n\nTimestamp: ${new Date().toISOString()}\n`,
+      subject: 'SomaWellness — SMTP Health Check',
+      text: `This is a test email from SomaWellness's admin system.\n\nIf you received this, your SMTP configuration is working correctly.\n\nTimestamp: ${new Date().toISOString()}\n`,
       html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px;">
-          <h2 style="color:#FA8112;">Soma Wellness — SMTP Health Check</h2>
+          <h2 style="color:#FA8112;">SomaWellness — SMTP Health Check</h2>
           <p>This is a test email from your admin system.</p>
           <p style="padding:12px;background:#f5f5f5;border-radius:8px;">
             ✅ SMTP configuration is working correctly.

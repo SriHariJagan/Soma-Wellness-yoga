@@ -57,7 +57,7 @@ const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
       <motion.div className={`${styles.formCard} ${styles.formCardWide}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className={styles.formHeader}>
           <div className={styles.logoMark}>
-            <img src="/images/soma/logo.png" alt="Soma Wellness" width="44" height="44" style={{ objectFit: "contain" }} />
+            <img src="/images/soma/logo.png" alt="SomaWellness" width="44" height="44" style={{ objectFit: "contain" }} />
           </div>
           <h2 className={styles.title}>{t("auth.createAccount")}</h2>
           <p className={styles.subtitle}>{t("auth.registerSuccess")}</p>

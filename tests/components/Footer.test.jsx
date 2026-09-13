@@ -12,12 +12,12 @@ vi.mock('react-i18next', () => ({
 describe('Footer', () => {
   it('renders logo with alt', () => {
     render(<MemoryRouter><Footer /></MemoryRouter>);
-    expect(screen.getByAltText('Soma Wellness')).toBeInTheDocument();
+    expect(screen.getAllByAltText('SomaWellness').length).toBeGreaterThan(0);
   });
 
   it('renders explore links to all main pages', () => {
     render(<MemoryRouter><Footer /></MemoryRouter>);
-    for (const href of ['/classes','/private','/life-stages','/restore','/yttc','/faq','/contact']) {
+    for (const href of ['/','/classes','/private','/life-stages','/restore','/yttc','/founding','/about','/faq','/contact']) {
       expect(document.querySelector(`a[href="${href}"]`)).not.toBeNull();
     }
   });
@@ -52,11 +52,14 @@ describe('Footer', () => {
     expect(screen.getByRole('button', { name: /footer\.joined/i })).toBeInTheDocument();
   });
 
-  it('footer bottom has privacy/terms links and watermark hidden', () => {
+  it('footer bottom has privacy/terms links and brand watermark hidden', () => {
     render(<MemoryRouter><Footer /></MemoryRouter>);
     expect(screen.getByText('footer.privacy')).toBeInTheDocument();
     expect(screen.getByText('footer.terms')).toBeInTheDocument();
-    expect(document.querySelector('.footer-watermark')).toHaveAttribute('aria-hidden','true');
+    const wm = document.querySelector('.footer-watermark');
+    expect(wm).not.toBeNull();
+    expect(wm).toHaveAttribute('aria-hidden', 'true');
+    expect(wm.textContent).toBe('SomaWellness');
   });
 
   it('has landmark footer role', () => {

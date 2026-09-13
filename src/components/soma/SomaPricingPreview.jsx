@@ -5,9 +5,28 @@ import styles from "./SomaPricingPreview.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
 import { useTranslation } from "react-i18next";
 
+const API_DOMAIN = import.meta.env.VITE_API_URL || "";
+const fmtKES = (n) => Number(n || 0).toLocaleString("en-KE");
+
 const SomaPricingPreview = () => {
   const { t } = useTranslation();
   const reduced = usePrefersReducedMotion();
+  const [dailyPrices, setDailyPrices] = React.useState(null);
+
+  // SOMA DAILY prices are admin-configurable (public catalog); locale is fallback.
+  React.useEffect(() => {
+    let alive = true;
+    fetch(`${API_DOMAIN}/api/soma/catalog`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && data?.somaDaily) setDailyPrices(data.somaDaily);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  const dailyMonthly = dailyPrices?.MONTHLY ? fmtKES(dailyPrices.MONTHLY) : t("home.pricing.daily.monthly");
+  const dailyYearly = dailyPrices?.ANNUAL ? fmtKES(dailyPrices.ANNUAL) : t("home.pricing.daily.yearly");
 
   const memberships = [
     {
@@ -158,11 +177,11 @@ const SomaPricingPreview = () => {
           <div className={styles.dailyPrice}>
             <div className={styles.dailyPriceRow}>
               <div>
-                <strong>{t("home.pricing.daily.monthly")}</strong> <span>{t("home.pricing.daily.perMonth")}</span>
+                <strong>{dailyMonthly}</strong> <span>{t("home.pricing.daily.perMonth")}</span>
               </div>
               <span className={styles.dailySep}>·</span>
               <div>
-                <strong>{t("home.pricing.daily.yearly")}</strong> <span>{t("home.pricing.daily.perYear")}</span> <em>({t("home.pricing.daily.note")})</em>
+                <strong>{dailyYearly}</strong> <span>{t("home.pricing.daily.perYear")}</span> <em>({t("home.pricing.daily.note")})</em>
               </div>
             </div>
             <div className={styles.dailyIncluded}>{t("home.pricing.daily.includedNote")}</div>

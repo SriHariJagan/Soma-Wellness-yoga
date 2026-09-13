@@ -9,7 +9,6 @@ import BackToTop from './components/common/BackToTop';
 import PageTransition from './components/common/PageTransition';
 import Home from './pages/Home';
 import { ROUTE_META, applyMeta, getLocalizedMeta } from './lib/seo';
-import { getLandingPage } from './data/landingPages';
 import SomaLoader from "./components/soma/SomaLoader";
 import { useTranslation } from "react-i18next";
 import { useAuth } from './context/AuthContext.jsx';
@@ -34,15 +33,9 @@ const Profile = lazy(() => import('./components/Profile/Profile'));
 const StudentDashboard = lazy(() => import('./components/Profile/StudentDashboard'));
 const YogaAdmin = lazy(() => import('./components/Admin/YogaAdmin'));
 const PaymentPage = lazy(() => import('./components/Payment/PaymentPage'));
-const Books = lazy(() => import('./pages/Books'));
-const BookDetail = lazy(() => import('./pages/BookDetail'));
-const BookCheckout = lazy(() => import('./pages/BookCheckout'));
-const BulkOrders = lazy(() => import('./pages/BulkOrders'));
-const OrderTracking = lazy(() => import('./pages/OrderTracking'));
-const LandingPage = lazy(() => import('./pages/LandingPage'));
-const AdminTestPages = lazy(() => import('./pages/AdminTestPages'));
 const FoundingMembers = lazy(() => import('./pages/FoundingMembers'));
 const SocialSuccess = lazy(() => import('./pages/SocialSuccess'));
+const ReceptionDashboard = lazy(() => import('./components/Reception/ReceptionDashboard'));
 
 const RouteFallback = () => <SomaLoader compact />;
 
@@ -91,15 +84,19 @@ const App = () => {
   }
 
   const effectiveUser = syncedUser || user;
-  const isAdmin   = effectiveUser?.role === "admin";
+  const isManager = effectiveUser?.role === "manager";
+  const isAdmin   = effectiveUser?.role === "admin" || isManager;
+  const isReception = effectiveUser?.role === "reception";
   const isStudent = effectiveUser?.role === "student";
-  const isDashboard = isAdmin || isStudent;
+  const isDashboard = isAdmin || isStudent || isReception;
 
   return (
     <BrowserRouter>
       <AppShell
         user={effectiveUser}
         isAdmin={isAdmin}
+        isManager={isManager}
+        isReception={isReception}
         isStudent={isStudent}
         isDashboard={isDashboard}
         onLogout={handleLogout}
@@ -112,16 +109,13 @@ const App = () => {
 /* ── Routed shell (lives inside BrowserRouter so it can read the location) ──
  * Adds the global premium scroll experience — progress bar, back-to-top, and
  * graceful page transitions — without touching any routing logic or content. */
-const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSuccess }) => {
+const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboard, onLogout, onLoginSuccess }) => {
   const location = useLocation();
   const { t, i18n } = useTranslation();
 
   // ── SEO: apply per-route title + meta description on navigation (localized) ──
   useEffect(() => {
-    const landing = getLandingPage(location.pathname);
-    const meta = landing
-      ? { title: landing.title, description: landing.description }
-      : getLocalizedMeta(location.pathname, t);
+    const meta = getLocalizedMeta(location.pathname, t);
     applyMeta(meta);
   }, [location.pathname, i18n.language, t]);
 
@@ -137,7 +131,7 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
   // Hide the public chrome (navbar, footer, etc.) only on the actual dashboard
   // routes — not merely because a student/admin is logged in. This lets logged-in
   // users still navigate the public site; the Navbar adapts to show their account.
-  const dashboardRoutes = ["/yogaadmin", "/studentdashboard", "/login", "/forgot-password", "/payment"];
+  const dashboardRoutes = ["/yogaadmin", "/studentdashboard", "/reception", "/login", "/forgot-password", "/payment"];
   const onDashboardRoute = dashboardRoutes.includes(location.pathname);
 
   return (
@@ -161,29 +155,12 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
             <Route path="/faq"     element={<FAQ />} />
             <Route path="/events"  element={<Events />} />
             <Route path="/contact" element={<Contact />} />
-            {/* Legacy books routes — hidden from navigation (no books section as requested), kept for data compat but redirect to home */}
+            {/* Legacy books routes — redirect to home */}
             <Route path="/books" element={<Navigate to="/" replace />} />
             <Route path="/books/:slug" element={<Navigate to="/" replace />} />
             <Route path="/bulk-orders" element={<Navigate to="/" replace />} />
-            <Route path="/order-tracking" element={<OrderTracking />} />
-            <Route path="/personal-yoga-classes-malviya-nagar" element={<LandingPage slug="personal-yoga-classes-malviya-nagar" />} />
-            <Route path="/kids-yoga-malviya-nagar" element={<LandingPage slug="kids-yoga-malviya-nagar" />} />
-            <Route path="/prenatal-yoga-malviya-nagar" element={<LandingPage slug="prenatal-yoga-malviya-nagar" />} />
-            <Route path="/yoga-for-stress-malviya-nagar" element={<LandingPage slug="yoga-for-stress-malviya-nagar" />} />
-            <Route path="/corporate-yoga-malviya-nagar" element={<LandingPage slug="corporate-yoga-malviya-nagar" />} />
-            <Route path="/corporate-yoga-durgapura" element={<LandingPage slug="corporate-yoga-durgapura" />} />
-            <Route path="/therapeutic-yoga-malviya-nagar" element={<LandingPage slug="therapeutic-yoga-malviya-nagar" />} />
-            <Route path="/therapeutic-yoga-durgapura" element={<LandingPage slug="therapeutic-yoga-durgapura" />} />
-            <Route path="/online-yoga-classes-in-india" element={<LandingPage slug="online-yoga-classes-in-india" />} />
-            <Route path="/best-yoga-classes-jaipur" element={<LandingPage slug="best-yoga-classes-jaipur" />} />
-            <Route path="/personal-yoga-classes-durgapura" element={<LandingPage slug="personal-yoga-classes-durgapura" />} />
-            <Route path="/personal-yoga-classes-jagatpura" element={<LandingPage slug="personal-yoga-classes-jagatpura" />} />
-            <Route path="/kids-yoga-durgapura" element={<LandingPage slug="kids-yoga-durgapura" />} />
-            <Route path="/kids-yoga-jagatpura" element={<LandingPage slug="kids-yoga-jagatpura" />} />
-            <Route path="/prenatal-yoga-durgapura" element={<LandingPage slug="prenatal-yoga-durgapura" />} />
-            <Route path="/prenatal-yoga-jagatpura" element={<LandingPage slug="prenatal-yoga-jagatpura" />} />
-            <Route path="/yoga-for-stress-durgapura" element={<LandingPage slug="yoga-for-stress-durgapura" />} />
-            <Route path="/yoga-for-stress-jagatpura" element={<LandingPage slug="yoga-for-stress-jagatpura" />} />
+            <Route path="/order-tracking" element={<Navigate to="/" replace />} />
+            <Route path="/checkout" element={<Navigate to="/" replace />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/newuser"          element={<NewUser />} />
             <Route path="/forgot-password"  element={<ForgotPassword />} />
@@ -197,9 +174,10 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
             <Route
               path="/login"
               element={
-                isAdmin   ? <Navigate to="/yogaadmin"        replace /> :
-                isStudent ? <Navigate to="/studentdashboard" replace /> :
-                            <Login onLoginSuccess={onLoginSuccess} />
+                isAdmin      ? <Navigate to="/yogaadmin"        replace /> :
+                isReception  ? <Navigate to="/reception"        replace /> :
+                isStudent    ? <Navigate to="/studentdashboard" replace /> :
+                               <Login onLoginSuccess={onLoginSuccess} />
               }
             />
 
@@ -209,33 +187,30 @@ const AppShell = ({ user, isAdmin, isStudent, isDashboard, onLogout, onLoginSucc
               element={
                 isStudent ? <StudentDashboard onLogout={onLogout} /> :
                 isAdmin   ? <Navigate to="/yogaadmin" replace /> :
+                isReception ? <Navigate to="/reception" replace /> :
                             <Navigate to="/login"     replace />
               }
             />
 
-            {/* ── Protected: Admin ── */}
+            {/* ── Protected: Admin & Center Manager ── */}
             <Route
               path="/yogaadmin"
               element={
-                isAdmin   ? <YogaAdmin onLogout={onLogout} /> :
+                isAdmin   ? <YogaAdmin onLogout={onLogout} isManager={isManager} /> :
+                isReception ? <Navigate to="/reception" replace /> :
                 isStudent ? <Navigate to="/studentdashboard" replace /> :
                             <Navigate to="/login"             replace />
               }
             />
 
-            {/* ── Admin Test Pages (Public Access) ── */}
+            {/* ── Protected: Reception Staff ── */}
             <Route
-              path="/admin/test-pages"
-              element={<AdminTestPages />}
-            />
-
-            {/* ── Protected: Book checkout ── */}
-            <Route
-              path="/checkout"
+              path="/reception"
               element={
-                isStudent ? <BookCheckout /> :
-                isAdmin   ? <Navigate to="/yogaadmin" replace /> :
-                            <Navigate to="/login" replace />
+                isReception ? <ReceptionDashboard onLogout={onLogout} /> :
+                isAdmin     ? <Navigate to="/yogaadmin" replace /> :
+                isStudent   ? <Navigate to="/studentdashboard" replace /> :
+                              <Navigate to="/login" replace />
               }
             />
 

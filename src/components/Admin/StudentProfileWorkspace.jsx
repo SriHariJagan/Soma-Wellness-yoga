@@ -786,7 +786,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
           <SectionCard icon={<LuIndianRupee size={18} />} title="Record Payment">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <FormInput label="Amount (KES )" type="number" value={String(paymentForm.amount)} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
-              <FormInput label="Label" value={paymentForm.label} onChange={e => setPaymentForm({ ...paymentForm, label: e.target.value })} placeholder="e.g. Monthly Pass" />
+              <FormInput label="Label" value={paymentForm.label} onChange={e => setPaymentForm({ ...paymentForm, label: e.target.value })} placeholder="e.g. SOMA AMANI" />
               <FormInput label="Method" value={paymentForm.method} onChange={e => setPaymentForm({ ...paymentForm, method: e.target.value })} />
               <FormInput label="Status" value={paymentForm.status} onChange={e => setPaymentForm({ ...paymentForm, status: e.target.value })} />
             </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import s from './YogaAdmin.module.css';
 import { PageHeader } from './ui/Primitives';
 import {
-  servicesApi, instructorsApi, serviceAssignmentsApi,
+  servicesApi, instructorsApi, serviceAssignmentsApi, somaCatalogAdminApi,
 } from '../api/AdminServices.js';
 import {
   LuSparkles, LuUsers, LuListChecks, LuTrash2, LuPlus, LuCheck, LuSearch, LuRefreshCw,
@@ -37,6 +37,9 @@ export default function ServicesManagement({ onChanged } = {}) {
   const [feedback, setFeedback] = useState({ message: '', type: '' });
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [dailyMonthly, setDailyMonthly] = useState('');
+  const [dailyAnnual, setDailyAnnual] = useState('');
+  const [dailySaving, setDailySaving] = useState(false);
 
   const flash = (message, type = 'success') => {
     setFeedback({ message, type });
@@ -57,6 +60,11 @@ export default function ServicesManagement({ onChanged } = {}) {
       setInstructors(inst);
       setAssignments(asgn);
       setAnalytics(anl);
+      try {
+        const cat = await somaCatalogAdminApi.get();
+        setDailyMonthly(cat?.settingsSoma?.dailyMonthly ?? cat?.somaDaily?.MONTHLY ?? '');
+        setDailyAnnual(cat?.settingsSoma?.dailyAnnual ?? cat?.somaDaily?.ANNUAL ?? '');
+      } catch {}
     } catch (err) {
       setError(err.message || 'Could not load services data');
     } finally {
@@ -218,13 +226,39 @@ export default function ServicesManagement({ onChanged } = {}) {
 
   return (
     <div>
-      <PageHeader title="Services Management" subtitle="Create, assign, and manage yoga services, instructors, and enrollments" />
+      <PageHeader title="Services Management" subtitle="Create, assign, and manage wellness services, instructors, and enrollments" />
 
       {feedback.message && (
         <div className={`${s.feedbackInline} ${feedback.type === 'success' ? s.bannerSuccess : s.bannerError}`}>
           <span className={s.bannerIcon}>{feedback.type === 'success' ? '✓' : '⚠'}</span>{feedback.message}
         </div>
       )}
+
+      {/* SOMA DAILY subscription pricing (VAT-inclusive KES) */}
+      <div className={s.card} style={{ marginBottom: 18 }}>
+        <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuSparkles /></span>SOMA DAILY Pricing</h3>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, fontWeight: 600 }}>
+            Monthly (KES)
+            <input type="number" min="0" value={dailyMonthly} onChange={(e) => setDailyMonthly(e.target.value)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', width: 160 }} />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, fontWeight: 600 }}>
+            Annual (KES)
+            <input type="number" min="0" value={dailyAnnual} onChange={(e) => setDailyAnnual(e.target.value)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', width: 160 }} />
+          </label>
+          <button type="button" className={`${s.btn} ${s.btnPrimary}`} disabled={dailySaving}
+            onClick={async () => {
+              setDailySaving(true);
+              try {
+                await somaCatalogAdminApi.update({ dailyMonthly: Number(dailyMonthly) || 0, dailyAnnual: Number(dailyAnnual) || 0 });
+                flash('SOMA DAILY pricing updated.');
+              } catch { flash('Failed to update pricing.', 'error'); }
+              finally { setDailySaving(false); }
+            }}>
+            {dailySaving ? 'Saving…' : 'Save Pricing'}
+          </button>
+        </div>
+      </div>
 
       <div className={s.tabRow} style={{ display: 'flex', gap: 4, marginBottom: 18 }}>
         {tabs.map(t => (

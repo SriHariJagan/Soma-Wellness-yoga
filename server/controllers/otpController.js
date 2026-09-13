@@ -208,7 +208,7 @@ export const verifyOtp = asyncHandler(async (req, res) => {
       emailService.sendWelcome({
         email: user.email,
         name: user.name,
-        dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.in'}/dashboard`,
+        dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.co.ke'}/dashboard`,
       }).catch((e) => logger.warn(MODULE, 'Welcome after OTP creation failed', { error: e.message }));
     }
 

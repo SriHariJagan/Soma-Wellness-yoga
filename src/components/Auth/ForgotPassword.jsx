@@ -63,7 +63,7 @@ const ForgotPassword = () => {
           <>
             <div className={styles.cardHead}>
               <span className={styles.cardBadge}>
-                <span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI
+                <span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI
               </span>
               <h1 className={styles.cardTitle}>{t("auth.forgotTitle")}</h1>
               <p className={styles.cardSub}>{t("auth.forgotSubtitle")}</p>

@@ -5,28 +5,24 @@ import { FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
 import PageFAQSection from "../components/soma/PageFAQSection";
-import { PAGE_FAQS } from "../config/siteContent";
+import { PAGE_FAQS, CONTACT_INFO, SOCIAL_LINKS } from "../config/siteContent";
 import "./Contact.css";
 import { useTranslation } from "react-i18next";
 
 const STUDIO = {
-  address: "Spring Valley, Nairobi, Kenya — Integrated Wellness Center",
-  phone: "+254 700 000 000",
-  phoneHref: "+254700000000",
-  email: "hello@somawellness.co.ke",
-  hours: "Mon – Sat · 6:00 AM – 8:00 PM",
+  address: CONTACT_INFO.address,
+  phone: CONTACT_INFO.phoneDisplay,
+  phoneHref: CONTACT_INFO.phoneHref,
+  email: CONTACT_INFO.email,
+  hours: CONTACT_INFO.hours,
 };
 
-const mapsQuery = "Spring Valley, Nairobi, Kenya";
+const mapsQuery = CONTACT_INFO.mapsQuery;
 const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed&z=16&hl=en`;
 const mapsLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsQuery)}`;
 
-const socials = [
-  { href: "https://www.instagram.com/somawellness/", label: "Instagram", icon: <FaInstagram /> },
-  { href: "https://www.facebook.com/somawellness", label: "Facebook", icon: <FaFacebookF /> },
-  { href: "https://www.youtube.com/c/KapilKesari", label: "YouTube", icon: <FaYoutube /> },
-  { href: "https://twitter.com/SomaWellness", label: "Twitter/X", icon: <FaXTwitter /> },
-];
+const socialIcon = { instagram: <FaInstagram />, facebook: <FaFacebookF />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
+const socials = SOCIAL_LINKS.map((s) => ({ ...s, icon: socialIcon[s.key] || <FaInstagram /> }));
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -78,7 +74,7 @@ const Contact = () => {
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "HealthAndBeautyBusiness",
-          name: "Soma Wellness Nairobi",
+          name: "SomaWellness",
           image: "https://somawellness.co.ke/images/soma/og-image.webp",
           url: "https://somawellness.co.ke",
           telephone: "+254700000000",
@@ -93,7 +89,7 @@ const Contact = () => {
         eyebrow={t("contact.eyebrow")}
         title={t("contact.title")}
         subtitle={t("contact.subtitle")}
-        image="https://images.unsplash.com/photo-1499951360447-b19be2c0e1a8?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/contact-welcome.webp"
       />
 
       <section className="contact-info-section">
@@ -163,7 +159,7 @@ const Contact = () => {
             <div className="contact-map-head">
               <span style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}><FaMapMarkerAlt /></span>
               <div>
-                <h3>Soma Wellness Studio</h3>
+                <h3>SomaWellness Studio</h3>
                 <p>{STUDIO.address} · {t("footer.hours")}</p>
                 <a href={mapsLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, color: "var(--soma-primary)", letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 4, display: "inline-block" }}>{t("contact.getDirections")} →</a>
               </div>
@@ -185,7 +181,7 @@ const Contact = () => {
         >
           {galleryLabels.map((label, i) => (
             <motion.div key={label} initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} whileHover={{ y: -4, scale: 1.02 }} style={{ borderRadius: 16, overflow: "hidden", position: "relative", height: 160, background: "#e8e2d4", border: "1px solid rgba(255,255,255,0.62)", boxShadow: "0 8px 24px rgba(24,61,45,0.06)" }}>
-              <img src={["https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?q=80&w=600&auto=format&fit=crop","https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=600&auto=format&fit=crop","https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=600&auto=format&fit=crop"][i]} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+              <img src={["/images/contact/visit-touch.webp", "/images/contact/visit-quiet.webp", "/images/contact/visit-welcome.webp"][i]} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 42%, rgba(24,61,45,0.18) 100%)", pointerEvents: "none" }} aria-hidden="true" />
               <div style={{ position: "absolute", left: 10, bottom: 10, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 9999, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--soma-forest)", boxShadow: "0 4px 14px rgba(0,0,0,0.10)" }}>{label}</div>
             </motion.div>

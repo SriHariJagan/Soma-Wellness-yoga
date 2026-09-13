@@ -195,7 +195,7 @@ export class SmtpProvider extends BaseProvider {
       user,
       pass,
       fromEmail: env.FROM_EMAIL || env.EMAIL_FROM || '',
-      fromName: env.FROM_NAME || env.EMAIL_FROM_NAME || 'Soma Wellness',
+      fromName: env.FROM_NAME || env.EMAIL_FROM_NAME || 'SomaWellness',
       replyTo: env.REPLY_TO || '',
       connectionTimeoutMs: parseInt(env.SMTP_CONNECTION_TIMEOUT_MS, 10) || 15000,
       greetingTimeoutMs: parseInt(env.SMTP_GREETING_TIMEOUT_MS, 10) || 15000,

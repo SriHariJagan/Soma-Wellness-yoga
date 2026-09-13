@@ -18,7 +18,6 @@ const ITEM_ICONS = {
   course:        "ti ti-book",
   workshop:      "ti ti-award",
   consultation:  "ti ti-stethoscope",
-  book:          "ti ti-book-2",
 };
 const ITEM_LABELS = {
   plan:          "Membership",
@@ -26,7 +25,6 @@ const ITEM_LABELS = {
   course:        "Course",
   workshop:      "Workshop",
   consultation:  "Consultation",
-  book:          "Book",
 };
 
 let globalRefreshCart = null;
@@ -101,16 +99,8 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
   }
 
   const summary = cartData?.summary;
-  const bookItems = (cartData?.items || []).filter((i) => i.itemType === "book");
-  const hasBooks = bookItems.length > 0;
-  const hasNonBooks = (cartData?.items || []).some((i) => i.itemType !== "book");
 
   async function handleCheckout() {
-    // Books need a shipping address — they use the dedicated book checkout.
-    if (hasBooks) {
-      navigate("/checkout");
-      return;
-    }
     setCheckingOut(true);
     setCouponMsg({ text: "", type: "" });
     try {
@@ -428,7 +418,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                             </p>
                             <p style={{ fontSize: 11, color: "#9C8E7C", margin: "2px 0 0" }}>
                               {ITEM_LABELS[item.itemType] || item.itemType}
-                              {item.itemType === "book" && item.quantity > 1 ? ` × ${item.quantity}` : ""}
+                              {item.quantity > 1 ? ` × ${item.quantity}` : ""}
                             </p>
                           </div>
                         <button
@@ -539,12 +529,6 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                   <span>{t("cart.total")}</span>
                   <span>KES {summary.total.toLocaleString()}</span>
                 </div>
-                {hasBooks && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#D97706", marginBottom: 6 }}>
-                    <span>Delivery</span>
-                    <span>At checkout</span>
-                  </div>
-                )}
               </div>
 
               <div style={{
@@ -556,34 +540,21 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                 <span>KES {summary.total.toLocaleString()}</span>
               </div>
 
-              {hasBooks && (
-                <p style={{ fontSize: 11, color: "#D97706", margin: "8px 0 0", lineHeight: 1.5 }}>
-                  <i className="ti ti-truck" style={{ marginRight: 4 }} />
-                  Delivery charge is calculated at checkout based on your PIN code.
-                </p>
-              )}
-
               {summary.discount > 0 && (
                 <p style={{ fontSize: 11, color: "#10B981", margin: "6px 0 0", textAlign: "right" }}>
                   You save KES {summary.discount.toLocaleString()}
                 </p>
               )}
 
-              {hasBooks && hasNonBooks && (
-                <p style={{ fontSize: 11, color: "#D97706", margin: "10px 0 0", lineHeight: 1.5 }}>
-                  Books are checked out separately (they need a shipping address). Finish the non-book items first, then check out your books.
-                </p>
-              )}
-
               {isLoggedIn() ? (
                 <motion.button
                   onClick={handleCheckout}
-                  disabled={checkingOut || (hasBooks && hasNonBooks) || loading || !summary || summary.itemCount === 0}
+                  disabled={checkingOut || loading || !summary || summary.itemCount === 0}
                   whileTap={{ scale: 0.97 }}
                   style={{
                     width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 10,
                     fontSize: 13, fontWeight: 700, border: "none",
-                    cursor: checkingOut || (hasBooks && hasNonBooks) || loading ? "not-allowed" : "pointer",
+                    cursor: checkingOut || loading ? "not-allowed" : "pointer",
                     background: checkingOut ? "#F5F0EB" : "linear-gradient(135deg, #F97316, #EA580C)",
                     color: checkingOut ? "#9C8E7C" : "#fff",
                     fontFamily: "'Inter', sans-serif", transition: "all 0.2s",
@@ -598,7 +569,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                       }} />
                       Processing...
                     </span>
-                  ) : hasBooks ? t("payment.placeOrder") : t("cart.proceedCheckout")}
+                  ) : t("cart.proceedCheckout")}
                 </motion.button>
               ) : (
                 <CheckoutGate
@@ -606,17 +577,17 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                   onProceed={handleCheckout}
                 >
                   <button
-                    disabled={checkingOut || (hasBooks && hasNonBooks) || loading}
+                    disabled={checkingOut || loading}
                     style={{
                       width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 10,
                       fontSize: 13, fontWeight: 700, border: "none",
-                      cursor: checkingOut || (hasBooks && hasNonBooks) || loading ? "not-allowed" : "pointer",
+                      cursor: checkingOut || loading ? "not-allowed" : "pointer",
                       background: checkingOut ? "#F5F0EB" : "linear-gradient(135deg, #F97316, #EA580C)",
                       color: checkingOut ? "#9C8E7C" : "#fff",
                       fontFamily: "'Inter', sans-serif", transition: "all 0.2s",
                     }}
                   >
-                    {hasBooks ? t("payment.placeOrder") : t("cart.proceedCheckout")}
+                    {t("cart.proceedCheckout")}
                   </button>
                 </CheckoutGate>
               )}

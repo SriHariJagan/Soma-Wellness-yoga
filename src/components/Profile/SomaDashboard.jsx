@@ -13,7 +13,7 @@ export default function SomaDashboard() {
   const { membership, allowances, passes, giftVouchers, appointments, upcomingBookings, resetProgress, packages } = data;
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-      <h2 style={{ fontFamily:'var(--font-display)', fontSize:22, color:'var(--soma-forest)' }}>Your SOMA Wellness</h2>
+      <h2 style={{ fontFamily:'var(--font-display)', fontSize:22, color:'var(--soma-forest)' }}>Your SomaWellness</h2>
 
       {/* Membership */}
       <div style={{ background:'#fff', border:'1px solid var(--soma-line-light)', borderRadius:16, padding:16 }}>
@@ -48,10 +48,10 @@ export default function SomaDashboard() {
         <div style={{ fontWeight:700 }}>SOMA RESET — 6-week tracker</div>
         {resetProgress?.length ? resetProgress.map((r) => (
           <div key={r._id} style={{ marginTop:8, fontSize:12, lineHeight:1.6 }}>
-            <div>Yoga {r.yogaSessionsUsed}/{r.yogaSessionsTotal} · Meditation {r.meditationUsed}/{r.meditationTotal} · Massages {r.massagesUsed}/{r.massagesTotal}</div>
+            <div>Movement {r.yogaSessionsUsed}/{r.yogaSessionsTotal} · Mindfulness {r.meditationUsed}/{r.meditationTotal} · Massages {r.massagesUsed}/{r.massagesTotal}</div>
             <div>Assessment {r.assessmentDone ? '✓' : '—'} · Home plan {r.homePlanDelivered ? '✓' : '—'} · Review {r.closingReviewDone ? '✓' : '—'} · {r.progressPct ?? ''}%</div>
           </div>
-        )) : <div style={{ fontSize:12, opacity:0.85, marginTop:8 }}>No active RESET. 32,000 KES for 12 yoga + 6 meditation + 2 massages + plan + review.</div>}
+        )) : <div style={{ fontSize:12, opacity:0.85, marginTop:8 }}>No active RESET. 32,000 KES for 12 movement sessions + 6 mindfulness + 2 massages + plan + review.</div>}
       </div>
 
       {/* Packages */}

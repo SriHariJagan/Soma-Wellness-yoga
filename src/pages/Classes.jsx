@@ -33,9 +33,18 @@ const Classes = () => {
         eyebrow={t("join.eyebrow")}
         title={t("join.title")}
         subtitle={t("join.subtitle")}
-        image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=900&auto=format&fit=crop"
+        image="/images/headers/classes-memberships.webp"
       />
       <section className={styles.section}>
+        {/* Group class timings */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 22 }}>
+          {["Morning · 7:00 – 8:00 AM", "Morning · 8:30 – 9:30 AM", "Evening · 5:30 – 6:30 PM", "Evening · 6:30 – 7:30 PM"].map((slot) => (
+            <span key={slot} style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.04em", color: "var(--soma-forest)", background: "#fff", border: "1px solid var(--soma-line-light)", padding: "9px 14px", borderRadius: 9999, boxShadow: "0 4px 14px rgba(24,61,45,0.05)" }}>
+              {slot}
+            </span>
+          ))}
+        </div>
+        <p style={{ textAlign: "center", fontSize: 13, color: "var(--soma-warm-gray)", marginBottom: 22 }}>Group classes · Mon – Sat · Limited to 12 per batch</p>
         {/* Try us first — premium */}
         <motion.div
           initial="hidden"
