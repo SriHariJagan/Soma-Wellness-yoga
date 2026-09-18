@@ -95,20 +95,20 @@ const SomaExperiences = () => {
               <span className={styles.titleLineWrap}>
                 <motion.span
                   className={styles.titleLine}
-                  initial={{ y: "110%" }}
-                  whileInView={{ y: "0%" }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.72, ease: EASE }}
+                  variants={{
+                    hidden: { y: "110%" },
+                    visible: { y: "0%", transition: { duration: 0.72, ease: EASE } },
+                  }}
                 >
                   {t("home.experiences.titleLine1")} <em>{t("home.experiences.titleLine2")}</em> {t("home.experiences.titleLine3")}
                 </motion.span>
               </span>
               <motion.span
                 className={styles.titleUnderline}
-                initial={{ scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
+                variants={{
+                  hidden: { scaleX: 0 },
+                  visible: { scaleX: 1, transition: { duration: 0.9, delay: 0.55, ease: EASE } },
+                }}
                 style={{ transformOrigin: "center" }}
                 aria-hidden="true"
               />

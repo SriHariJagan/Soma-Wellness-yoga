@@ -10,10 +10,15 @@
 .footer-watermark {
   position: absolute;
   z-index: 0;
-  right: -1%;
-  bottom: 62px;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: center;
   font-family: var(--font-display);
-  font-size: clamp(6rem, 15vw, 12rem);
+  font-size: clamp(3rem, 13.5vw, 12rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -357,7 +362,7 @@
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
 @media (max-width: 640px) {
-  .footer-watermark { bottom: 134px; font-size: clamp(4rem, 18vw, 6rem); }
+  .footer-watermark { bottom: 6px; font-size: clamp(2.6rem, 17vw, 4.5rem); letter-spacing: -0.02em; }
   .footer-grid { grid-template-columns: 1fr; gap: 28px; }
   .footer-form { flex-direction: column; }
   .footer-bottom-inner { flex-direction: column; text-align: center; }
