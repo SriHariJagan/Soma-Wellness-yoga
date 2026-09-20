@@ -1,45 +1,15 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef } from "react";
 import {
   motion,
   useScroll,
   useTransform,
   useSpring,
   useMotionValue,
-  useInView,
 } from "framer-motion";
 import { Link } from "react-router-dom";
 import styles from "./Hero.module.css";
 import { EASE, spring, usePrefersReducedMotion } from "../../lib/motion";
 import { useTranslation } from "react-i18next";
-
-// ──────────────────────────────────────────────────────────────
-// Count-up — animates number when in view, honors reduced motion
-// ──────────────────────────────────────────────────────────────
-const CountUp = ({ value, suffix = "", decimals = 0, duration = 1.2, reduced = false }) => {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
-  const [display, setDisplay] = useState(reduced ? value : 0);
-
-  useEffect(() => {
-    if (reduced) { setDisplay(value); return; }
-    if (!inView) return;
-    let raf = 0;
-    const start = performance.now();
-    const tick = (now) => {
-      const p = Math.min((now - start) / (duration * 1000), 1);
-      // easeOutExpo
-      const eased = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
-      setDisplay(value * eased);
-      if (p < 1) raf = requestAnimationFrame(tick);
-      else setDisplay(value);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [inView, value, duration, reduced]);
-
-  const formatted = decimals ? display.toFixed(decimals) : Math.round(display).toLocaleString();
-  return <span ref={ref}>{formatted}{suffix}</span>;
-};
 
 // ──────────────────────────────────────────────────────────────
 // MagneticButton — premium follow cursor, spring back (throttled)
@@ -291,7 +261,7 @@ const Hero = () => {
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
             }}
           >
-            <MagneticButton reduced={reduced} to="/classes" className={styles.primaryBtn}>
+            <MagneticButton reduced={reduced} to="/services" className={styles.primaryBtn}>
               <span className={styles.primaryBtnInner}>
                 {t("hero.explorePrograms")}
                 <motion.span
@@ -328,39 +298,16 @@ const Hero = () => {
             Movement · Restoration · Mindfulness — for individuals & organisations
           </motion.div>
 
-          {/* meta stats — count-up */}
+          {/* trust line — premium micro-proof */}
           <motion.div
-            className={styles.meta}
+            className={styles.trustLine}
             variants={{
               hidden: { opacity: 0, y: 10 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.55 } },
             }}
           >
-            <div className={styles.metaItem}>
-              <span className={styles.metaNum}>
-                <CountUp value={500} suffix="+" reduced={reduced} />
-              </span>
-              <span className={styles.metaLabel}>Lives transformed</span>
-            </div>
-            <span className={styles.metaSep} />
-            <div className={styles.metaItem}>
-              <span className={styles.metaNum}>
-                <CountUp value={18} suffix=" yrs" reduced={reduced} />
-              </span>
-              <span className={styles.metaLabel}>In practice</span>
-            </div>
-            <span className={styles.metaSep} />
-            <div className={styles.metaItem}>
-              <span className={styles.metaNum}>
-                <CountUp value={4.9} suffix="★" decimals={1} reduced={reduced} />
-              </span>
-              <span className={styles.metaLabel}>Community rating</span>
-            </div>
-            {/* inline micro-proof */}
-            <div className={styles.metaProof}>
-              <span className={styles.proofDot} />
-              300 members · capped, never crowded
-            </div>
+            <span className={styles.trustDot} />
+            Movement · Restoration · Mindfulness — for individuals & organisations
           </motion.div>
         </motion.div>
 
@@ -493,22 +440,20 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      {/* ── Bottom proof marquee — infinite ── */}
+      {/* ── Bottom marquee — premium wellness messages ── */}
       <div className={styles.marquee} aria-hidden="true">
         <div className={styles.marqueeTrack}>
           {Array.from({ length: 2 }).map((_, dup) => (
             <div key={dup} className={styles.marqueeGroup}>
-              <span>SOMAWELLNESS — WELLNESS, THOUGHTFULLY EXPERIENCED</span>
+              <span>Move with intention · Breathe with awareness · Rest with trust</span>
               <span className={styles.marqueeDot}>•</span>
-              <span>300 MEMBERS · NEVER CROWDED</span>
+              <span>Small groups · Certified practitioners · Thoughtful experience</span>
               <span className={styles.marqueeDot}>•</span>
-              <span>MOVEMENT · RESTORATION · MINDFULNESS · MASSAGE</span>
+              <span>Massage · Meditation · Private sessions · Teacher training</span>
               <span className={styles.marqueeDot}>•</span>
-              <span>SMALL GROUPS · CERTIFIED PRACTITIONERS</span>
+              <span>Spring Valley, Nairobi · Open mornings & evenings</span>
               <span className={styles.marqueeDot}>•</span>
-              <span>RATED 4.9★ BY OUR COMMUNITY</span>
-              <span className={styles.marqueeDot}>•</span>
-              <span>18 YEARS IN PRACTICE</span>
+              <span>SOMAWELLNESS — Wellness, thoughtfully experienced</span>
               <span className={styles.marqueeDot}>•</span>
             </div>
           ))}

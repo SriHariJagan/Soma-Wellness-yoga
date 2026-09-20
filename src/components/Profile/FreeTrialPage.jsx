@@ -4,7 +4,7 @@ import styles from "./FreeTrialPage.module.css";
 import { Stagger, Item, PageHeader, EmptyState, PrimaryButton } from "./widgets/DashboardWidgets";
 import {
   startFreeTrial, getMyTrial, getMyTrialSessions, getMyTrialNotifications,
-  markTrialNotificationRead, markAllTrialNotificationsRead
+  markTrialNotificationRead, markAllTrialNotificationsRead, checkTrialEligibility
 } from "../api/StudentServices.js";
 import Badge from "../Admin/Badge";
 import TrialSessionModal from "./TrialSessionModal";
@@ -36,6 +36,7 @@ export default function FreeTrialPage({ student, reload }) {
   const [tab, setTab] = useState("sessions");
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
+  const [usedTrial, setUsedTrial] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const pollRef = useRef();
 
@@ -46,11 +47,13 @@ export default function FreeTrialPage({ student, reload }) {
     else setRefreshing(true);
     setStartError("");
     try {
-      const [t, sess, notif] = await Promise.all([
+      const [t, sess, notif, elig] = await Promise.all([
         getMyTrial().catch(() => null),
         getMyTrialSessions().catch(() => []),
         getMyTrialNotifications().catch(() => []),
+        checkTrialEligibility().catch(() => null),
       ]);
+      if (elig && elig.hasUsedTrial && !elig.hasActiveTrial) setUsedTrial(true);
       const trialData = t?.trial || t || null;
       if (trialData && trialData.status === 'none') {
         setTrial(null);
@@ -114,13 +117,34 @@ export default function FreeTrialPage({ student, reload }) {
 
   if (!trial) {
     const showPlanBlocked = hasActivePlan;
-    const showUsedBlocked = !hasActivePlan;
+    const showUsedBlocked = !hasActivePlan && usedTrial;
 
     return (
       <Stagger>
         <Item>
           <PageHeader title="Free Trial" sub="Experience 7 days of wellness, absolutely free." />
         </Item>
+
+        {showUsedBlocked && (
+          <Item>
+            <div className={styles.blockedCard}>
+              <div className={styles.blockedIconWrap}>
+                <LuClock size={28} />
+              </div>
+              <h3 className={styles.blockedTitle}>Trial Already Used</h3>
+              <p className={styles.blockedText}>
+                Each account gets <strong>one 7-day free trial</strong> — yours has already been used.
+                Continue your journey with a membership plan.
+              </p>
+              <button
+                onClick={() => navigate("/studentdashboard?tab=browsePlans")}
+                className={styles.blockedCta}
+              >
+                View Membership Plans <LuArrowRight size={16} />
+              </button>
+            </div>
+          </Item>
+        )}
 
         {showPlanBlocked && (
           <Item>
@@ -144,7 +168,7 @@ export default function FreeTrialPage({ student, reload }) {
           </Item>
         )}
 
-        {!showPlanBlocked && (
+        {!showPlanBlocked && !showUsedBlocked && (
           <Item>
             <div className={styles.onboardCard}>
               <div className={styles.onboardGlow} />

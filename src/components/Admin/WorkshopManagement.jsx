@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
 import { PageHeader, KpiCard, Avatar, Drawer } from './ui/Primitives';
+import { ConfirmSheet } from './ui/Sheets.jsx';
 import { workshopsApi, membershipPlansApi } from '../api/AdminServices.js';
 import WorkshopStatsDrawer from './WorkshopStatsDrawer';
 import {
@@ -528,20 +529,15 @@ export default function WorkshopManagement({ onChanged } = {}) {
 
       {/* Confirm Delete Modal */}
       {confirmAction && (
-        <div className={s.modalOverlay} onClick={() => setConfirmAction(null)}>
-          <div className={s.modalBox} onClick={e => e.stopPropagation()}>
-            <div className={s.modalIcon}><LuTrash2 /></div>
-            <h3 className={s.modalTitle}>Delete Workshop</h3>
-            <p className={s.modalText}>
-              Are you sure you want to delete <strong>"{confirmAction.name}"</strong>?<br />
-              This will permanently remove the workshop and all registrations. This cannot be undone.
-            </p>
-            <div className={s.modalActions}>
-              <button type="button" className={s.btnCancel} onClick={() => setConfirmAction(null)}>Cancel</button>
-              <button type="button" className={s.btnConfirmLogout} onClick={handleDelete}>Delete</button>
-            </div>
-          </div>
-        </div>
+        <ConfirmSheet
+          icon={<LuTrash2 size={20} />}
+          tone="danger"
+          title="Delete Workshop"
+          message={`Delete "${confirmAction.name}"? This permanently removes the workshop and all registrations. This cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+          onClose={() => setConfirmAction(null)}
+        />
       )}
 
       {/* Stats Drawer - Premium Analytics Dashboard */}

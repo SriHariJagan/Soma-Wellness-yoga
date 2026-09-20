@@ -231,6 +231,13 @@ export const login = asyncHandler(async (req, res) => {
     throw ApiError.unauthorized("Invalid credentials");
   }
 
+  // Guest-checkout temporary passwords expire 7 days after issue.
+  if (user.tempPasswordExpiresAt && user.tempPasswordExpiresAt < new Date()) {
+    throw ApiError.forbidden(
+      "Your temporary password has expired. Please reset your password to continue.",
+    );
+  }
+
   _clearLoginFailures(email);
 
   user.lastLogin = new Date();
@@ -264,6 +271,7 @@ export const login = asyncHandler(async (req, res) => {
     msg: "Login successful",
     token: accessToken,
     user: publicUser(user, membership ? (membership.isActive || membership.isPaused) : false),
+    mustChangePassword: !!user.tempPasswordExpiresAt,
   });
 });
 
@@ -429,6 +437,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   user.password = await bcrypt.hash(newPassword, await bcrypt.genSalt(12));
   user.resetTokenHash = null;
   user.resetTokenExpires = null;
+  user.tempPasswordExpiresAt = null; // user now owns their password
   user.refreshTokens = []; // force re-login everywhere
   await user.save();
 
@@ -472,6 +481,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
     if (newPassword.length < 8)
       throw ApiError.badRequest("Password must be at least 8 characters");
     updates.password = await bcrypt.hash(newPassword, await bcrypt.genSalt(12));
+    updates.tempPasswordExpiresAt = null; // user now owns their password
   }
 
   await User.findByIdAndUpdate(
@@ -505,6 +515,7 @@ export const changePassword = asyncHandler(async (req, res) => {
   if (!match) throw ApiError.badRequest("Current password is incorrect");
 
   user.password = await bcrypt.hash(newPassword, await bcrypt.genSalt(12));
+  user.tempPasswordExpiresAt = null; // user now owns their password
   await user.save();
 
   ActivityLog.create({

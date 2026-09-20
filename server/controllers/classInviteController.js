@@ -285,7 +285,7 @@ async function resolveEntityMeta(recipientType, recipientFilter) {
 export const createInvite = asyncHandler(async (req, res) => {
   const {
     title, description, date, startTime, endTime, duration,
-    instructor, platform, meetingLink, meetingPassword, notes, attachments,
+    instructor, platform, meetingLink, meetingPassword, location, notes, attachments,
     recipientType, recipientFilter, reminderConfig, studentIds,
     inviteCategory = 'class',
     entityType, entityId, entityName, entityLabel,
@@ -377,7 +377,7 @@ export const createInvite = asyncHandler(async (req, res) => {
     startTime,
     endTime: endTime || '',
     duration: duration || 60, instructor: instructor || '', platform: platform || 'Zoom',
-    meetingLink: meetingLink || '', meetingPassword: meetingPassword || '', notes: notes || '',
+    meetingLink: meetingLink || '', meetingPassword: meetingPassword || '', location: location || '', notes: notes || '',
     attachments: attachments || '',
     recipientType: recipientType || 'custom',
     recipientFilter: recipientFilter || {},
@@ -395,10 +395,13 @@ export const createInvite = asyncHandler(async (req, res) => {
 
   for (const r of recipients) {
     let notifMessage;
+    const where = platform === 'Offline' && location
+      ? ` Venue: ${location}.`
+      : '';
     if (isSingleSessionNotif) {
-      notifMessage = `You have been invited for your <strong>${entityNameForNotif}</strong> session on ${new Date(date).toLocaleDateString('en-KE')} at ${startTime}.${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
+      notifMessage = `You have been invited for your <strong>${entityNameForNotif}</strong> session on ${new Date(date).toLocaleDateString('en-KE')} at ${startTime}.${where}${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
     } else {
-      notifMessage = `You have been invited to "${title}" on ${new Date(date).toLocaleDateString('en-KE')} at ${startTime}.${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
+      notifMessage = `You have been invited to "${title}" on ${new Date(date).toLocaleDateString('en-KE')} at ${startTime}.${where}${notes ? ` ${notes}` : ''}${meetingPassword ? ` Password: ${meetingPassword}` : ''}`;
     }
     await notify(r.user, {
       title: `${inviteCategory === 'yttc' ? 'YTTC Class Invitation' : 'Class Invitation'}: ${title}`,

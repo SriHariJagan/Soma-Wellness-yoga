@@ -4,6 +4,7 @@
 // ============================================================
 import express from 'express';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import { validate, schemas } from '../middleware/validate.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import * as soma from '../controllers/somaController.js';
 import * as somaAdmin from '../controllers/somaAdminController.js';
@@ -66,8 +67,8 @@ adminRouter.get('/passes', somaAdmin.listPassesAdmin);
 adminRouter.get('/resets', somaAdmin.listResetsAdmin);
 
 adminRouter.get('/daily-content', somaAdmin.listDailyContentAdmin);
-adminRouter.post('/daily-content', somaAdmin.createDailyContentAdmin);
-adminRouter.put('/daily-content/:id', somaAdmin.updateDailyContentAdmin);
+adminRouter.post('/daily-content', validate(schemas.dailyContentCreate), somaAdmin.createDailyContentAdmin);
+adminRouter.put('/daily-content/:id', validate(schemas.dailyContentUpdate), somaAdmin.updateDailyContentAdmin);
 adminRouter.delete('/daily-content/:id', somaAdmin.deleteDailyContentAdmin);
 adminRouter.get('/daily-analytics', somaAdmin.getDailyAnalyticsAdmin);
 

@@ -156,8 +156,10 @@ export const createStudent = asyncHandler(async (req, res) => {
   if (!name || !email) throw ApiError.badRequest('Name and email are required');
   if (await User.findOne({ email: email.toLowerCase().trim() })) throw ApiError.conflict('Email already registered');
 
-  // Admins may create center-manager logins; everyone else creates students.
-  const requestedRole = role === 'manager' && req.user?.role === 'admin' ? 'manager' : 'student';
+  // Only allow 'manager' role from admin. Everything else becomes 'student'.
+  // Never allow creating 'admin' or other privileged roles via this endpoint.
+  const VALID_CREATABLE_ROLES = ['student', 'manager'];
+  const requestedRole = VALID_CREATABLE_ROLES.includes(role) && req.user?.role === 'admin' ? role : 'student';
 
   const raw = password && password.trim() ? password : crypto.randomBytes(12).toString('base64url');
   const hashed = await bcrypt.hash(raw, await bcrypt.genSalt(12));
@@ -1295,12 +1297,16 @@ export const broadcastNotification = asyncHandler(async (req, res) => {
 export const getSettings = asyncHandler(async (req, res) => res.json(await Settings.getSingleton()));
 export const updateSettings = asyncHandler(async (req, res) => {
   const settings = await Settings.getSingleton();
-  const { announcementBanner, studioName, supportEmail, supportPhone, integrations } = req.body;
+  const { announcementBanner, studioName, supportEmail, supportPhone, integrations, bookingHorizonDays } = req.body;
   if (announcementBanner !== undefined) settings.announcementBanner = announcementBanner;
   if (studioName !== undefined) settings.studioName = studioName;
   if (supportEmail !== undefined) settings.supportEmail = supportEmail;
   if (supportPhone !== undefined) settings.supportPhone = supportPhone;
   if (integrations) settings.integrations = { ...settings.integrations.toObject(), ...integrations };
+  if (bookingHorizonDays !== undefined) {
+    const n = Math.max(1, Math.min(30, Number(bookingHorizonDays) || 2));
+    settings.bookingHorizonDays = n;
+  }
   await settings.save();
   res.json(settings);
 });

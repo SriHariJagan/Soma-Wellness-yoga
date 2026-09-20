@@ -1,29 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { receptionStaffApi } from '../api/AdminServices';
 import { PERMISSION_GROUPS } from '../../config/permissions';
 import {
   LuUsers, LuPlus, LuPencil, LuShield, LuKey, LuCheck, LuX,
-  LuEye, LuEyeOff, LuRefreshCw, LuCircleAlert, LuInfo,
+  LuEye, LuEyeOff, LuRefreshCw, LuCircleAlert, LuInfo, LuSearch,
   LuPhone, LuMail, LuCalendar, LuUserCog,
 } from 'react-icons/lu';
 import s from './YogaAdmin.module.css';
 
 const PERMISSIONS = PERMISSION_GROUPS;
+const ALL_KEYS = Object.values(PERMISSIONS).flatMap((g) => g.permissions.map((p) => p.key));
+const EMPTY = { name: '', email: '', phone: '', password: '' };
 
 export default function ReceptionStaffManagement({ onFeedback }) {
   const { t } = useTranslation();
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showCreate, setShowCreate] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [permissionsUser, setPermissionsUser] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
-  const [createPerms, setCreatePerms] = useState([]);
-  const [permForm, setPermForm] = useState([]);
+  // sheet: null | { mode: 'create' } | { mode: 'edit', user }
+  const [sheet, setSheet] = useState(null);
+  const [form, setForm] = useState(EMPTY);
+  const [perms, setPerms] = useState([]);
+  const [permSearch, setPermSearch] = useState('');
   const [saving, setSaving] = useState(false);
   const [showTempPassword, setShowTempPassword] = useState(null);
+  const [actingId, setActingId] = useState(null);
 
   const loadStaff = useCallback(async () => {
     setLoading(true);
@@ -41,61 +44,94 @@ export default function ReceptionStaffManagement({ onFeedback }) {
 
   useEffect(() => { loadStaff(); }, [loadStaff]);
 
-  const handleCreate = async (e) => {
+  // Lock background scroll while any popup is open
+  useEffect(() => {
+    if (!sheet && !showTempPassword) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevPadding = document.body.style.paddingRight;
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (scrollBarWidth > 0) document.body.style.paddingRight = `${scrollBarWidth}px`;
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPadding;
+    };
+  }, [sheet, showTempPassword]);
+
+  const openCreate = () => {
+    setForm(EMPTY);
+    setPerms([]);
+    setPermSearch('');
+    setSheet({ mode: 'create' });
+  };
+
+  const openEdit = (user) => {
+    setForm({ name: user.name || '', email: user.email || '', phone: user.phone || '', password: '' });
+    setPerms([...(user.permissions || [])]);
+    setPermSearch('');
+    setSheet({ mode: 'edit', user });
+  };
+
+  const closeSheet = () => { if (!saving) setSheet(null); };
+
+  const togglePerm = (key) => {
+    setPerms((prev) => (prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key]));
+  };
+  const toggleGroup = (keys) => {
+    setPerms((prev) => {
+      const allSelected = keys.every((k) => prev.includes(k));
+      if (allSelected) return prev.filter((k) => !keys.includes(k));
+      return [...new Set([...prev, ...keys])];
+    });
+  };
+
+  const visibleGroups = useMemo(() => {
+    const q = permSearch.trim().toLowerCase();
+    if (!q) return Object.entries(PERMISSIONS);
+    return Object.entries(PERMISSIONS)
+      .map(([key, group]) => {
+        const items = group.permissions.filter(
+          (p) => p.label.toLowerCase().includes(q) || p.key.toLowerCase().includes(q) || group.label.toLowerCase().includes(q),
+        );
+        return [key, { ...group, permissions: items }];
+      })
+      .filter(([, group]) => group.permissions.length > 0);
+  }, [permSearch]);
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email) {
+    if (!form.name.trim() || (sheet?.mode === 'create' && !form.email.trim())) {
       onFeedback?.('Name and email are required', 'error');
       return;
     }
     setSaving(true);
     try {
-      const result = await receptionStaffApi.create({ ...form, permissions: createPerms });
-      setShowCreate(false);
-      setForm({ name: '', email: '', phone: '', password: '' });
-      setCreatePerms([]);
-      onFeedback?.('Reception account created successfully', 'success');
-      if (result.temporaryPassword) {
-        setShowTempPassword({ email: form.email, password: result.temporaryPassword });
+      if (sheet.mode === 'create') {
+        const result = await receptionStaffApi.create({
+          name: form.name.trim(), email: form.email.trim(),
+          phone: form.phone.trim(), password: form.password || undefined,
+          permissions: perms,
+        });
+        onFeedback?.('Reception account created successfully', 'success');
+        if (result.temporaryPassword) {
+          setShowTempPassword({ email: form.email.trim(), password: result.temporaryPassword });
+        }
+      } else {
+        await receptionStaffApi.update(sheet.user._id, { name: form.name.trim(), phone: form.phone.trim() });
+        await receptionStaffApi.updatePermissions(sheet.user._id, perms);
+        onFeedback?.('Reception staff updated', 'success');
       }
+      setSheet(null);
       await loadStaff();
     } catch (err) {
-      onFeedback?.(err.message || 'Failed to create reception account', 'error');
-    }
-    setSaving(false);
-  };
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await receptionStaffApi.update(editing._id, {
-        name: editing.name,
-        phone: editing.phone,
-      });
-      setEditing(null);
-      onFeedback?.('Reception staff updated', 'success');
-      await loadStaff();
-    } catch (err) {
-      onFeedback?.(err.message || 'Failed to update', 'error');
-    }
-    setSaving(false);
-  };
-
-  const handleSavePermissions = async () => {
-    setSaving(true);
-    try {
-      await receptionStaffApi.updatePermissions(permissionsUser._id, permForm);
-      setPermissionsUser(null);
-      onFeedback?.('Permissions updated', 'success');
-      await loadStaff();
-    } catch (err) {
-      onFeedback?.(err.message || 'Failed to update permissions', 'error');
+      onFeedback?.(err.message || 'Failed to save', 'error');
     }
     setSaving(false);
   };
 
   const handleToggleStatus = async (user) => {
     const newStatus = user.status === 'active' ? 'banned' : 'active';
+    setActingId(user._id);
     try {
       await receptionStaffApi.setStatus(user._id, newStatus);
       onFeedback?.(`Account ${newStatus === 'banned' ? 'deactivated' : 'activated'}`, 'success');
@@ -103,9 +139,12 @@ export default function ReceptionStaffManagement({ onFeedback }) {
     } catch (err) {
       onFeedback?.(err.message || 'Failed to change status', 'error');
     }
+    setActingId(null);
   };
 
   const handleResetPassword = async (user) => {
+    if (!window.confirm(`Reset password for ${user.name}? A new temporary password will be shown once.`)) return;
+    setActingId(user._id);
     try {
       const result = await receptionStaffApi.resetPassword(user._id);
       setShowTempPassword({ email: user.email, password: result.temporaryPassword });
@@ -113,40 +152,10 @@ export default function ReceptionStaffManagement({ onFeedback }) {
     } catch (err) {
       onFeedback?.(err.message || 'Failed to reset password', 'error');
     }
+    setActingId(null);
   };
 
-  const openPermissions = (user) => {
-    setPermissionsUser(user);
-    setPermForm([...(user.permissions || [])]);
-  };
-
-  const togglePerm = (key) => {
-    setPermForm((prev) =>
-      prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key]
-    );
-  };
-
-  const toggleGroup = (keys) => {
-    setPermForm((prev) => {
-      const allSelected = keys.every((k) => prev.includes(k));
-      if (allSelected) return prev.filter((k) => !keys.includes(k));
-      return [...new Set([...prev, ...keys])];
-    });
-  };
-
-  const toggleCreatePerm = (key) => {
-    setCreatePerms((prev) =>
-      prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key]
-    );
-  };
-
-  const toggleCreateGroup = (keys) => {
-    setCreatePerms((prev) => {
-      const allSelected = keys.every((k) => prev.includes(k));
-      if (allSelected) return prev.filter((k) => !keys.includes(k));
-      return [...new Set([...prev, ...keys])];
-    });
-  };
+  const isEdit = sheet?.mode === 'edit';
 
   return (
     <div className={s.section}>
@@ -158,7 +167,7 @@ export default function ReceptionStaffManagement({ onFeedback }) {
           <button className={s.btnGhost} onClick={loadStaff} disabled={loading} title="Refresh">
             <LuRefreshCw size={15} className={loading ? s.spin : ''} />
           </button>
-          <button className={s.btnPrimary} onClick={() => setShowCreate(true)}>
+          <button className={s.btnPrimary} onClick={openCreate}>
             <LuPlus size={16} /> Add Reception
           </button>
         </div>
@@ -186,67 +195,70 @@ export default function ReceptionStaffManagement({ onFeedback }) {
           <p className={s.emptyDesc}>
             Create a reception staff account to grant limited dashboard access to front-desk team members.
           </p>
-          <button className={s.btnPrimary} onClick={() => setShowCreate(true)}>
+          <button className={s.btnPrimary} onClick={openCreate}>
             <LuPlus size={16} /> Create First Account
           </button>
         </div>
       ) : (
         <div className={s.receptionGrid}>
-          {staff.map((u, idx) => (
-            <div key={u._id} className={`${s.receptionCard} ${u.status !== 'active' ? s.receptionCardInactive : ''}`}>
-              <div className={s.receptionCardLeft}>
-                <div className={`${s.receptionAvatar} ${s[`av${idx % 6}`]}`}>
-                  {(u.name || '?')[0].toUpperCase()}
+          {staff.map((u, idx) => {
+            const active = u.status === 'active';
+            const permCount = (u.permissions || []).length;
+            return (
+              <div key={u._id} className={`${s.receptionCard} ${!active ? s.receptionCardInactive : ''}`}>
+                <div className={s.receptionCardLeft}>
+                  <div className={`${s.receptionAvatar} ${s[`av${idx % 6}`]}`}>
+                    {(u.name || '?')[0].toUpperCase()}
+                  </div>
                 </div>
-              </div>
-              <div className={s.receptionCardCenter}>
-                <div className={s.receptionNameRow}>
-                  <span className={s.receptionName}>{u.name}</span>
-                  <span className={`${s.badge} ${u.status === 'active' ? s.badgeGreen : s.badgeRed}`}>
-                    {u.status === 'active' ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                <div className={s.receptionMeta}>
-                  <span className={s.receptionMetaItem}>
-                    <LuMail size={13} /> {u.email}
-                  </span>
-                  {u.phone && (
-                    <span className={s.receptionMetaItem}>
-                      <LuPhone size={13} /> {u.phone}
+                <div className={s.receptionCardCenter}>
+                  <div className={s.receptionNameRow}>
+                    <span className={s.receptionName}>{u.name}</span>
+                    <span className={`${s.badge} ${active ? s.badgeGreen : s.badgeRed}`}>
+                      {active ? 'Active' : 'Inactive'}
                     </span>
-                  )}
-                </div>
-                <div className={s.receptionTags}>
-                  <span className={s.permCountPill}>
-                    <LuShield size={12} />
-                    {(u.permissions || []).length} permissions
-                  </span>
-                  <span className={s.receptionDateTag}>
-                    <LuCalendar size={12} />
-                    {new Date(u.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </span>
+                  </div>
+                  <div className={s.receptionMeta}>
+                    <span className={s.receptionMetaItem}>
+                      <LuMail size={13} /> {u.email}
+                    </span>
+                    {u.phone && (
+                      <span className={s.receptionMetaItem}>
+                        <LuPhone size={13} /> {u.phone}
+                      </span>
+                    )}
+                  </div>
+                  <div className={s.receptionTags}>
+                    <span className={s.permCountPill}>
+                      <LuShield size={12} />
+                      {permCount} of {ALL_KEYS.length} permissions
+                    </span>
+                    <span className={s.receptionDateTag}>
+                      <LuCalendar size={12} />
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                    </span>
+                  </div>
+                  {/* Clear labeled actions — no guessing */}
+                  <div className={s.receptionActions}>
+                    <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={() => openEdit(u)}>
+                      <LuPencil size={13} /> Edit & Access
+                    </button>
+                    <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={() => handleResetPassword(u)} disabled={actingId === u._id}>
+                      <LuKey size={13} /> Reset Password
+                    </button>
+                    <button
+                      type="button"
+                      className={`${s.btn} ${s.btnSm} ${active ? s.btnDanger : s.btnPrimary}`}
+                      disabled={actingId === u._id}
+                      onClick={() => handleToggleStatus(u)}
+                    >
+                      {active ? <><LuEyeOff size={13} /> Deactivate</> : <><LuEye size={13} /> Activate</>}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className={s.receptionCardRight}>
-                <button className={s.receptionActionBtn} title="Edit" onClick={() => setEditing(u)}>
-                  <LuPencil size={14} />
-                </button>
-                <button className={s.receptionActionBtn} title="Permissions" onClick={() => openPermissions(u)}>
-                  <LuShield size={14} />
-                </button>
-                <button className={s.receptionActionBtn} title="Reset Password" onClick={() => handleResetPassword(u)}>
-                  <LuKey size={14} />
-                </button>
-                <button
-                  className={`${s.receptionActionBtn} ${u.status === 'active' ? s.receptionActionDanger : s.receptionActionSuccess}`}
-                  title={u.status === 'active' ? 'Deactivate' : 'Activate'}
-                  onClick={() => handleToggleStatus(u)}
-                >
-                  {u.status === 'active' ? <LuEyeOff size={14} /> : <LuEye size={14} />}
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           <div className={s.receptionFooter}>
             <LuUserCog size={14} />
             <strong>{staff.length}</strong> reception staff member{staff.length !== 1 ? 's' : ''}
@@ -254,195 +266,149 @@ export default function ReceptionStaffManagement({ onFeedback }) {
         </div>
       )}
 
-      {showCreate && (
-        <div className={s.modalBackdrop} onClick={() => setShowCreate(false)}>
-          <div className={s.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalHeader}>
-              <h3>Create Reception Staff</h3>
-              <button className={s.modalClose} onClick={() => setShowCreate(false)}><LuX size={18} /></button>
-            </div>
-            <form onSubmit={handleCreate} className={s.modalBody}>
-              <label className={s.fieldLabel}>
-                Full Name *
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g. Priya Sharma"
-                  required
-                />
-              </label>
-              <label className={s.fieldLabel}>
-                Email *
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="e.g. priya@somawellness.co.ke"
-                  required
-                />
-              </label>
-              <label className={s.fieldLabel}>
-                Phone
-                <input
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="e.g. +254 700 000 000"
-                />
-              </label>
-              <label className={s.fieldLabel}>
-                Password (leave blank for auto-generated)
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  minLength={8}
-                  placeholder="Min 8 characters"
-                />
-              </label>
-              <div className={s.fieldLabel}>
-                <span>Initial permissions ({createPerms.length} selected) — screens appear based on these</span>
-                <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--border, #e5e7eb)', borderRadius: 8, padding: 8, marginTop: 6 }}>
-                  {Object.entries(PERMISSIONS).map(([groupKey, group]) => {
-                    const keys = group.permissions.map((p) => p.key);
-                    const allSelected = keys.every((k) => createPerms.includes(k));
-                    return (
-                      <div key={groupKey} style={{ marginBottom: 8 }}>
-                        <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontWeight: 700, fontSize: 13 }}>
-                          <input
-                            type="checkbox"
-                            checked={allSelected}
-                            onChange={() => toggleCreateGroup(keys)}
-                          />
-                          {group.label}
-                        </label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4, marginLeft: 18 }}>
-                          {group.permissions.map((p) => (
-                            <label key={p.key} style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 12 }}>
-                              <input
-                                type="checkbox"
-                                checked={createPerms.includes(p.key)}
-                                onChange={() => toggleCreatePerm(p.key)}
-                              />
-                              {p.label}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+      {/* ── Fullscreen staff sheet (create + edit) ── */}
+      {sheet && createPortal(
+        <div className={s.sheetBackdrop} onClick={closeSheet}>
+          <div className={s.sheet} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={isEdit ? 'Edit reception staff' : 'Create reception staff'}>
+            <div className={s.sheetHeader}>
+              <div className={s.sheetTitleWrap}>
+                <span className={s.sheetAvatar}>{(form.name || '?')[0].toUpperCase()}</span>
+                <div>
+                  <h3>{isEdit ? `Edit — ${sheet.user.name}` : 'New Reception Account'}</h3>
+                  <p>{isEdit ? sheet.user.email : 'Details + access in one place. Nothing saves until you confirm.'}</p>
                 </div>
               </div>
-              <div className={s.modalActions}>
-                <button type="button" className={s.btnGhost} onClick={() => setShowCreate(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className={s.btnPrimary} disabled={saving}>
-                  {saving ? 'Creating...' : 'Create Account'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {editing && (
-        <div className={s.modalBackdrop} onClick={() => setEditing(null)}>
-          <div className={s.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalHeader}>
-              <h3>Edit Reception Staff</h3>
-              <button className={s.modalClose} onClick={() => setEditing(null)}><LuX size={18} /></button>
+              <button className={s.modalClose} onClick={closeSheet} aria-label="Close"><LuX size={18} /></button>
             </div>
-            <form onSubmit={handleUpdate} className={s.modalBody}>
-              <label className={s.fieldLabel}>
-                Full Name
-                <input
-                  value={editing.name}
-                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
-                  required
-                />
-              </label>
-              <label className={s.fieldLabel}>
-                Phone
-                <input
-                  value={editing.phone || ''}
-                  onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
-                />
-              </label>
-              <div className={s.modalActions}>
-                <button type="button" className={s.btnGhost} onClick={() => setEditing(null)}>
-                  Cancel
-                </button>
-                <button type="submit" className={s.btnPrimary} disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {permissionsUser && (
-        <div className={s.modalBackdrop} onClick={() => setPermissionsUser(null)}>
-          <div className={`${s.modal} ${s.modalWide}`} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalHeader}>
-              <h3>Permissions — {permissionsUser.name}</h3>
-              <button className={s.modalClose} onClick={() => setPermissionsUser(null)}><LuX size={18} /></button>
-            </div>
-            <div className={s.modalBody}>
-              {Object.entries(PERMISSIONS).map(([groupKey, group]) => {
-                const keys = group.permissions.map((p) => p.key);
-                const allSelected = keys.every((k) => permForm.includes(k));
-                const someSelected = keys.some((k) => permForm.includes(k));
-                return (
-                  <div key={groupKey} className={s.permGroup}>
-                    <div className={s.permGroupHeader}>
-                      <label className={s.permGroupLabel}>
-                        <input
-                          type="checkbox"
-                          checked={allSelected}
-                          ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
-                          onChange={() => toggleGroup(keys)}
-                        />
-                        <strong>{group.label}</strong>
-                      </label>
+            <form onSubmit={handleSave} className={s.sheetBody}>
+              <div className={s.sheetGrid}>
+                {/* Account details */}
+                <section className={s.sheetSection}>
+                  <h4><span className={s.stepNum}>1</span> Account details</h4>
+                  {/* Live preview */}
+                  <div className={s.previewCard}>
+                    <span className={s.previewAvatar}>{(form.name || '?')[0].toUpperCase()}</span>
+                    <div className={s.previewInfo}>
+                      <strong>{form.name || 'New member'}</strong>
+                      <span>{form.email || 'email@somawellness.co.ke'}</span>
                     </div>
-                    <div className={s.permItems}>
-                      {group.permissions.map((p) => (
-                        <label key={p.key} className={s.permItem}>
-                          <input
-                            type="checkbox"
-                            checked={permForm.includes(p.key)}
-                            onChange={() => togglePerm(p.key)}
-                          />
-                          {p.label}
-                        </label>
-                      ))}
+                    <span
+                      className={s.ring}
+                      style={{ '--p': Math.round((perms.length / ALL_KEYS.length) * 100) }}
+                      title={`${perms.length} of ${ALL_KEYS.length} permissions`}
+                    >
+                      <em>{perms.length}</em>
+                    </span>
+                  </div>
+                  <label className={s.fieldLabel}>
+                    Full Name *
+                    <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Priya Sharma" required />
+                  </label>
+                  <label className={s.fieldLabel}>
+                    Email *
+                    <input
+                      type="email" value={form.email} placeholder="e.g. priya@somawellness.co.ke"
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      required disabled={isEdit} title={isEdit ? 'Email cannot be changed after creation' : undefined}
+                    />
+                  </label>
+                  {isEdit && <p className={s.fieldHint}>Email is locked after creation — contact an admin to change it.</p>}
+                  <label className={s.fieldLabel}>
+                    Phone
+                    <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="e.g. +254 702 080 070" />
+                  </label>
+                  {!isEdit && (
+                    <label className={s.fieldLabel}>
+                      Password
+                      <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} minLength={8} placeholder="Leave blank for auto-generated" />
+                    </label>
+                  )}
+                  {isEdit && (
+                    <div className={s.sheetNote}>
+                      <LuInfo size={14} />
+                      <span>To change this person's password, use <strong>Reset Password</strong> on their card — a one-time password is shown once.</span>
+                    </div>
+                  )}
+                </section>
+
+                {/* Access permissions */}
+                <section className={s.sheetSection}>
+                  <h4><span className={s.stepNum}>2</span> Dashboard access
+                    <span className={s.permSummary}>{perms.length} of {ALL_KEYS.length} on</span>
+                  </h4>
+                  <p className={s.fieldHint}>Only checked screens appear in their dashboard. Start with View rights; add Create/Edit as they grow.</p>
+                  <div className={s.permToolbar}>
+                    <div className={s.permSearch}>
+                      <LuSearch size={14} />
+                      <input value={permSearch} onChange={(e) => setPermSearch(e.target.value)} placeholder="Search permissions…" />
+                      {permSearch && <button type="button" onClick={() => setPermSearch('')} aria-label="Clear search"><LuX size={13} /></button>}
+                    </div>
+                    <div className={s.permBulk}>
+                      <button type="button" className={s.linkBtn} onClick={() => setPerms([...ALL_KEYS])}>Select all</button>
+                      <span aria-hidden="true">·</span>
+                      <button type="button" className={s.linkBtn} onClick={() => setPerms([])}>Clear</button>
                     </div>
                   </div>
-                );
-              })}
-              <div className={s.modalActions}>
-                <button className={s.btnGhost} onClick={() => setPermissionsUser(null)}>Cancel</button>
-                <button className={s.btnPrimary} onClick={handleSavePermissions} disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Permissions'}
-                </button>
+                  <div className={s.permGrid}>
+                    {visibleGroups.length === 0 && (
+                      <p className={s.fieldHint}>No permissions match “{permSearch}”.</p>
+                    )}
+                    {visibleGroups.map(([groupKey, group]) => {
+                      const keys = group.permissions.map((p) => p.key);
+                      const selected = keys.filter((k) => perms.includes(k)).length;
+                      const allSelected = selected === keys.length && keys.length > 0;
+                      return (
+                        <div key={groupKey} className={s.permCard}>
+                          <label className={s.permCardHead}>
+                            <input type="checkbox" checked={allSelected} onChange={() => toggleGroup(keys)} />
+                            <strong>{group.label}</strong>
+                            <span className={s.permCount}>{selected}/{keys.length}</span>
+                          </label>
+                          <div className={s.permCardItems}>
+                            {group.permissions.map((p) => (
+                              <label key={p.key} className={`${s.permRow} ${perms.includes(p.key) ? s.permRowOn : ''}`} title={p.key}>
+                                <input type="checkbox" checked={perms.includes(p.key)} onChange={() => togglePerm(p.key)} />
+                                <span>{p.label}</span>
+                                <LuCheck size={13} className={s.permTick} />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
               </div>
-            </div>
+
+              <div className={s.sheetFooter}>
+                <span className={s.sheetFooterHint}>
+                  {isEdit ? 'Saves details + access together.' : 'Account activates immediately with the access above.'}
+                </span>
+                <div className={s.modalActions}>
+                  <button type="button" className={s.btnGhost} onClick={closeSheet} disabled={saving}>Cancel</button>
+                  <button type="submit" className={s.btnPrimary} disabled={saving}>
+                    {saving ? (isEdit ? 'Saving…' : 'Creating…') : (isEdit ? <><LuCheck size={14} /> Save Changes</> : <><LuPlus size={14} /> Create Account</>)}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {showTempPassword && (
-        <div className={s.modalBackdrop} onClick={() => setShowTempPassword(null)}>
-          <div className={s.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalHeader}>
-              <h3>Account Created</h3>
-              <button className={s.modalClose} onClick={() => setShowTempPassword(null)}><LuX size={18} /></button>
+      {showTempPassword && createPortal(
+        <div className={s.sheetBackdrop} onClick={() => setShowTempPassword(null)}>
+          <div className={s.sheetCompact} onClick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true" aria-label="Account credentials">
+            <div className={s.sheetCompactHead}>
+              <span className={s.sheetCompactIcon} style={{ background: 'rgba(46,125,91,0.1)', color: '#1a4d35' }}><LuKey size={20} /></span>
+              <div>
+                <div className={s.sheetCompactTitle}>Account Ready</div>
+                <div className={s.sheetCompactSub}>Created for <strong>{showTempPassword.email}</strong></div>
+              </div>
             </div>
-            <div className={s.modalBody}>
-              <p style={{ fontSize: 14, color: 'var(--text-2)', margin: 0 }}>
-                Account created for <strong style={{ color: 'var(--text-1)' }}>{showTempPassword.email}</strong>
-              </p>
+            <div className={s.sheetCompactBody}>
               <div className={s.tempPasswordBox}>
                 <span>Temporary Password:</span>
                 <code>{showTempPassword.password}</code>
@@ -451,12 +417,13 @@ export default function ReceptionStaffManagement({ onFeedback }) {
                 <LuInfo size={14} />
                 Share this password securely. It will not be shown again.
               </p>
-              <div className={s.modalActions}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>
                 <button className={s.btnPrimary} onClick={() => setShowTempPassword(null)}>Done</button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

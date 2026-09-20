@@ -9,8 +9,8 @@ const ENV_WA = import.meta.env.VITE_WHATSAPP_NUMBER || '';
 const ENV_DISPLAY = import.meta.env.VITE_WHATSAPP_DISPLAY_PHONE || '';
 
 // Default from site content / footer — must stay in sync
-export const FALLBACK_WA_NUMBER = '254700000000';
-export const FALLBACK_WA_DISPLAY = '+254 700 000 000';
+export const FALLBACK_WA_NUMBER = '254702080070';
+export const FALLBACK_WA_DISPLAY = '+254 702 080 070';
 
 // Normalise any phone string to digits-only wa.me format
 export function normalizeWaNumber(raw) {

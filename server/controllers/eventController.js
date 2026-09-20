@@ -108,11 +108,16 @@ export const adminGetEventRegistrations = asyncHandler(async (req, res) => {
 
 // Upcoming published events for the marketing calendar. User
 // identities are stripped; only the registration count is exposed.
+// Pass ?past=1 to also include published events from the last 180
+// days (powers the public "Completed" archive).
 export const publicGetEvents = asyncHandler(async (req, res) => {
+  const includePast = req.query.past === "1" || req.query.past === "true";
+  const floor = new Date(startOfToday());
+  if (includePast) floor.setDate(floor.getDate() - 180);
   const events = await Event.find({
     isPublished: true,
     status: 'available',
-    date: { $gte: startOfToday() },
+    date: { $gte: floor },
   }).sort({ date: 1 });
   const shaped = events.map((e) => {
     const o = e.toObject();

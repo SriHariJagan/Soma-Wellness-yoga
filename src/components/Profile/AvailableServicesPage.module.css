@@ -1,13 +1,109 @@
 /* ── Available Services Page ── */
 
 .controls {
-  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 
 .searchWrap {
   position: relative;
-  max-width: 460px;
-  width: 100%;
+  flex: 1;
+  min-width: 240px;
+}
+
+.resultCount {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.catRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.catChip {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-light);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.catChip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.catActive {
+  background: #123526;
+  border-color: #123526;
+  color: #fff;
+}
+.catActive:hover { color: #fff; }
+.catCount {
+  opacity: 0.6;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* ── Section headers ── */
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 34px 2px 18px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-light);
+}
+.sectionHeadFirst {
+  margin-top: 10px;
+  padding-top: 0;
+  border-top: none;
+}
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.sectionSub {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* ── Section headers ── */
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 30px 2px 16px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-border-light);
+}
+.sectionHeadFirst {
+  margin-top: 6px;
+  padding-top: 0;
+  border-top: none;
+}
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.sectionSub {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
 }
 
 .searchWrap .ti-search {
@@ -85,16 +181,16 @@
 /* ── Card grid ── */
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 20px;
 }
 
-/* ── Service card ── */
+/* ── Service card — compact, premium ── */
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 16px 18px;
   border-radius: var(--radius-2xl, 16px);
   background:
     radial-gradient(130% 140% at 100% 0%, rgba(46,125,91, 0.07) 0%, transparent 55%),
@@ -113,6 +209,18 @@
   box-shadow: var(--shadow-card-hover);
   border-color: var(--color-border);
 }
+
+.card::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 24px; right: 24px;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, #2E7D5B, #81B29A, #F4B400);
+  opacity: 0;
+  transition: opacity var(--transition-base, 0.25s ease);
+}
+.card:hover::after { opacity: 1; }
 
 .cardGlow {
   position: absolute;
@@ -140,7 +248,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 }
 
@@ -155,55 +263,62 @@
   flex-wrap: wrap;
 }
 
-/* ── Name ── */
+/* ── Name — hero of the card ── */
 .cardName {
   position: relative;
   z-index: 1;
   font-family: var(--font-heading);
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--color-dark);
-  margin: 0 0 10px;
-  line-height: 1.25;
+  margin: 0 0 6px;
+  line-height: 1.2;
 }
 
 /* ── Description ── */
 .cardDesc {
   position: relative;
   z-index: 1;
-  font-size: 13.5px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.55;
   color: var(--color-text-secondary);
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* ── Meta info ── */
+/* ── Meta info — pill chips ── */
 .cardMeta {
   position: relative;
   z-index: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .metaItem {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--color-text-secondary);
   line-height: 1.4;
+  background: rgba(46,125,91,0.06);
+  border: 1px solid rgba(46,125,91,0.1);
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .metaItem i {
-  font-size: 14px;
-  color: var(--color-text-tertiary, #aaa);
+  font-size: 13px;
+  color: var(--color-primary, #2E7D5B);
   flex-shrink: 0;
   width: 16px;
   text-align: center;
@@ -218,7 +333,7 @@
   justify-content: space-between;
   gap: 14px;
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid var(--color-border-light);
 }
 
@@ -230,16 +345,17 @@
 
 .priceValue {
   font-family: var(--font-heading);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-primary);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-dark);
   letter-spacing: -0.02em;
   line-height: 1;
 }
 
 .priceLabel {
-  font-size: 12px;
-  color: var(--color-text-tertiary, #999);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary, #2E7D5B);
 }
 
 .priceFree {
@@ -253,6 +369,38 @@
   background: var(--color-green, #2d9c6b) !important;
   cursor: default;
   opacity: 0.85;
+}
+
+.buyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1a4d35 0%, #2E7D5B 100%);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(24,61,45,0.22);
+  white-space: nowrap;
+}
+.buyBtn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(24,61,45,0.3); }
+.buyBtn:disabled { opacity: 0.6; cursor: default; }
+
+.bookingDisabled {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.disabledText {
+  font-size: 14px;
+  color: #6b7280;
 }
 
 /* ── Message bar ── */

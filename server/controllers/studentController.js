@@ -954,10 +954,15 @@ export const getConsultations = asyncHandler(async (req, res) => {
 
 export const getConsultationSlots = asyncHandler(async (req, res) => {
   const settings = await Settings.getSingleton();
+  const horizonDays = Math.max(1, Math.min(30, Number(settings.bookingHorizonDays) || 2));
   const { date } = req.query;
   if (!date) throw ApiError.badRequest('Date is required');
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + horizonDays);
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);
+  if (dayStart < today) throw ApiError.badRequest('Past dates cannot be booked');
+  if (dayStart > maxDate) throw ApiError.badRequest(`Bookings are currently open ${horizonDays} day${horizonDays === 1 ? '' : 's'} ahead`);
   const dayEnd = new Date(date);
   dayEnd.setHours(23, 59, 59, 999);
 
@@ -988,7 +993,7 @@ export const getConsultationSlots = asyncHandler(async (req, res) => {
     }));
   }
 
-  res.json({ slots, fee, duration });
+  res.json({ slots, fee, duration, bookingHorizonDays: horizonDays, maxDate: maxDate.toISOString().split('T')[0] });
 });
 
 export const bookConsultation = asyncHandler(async (req, res) => {
@@ -997,6 +1002,12 @@ export const bookConsultation = asyncHandler(async (req, res) => {
   if (!timeSlot) throw ApiError.badRequest('A time slot is required');
 
   const settings = await Settings.getSingleton();
+  const horizonDays = Math.max(1, Math.min(30, Number(settings.bookingHorizonDays) || 2));
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + horizonDays);
+  const reqDay = new Date(date); reqDay.setHours(0, 0, 0, 0);
+  if (reqDay < today) throw ApiError.badRequest('Past dates cannot be booked');
+  if (reqDay > maxDate) throw ApiError.badRequest(`Bookings are currently open ${horizonDays} day${horizonDays === 1 ? '' : 's'} ahead`);
   const fee = settings.consultationFee || 300;
   const duration = settings.consultationDuration || 30;
 
@@ -1281,6 +1292,7 @@ export const getServiceCatalog = asyncHandler(async (req, res) => {
   const enrolledServiceIds = new Set();
   const activeEnrolledServiceIds = new Set();
   for (const e of userEnrollments) {
+    if (!e.service) continue; // offering-linked records carry no legacy service id
     enrolledServiceIds.add(e.service.toString());
     if (e.status === 'active') {
       activeEnrolledServiceIds.add(e.service.toString());

@@ -6,6 +6,7 @@ import {
 } from '../api/AdminServices.js';
 import {
   LuSparkles, LuUsers, LuListChecks, LuTrash2, LuPlus, LuCheck, LuSearch, LuRefreshCw,
+  LuPencil, LuX,
 } from 'react-icons/lu';
 
 const EMPTY_SERVICE = {
@@ -31,6 +32,8 @@ export default function ServicesManagement({ onChanged } = {}) {
   const [serviceForm, setServiceForm] = useState(EMPTY_SERVICE);
   const [instructorForm, setInstructorForm] = useState(EMPTY_INSTRUCTOR);
   const [assignmentForm, setAssignmentForm] = useState(EMPTY_ASSIGNMENT);
+  const [editingServiceId, setEditingServiceId] = useState(null);
+  const [editingInstructorId, setEditingInstructorId] = useState(null);
 
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -74,52 +77,115 @@ export default function ServicesManagement({ onChanged } = {}) {
 
   useEffect(() => { fetchAll(); }, [search, statusFilter]);
 
+  const buildServicePayload = (f) => {
+    const timeSlots = f.timeSlots
+      ? f.timeSlots.split('\n').filter(Boolean).map(line => {
+          const parts = line.split('|').map(p => p.trim());
+          return { day: parts[0] || '', time: parts[1] || '', label: parts[2] || '' };
+        })
+      : [];
+    return {
+      name: f.name,
+      slug: f.slug || undefined,
+      description: f.description,
+      category: f.category,
+      type: f.type,
+      mode: f.mode,
+      instructor: f.instructor || undefined,
+      price: Number(f.price) || 0,
+      pricingModel: f.pricingModel,
+      sessionDuration: Number(f.sessionDuration) || 60,
+      durationWeeks: Number(f.durationWeeks) || 0,
+      totalSessions: Number(f.totalSessions) || 0,
+      validityDuration: f.validityDuration ? Number(f.validityDuration) : undefined,
+      validityUnit: f.validityUnit,
+      contactEmail: f.contactEmail || undefined,
+      icon: f.icon || undefined,
+      images: f.images ? f.images.split(',').map(s => s.trim()).filter(Boolean) : [],
+      featured: f.featured,
+      visibility: f.visibility,
+      timeSlots,
+      scheduleDays: f.scheduleDays
+        ? f.scheduleDays.split(',').map(d => d.trim()).filter(Boolean)
+        : [],
+      scheduleTime: f.scheduleTime,
+    };
+  };
+
+  const startEditService = (svc) => {
+    setEditingServiceId(svc._id);
+    setServiceForm({
+      ...EMPTY_SERVICE,
+      name: svc.name || '',
+      description: svc.description || '',
+      category: svc.category || 'General',
+      type: svc.type || '',
+      mode: svc.mode || 'offline',
+      instructor: typeof svc.instructor === 'object' ? (svc.instructor?._id || '') : (svc.instructor || ''),
+      price: svc.price ?? '',
+      pricingModel: svc.pricingModel || 'flat',
+      sessionDuration: svc.sessionDuration ?? '60',
+      durationWeeks: svc.durationWeeks ?? '',
+      totalSessions: svc.totalSessions ?? '',
+      validityDuration: svc.validityDuration ?? '',
+      validityUnit: svc.validityUnit || 'weeks',
+      contactEmail: svc.contactEmail || '',
+      icon: svc.icon || '',
+      images: Array.isArray(svc.images) ? svc.images.join(', ') : (svc.images || ''),
+      slug: svc.slug || '',
+      featured: !!svc.featured,
+      visibility: svc.visibility || 'public',
+      timeSlots: Array.isArray(svc.timeSlots) ? svc.timeSlots.map(t => [t.day, t.time, t.label].filter(Boolean).join(' | ')).join('\n') : '',
+      scheduleDays: Array.isArray(svc.scheduleDays) ? svc.scheduleDays.join(', ') : (svc.scheduleDays || ''),
+      scheduleTime: svc.scheduleTime || '',
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEditService = () => {
+    setEditingServiceId(null);
+    setServiceForm(EMPTY_SERVICE);
+  };
+
   const handleSaveService = async (e) => {
     e.preventDefault();
     if (!serviceForm.name) { flash('Service name is required.', 'error'); return; }
     setSaving(true);
     try {
-      const timeSlots = serviceForm.timeSlots
-        ? serviceForm.timeSlots.split('\n').filter(Boolean).map(line => {
-            const parts = line.split('|').map(p => p.trim());
-            return { day: parts[0] || '', time: parts[1] || '', label: parts[2] || '' };
-          })
-        : [];
-      const data = await servicesApi.create({
-        name: serviceForm.name,
-        slug: serviceForm.slug || undefined,
-        description: serviceForm.description,
-        category: serviceForm.category,
-        type: serviceForm.type,
-        mode: serviceForm.mode,
-        instructor: serviceForm.instructor || undefined,
-        price: Number(serviceForm.price) || 0,
-        pricingModel: serviceForm.pricingModel,
-        sessionDuration: Number(serviceForm.sessionDuration) || 60,
-        durationWeeks: Number(serviceForm.durationWeeks) || 0,
-        totalSessions: Number(serviceForm.totalSessions) || 0,
-        validityDuration: serviceForm.validityDuration ? Number(serviceForm.validityDuration) : undefined,
-        validityUnit: serviceForm.validityUnit,
-        contactEmail: serviceForm.contactEmail || undefined,
-        icon: serviceForm.icon || undefined,
-        images: serviceForm.images ? serviceForm.images.split(',').map(s => s.trim()).filter(Boolean) : [],
-        featured: serviceForm.featured,
-        visibility: serviceForm.visibility,
-        timeSlots,
-        scheduleDays: serviceForm.scheduleDays
-          ? serviceForm.scheduleDays.split(',').map(d => d.trim()).filter(Boolean)
-          : [],
-        scheduleTime: serviceForm.scheduleTime,
-      });
-      setServices(prev => [data, ...prev]);
+      if (editingServiceId) {
+        const data = await servicesApi.update(editingServiceId, buildServicePayload(serviceForm));
+        setServices(prev => prev.map(sv => (sv._id === editingServiceId ? data : sv)));
+        flash(`Service "${data.name}" updated.`);
+      } else {
+        const data = await servicesApi.create(buildServicePayload(serviceForm));
+        setServices(prev => [data, ...prev]);
+        flash(`Service "${data.name}" created.`);
+      }
       setServiceForm(EMPTY_SERVICE);
-      flash(`Service "${data.name}" created.`);
+      setEditingServiceId(null);
       onChanged?.();
     } catch (err) {
-      flash(err.message || 'Failed to create service.', 'error');
+      flash(err.message || (editingServiceId ? 'Failed to update service.' : 'Failed to create service.'), 'error');
     } finally {
       setSaving(false);
     }
+  };
+
+  const startEditInstructor = (inst) => {
+    setEditingInstructorId(inst._id);
+    setInstructorForm({
+      name: inst.name || '',
+      email: inst.email || '',
+      phone: inst.phone || '',
+      bio: inst.bio || '',
+      specialties: Array.isArray(inst.specialties) ? inst.specialties.join(', ') : (inst.specialties || ''),
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEditInstructor = () => {
+    setEditingInstructorId(null);
+    setInstructorForm(EMPTY_INSTRUCTOR);
   };
 
   const handleSaveInstructor = async (e) => {
@@ -127,7 +193,7 @@ export default function ServicesManagement({ onChanged } = {}) {
     if (!instructorForm.name) { flash('Instructor name is required.', 'error'); return; }
     setSaving(true);
     try {
-      const data = await instructorsApi.create({
+      const payload = {
         name: instructorForm.name,
         email: instructorForm.email,
         phone: instructorForm.phone,
@@ -135,13 +201,21 @@ export default function ServicesManagement({ onChanged } = {}) {
         specialties: instructorForm.specialties
           ? instructorForm.specialties.split(',').map(s => s.trim()).filter(Boolean)
           : [],
-      });
-      setInstructors(prev => [data, ...prev]);
+      };
+      if (editingInstructorId) {
+        const data = await instructorsApi.update(editingInstructorId, payload);
+        setInstructors(prev => prev.map(i => (i._id === editingInstructorId ? data : i)));
+        flash(`Instructor "${data.name}" updated.`);
+      } else {
+        const data = await instructorsApi.create(payload);
+        setInstructors(prev => [data, ...prev]);
+        flash(`Instructor "${data.name}" created.`);
+      }
       setInstructorForm(EMPTY_INSTRUCTOR);
-      flash(`Instructor "${data.name}" created.`);
+      setEditingInstructorId(null);
       onChanged?.();
     } catch (err) {
-      flash(err.message || 'Failed to create instructor.', 'error');
+      flash(err.message || (editingInstructorId ? 'Failed to update instructor.' : 'Failed to create instructor.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -178,6 +252,7 @@ export default function ServicesManagement({ onChanged } = {}) {
     try {
       await servicesApi.remove(id);
       setServices(prev => prev.filter(s => s._id !== id));
+      if (editingServiceId === id) { setEditingServiceId(null); setServiceForm(EMPTY_SERVICE); }
       flash(`Service "${name}" deleted.`);
       onChanged?.();
     } catch { flash('Failed to delete service.', 'error'); }
@@ -190,6 +265,7 @@ export default function ServicesManagement({ onChanged } = {}) {
     try {
       await instructorsApi.remove(id);
       setInstructors(prev => prev.filter(i => i._id !== id));
+      if (editingInstructorId === id) { setEditingInstructorId(null); setInstructorForm(EMPTY_INSTRUCTOR); }
       flash(`Instructor "${name}" deleted.`);
     } catch { flash('Failed to delete instructor.', 'error'); }
     finally { setDeletingId(null); }
@@ -279,7 +355,7 @@ export default function ServicesManagement({ onChanged } = {}) {
       {activeTab === 'catalog' && (
         <>
           <form onSubmit={handleSaveService} className={s.card}>
-            <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuSparkles /></span>Add Service</h3>
+            <h3 className={s.cardTitle}><span className={s.cardTitleIcon}>{editingServiceId ? <LuPencil /> : <LuSparkles />}</span>{editingServiceId ? 'Edit Service' : 'Add Service'}</h3>
             <div className={s.grid3} style={{ marginBottom: 10 }}>
               <input type="text" placeholder="Service name *" value={serviceForm.name} onChange={e => setServiceForm({ ...serviceForm, name: e.target.value })} />
               <input type="text" placeholder="Slug (auto if empty)" value={serviceForm.slug} onChange={e => setServiceForm({ ...serviceForm, slug: e.target.value })} />
@@ -336,9 +412,16 @@ export default function ServicesManagement({ onChanged } = {}) {
               <textarea placeholder="Description" value={serviceForm.description} onChange={e => setServiceForm({ ...serviceForm, description: e.target.value })} style={{ gridColumn: 'span 2', minHeight: 60, border: '1px solid #E7D7BE', borderRadius: 10, padding: '10px 14px', fontSize: 13, resize: 'vertical' }} />
               <textarea placeholder="Time slots (one per line: day | time | label)" value={serviceForm.timeSlots} onChange={e => setServiceForm({ ...serviceForm, timeSlots: e.target.value })} style={{ gridColumn: 'span 2', minHeight: 60, border: '1px solid #E7D7BE', borderRadius: 10, padding: '10px 14px', fontSize: 13, resize: 'vertical' }} />
             </div>
-            <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={saving}>
-              {saving ? 'Saving…' : 'Add Service'}
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={saving}>
+                {saving ? 'Saving…' : editingServiceId ? 'Save Changes' : 'Add Service'}
+              </button>
+              {editingServiceId && (
+                <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={cancelEditService} disabled={saving}>
+                  <LuX size={14} /> Cancel
+                </button>
+              )}
+            </div>
           </form>
 
           <h3 className={s.cardTitle} style={{ margin: '6px 2px 14px' }}>
@@ -391,9 +474,14 @@ export default function ServicesManagement({ onChanged } = {}) {
                       </div>
                       <div className={s.productFoot}>
                         <div className={s.productPrice}>KES {fmtPrice(svc.price)} <span style={{ fontSize: 11, fontWeight: 400, color: '#9C8E7C' }}>{priceLabel}</span></div>
-                        <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnDanger}`} onClick={() => handleDeleteService(svc._id, svc.name)} disabled={deletingId === svc._id}>
-                          {deletingId === svc._id ? '…' : <LuTrash2 size={13} />}
-                        </button>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button type="button" className={`${s.btn} ${s.btnSm}`} title="Edit service" onClick={() => startEditService(svc)}>
+                            <LuPencil size={13} /> Edit
+                          </button>
+                          <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnDanger}`} onClick={() => handleDeleteService(svc._id, svc.name)} disabled={deletingId === svc._id}>
+                            {deletingId === svc._id ? '…' : <LuTrash2 size={13} />}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -408,7 +496,7 @@ export default function ServicesManagement({ onChanged } = {}) {
       {activeTab === 'instructors' && (
         <>
           <form onSubmit={handleSaveInstructor} className={s.card}>
-            <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuUsers /></span>Add Instructor</h3>
+            <h3 className={s.cardTitle}><span className={s.cardTitleIcon}>{editingInstructorId ? <LuPencil /> : <LuUsers />}</span>{editingInstructorId ? 'Edit Instructor' : 'Add Instructor'}</h3>
             <div className={s.grid3} style={{ marginBottom: 10 }}>
               <input type="text" placeholder="Instructor name *" value={instructorForm.name} onChange={e => setInstructorForm({ ...instructorForm, name: e.target.value })} />
               <input type="email" placeholder="Email" value={instructorForm.email} onChange={e => setInstructorForm({ ...instructorForm, email: e.target.value })} />
@@ -416,9 +504,16 @@ export default function ServicesManagement({ onChanged } = {}) {
               <input type="text" placeholder="Specialties (comma separated)" value={instructorForm.specialties} onChange={e => setInstructorForm({ ...instructorForm, specialties: e.target.value })} style={{ gridColumn: 'span 2' }} />
               <input type="text" placeholder="Bio (optional)" value={instructorForm.bio} onChange={e => setInstructorForm({ ...instructorForm, bio: e.target.value })} style={{ gridColumn: 'span 2' }} />
             </div>
-            <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={saving}>
-              {saving ? 'Saving…' : 'Add Instructor'}
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={saving}>
+                {saving ? 'Saving…' : editingInstructorId ? 'Save Changes' : 'Add Instructor'}
+              </button>
+              {editingInstructorId && (
+                <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={cancelEditInstructor} disabled={saving}>
+                  <LuX size={14} /> Cancel
+                </button>
+              )}
+            </div>
           </form>
 
           <h3 className={s.cardTitle} style={{ margin: '6px 2px 14px' }}><span className={s.cardTitleIcon}><LuUsers /></span>Instructors</h3>
@@ -440,14 +535,19 @@ export default function ServicesManagement({ onChanged } = {}) {
                       </div>
                     )}
                     {inst.bio && <div className={s.productMeta} style={{ color: 'var(--text-3)' }}>{inst.bio}</div>}
-                    <div className={s.productFoot}>
-                      <div className={s.productPrice} style={{ color: inst.active ? 'var(--green)' : 'var(--danger)', fontSize: 12 }}>
-                        {inst.active ? 'Active' : 'Inactive'}
+                      <div className={s.productFoot}>
+                        <div className={s.productPrice} style={{ color: inst.active ? 'var(--green)' : 'var(--danger)', fontSize: 12 }}>
+                          {inst.active ? 'Active' : 'Inactive'}
+                        </div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button type="button" className={`${s.btn} ${s.btnSm}`} title="Edit instructor" onClick={() => startEditInstructor(inst)}>
+                            <LuPencil size={13} /> Edit
+                          </button>
+                          <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnDanger}`} onClick={() => handleDeleteInstructor(inst._id, inst.name)} disabled={deletingId === inst._id}>
+                            {deletingId === inst._id ? '…' : <LuTrash2 size={13} />}
+                          </button>
+                        </div>
                       </div>
-                      <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnDanger}`} onClick={() => handleDeleteInstructor(inst._id, inst.name)} disabled={deletingId === inst._id}>
-                        {deletingId === inst._id ? '…' : <LuTrash2 size={13} />}
-                      </button>
-                    </div>
                   </div>
                 </div>
               ))}

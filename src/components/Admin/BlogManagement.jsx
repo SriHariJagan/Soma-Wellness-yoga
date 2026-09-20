@@ -6,6 +6,7 @@ import s from "./YogaAdmin.module.css";
 import { blogsAdminApi, getBlog } from "../api/AdminServices.js";
 import { createBlog, updateBlog, getUserBlogs } from "../api/StudentServices.js";
 import { PageHeader, Counter, KpiCard, trendSeed } from "./ui/Primitives.jsx";
+import { ConfirmSheet } from "./ui/Sheets.jsx";
 import BlogDetail from "../Profile/BlogDetail";
 
 const API_DOMAIN = import.meta.env.VITE_API_URL || "";
@@ -386,22 +387,18 @@ export default function BlogManagement({ onChanged }) {
       )}
 
       {deleteConfirm && (
-        <div className={s.modalOverlay} onClick={() => setDeleteConfirm(null)}>
-          <div className={s.modalBox} onClick={e => e.stopPropagation()}>
-            <div className={s.modalIcon}><LuTrash2 /></div>
-            <h3 className={s.modalTitle}>Delete Blog</h3>
-            <p className={s.modalText}>
-              Permanently delete this blog? This action cannot be undone. All comments, reactions, and associated data will be removed.
-            </p>
-            <div className={s.modalActions}>
-              <button className={s.btnCancel} onClick={() => setDeleteConfirm(null)}>Cancel</button>
-              <button className={s.btnConfirmLogout} onClick={async () => {
-                await handleHardDelete(deleteConfirm);
-                setDeleteConfirm(null);
-              }}>Delete</button>
-            </div>
-          </div>
-        </div>
+        <ConfirmSheet
+          icon={<LuTrash2 size={20} />}
+          tone="danger"
+          title="Delete Blog"
+          message="Permanently delete this blog? This action cannot be undone. All comments, reactions, and associated data will be removed."
+          confirmLabel="Delete"
+          onConfirm={async () => {
+            await handleHardDelete(deleteConfirm);
+            setDeleteConfirm(null);
+          }}
+          onClose={() => setDeleteConfirm(null)}
+        />
       )}
     </div>
   );

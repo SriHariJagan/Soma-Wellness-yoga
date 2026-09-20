@@ -4,7 +4,11 @@ import { USER_SERVICE_STATUSES, SERVICE_PAYMENT_STATUSES } from '../shared/const
 const UserServiceSchema = new mongoose.Schema(
   {
     user:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    service:      { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true, index: true },
+    // Legacy catalog link (optional since the unified Offering catalog).
+    // Offering-based purchases set `offering` instead.
+    service:      { type: mongoose.Schema.Types.ObjectId, ref: 'Service', default: null, index: true },
+    offering:     { type: mongoose.Schema.Types.ObjectId, ref: 'Offering', default: null, index: true },
+    offeringName: { type: String, default: '' },
     instructor:   { type: mongoose.Schema.Types.ObjectId, ref: 'Instructor', default: null },
     instructors:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Instructor' }],
     payment:      { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null },

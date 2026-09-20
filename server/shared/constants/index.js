@@ -5,3 +5,4 @@ export * from './course.types.js';
 export * from './status.types.js';
 export * from './booking.types.js';
 export * from './content.types.js';
+export * from './offering.types.js';

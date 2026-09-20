@@ -145,11 +145,30 @@ export const listDailyContentAdmin = asyncHandler(async (req, res) => {
   res.json(items);
 });
 export const createDailyContentAdmin = asyncHandler(async (req, res) => {
-  const doc = await SomaContent.create({ ...req.body, createdBy: req.user._id });
+  const allowed = [
+    'title', 'type', 'cadence', 'description', 'body', 'audioUrl',
+    'image', 'readingNotes', 'releaseAt', 'published', 'access',
+    'season', 'displayOrder',
+  ];
+  const data = {};
+  for (const field of allowed) {
+    if (req.body[field] !== undefined) data[field] = req.body[field];
+  }
+  data.createdBy = req.user._id;
+  const doc = await SomaContent.create(data);
   res.status(201).json(doc);
 });
 export const updateDailyContentAdmin = asyncHandler(async (req, res) => {
-  const doc = await SomaContent.findByIdAndUpdate(req.params.id, { $set: req.body }, { returnDocument: 'after', runValidators: true });
+  const allowed = [
+    'title', 'type', 'cadence', 'description', 'body', 'audioUrl',
+    'image', 'readingNotes', 'releaseAt', 'published', 'access',
+    'season', 'displayOrder',
+  ];
+  const updates = {};
+  for (const field of allowed) {
+    if (req.body[field] !== undefined) updates[field] = req.body[field];
+  }
+  const doc = await SomaContent.findByIdAndUpdate(req.params.id, { $set: updates }, { returnDocument: 'after', runValidators: true });
   if (!doc) throw ApiError.notFound('Content not found');
   res.json(doc);
 });

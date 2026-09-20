@@ -46,8 +46,8 @@ export default function InvoiceView({ order, onClose }) {
   const studio = {
     name: "SomaWellness",
     address: "Spring Valley, Nairobi, Kenya",
-    email: "hello@somawellness.co.ke",
-    phone: "+254 700 000 000",
+    email: "somawellnesslimited@gmail.com",
+    phone: "+254 702 080 070",
     taxNote: "All prices VAT inclusive",
   };
 

@@ -84,12 +84,11 @@ const Footer = () => {
             <ul>
               {[
                 { to: "/", label: t("navigation.home") },
-                { to: "/classes", label: t("navigation.join") },
-                { to: "/private", label: t("navigation.oneToOne") },
-                { to: "/life-stages", label: t("navigation.lifeStages") },
-                { to: "/restore", label: t("navigation.restore") },
-                { to: "/yttc", label: t("navigation.learnPartner") },
-                { to: "/founding", label: t("navigation.founding") },
+                { to: "/services", label: t("navigation.services") },
+                { to: "/spa-rituals", label: t("navigation.spaRituals") },
+                { to: "/courses", label: t("navigation.courses") },
+                { to: "/blogs", label: t("navigation.blogs") },
+                { to: "/events", label: t("navigation.events") },
                 { to: "/about", label: t("navigation.about") },
                 { to: "/faq", label: t("navigation.faq") },
                 { to: "/contact", label: t("navigation.contact") },
@@ -105,7 +104,7 @@ const Footer = () => {
             <h3>{t("footer.visit")}</h3>
             <div className="footer-contact-item">
               <div className="footer-contact-icon"><FaMapMarkerAlt /></div>
-              <span>{t("footer.address")}</span>
+              <span>48 Shanzu Road, Spring Valley, Nairobi</span>
             </div>
             <div className="footer-contact-item">
               <div className="footer-contact-icon"><MdEmail /></div>

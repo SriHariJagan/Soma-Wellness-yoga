@@ -887,16 +887,26 @@
 .btn:hover { background: var(--surface-3); border-color: var(--c-primary-line); }
 
 .btnPrimary {
-  background: var(--c-grad);
+  background: linear-gradient(135deg, #183D2D 0%, #2E7D5B 55%, #3a9a73 100%);
   color: #fff;
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(46,125,91,0.22);
 }
 
-.btnPrimary:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(46,125,91,0.28); }
+.btnPrimary:hover { background: linear-gradient(135deg, #183D2D 0%, #2E7D5B 55%, #3a9a73 100%); border-color: transparent; color: #fff; filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(46,125,91,0.28); }
 
 .btnGhost { background: transparent; border-color: transparent; }
 .btnGhost:hover { background: var(--surface-3); }
+
+/* Sheet footer helpers */
+.footerHint { font-size: 12.5px; color: var(--text-3, #8a9a94); }
+.footerActions { display: flex; gap: 10px; align-items: center; }
+.footerActions .btnPrimary {
+  padding: 12px 28px;
+  font-size: 13.5px;
+  box-shadow: 0 8px 22px rgba(46,125,91,0.3);
+}
+.footerActions .btnGhost { padding: 12px 20px; }
 
 .btnSmall { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
 

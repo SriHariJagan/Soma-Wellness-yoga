@@ -4,8 +4,8 @@ import AdminQueryProvider from './AdminQueryClient';
 import {
   LuLayoutDashboard, LuUsers, LuFilter, LuRadioTower, LuGraduationCap,
   LuReceipt, LuCalendarClock, LuFolderLock, LuMegaphone, LuTicketPercent, LuCalendar,
-  LuSparkles, LuClock, LuGift, LuMail, LuBookOpen, LuCalendarCheck,
-  LuCalendarDays, LuActivity, LuTruck, LuUserCog,
+  LuSparkles, LuClock, LuGift, LuMail, LuCalendarCheck,
+  LuCalendarDays, LuActivity, LuTruck, LuUserCog, LuPackage,
 } from 'react-icons/lu';
 
 // Layout Shell Components
@@ -30,11 +30,11 @@ const CommsWebConfig = lazy(() => import('./CommsWebConfig'));
 const CouponManagement = lazy(() => import('./CouponManagement'));
 const FreeTrialManagement = lazy(() => import('./FreeTrialManagement'));
 const ClassInvites = lazy(() => import('./ClassInvites'));
-const YTTCInvites = lazy(() => import('./YTTCInvites'));
 const AttendanceManagement = lazy(() => import('./AttendanceManagement'));
 const BlogManagement = lazy(() => import('./BlogManagement'));
 const EmailHealth = lazy(() => import('./EmailHealth'));
 const ReceptionStaffManagement = lazy(() => import('./ReceptionStaffManagement'));
+const OfferingsManagement = lazy(() => import('./OfferingsManagement'));
 
 import {
   getOverview, getPayments, getConsultations, getStudents,
@@ -119,17 +119,18 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
 
   const NAV_ITEMS = [
     { id: 'insights',       label: 'Dashboard',            icon: <LuLayoutDashboard /> },
-    { id: 'students',       label: 'Students',             icon: <LuUsers />,         badge: students.length || null },
+    { id: 'students',       label: 'Users',                  icon: <LuUsers />,   
+      badge: students.length || null },
     { id: 'reception-staff', label: 'Reception Staff',     icon: <LuUserCog />,       adminOnly: true },
     { id: 'leads',          label: 'Pipeline CRM',         icon: <LuFilter />,        badge: (overview.totalLeads ?? leads.length) || null },
     { id: 'batches',        label: 'Batches & Streams',    icon: <LuRadioTower /> },
     { id: 'class-invites',  label: 'Class Invites',        icon: <LuMail /> },
-    { id: 'yttc-invites',   label: 'YTTC Invites',         icon: <LuBookOpen /> },
     { id: 'attendance-mgmt',label: 'Attendance',           icon: <LuCalendarCheck /> },
     { id: 'workshops',      label: 'Workshops',            icon: <LuCalendar /> },
     { id: 'events',         label: 'Events Management',    icon: <LuCalendarDays /> },
     { id: 'curriculum',     label: 'Courses & Plans',      icon: <LuGraduationCap /> },
     { id: 'services',       label: 'Services',             icon: <LuSparkles /> },
+    { id: 'offerings',      label: 'Offerings Catalog',    icon: <LuPackage />,        adminOnly: true },
     { id: 'attendance',     label: 'Reports & Invoices',   icon: <LuReceipt /> },
     { id: 'consultations',  label: 'Consultations',        icon: <LuCalendarClock /> },
     { id: 'time-slots',     label: 'Time Slots',            icon: <LuClock /> },
@@ -162,8 +163,10 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
   const closeModal = () => { setQuickModal(null); };
   const afterCreate = () => { closeModal(); loadAll(); };
   // Managers may only quick-create students (walk-ins); payments/leads/batches stay admin-only.
+  const TABS = ['insights', 'students', 'leads', 'attendance-mgmt', 'batches', 'events', 'offerings'];
   const handleQuickAction = (key) => {
     if (isManager && key !== 'student') { setActiveTab('students'); return; }
+    if (TABS.includes(key)) { setActiveTab(key); setQuickModal(null); setMobileOpen(false); return; }
     setActiveTab('insights'); setQuickModal(key);
   };
 
@@ -259,12 +262,12 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
         {activeTab === 'leads' && <Suspense fallback={<TabFallback />}><PipelineCRMLeads leads={leads} onChanged={loadAll} /></Suspense>}
         {activeTab === 'batches' && <Suspense fallback={<TabFallback />}><BatchesStreams form={batchForm} setForm={setBatchForm} onChanged={loadAll} /></Suspense>}
         {activeTab === 'class-invites' && <Suspense fallback={<TabFallback />}><ClassInvites /></Suspense>}
-        {activeTab === 'yttc-invites' && <Suspense fallback={<TabFallback />}><YTTCInvites /></Suspense>}
         {activeTab === 'attendance-mgmt' && <Suspense fallback={<TabFallback />}><AttendanceManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'workshops' && <Suspense fallback={<TabFallback />}><WorkshopManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'events' && <Suspense fallback={<TabFallback />}><EventsManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'curriculum' && <Suspense fallback={<TabFallback />}><CoursesPlans courses={courses} plans={plans} /></Suspense>}
         {activeTab === 'services' && <Suspense fallback={<TabFallback />}><ServicesManagement onChanged={loadAll} /></Suspense>}
+        {activeTab === 'offerings' && <Suspense fallback={<TabFallback />}><OfferingsManagement /></Suspense>}
         {activeTab === 'attendance' && (
           <Suspense fallback={<TabFallback />}>
             <ReportsInvoices

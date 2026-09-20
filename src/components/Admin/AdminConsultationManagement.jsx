@@ -15,8 +15,20 @@ import {
   LuCircleAlert, LuTarget, LuBookOpen, LuLayers,
 } from "react-icons/lu";
 
-const STATUS_TABS = ["All", "Upcoming", "Confirmed", "Pending", "Completed", "Cancelled"];
+const STATUS_TABS = [
+  { id: "action", label: "Awaiting Confirmation" },
+  { id: "confirmed", label: "Confirmed" },
+  { id: "done", label: "Done" },
+  { id: "all", label: "All" },
+];
 const STATUS_OPTIONS = ["upcoming", "confirmed", "pending", "completed", "cancelled", "rescheduled"];
+
+// Workflow groups — what needs you first
+function groupOf(c) {
+  if (c.status === "confirmed") return "confirmed";
+  if (c.status === "completed" || c.status === "cancelled") return "done";
+  return "action"; // pending + upcoming + rescheduled
+}
 
 const C = {
   cream: "#F8F4EC", card: "#FFFFFF", border: "#E7D7BE",
@@ -328,9 +340,10 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("action");
   const [feedback, setFeedback] = useState({ message: "", type: "" });
   const [editingConsultation, setEditingConsultation] = useState(null);
+  const [confirmingId, setConfirmingId] = useState(null);
 
   const flash = (message, type = "success") => {
     setFeedback({ message, type });
@@ -343,7 +356,6 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
     try {
       const params = {};
       if (search) params.search = search;
-      if (statusFilter !== "All") params.status = statusFilter.toLowerCase();
       const [cons, anl] = await Promise.all([
         getConsultations(params).catch(() => []),
         getConsultationAnalytics().catch(() => null),
@@ -357,9 +369,23 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
     }
   };
 
-  useEffect(() => { fetchAll(); }, [search, statusFilter]);
+  useEffect(() => { fetchAll(); }, [search]);
 
-  const filtered = statusFilter === "All" ? consultations : consultations.filter(c => c.status === statusFilter.toLowerCase());
+  const confirmBooking = async (c) => {
+    setConfirmingId(c._id);
+    try {
+      await updateConsultation(c._id, { status: "confirmed" });
+      flash(`${c.user?.name || "Booking"} confirmed`);
+      fetchAll();
+    } catch (err) {
+      flash(err.message || "Could not confirm", "error");
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const visible = consultations.filter((c) => statusFilter === "all" || groupOf(c) === statusFilter);
+  const actionCount = consultations.filter((c) => groupOf(c) === "action").length;
 
   return (
     <div>
@@ -373,13 +399,24 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
         <button className={s.iconBtn} onClick={fetchAll} title="Refresh"><LuRefreshCw /></button>
       </PageHeader>
 
-      <div className={s.statsRow} style={{ marginBottom: 20 }}>
-        <KpiCard icon={<LuCalendarClock />} label="Total" value={analytics?.total ?? 0} accent="orange" />
-        <KpiCard icon={<LuClock />} label="Upcoming" value={analytics?.upcoming ?? 0} accent="amber" />
-        <KpiCard icon={<LuCircleCheck />} label="Completed" value={analytics?.completed ?? 0} accent="green" />
-        <KpiCard icon={<LuCircleX />} label="Cancelled" value={analytics?.cancelled ?? 0} accent="blue" />
-        <KpiCard icon={<LuIndianRupee />} label="Revenue" value={analytics?.revenue ?? 0} prefix="KES " accent="orange" />
-        <KpiCard icon={<LuTrendingUp />} label="Paid" value={analytics?.paidCount ?? 0} accent="green" />
+      <div className={s.kpiStrip}>
+        {[
+          { label: "All Bookings", value: analytics?.total ?? 0, color: C.dark, go: null },
+          { label: "Awaiting Confirmation", value: actionCount, color: C.amber, go: "action" },
+          { label: "Completed Sessions", value: analytics?.completed ?? 0, color: C.green, go: null },
+          { label: "Revenue Collected", value: `KES ${(analytics?.revenue ?? 0).toLocaleString()}`, color: C.dark, go: null },
+        ].map((k) => k.go ? (
+          <button key={k.label} type="button" className={s.kpiSeg} onClick={() => setStatusFilter(k.go)}>
+            <div className={s.kpiSegLabel}>{k.label}</div>
+            <div className={s.kpiSegVal} style={{ color: k.color }}>{k.value}</div>
+            {actionCount > 0 && <div className={s.kpiSegGo}>View queue →</div>}
+          </button>
+        ) : (
+          <div key={k.label} className={s.kpiSeg}>
+            <div className={s.kpiSegLabel}>{k.label}</div>
+            <div className={s.kpiSegVal} style={{ color: k.color }}>{k.value}</div>
+          </div>
+        ))}
       </div>
 
       <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
@@ -396,12 +433,17 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
         {STATUS_TABS.map((tab) => (
           <button
-            key={tab}
+            key={tab.id}
             type="button"
-            className={`${s.chip} ${statusFilter === tab ? s.chipActive : ""}`}
-            onClick={() => setStatusFilter(tab)}
+            className={`${s.chip} ${statusFilter === tab.id ? s.chipActive : ""}`}
+            onClick={() => setStatusFilter(tab.id)}
           >
-            {tab}
+            {tab.label}
+            {tab.id === "action" && actionCount > 0 && (
+              <span style={{ marginLeft: 6, background: "rgba(217,119,6,0.15)", color: "#D97706", borderRadius: 999, padding: "1px 8px", fontSize: 11, fontWeight: 700 }}>
+                {actionCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -414,10 +456,10 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
             {error}<br />
             <button type="button" className={`${s.btn} ${s.btnSm}`} style={{ marginTop: 12 }} onClick={fetchAll}>Retry</button>
           </div>
-        ) : consultations.length === 0 ? (
+        ) : visible.length === 0 ? (
           <div className={s.emptyState}>
             <LuStethoscope size={40} opacity={0.3} />
-            <p>No consultations found.</p>
+            <p>{statusFilter === "action" ? "All clear — nothing needs you right now." : "No consultations found."}</p>
           </div>
         ) : (
           <div className={s.tableWrap}>
@@ -428,13 +470,11 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
                   <th>Date / Time</th>
                   <th>Topic</th>
                   <th>Status</th>
-                  <th>Payment</th>
-                  <th>Guru</th>
                   <th style={{ textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {consultations.map((c) => (
+                {visible.map((c) => (
                   <motion.tr
                     key={c._id}
                     className={s.rowClickable}
@@ -460,35 +500,35 @@ export default function AdminConsultationManagement({ onChanged } = {}) {
                         {c.timeSlot || ""}
                       </div>
                     </td>
-                    <td style={{ fontSize: 13, color: "var(--text-2)", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <td style={{ fontSize: 13, color: "var(--text-2)", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {c.topic || "—"}
+                      <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>
+                        {c.assignedGuru ? `with ${c.assignedGuru}` : "Guru not assigned"}
+                        {c.paymentStatus === "paid" ? ` · KES ${c.price || 0} paid` : c.paymentStatus === "pending" ? " · payment pending" : ""}
+                      </div>
                     </td>
                     <td>
                       <Badge label={c.status ? c.status.charAt(0).toUpperCase() + c.status.slice(1) : "Pending"} />
                     </td>
-                    <td>
-                      {c.paymentStatus === "paid" ? (
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                          <span style={{ color: "#16A34A", fontWeight: 700, fontSize: 14 }}>KES {c.price || 0}</span>
-                          <Badge label="Paid" />
-                        </div>
-                      ) : (
-                        <Badge label={c.paymentStatus ? c.paymentStatus.charAt(0).toUpperCase() + c.paymentStatus.slice(1) : "Pending"} />
+                    <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                      {groupOf(c) === "action" && (
+                        <button
+                          type="button"
+                          className={`${s.btn} ${s.btnSm} ${s.btnPrimary}`}
+                          disabled={confirmingId === c._id}
+                          onClick={(e) => { e.stopPropagation(); confirmBooking(c); }}
+                          style={{ fontSize: 12, marginRight: 6 }}
+                        >
+                          <LuCheck size={13} /> {confirmingId === c._id ? "…" : "Confirm"}
+                        </button>
                       )}
-                    </td>
-                    <td style={{ fontSize: 13, color: "var(--text-2)" }}>
-                      {c.assignedGuru || (
-                        <span style={{ color: "var(--text-3)", fontStyle: "italic" }}>Not assigned</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
                       <button
                         type="button"
                         className={`${s.btn} ${s.btnSm}`}
                         onClick={(e) => { e.stopPropagation(); setEditingConsultation(c); }}
                         style={{ fontSize: 12 }}
                       >
-                        <LuPen size={13} /> Edit
+                        <LuPen size={13} /> Manage
                       </button>
                     </td>
                   </motion.tr>

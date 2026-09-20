@@ -16,7 +16,7 @@ const verifyLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, message: 'Too ma
 
 import { VALID_ITEM_TYPES } from '../shared/constants/index.js';
 
-router.post('/create-order', initiateLimiter, async (req, res, next) => {
+router.post('/create-order', initiateLimiter, validate(schemas.mpesaCreateOrder), async (req, res, next) => {
   try {
     const { items, label, description, idempotencyKey } = req.body;
 
@@ -62,7 +62,7 @@ router.post('/create-order', initiateLimiter, async (req, res, next) => {
   }
 });
 
-router.post('/verify-payment', requireAuth, verifyLimiter, async (req, res, next) => {
+router.post('/verify-payment', requireAuth, verifyLimiter, validate(schemas.mpesaVerify), async (req, res, next) => {
   try {
     // M-Pesa only — Razorpay verification is deprecated.
     // For backward compat, still accept razorpay_* if sent, but prefer mpesa fields.

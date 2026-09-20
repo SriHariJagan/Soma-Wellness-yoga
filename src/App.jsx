@@ -18,6 +18,12 @@ import { useAuth } from './context/AuthContext.jsx';
 const ChatbotWidget = lazy(() => import('./components/chatbot/ChatbotWidget.jsx'));
 const About = lazy(() => import('./pages/About'));
 const Classes = lazy(() => import('./pages/Classes'));
+const NewClasses = lazy(() => import('./pages/NewClasses'));
+const Services = lazy(() => import('./pages/Services'));
+const SpaRituals = lazy(() => import('./pages/SpaRituals'));
+const Courses = lazy(() => import('./pages/Courses'));
+const Blogs = lazy(() => import('./pages/Blogs'));
+const BlogDetail = lazy(() => import('./pages/BlogDetail'));
 const YTTC = lazy(() => import('./pages/YTTC'));
 const Events = lazy(() => import('./pages/Events'));
 const Contact = lazy(() => import('./pages/Contact'));
@@ -146,7 +152,13 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
             {/* ── Public routes ── */}
             <Route path="/"        element={<Home />} />
             <Route path="/about"   element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/spa-rituals" element={<SpaRituals />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/blogs"   element={<Blogs />} />
+            <Route path="/blogs/:id" element={<BlogDetail />} />
             <Route path="/classes" element={<Classes />} />
+            <Route path="/offerings" element={<NewClasses />} />
             <Route path="/private" element={<Private />} />
             <Route path="/life-stages" element={<LifeStages />} />
             <Route path="/restore" element={<Restore />} />

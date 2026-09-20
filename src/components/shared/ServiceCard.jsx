@@ -33,6 +33,16 @@ const BADGE_TONES = {
   New: { bg: "rgba(22,163,74,0.12)", color: "#16A34A" },
 };
 
+/* Category fallback photos (same family as the website Services page) */
+const CAT_PHOTOS = {
+  Group: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=800&auto=format&fit=crop",
+  Personal: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=800&auto=format&fit=crop",
+  Specialty: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop",
+  Corporate: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800&auto=format&fit=crop",
+  Therapy: "https://images.unsplash.com/photo-1600334089648-bd6e2a7a65a8?q=80&w=800&auto=format&fit=crop",
+};
+const DEFAULT_PHOTO = "https://images.unsplash.com/photo-1545389336-cf090694435e?q=80&w=800&auto=format&fit=crop";
+
 function ServiceCard({
   service,
   onEnroll,
@@ -105,6 +115,14 @@ function ServiceCard({
 
   return (
     <article className={`${styles.card} ${featured ? styles.featured : ""}`}>
+      <div className={styles.cardMedia}>
+        <img
+          src={image || (Array.isArray(images) && images[0]) || CAT_PHOTOS[category] || DEFAULT_PHOTO}
+          alt={name}
+          loading="lazy"
+        />
+        <div className={styles.cardShade} />
+      </div>
       {badges.length > 0 && (
         <div className={styles.badgeStrip}>
           {badges.map((b) => (

@@ -53,7 +53,7 @@ export default function CheckoutGate({ intent, onProceed, children }) {
     clearPendingIntent();
     // slight delay to let login propagate
     setTimeout(() => {
-      onProceed?.(data);
+      onProceed?.({ ...data, isNewUser: data.isNew });
     }, 100);
   }, [login, onProceed]);
 
@@ -121,13 +121,22 @@ export function useCheckoutGate() {
   }, []);
 
   const handleVerified = useCallback((data) => {
-    if (data?.token && data?.user) login(data.token, data.user);
-    window.dispatchEvent(new CustomEvent('auth-login', { detail: data }));
-    window.dispatchEvent(new Event('storage'));
-    const cb = state.onProceed;
-    setState({ step: null, intent: null, onProceed: null });
-    clearPendingIntent();
-    setTimeout(() => cb?.(data), 100);
+    if (data?.token && data?.user) {
+      // User is already authenticated
+      window.dispatchEvent(new CustomEvent('auth-login', { detail: data }));
+      window.dispatchEvent(new Event('storage'));
+      const cb = state.onProceed;
+      setState({ step: null, intent: null, onProceed: null });
+      clearPendingIntent();
+      setTimeout(() => cb?.(data), 100);
+    } else {
+      // New user - verify OTP
+      window.dispatchEvent(new CustomEvent('auth-login', { detail: data }));
+      window.dispatchEvent(new Event('storage'));
+      const cb = state.onProceed;
+      setState({ step: 'preview', intent, onProceed: { isNewUser: true } });
+      clearPendingIntent();
+    }
   }, [login, state.onProceed]);
 
   const GateModals = createPortal(

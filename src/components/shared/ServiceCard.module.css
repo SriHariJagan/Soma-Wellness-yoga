@@ -58,6 +58,29 @@
   gap: 10px;
 }
 
+/* Photo header — matches website Services cards */
+.cardMedia {
+  position: relative;
+  height: 170px;
+  overflow: hidden;
+  background: #e8e2d4;
+}
+.cardMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.7s ease;
+  filter: saturate(0.95);
+}
+.card:hover .cardMedia img { transform: scale(1.06); }
+.cardShade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 55%, rgba(12,31,23,0.25) 100%);
+}
+
 .topRow {
   display: flex;
   align-items: flex-start;

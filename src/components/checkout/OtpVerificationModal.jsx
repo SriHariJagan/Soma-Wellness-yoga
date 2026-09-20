@@ -11,13 +11,18 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
   const [channel, setChannel] = useState('email');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [detailEmail, setDetailEmail] = useState('');
+  const [detailPhone, setDetailPhone] = useState('');
   const [otp, setOtp] = useState(Array(6).fill(''));
-  const [step, setStep] = useState('input'); // input | otp
+  const [step, setStep] = useState('input'); // input | details | otp
+  const [checking, setChecking] = useState(false);
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [cooldown, setCooldown] = useState(0);
   const [devOtp, setDevOtp] = useState('');
+  const [createdMsg, setCreatedMsg] = useState('');
   const inputsRef = useRef([]);
 
   useEffect(() => {
@@ -38,24 +43,110 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
     } catch {}
   }, []);
 
-  async function handleSend() {
+  async function checkExists(identifier) {
+    const res = await fetch(`${API_URL}/api/auth/otp/check`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        channel === 'email' ? { email: identifier } : { phone: identifier },
+      ),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.message || 'Could not check account');
+    return !!data.exists;
+  }
+
+  async function sendOtpTo(identifier, displayName) {
+    const res = await fetch(`${API_URL}/api/auth/otp/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: channel === 'email' ? identifier : undefined,
+        phone: channel === 'sms' ? identifier : undefined,
+        channel,
+        name: displayName || intent?.name || 'there',
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.message || 'Failed to send OTP');
+    return data;
+  }
+
+  // Step 1 → background existence check, then route new users to details
+  async function handleContinue() {
     setMsg({ type: '', text: '' });
     setDevOtp('');
+    setCreatedMsg('');
     const identifier = channel === 'email' ? email.trim().toLowerCase() : sanitizePhone(phone.trim());
     if (channel === 'email') {
       if (!EMAIL_RE.test(identifier)) { setMsg({ type: 'error', text: 'Enter a valid email address' }); return; }
     } else {
       if (!PHONE_RE.test(identifier)) { setMsg({ type: 'error', text: 'Enter phone with country code, e.g. +2547XXXXXXX' }); return; }
     }
+    setChecking(true);
+    try {
+      const exists = await checkExists(identifier);
+      if (exists) {
+        const data = await sendOtpTo(identifier);
+        setStep('otp');
+        setMsg({ type: 'success', text: data.msg || 'OTP sent' });
+        if (data.devOtp) setDevOtp(data.devOtp);
+        setCooldown(60);
+        setTimeout(() => inputsRef.current[0]?.focus(), 100);
+      } else {
+        // New user — collect full details before OTP
+        if (channel === 'email') { setDetailEmail(identifier); setDetailPhone(phone.trim()); }
+        else { setDetailPhone(identifier); setDetailEmail(email.trim()); }
+        setStep('details');
+        setMsg({ type: 'success', text: 'Welcome! Tell us a little about you to create your account.' });
+      }
+    } catch (err) {
+      setMsg({ type: 'error', text: err.message });
+      if (err.message.includes('SMS') && channel === 'sms') {
+        setMsg({ type: 'error', text: 'SMS not configured — please use Email instead.' });
+      }
+    } finally { setChecking(false); }
+  }
+
+  async function handleSendFromDetails() {
+    setMsg({ type: '', text: '' });
+    setDevOtp('');
+    const name = fullName.trim();
+    const dEmail = detailEmail.trim().toLowerCase();
+    const dPhone = sanitizePhone(detailPhone.trim());
+    if (name.length < 2) { setMsg({ type: 'error', text: 'Please enter your full name' }); return; }
+    if (!EMAIL_RE.test(dEmail)) { setMsg({ type: 'error', text: 'Enter a valid email address' }); return; }
+    if (!PHONE_RE.test(dPhone)) { setMsg({ type: 'error', text: 'Enter mobile with country code, e.g. +2547XXXXXXX' }); return; }
+    // OTP goes to the channel the user started with
+    const identifier = channel === 'email' ? dEmail : dPhone;
     setSending(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/otp/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: channel === 'email' ? identifier : undefined, phone: channel === 'sms' ? identifier : undefined, channel, name: intent?.name || 'there' }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || 'Failed to send OTP');
+      const data = await sendOtpTo(identifier, name);
+      setStep('otp');
+      setMsg({ type: 'success', text: data.msg || 'OTP sent' });
+      if (data.devOtp) setDevOtp(data.devOtp);
+      setCooldown(60);
+      setTimeout(() => inputsRef.current[0]?.focus(), 100);
+    } catch (err) {
+      setMsg({ type: 'error', text: err.message });
+    } finally { setSending(false); }
+  }
+
+  async function handleSend() {
+    // legacy direct send (used for resend)
+    return handleContinueResend();
+  }
+
+  async function handleContinueResend() {
+    setMsg({ type: '', text: '' });
+    setDevOtp('');
+    const identifier = channel === 'email'
+      ? (detailEmail || email).trim().toLowerCase()
+      : sanitizePhone((detailPhone || phone).trim());
+    const displayName = fullName.trim() || intent?.name || 'there';
+    setSending(true);
+    try {
+      const data = await sendOtpTo(identifier, displayName);
       setStep('otp');
       setMsg({ type: 'success', text: data.msg || 'OTP sent' });
       if (data.devOtp) setDevOtp(data.devOtp);
@@ -72,7 +163,13 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
   async function handleVerify() {
     const code = otp.join('').trim();
     if (!/^\d{6}$/.test(code)) { setMsg({ type: 'error', text: 'Enter the 6-digit OTP' }); return; }
-    const identifier = channel === 'email' ? email.trim().toLowerCase() : sanitizePhone(phone.trim());
+    const identifier = channel === 'email'
+      ? (detailEmail || email).trim().toLowerCase()
+      : sanitizePhone((detailPhone || phone).trim());
+    // New-user details travel along so the account is created complete
+    const vName = fullName.trim() || undefined;
+    const vEmail = detailEmail.trim() ? detailEmail.trim().toLowerCase() : undefined;
+    const vPhone = detailPhone.trim() ? sanitizePhone(detailPhone.trim()) : undefined;
     setVerifying(true);
     setMsg({ type: '', text: '' });
     try {
@@ -81,9 +178,9 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: channel === 'email' ? identifier : undefined,
-          phone: channel === 'sms' ? identifier : undefined,
-          channel, otp: code, name: intent?.name, ref,
+          email: channel === 'email' ? identifier : vEmail,
+          phone: channel === 'sms' ? identifier : vPhone,
+          channel, otp: code, name: vName || intent?.name, ref,
         }),
       });
       const data = await res.json();
@@ -93,7 +190,9 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         // also store isNew flag for ux
-        if (data.isNew) setMsg({ type: 'success', text: 'Account created and verified!' });
+        if (data.isNew) {
+          setCreatedMsg('Account created! A temporary password was emailed to you — valid 7 days. Please set your own password before it expires.');
+        }
       }
       onVerified?.(data);
     } catch (err) {
@@ -139,6 +238,9 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
         {msg.text && (
           <div className={`checkout-msg ${msg.type}`}>{msg.text}</div>
         )}
+        {createdMsg && (
+          <div className="checkout-msg success">{createdMsg}</div>
+        )}
 
         {step === 'input' ? (
           <div className="checkout-form">
@@ -158,10 +260,34 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
                 <span className="mini-value">{intent.name || intent.title || 'Selected item'} {intent.price ? `— ${typeof intent.price === 'string' ? intent.price : `KES ${intent.price.toLocaleString()}`}` : ''}</span>
               </div>
             )}
-            <button className="checkout-btn checkout-btn-primary" onClick={handleSend} disabled={sending || cooldown > 0}>
-              {sending ? 'Sending…' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Send OTP →'}
+            <button className="checkout-btn checkout-btn-primary" onClick={handleContinue} disabled={checking || cooldown > 0}>
+              {checking ? 'Checking…' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Continue →'}
             </button>
             {channel === 'sms' && <p className="checkout-hint center">If SMS is not configured, please use Email — it works instantly.</p>}
+          </div>
+        ) : step === 'details' ? (
+          <div className="checkout-form">
+            <p className="checkout-label">New here? Your details create your account — then we verify with an OTP sent to <strong>{channel === 'email' ? detailEmail : detailPhone}</strong>.</p>
+            <label className="checkout-label">Full name
+              <input className="checkout-input" type="text" placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </label>
+            <label className="checkout-label">Email address
+              <input className="checkout-input" type="email" placeholder="you@example.com" value={detailEmail} onChange={(e) => setDetailEmail(e.target.value)} />
+            </label>
+            <label className="checkout-label">Mobile number
+              <input className="checkout-input" type="tel" placeholder="+2547XXXXXXXX" value={detailPhone} onChange={(e) => setDetailPhone(e.target.value)} />
+            </label>
+            {intent && (
+              <div className="checkout-intent-mini">
+                <span className="mini-label">You’re purchasing</span>
+                <span className="mini-value">{intent.name || intent.title || 'Selected item'} {intent.price ? `— ${typeof intent.price === 'string' ? intent.price : `KES ${intent.price.toLocaleString()}`}` : ''}</span>
+              </div>
+            )}
+            <p className="checkout-hint">A temporary password will be emailed to you (valid 7 days) — set your own password before it expires.</p>
+            <div className="checkout-actions">
+              <button className="checkout-btn checkout-btn-ghost" onClick={() => { setStep('input'); setMsg({type:'',text:''}); }}>← Back</button>
+              <button className="checkout-btn checkout-btn-primary" onClick={handleSendFromDetails} disabled={sending}>{sending ? 'Sending…' : 'Send OTP →'}</button>
+            </div>
           </div>
         ) : (
           <div className="checkout-form">

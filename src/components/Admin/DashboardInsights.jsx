@@ -1,78 +1,37 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
-import { PageHeader, KpiCard, ChartCard, AreaChart, BarChart, Avatar } from './ui/Primitives';
-import { getOverview, getRevenueAnalytics, getStudents, getPayments, getBatches, getLeads } from '../api/AdminServices';
+import { PageHeader, KpiCard, Avatar } from './ui/Primitives';
 import {
   LuRefreshCw, LuUsers, LuFilter, LuRadioTower, LuCoins,
-  LuUserPlus, LuCreditCard, LuCalendarCheck, LuSparkles, LuActivity,
-  LuClock, LuArrowRight, LuPlus,
+  LuUserPlus, LuCreditCard, LuCalendarCheck, LuClock, LuArrowRight,
+  LuChevronLeft, LuChevronRight,
 } from 'react-icons/lu';
 
 export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatches = 0, onRefresh, onQuickAction }) {
-  const [revenueData, setRevenueData] = useState(null);
-  const [recentStudents, setRecentStudents] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
 
   const metrics = data.metrics || {};
-  const systemHealth = data.systemHealth?.length ? data.systemHealth : [];
   const schedule = data.todaySchedule?.length ? data.todaySchedule : [];
+  // Overview already ships the most recent signups — cap at top 6, no more
+  const recentStudents = (Array.isArray(data.recentStudents) ? data.recentStudents : []).slice(0, 6);
 
   const revenue = metrics.revenue || 0;
-  const activeMembers = metrics.activeStudents ?? 0;
 
-  // Fetch real revenue analytics and recent students
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [revData, studentsData] = await Promise.all([
-        getRevenueAnalytics().catch(() => null),
-        getStudents().catch(() => null),
-      ]);
-      if (revData) setRevenueData(revData);
-      if (studentsData?.students) setRecentStudents(studentsData.students.slice(0, 5));
-    } catch {}
-    finally { setLoading(false); }
-  }, []);
+  const refresh = () => { setPage(0); onRefresh?.(); };
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const PAGE_SIZE = 3;
+  const pageCount = Math.max(1, Math.ceil(recentStudents.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const visible = recentStudents.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
-  // Build real monthly data from revenue analytics
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  const currentMonth = new Date().getMonth();
-  const monthLabels = Array.from({ length: 6 }, (_, i) => {
-    const m = (currentMonth - 5 + i + 12) % 12;
-    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m];
-  });
-
-  // Use real revenue data if available, otherwise use metrics
-  const revTrend = revenueData?.monthlyRevenue?.length
-    ? revenueData.monthlyRevenue.slice(-6).map(r => r.revenue || 0)
-    : revenue > 0
-      ? [revenue * 0.6, revenue * 0.7, revenue * 0.75, revenue * 0.8, revenue * 0.9, revenue]
-      : [600, 700, 750, 800, 900, 1000];
-
-  const memTrend = activeMembers > 0
-    ? Array.from({ length: 6 }, (_, i) => Math.round(activeMembers * (0.4 + i * 0.12)))
-    : [8, 10, 12, 14, 16, 18];
-
-  const bookTrend = revenueData?.monthlyBookings?.length
-    ? revenueData.monthlyBookings.slice(-6).map(b => b.count || 0)
-    : [2, 3, 4, 5, 5, 6];
-
-  const activity = [
-    ...recentStudents.slice(0, 3).map((st, i) => ({
-      icon: <LuUserPlus />, cls: s.timeIcon, title: `${st.name || 'New student'} joined`,
-      meta: `${st.city || st.email || 'Student CRM'}`,
-      time: i === 0 ? 'Just now' : i === 1 ? '2m ago' : '15m ago',
-    })),
-    { icon: <LuCreditCard />, cls: s.timeIconGreen, title: 'Payment received', meta: `KES ${(revenue || 0).toLocaleString('en-KE')} collected`, time: '1h ago' },
-    { icon: <LuCalendarCheck />, cls: s.timeIconBlue, title: `${metrics.pendingBookings ?? 0} bookings pending`, meta: 'Needs review', time: '2h ago' },
-    { icon: <LuSparkles />, cls: s.timeIconAmber, title: `${totalLeads} leads in pipeline`, meta: 'Active leads', time: 'Today' },
+  const needsAttention = [
+    { icon: <LuFilter />, label: 'Open leads', value: totalLeads, hint: 'in pipeline', go: 'leads' },
+    { icon: <LuCalendarCheck />, label: 'Pending bookings', value: metrics.pendingBookings ?? 0, hint: 'needs review', go: 'attendance-mgmt' },
   ];
 
   const quickActions = [
-    { icon: <LuUserPlus />, label: 'Add Student', key: 'student' },
+    { icon: <LuUserPlus />, label: 'Add User', key: 'student' },
     { icon: <LuRadioTower />, label: 'New Batch', key: 'batch' },
     { icon: <LuFilter />, label: 'Add Lead', key: 'lead' },
     { icon: <LuCreditCard />, label: 'Record Payment', key: 'payment' },
@@ -80,104 +39,41 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
 
   return (
     <div>
-      <PageHeader title="Command Center" subtitle="Live operational overview — sourced from MongoDB">
-        <span className={`${s.badge} ${s.badgeGreen}`}>Live</span>
-        <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={() => { onRefresh?.(); fetchData(); }}>
+      <PageHeader title="Dashboard" subtitle="Today at SomaWellness">
+        <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={refresh}>
           <LuRefreshCw size={14} /> Refresh
         </button>
       </PageHeader>
 
-      {/* KPI row */}
+      {/* KPI row — real numbers only */}
       <div className={s.statsGrid}>
         <KpiCard icon={<LuUsers />} accent="orange" label="Active Members" value={metrics.activeStudents ?? 0}
-          trend={`${metrics.newThisMonth ?? 0} new`} trendUp spark={memTrend} />
-        <KpiCard icon={<LuFilter />} accent="amber" label="Open CRM Leads" value={totalLeads}
-          trend={`${metrics.pendingBookings ?? 0} pending`} trendUp spark={[totalLeads * 0.4, totalLeads * 0.5, totalLeads * 0.7, totalLeads * 0.8, totalLeads * 0.9, totalLeads || 1]} />
-        <KpiCard icon={<LuRadioTower />} accent="blue" label="Live Batches" value={totalBatches}
-          trend={`${metrics.activeMemberships ?? 0} memberships`} trendUp spark={[totalBatches * 0.3, totalBatches * 0.5, totalBatches * 0.6, totalBatches * 0.8, totalBatches * 0.9, totalBatches || 1]} />
-        <KpiCard icon={<LuCoins />} accent="green" label="Gross Revenue" value={revenue} prefix="KES "
-          trend="collected" trendUp spark={revTrend} />
+          trend={`${metrics.newThisMonth ?? 0} new this month`} trendUp />
+        <KpiCard icon={<LuCoins />} accent="green" label="Revenue Collected" value={revenue} prefix="KES " trend="all time" trendUp />
+        <KpiCard icon={<LuRadioTower />} accent="blue" label="Live Batches" value={totalBatches} trend="on timetable" trendUp />
+        <KpiCard icon={<LuFilter />} accent="amber" label="Open Leads" value={totalLeads} trend="in pipeline" trendUp />
       </div>
 
-      {/* Analytics + timeline */}
+      {/* Needs attention */}
+      <div className={s.card} style={{ marginBottom: '20px' }}>
+        <h3 className={s.cardTitle}>Needs attention</h3>
+        {needsAttention.every((n) => !n.value) && (
+          <p className={s.cardDesc}>All clear — nothing waiting on you.</p>
+        )}
+        {needsAttention.filter((n) => n.value > 0).map((n) => (
+          <div key={n.label} className={s.healthRow}>
+            <div className={s.healthLabel}>{n.icon} {n.label} — <strong>{n.value}</strong> {n.hint}</div>
+            <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={() => onQuickAction?.(n.go)}>
+              Review <LuArrowRight size={13} />
+            </button>
+          </div>
+        ))}
+      </div>
+
       <div className={s.gridDash}>
-        <div>
-          <ChartCard
-            title="Revenue & Membership Trend"
-            subtitle="Last 6 months"
-            right={<div style={{ textAlign: 'right' }}><div className={s.chartBig}>KES {revenue.toLocaleString('en-KE')}</div><div className={s.chartSub}>total collected</div></div>}
-            legend={[{ color: '#F97316', label: 'Revenue' }, { color: '#16A34A', label: 'Members' }]}
-          >
-            <div style={{ color: 'var(--text-1)' }}>
-              <AreaChart
-                labels={monthLabels}
-                height={260}
-                formatValue={(v) => `KES ${(v / 1000).toFixed(0)}k`}
-                series={[
-                  { color: '#F97316', data: revTrend },
-                  { color: '#16A34A', data: memTrend.map(v => v * 40) },
-                ]}
-              />
-            </div>
-          </ChartCard>
-
-          <ChartCard title="Booking Analytics" subtitle="Sessions booked per month">
-            <div style={{ color: 'var(--text-1)' }}>
-              <BarChart labels={monthLabels} data={bookTrend} color="#81B29A" height={280} formatValue={(v) => String(v)} />
-            </div>
-          </ChartCard>
-        </div>
-
-        {/* Right column */}
-        <div>
-          <div className={s.card}>
-            <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuActivity /></span>Activity Timeline</h3>
-            <div className={s.timeline}>
-              {activity.map((a, i) => (
-                <div key={i} className={s.timeItem}>
-                  <div className={a.cls}>{a.icon}</div>
-                  <div className={s.timeBody}>
-                    <div className={s.timeTitle}>{a.title}</div>
-                    <div className={s.timeMeta}>{a.meta}</div>
-                  </div>
-                  {a.time && <span className={s.timeStamp}>{a.time}</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className={s.card}>
-            <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuSparkles /></span>Quick Actions</h3>
-            <div className={s.quickActions}>
-              {quickActions.map((q, i) => (
-                <button key={i} type="button" className={s.quickActionBtn} onClick={() => onQuickAction?.(q.key)}>
-                  <span className={s.quickActionIcon}>{q.icon}</span>
-                  <span className={s.quickActionLabel}>{q.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Health + schedule + recent */}
-      <div className={s.grid3} style={{ marginTop: 0 }}>
+        {/* Today's schedule */}
         <div className={s.card}>
-          <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuActivity /></span>System Health</h3>
-          {systemHealth.length === 0 && <p className={s.cardDesc}>All systems operational.</p>}
-          {systemHealth.map((item, i) => (
-            <div key={i} className={s.healthRow}>
-              <div className={s.healthLabel}>
-                <span className={`${s.healthDot} ${item.ok ? s.dotGreen : s.dotAmber}`} />
-                {item.label}
-              </div>
-              <Badge label={item.status} />
-            </div>
-          ))}
-        </div>
-
-        <div className={s.card}>
-          <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuClock /></span>Upcoming Schedule</h3>
+          <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuClock /></span>Today's Schedule</h3>
           {schedule.length === 0 && <p className={s.cardDesc}>No classes scheduled today.</p>}
           {schedule.map((item, i) => (
             <div key={i} className={s.healthRow}>
@@ -187,20 +83,50 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
           ))}
         </div>
 
-        <div className={s.card}>
-          <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuUserPlus /></span>Recent Registrations</h3>
-          {recentStudents.length === 0 && <p className={s.cardDesc}>No recent registrations.</p>}
-          {recentStudents.slice(0, 5).map((st, i) => (
-            <div key={i} className={s.healthRow}>
-              <div className={s.cellUser}>
-                <Avatar name={st.name || 'New'} size={s.avatarSm} />
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{st.name || '—'}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{st.city || st.email || '—'}</div>
+        {/* Quick actions + recent */}
+        <div>
+          <div className={s.card}>
+            <h3 className={s.cardTitle}>Quick Actions</h3>
+            <div className={s.quickActions}>
+              {quickActions.map((q, i) => (
+                <button key={i} type="button" className={s.quickActionBtn} onClick={() => onQuickAction?.(q.key)}>
+                  <span className={s.quickActionIcon}>{q.icon}</span>
+                  <span className={s.quickActionLabel}>{q.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={s.card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 className={s.cardTitle} style={{ marginBottom: 0 }}><span className={s.cardTitleIcon}><LuUserPlus /></span>Recent Registrations</h3>
+              {pageCount > 1 && (
+                <div className={s.pager}>
+                  <button
+                    type="button" className={s.pagerBtn} aria-label="Previous"
+                    disabled={safePage === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  ><LuChevronLeft size={13} /></button>
+                  <span className={s.pagerInfo}>{safePage + 1} / {pageCount}</span>
+                  <button
+                    type="button" className={s.pagerBtn} aria-label="Next"
+                    disabled={safePage >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                  ><LuChevronRight size={13} /></button>
+                </div>
+              )}
+            </div>
+            {recentStudents.length === 0 && <p className={s.cardDesc}>No recent registrations.</p>}
+            {visible.map((st, i) => (
+              <div key={st._id || i} className={s.healthRow}>
+                <div className={s.cellUser}>
+                  <Avatar name={st.name || 'New'} size={s.avatarSm} />
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{st.name || '—'}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{st.email || '—'}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

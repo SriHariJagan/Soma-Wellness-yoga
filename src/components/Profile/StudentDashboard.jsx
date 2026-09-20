@@ -30,27 +30,31 @@ const YTTCPage = lazy(() => import("./YTTCPage"));
 const OrderHistoryPage = lazy(() => import("./OrderHistoryPage"));
 
 const NAV_KEYS = [
-  { id: "soma",          key: "dashboard.soma",           icon: "ti-heart"          },
-  { id: "profile",       key: "dashboard.profile",        icon: "ti-user"           },
-  { id: "cart",          key: "dashboard.myCart",         icon: "ti-shopping-cart"  },
-  { id: "orders",        key: "dashboard.orderHistory",   icon: "ti-receipt-2"      },
-  { id: "browsePlans",   key: "dashboard.browsePlans",    icon: "ti-cash" },
-  { id: "plan",          key: "dashboard.activePlan",     icon: "ti-shield-check"   },
-  { id: "services",      key: "dashboard.activeServices", icon: "ti-package"        },
-  { id: "browseServices",key: "dashboard.browseServices", icon: "ti-layout-grid" },
-  { id: "yttc",          key: "dashboard.yttc",           icon: "ti-certificate" },
-  { id: "attendance",    key: "dashboard.attendance",     icon: "ti-calendar-check" },
-  { id: "payments",      key: "dashboard.payments",       icon: "ti-receipt"        },
-  { id: "classes",       key: "dashboard.classes",        icon: "ti-yoga"           },
-  { id: "downloads",     key: "dashboard.downloads",      icon: "ti-download"       },
-  { id: "consultations", key: "dashboard.consultations",  icon: "ti-stethoscope"    },
-  { id: "workshops",     key: "dashboard.workshops",      icon: "ti-award"          },
-  { id: "events",        key: "dashboard.events",         icon: "ti-calendar-event" },
+  { id: "soma",          key: "dashboard.soma",           icon: "ti-heart",          section: "overview" },
+  { id: "classes",       key: "dashboard.classes",        icon: "ti-yoga",           section: "practice" },
+  { id: "attendance",    key: "dashboard.attendance",     icon: "ti-calendar-check", section: "practice" },
+  { id: "consultations", key: "dashboard.consultations",  icon: "ti-stethoscope",    section: "practice" },
+  { id: "workshops",     key: "dashboard.workshops",      icon: "ti-award",          section: "practice" },
+  { id: "events",        key: "dashboard.events",         icon: "ti-calendar-event", section: "practice" },
+  { id: "trial",         key: "dashboard.freeTrial",      icon: "ti-gift",           section: "practice" },
+  { id: "browsePlans",   key: "dashboard.navPlans",       icon: "ti-cash",           section: "shop" },
+  { id: "browseServices",key: "dashboard.navAllServices", icon: "ti-layout-grid",    section: "shop" },
+  { id: "cart",          key: "dashboard.myCart",         icon: "ti-shopping-cart",  section: "shop" },
+  { id: "orders",        key: "dashboard.orderHistory",   icon: "ti-receipt-2",      section: "shop" },
+  { id: "payments",      key: "dashboard.payments",       icon: "ti-receipt",        section: "shop" },
+  { id: "plan",          key: "dashboard.activePlan",     icon: "ti-shield-check",   section: "mine" },
+  { id: "services",      key: "dashboard.activeServices", icon: "ti-package",        section: "mine" },
+  { id: "downloads",     key: "dashboard.downloads",      icon: "ti-download",       section: "mine" },
+  { id: "blogs",         key: "dashboard.blogs",          icon: "ti-article",        section: "mine" },
+  { id: "myBlogs",       key: "dashboard.myBlogs",        icon: "ti-pencil",         section: "mine" },
+  { id: "notifications", key: "dashboard.notifications",  icon: "ti-bell",           section: "mine" },
+];
 
-  { id: "notifications", key: "dashboard.notifications",  icon: "ti-bell"           },
-  { id: "trial",         key: "dashboard.freeTrial",      icon: "ti-gift"           },
-  { id: "blogs",         key: "dashboard.blogs",          icon: "ti-article"        },
-  { id: "myBlogs",       key: "dashboard.myBlogs",        icon: "ti-pencil"         },
+const NAV_SECTIONS = [
+  { id: "overview", key: "dashboard.secOverview" },
+  { id: "practice", key: "dashboard.secPractice" },
+  { id: "shop",     key: "dashboard.secShop" },
+  { id: "mine",     key: "dashboard.secMine" },
 ];
 
 const SomaDashboard = lazy(() => import("./SomaDashboard"));
@@ -113,7 +117,7 @@ export default function StudentDashboard({ onLogout }) {
 
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
-    if (tab && NAV.some((n) => n.id === tab)) {
+    if (tab && PAGE_MAP[tab]) {
       handleNav(tab);
     }
   }, []);
@@ -285,44 +289,47 @@ export default function StudentDashboard({ onLogout }) {
         </button>
 
         <nav className={styles.nav} aria-label={t("dashboard.navAria")}>
-          {NAV.map(({ id, label, icon }) => {
-            const isActive = activePage === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                className={`${styles.navItem} ${isActive ? styles.navActive : ""}`}
-                onClick={() => handleNav(id)}
-                aria-current={isActive ? "page" : undefined}
-                title={isCollapsed ? label : undefined}
-              >
-                {isActive && (
-                  <motion.span
-                    layoutId="studentNavPill"
-                    className={styles.navPill}
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    aria-hidden="true"
-                  />
-                )}
-                <i className={`ti ${icon}`} aria-hidden="true" />
-                <span className={styles.navLabel}>{label}</span>
-                {id === "notifications" && unreadNotifs > 0 && !isCollapsed && (
-                  <span className={styles.notifBadge} role="status">{unreadNotifs}</span>
-                )}
-                {id === "cart" && cartCount > 0 && !isCollapsed && (
-                  <span className={styles.notifBadge} style={{ background: "#F97316", color: "#fff" }} role="status">{cartCount}</span>
-                )}
-              </button>
-            );
-          })}
+          {NAV_SECTIONS.map((sec) => (
+            <div key={sec.id} className={styles.navSection}>
+              {!isCollapsed && (
+                <div className={styles.navSectionTitle}>{t(sec.key)}</div>
+              )}
+              {NAV.filter((n) => n.section === sec.id).map(({ id, label, icon }) => {
+                const isActive = activePage === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`${styles.navItem} ${isActive ? styles.navActive : ""}`}
+                    onClick={() => handleNav(id)}
+                    aria-current={isActive ? "page" : undefined}
+                    title={isCollapsed ? label : undefined}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="studentNavPill"
+                        className={styles.navPill}
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <i className={`ti ${icon}`} aria-hidden="true" />
+                    <span className={styles.navLabel}>{label}</span>
+                    {id === "notifications" && unreadNotifs > 0 && !isCollapsed && (
+                      <span className={styles.notifBadge} role="status">{unreadNotifs}</span>
+                    )}
+                    {id === "cart" && cartCount > 0 && !isCollapsed && (
+                      <span className={styles.notifBadge} style={{ background: "#F97316", color: "#fff" }} role="status">{cartCount}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className={styles.sbFooter}>
           <div style={{ display:'flex', justifyContent:'center' }}><LanguageSwitcher compact /></div>
-          <button type="button" className={styles.enrollBtn} onClick={() => handleNav("classes")}>
-            <i className="ti ti-plus" aria-hidden="true" />
-            <span className={styles.navLabel}>{t("dashboard.enrollBook")}</span>
-          </button>
           <button type="button" className={styles.navItem} onClick={() => navigate("/")} title={isCollapsed ? t("navigation.backToWebsite") : undefined}>
             <i className="ti ti-arrow-left" aria-hidden="true" />
             <span className={styles.navLabel}>{t("navigation.backToWebsite")}</span>

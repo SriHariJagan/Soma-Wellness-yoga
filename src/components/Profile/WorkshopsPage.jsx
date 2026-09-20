@@ -107,7 +107,12 @@ export default function WorkshopsPage({ student, reload, workshopId: highlightId
 
         {/* Registered Workshops */}
         {registered.length > 0 && (
-          <Panel title="Registered" icon="ti-ticket">
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 2px 12px" }}>
+              <i className="ti ti-ticket" style={{ color: "var(--color-primary)", fontSize: 16 }} aria-hidden="true" />
+              <span style={{ fontSize: 14, fontWeight: 700 }}>Registered</span>
+              <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>({registered.length})</span>
+            </div>
             <div className={c.list}>
               {registered.map((wk, i) => (
                 <motion.div
@@ -150,15 +155,21 @@ export default function WorkshopsPage({ student, reload, workshopId: highlightId
                 </motion.div>
               ))}
             </div>
-          </Panel>
+          </>
         )}
 
         {/* Available Workshops */}
-        <Panel title="Available workshops" icon="ti-confetti">
-          {available.length === 0 ? (
-            <EmptyState compact icon="ti-calendar-event" title="No workshops available right now." />
-          ) : (
-            <div className={c.list}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "20px 2px 12px" }}>
+          <i className="ti ti-confetti" style={{ color: "var(--color-primary)", fontSize: 16 }} aria-hidden="true" />
+          <span style={{ fontSize: 14, fontWeight: 700 }}>Available workshops</span>
+          {available.length > 0 && (
+            <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>({available.length})</span>
+          )}
+        </div>
+        {available.length === 0 ? (
+          <EmptyState compact icon="ti-calendar-event" title="No workshops available right now." />
+        ) : (
+          <div className={c.list}>
               {available.map((wk, i) => (
                 <motion.div
                   key={fid(wk) || i}
@@ -198,7 +209,6 @@ export default function WorkshopsPage({ student, reload, workshopId: highlightId
               ))}
             </div>
           )}
-        </Panel>
       </Stagger>
 
       {/* Workshop Detail Modal */}

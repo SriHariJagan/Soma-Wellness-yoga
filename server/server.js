@@ -240,6 +240,10 @@ app.use("/api/mpesa", mpesaRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 
+// ── Unified Offering Catalog ──
+import offeringRoutes from "./routes/offerings.js";
+app.use("/api/offerings", offeringRoutes);
+
 // ── Admin Monitoring (authed) ──
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 app.use("/api/admin/monitoring", requireAuth, requireAdmin, monitoringRoutes);

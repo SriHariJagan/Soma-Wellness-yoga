@@ -18,6 +18,17 @@ export function isLoggedIn() {
   return !!localStorage.getItem('token') && !!localStorage.getItem('user');
 }
 
+/** Check if user is properly authenticated with valid token */
+export function isAuthenticated() {
+  try {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    return !!token && !!user;
+  } catch {
+    return false;
+  }
+}
+
 /** Get current user from localStorage */
 export function getCurrentUser() {
   try {
@@ -78,19 +89,37 @@ export async function queryMpesaStatus(checkoutRequestId) {
 }
 
 /**
- * Add item to cart.
- * @param {string} itemType — 'service' | 'plan' | 'workshop' | 'book' | 'course' | 'consultation' | 'yttc'
- * @param {string} itemId — MongoDB ObjectId
+ * Add item to cart with proper authentication and error handling.
+ * @param {string} itemType - 'service' | 'plan' | 'workshop' | 'book' | 'course' | 'consultation' | 'yttc'
+ * @param {string} itemId - MongoDB ObjectId
  * @returns {Object} Cart response
+ * @throws {Error} If user is not authenticated or cart addition fails
  */
 export async function addToCart(itemType, itemId) {
+  // Validate parameters
+  if (!itemType || !itemId) {
+    throw new Error('Invalid item type or ID.');
+  }
+
+  // Check authentication
+  if (!isAuthenticated()) {
+    throw new Error('User not authenticated. Please log in first.');
+  }
+
   const res = await fetch(`${API_URL}/api/student/cart/add`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ itemType, itemId }),
   });
+
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Failed to add to cart.');
+
+  if (!res.ok) {
+    // Provide meaningful error messages
+    const errorMessage = data.message || 'Failed to add to cart.';
+    throw new Error(errorMessage);
+  }
+
   return data;
 }
 

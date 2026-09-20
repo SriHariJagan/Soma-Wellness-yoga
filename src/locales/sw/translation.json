@@ -178,6 +178,8 @@
     "rememberMe": "Kumbuka mimi",
     "dontHave": "Huna akaunti?",
     "name": "Jina Kamili",
+    "phone": "Nambari ya simu",
+    "phonePlaceholder": "+2547XXXXXXXX",
     "email": "Anwani ya barua pepe",
     "password": "Nenosiri",
     "alreadyHave": "Tayari una akaunti?",
@@ -339,6 +341,9 @@
     "services": "Huduma",
     "events": "Matukio",
     "blogs": "Blogu",
+    "services": "Huduma",
+    "spaRituals": "Spa na Tambiko",
+    "courses": "Kozi",
     "join": "Huduma",
     "private": "Binafsi",
     "oneToOne": "Vipindi Binafsi",
@@ -875,7 +880,8 @@
     "server": "Hitilafu ya seva. Tafadhali jaribu tena baadaye."
   },
   "validation": {
-    "passwordMismatch": "Nenosiri hazifanani."
+    "passwordMismatch": "Nenosiri hazifanani.",
+    "invalidPhone": "Weka nambari sahihi ya simu yenye msimbo wa nchi, k.m. +2547XXXXXXXX."
   },
   "language": {
     "selectLanguage": "Chagua Lugha"
@@ -886,7 +892,9 @@
     "myCart": "Kikapu Changu",
     "orderHistory": "Historia ya Maagizo",
     "browsePlans": "Vinjari Mpango",
-    "activePlan": "Mpango Halisi",
+    "navPlans": "Mipango ya Uanachama",
+    "navAllServices": "Huduma Zote",
+    "activePlan": "Uanachama Halisi",
     "activeServices": "Huduma Halisi",
     "browseServices": "Vinjari Huduma",
     "yttc": "Chuo",
@@ -910,6 +918,10 @@
     "statusExpired": "Imeisha muda",
     "noActivePlan": "Hakuna mpango wa sasa",
     "navAria": "Urambazaji wa dashibodi",
+    "secOverview": "Muhtasari",
+    "secPractice": "Mazoezi Yangu",
+    "secShop": "Duka",
+    "secMine": "Akaunti Yangu",
     "enrollBook": "Jiandikisha / Weka Nafasi",
     "signOut": "Ondoka"
   },

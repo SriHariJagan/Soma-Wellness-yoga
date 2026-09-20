@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import s from './CoursesPlans.module.css';
+import ys from './YogaAdmin.module.css';
+import { Sheet } from './ui/Sheets.jsx';
 import { coursesApi, membershipPlansApi } from '../api/AdminServices.js';
 import {
   LuGraduationCap, LuPlus, LuTrash2, LuCheck, LuCrown, LuBookOpen, LuPencil,
@@ -583,16 +585,26 @@ export default function CoursesPlans({ onChanged } = {}) {
 
       {/* ── Course Modal ── */}
       {showCourseModal && (
-        <div className={s.modalOverlay} onClick={()=>setShowCourseModal(false)}>
-          <div className={`${s.modal} ${s.modalLarge}`} onClick={e=>e.stopPropagation()}>
-            <div className={s.modalHeader}>
-              <div>
-                <h3 className={s.modalTitle}><span className={s.modalTitleIcon}><LuBookOpen /></span>{editingCourse ? 'Edit Course' : 'New Course'}</h3>
-                <div className={s.modalSubtitle}>{editingCourse ? 'Update course details — changes go live immediately.' : 'Create a professional course for the academy catalog.'}</div>
+        <Sheet
+          title={editingCourse ? 'Edit Course' : 'New Course'}
+          subtitle={editingCourse ? 'Update course details — changes go live immediately.' : 'Create a professional course for the academy catalog.'}
+          avatar={<LuBookOpen size={20} />}
+          onClose={() => setShowCourseModal(false)}
+          footer={(
+            <>
+              <span className={s.footerHint}>
+                {courseForm.active ? 'Active courses appear in the academy catalog.' : 'Saved as draft — hidden until activated.'}
+              </span>
+              <div className={s.footerActions}>
+                <button type="button" className={s.btnGhost} onClick={() => setShowCourseModal(false)}>Cancel</button>
+                <button type="button" className={s.btnPrimary} onClick={handleSaveCourse} disabled={savingCourse}>{savingCourse ? 'Saving…' : editingCourse ? 'Update Course' : 'Create Course'}</button>
               </div>
-              <button type="button" className={s.modalClose} onClick={()=>setShowCourseModal(false)}><LuX size={16} /></button>
-            </div>
-            <form onSubmit={handleSaveCourse} className={s.modalBody}>
+            </>
+          )}
+        >
+          <form onSubmit={handleSaveCourse}>
+            <div className={`${ys.sheetGrid} ${ys.sheetGridLight}`}>
+              <section className={ys.sheetSection}>
               <div className={s.formSection}>
                 <div className={s.formSectionTitle}><LuInfo size={12} /> Basic Information</div>
                 <div className={s.formGrid}>
@@ -619,7 +631,8 @@ export default function CoursesPlans({ onChanged } = {}) {
                   </div>
                 </div>
               </div>
-
+              </section>
+              <section className={ys.sheetSection}>
               <div className={s.formSection}>
                 <div className={s.formSectionTitle}><LuCalendar size={12} /> Curriculum Details</div>
                 <div className={s.formGrid}>
@@ -669,27 +682,34 @@ export default function CoursesPlans({ onChanged } = {}) {
                   </div>
                 </div>
               </div>
-            </form>
-            <div className={s.modalFooter}>
-              <button type="button" className={s.btn} onClick={()=>setShowCourseModal(false)}>Cancel</button>
-              <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={handleSaveCourse} disabled={savingCourse}>{savingCourse ? 'Saving…' : editingCourse ? 'Update Course' : 'Create Course'}</button>
+              </section>
             </div>
-          </div>
-        </div>
+            </form>
+        </Sheet>
       )}
 
       {/* ── Plan Modal ── */}
       {showPlanModal && (
-        <div className={s.modalOverlay} onClick={()=>setShowPlanModal(false)}>
-          <div className={`${s.modal} ${s.modalLarge}`} onClick={e=>e.stopPropagation()}>
-            <div className={s.modalHeader}>
-              <div>
-                <h3 className={s.modalTitle}><span className={s.modalTitleIcon}><LuCrown /></span>{editingPlan ? 'Edit Plan' : 'New Membership Plan'}</h3>
-                <div className={s.modalSubtitle}>{editingPlan ? 'Update pricing, benefits, and visibility.' : 'Create a professional membership tier for the pricing page.'}</div>
+        <Sheet
+          title={editingPlan ? 'Edit Plan' : 'New Membership Plan'}
+          subtitle={editingPlan ? 'Update pricing, benefits, and visibility.' : 'Create a professional membership tier for the pricing page.'}
+          avatar={<LuCrown size={20} />}
+          onClose={() => setShowPlanModal(false)}
+          footer={(
+            <>
+              <span className={s.footerHint}>
+                {planForm.active ? 'Active plans are purchasable at checkout.' : 'Inactive plans stay hidden from checkout.'}
+              </span>
+              <div className={s.footerActions}>
+                <button type="button" className={s.btnGhost} onClick={() => setShowPlanModal(false)}>Cancel</button>
+                <button type="button" className={s.btnPrimary} onClick={handleSavePlan} disabled={savingPlan}>{savingPlan ? 'Saving…' : editingPlan ? 'Update Plan' : 'Create Plan'}</button>
               </div>
-              <button type="button" className={s.modalClose} onClick={()=>setShowPlanModal(false)}><LuX size={16} /></button>
-            </div>
-            <form onSubmit={handleSavePlan} className={s.modalBody}>
+            </>
+          )}
+        >
+          <form onSubmit={handleSavePlan}>
+            <div className={`${ys.sheetGrid} ${ys.sheetGridLight}`}>
+              <section className={ys.sheetSection}>
               <div className={s.formSection}>
                 <div className={s.formSectionTitle}><LuSparkles size={12} /> Basic Information</div>
                 <div className={s.formGrid}>
@@ -715,7 +735,8 @@ export default function CoursesPlans({ onChanged } = {}) {
                   </div>
                 </div>
               </div>
-
+              </section>
+              <section className={ys.sheetSection}>
               <div className={s.formSection}>
                 <div className={s.formSectionTitle}><LuDollarSign size={12} /> Pricing & Duration</div>
                 <div className={s.formGrid3}>
@@ -786,13 +807,10 @@ export default function CoursesPlans({ onChanged } = {}) {
                   </label>
                 </div>
               </div>
-            </form>
-            <div className={s.modalFooter}>
-              <button type="button" className={s.btn} onClick={()=>setShowPlanModal(false)}>Cancel</button>
-              <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={handleSavePlan} disabled={savingPlan}>{savingPlan ? 'Saving…' : editingPlan ? 'Update Plan' : 'Create Plan'}</button>
+              </section>
             </div>
-          </div>
-        </div>
+            </form>
+        </Sheet>
       )}
     </div>
   );

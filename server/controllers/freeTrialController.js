@@ -338,11 +338,21 @@ export const createTrialSession = asyncHandler(async (req, res) => {
 
 export const updateTrialSession = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const updates = req.body || {};
+  const raw = req.body || {};
   const session = await TrialSession.findById(id);
   if (!session) return res.status(404).json({ message: 'Session not found' });
   const oldTitle = session.title;
-  Object.assign(session, updates, { updatedBy: req.user?._id || req.user });
+
+  const allowed = [
+    'title', 'description', 'instructor', 'date', 'startTime', 'endTime',
+    'duration', 'meetingPlatform', 'meetingLink', 'location', 'notes',
+    'adminNotes', 'status', 'attended', 'cancelled', 'cancelReason',
+    'fileUrl', 'rescheduledFrom', 'rescheduledTo',
+  ];
+  for (const field of allowed) {
+    if (raw[field] !== undefined) session[field] = raw[field];
+  }
+  session.updatedBy = req.user?._id || req.user;
   await session.save();
 
   try {

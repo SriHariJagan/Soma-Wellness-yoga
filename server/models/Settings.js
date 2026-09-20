@@ -22,6 +22,9 @@ const SettingsSchema = new mongoose.Schema(
     consultationFee:      { type: Number, default: 300 },
     consultationDuration: { type: Number, default: 30 },
     consultationTimeSlots: { type: [String], default: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'] },
+    // How many days ahead members may book (default 2). Admin-managed.
+    // Time-slot management window for admins is fixed at 7 days.
+    bookingHorizonDays:   { type: Number, default: 2, min: 1, max: 30 },
 
     // Book-store shipping defaults (used when no shipping rule matches).
     bookStoreShipping: {

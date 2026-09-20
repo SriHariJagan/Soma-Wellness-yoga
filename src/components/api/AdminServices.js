@@ -279,6 +279,54 @@ export const somaCatalogAdminApi = {
   update: (soma) => request("/soma/admin/catalog", { method: "PUT", body: { soma }, base: ROOT_URL }),
 };
 
+// ── Unified Offering Catalog ────────────────────────────────
+const OFFERING_URL = `${API_DOMAIN}/api/offerings`;
+async function offeringRequest(path, { method = "GET", body } = {}) {
+  const opts = {
+    method,
+    headers: authHeaders(),
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  };
+  let res;
+  try {
+    res = await fetch(`${OFFERING_URL}${path}`, opts);
+  } catch {
+    throw new Error("Cannot reach the offering server. Make sure the backend is running.");
+  }
+  if (res.status === 401 && (await tryRefresh())) {
+    opts.headers = authHeaders();
+    try { res = await fetch(`${OFFERING_URL}${path}`, opts); } catch {
+      throw new Error("Cannot reach the offering server.");
+    }
+  }
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!res.ok) throw new Error(data.error || data.message || "Request failed");
+  return data;
+}
+
+export const offeringsApi = {
+  list: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.status) q.set("status", params.status);
+    if (params.visibility) q.set("visibility", params.visibility);
+    if (params.category) q.set("category", params.category);
+    if (params.search) q.set("search", params.search);
+    if (params.page) q.set("page", params.page);
+    if (params.limit) q.set("limit", params.limit);
+    const qs = q.toString();
+    return offeringRequest(`/admin${qs ? `?${qs}` : ""}`);
+  },
+  get: (id) => offeringRequest(`/admin/${id}`),
+  create: (payload) => offeringRequest("/admin", { method: "POST", body: payload }),
+  update: (id, payload) => offeringRequest(`/admin/${id}`, { method: "PUT", body: payload }),
+  remove: (id) => offeringRequest(`/admin/${id}`, { method: "DELETE" }),
+  toggle: (id, field) => offeringRequest(`/admin/${id}/toggle`, { method: "PATCH", body: { field } }),
+  setStatus: (id, status, visibility) => offeringRequest(`/admin/${id}/status`, { method: "PATCH", body: { status, visibility } }),
+  reorder: (orders) => offeringRequest("/admin/reorder", { method: "PATCH", body: { orders } }),
+  stats: () => offeringRequest("/admin/stats"),
+};
+
 // ── Consultations ──────────────────────────────────────────
 export const getConsultations = (params = {}) => {
   const q = new URLSearchParams(params).toString();

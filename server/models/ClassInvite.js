@@ -39,6 +39,7 @@ const ClassInviteSchema = new mongoose.Schema({
   platform: { type: String, enum: PLATFORM_TYPES, default: 'Zoom' },
   meetingLink: { type: String, default: '' },
   meetingPassword: { type: String, default: '' },
+  location: { type: String, default: '' }, // venue for Offline / in-person classes
   notes: { type: String, default: '' },
   attachments: { type: String, default: '' },
 

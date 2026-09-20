@@ -11,12 +11,12 @@ import { useTranslation } from "react-i18next";
 import { SOCIAL_LINKS } from "../../config/siteContent";
 
 const navLinksConfig = [
-  { key: "navigation.join", path: "/classes", num: "01" },
-  { key: "navigation.oneToOne", path: "/private", num: "02" },
-  { key: "navigation.lifeStages", path: "/life-stages", num: "03" },
-  { key: "navigation.restore", path: "/restore", num: "04" },
-  { key: "navigation.learnPartner", path: "/yttc", num: "05" },
-  { key: "navigation.founding", path: "/founding", num: "06" },
+  { key: "navigation.home", path: "/", num: "01" },
+  { key: "navigation.services", path: "/services", num: "02" },
+  { key: "navigation.spaRituals", path: "/spa-rituals", num: "03" },
+  { key: "navigation.courses", path: "/courses", num: "04" },
+  { key: "navigation.blogs", path: "/blogs", num: "05" },
+  { key: "navigation.events", path: "/events", num: "06" },
   { key: "navigation.contact", path: "/contact", num: "07" },
 ];
 
@@ -97,7 +97,7 @@ const Navbar = ({ user, onLogout }) => {
     navigate("/login", { replace: true });
   };
 
-  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/login", "/newuser", "/payment"];
+  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/login", "/newuser", "/payment", "/services", "/spa-rituals", "/courses", "/blogs", "/founding"];
   const isHome = location.pathname === "/";
   const solidNav = solidNavPages.includes(location.pathname);
   const dashboardPath = user?.role === "admin" || user?.role === "manager" ? "/yogaadmin" : user?.role === "reception" ? "/reception" : "/studentdashboard";
@@ -240,8 +240,8 @@ const Navbar = ({ user, onLogout }) => {
                   <div>
                     <p className={styles.drawerMetaLabel}>{t("footer.visit")}</p>
                     <p className={styles.drawerContact} style={{ marginTop: 8 }}>
-                      {t("navbar.address")}<br />{t("navbar.studioType")}<br />
-                      <a href="tel:+254700000000">+254 700 000 000</a> · <a href="mailto:hello@somawellness.co.ke">hello@somawellness.co.ke</a>
+                      48 Shanzu Road, Spring Valley, Nairobi<br />
+                      <a href="tel:+254702080070">+254 702 080 070</a> · <a href="mailto:somawellnesslimited@gmail.com">somawellnesslimited@gmail.com</a>
                     </p>
                   </div>
                   <div className={styles.drawerSocial}>

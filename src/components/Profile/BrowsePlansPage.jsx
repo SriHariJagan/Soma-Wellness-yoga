@@ -12,6 +12,17 @@ const BADGE_TONE = {
   "Best Value": "green",
 };
 
+const TIER_ACCENT = {
+  Bronze: "#B0793B",
+  Silver: "#8A9BA8",
+  Gold: "#C9A227",
+};
+
+const perMonth = (plan) => {
+  const m = Number(plan.durationMonths) || 0;
+  return m > 0 ? Math.round(Number(plan.price || 0) / m) : 0;
+};
+
 export default function BrowsePlansPage({ student, reload }) {
   const [plans, setPlans] = useState([]);
   const [activeMembership, setActiveMembership] = useState(null);
@@ -59,7 +70,7 @@ export default function BrowsePlansPage({ student, reload }) {
   if (loading) {
     return (
       <div>
-        <PageHeader title="Browse Plans" sub="Choose the perfect membership for your wellness journey" />
+        <PageHeader title="Membership Plans" sub="Choose the perfect membership for your wellness journey" />
         <div className={styles.planGrid}>
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className={styles.skelCard}>
@@ -89,7 +100,7 @@ export default function BrowsePlansPage({ student, reload }) {
   return (
     <div>
       <PageHeader
-        title="Browse Plans"
+        title="Membership Plans"
         sub="Choose the perfect membership for your wellness journey"
       />
 
@@ -105,9 +116,19 @@ export default function BrowsePlansPage({ student, reload }) {
           const owned = isOwned(plan);
           const badge = plan.badge || (plan.isPopular ? "Most Popular" : plan.isRecommended ? "Recommended" : "");
           const badgeTone = BADGE_TONE[badge] || "neutral";
+          const accent = TIER_ACCENT[plan.name] || null;
 
           return (
-            <Item key={plan._id} className={`${styles.planCard} ${badge ? styles.planCardFeatured : ""}`}>
+            <Item
+              key={plan._id}
+              className={`${styles.planCard} ${badge ? styles.planCardFeatured : ""}`}
+            >
+              {accent && (
+                <span
+                  aria-hidden="true"
+                  style={{ display: "block", height: 5, borderRadius: "16px 16px 0 0", background: `linear-gradient(90deg, ${accent}, ${accent}88)` }}
+                />
+              )}
               {badge && (
                 <span className={styles.planBadge}>
                   <Pill tone={badgeTone}>{badge}</Pill>
@@ -121,6 +142,11 @@ export default function BrowsePlansPage({ student, reload }) {
                   <span className={styles.planPrice}>{fmtPrice(plan.price)}</span>
                   <span className={styles.planDuration}>/ {plan.durationMonths} month{plan.durationMonths > 1 ? "s" : ""}</span>
                 </div>
+                {plan.durationMonths > 1 && (
+                  <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginTop: -2 }}>
+                    {fmtPrice(perMonth(plan))} per month
+                  </div>
+                )}
 
                 {plan.description && <p className={styles.planDesc}>{plan.description}</p>}
 
@@ -170,3 +196,4 @@ export default function BrowsePlansPage({ student, reload }) {
     </div>
   );
 }
+

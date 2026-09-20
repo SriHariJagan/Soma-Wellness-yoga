@@ -47,6 +47,9 @@ const LockIcon = () => (
 const UserIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );
+const PhoneIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+);
 
 export default function AuthCard({ initialView = "login", redirectTo = "", onLoginSuccess }) {
   const { t } = useTranslation();
@@ -57,8 +60,10 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [showPw2, setShowPw2] = useState(false);
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -126,13 +131,15 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
   const handleRegister = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) { setError(t("validation.passwordMismatch")); return; }
+    const cleanPhone = phone.replace(/[\s\-()]/g, "");
+    if (cleanPhone && !/^\+?[0-9]{7,15}$/.test(cleanPhone)) { setError(t("validation.invalidPhone")); return; }
     setLoading(true); setError("");
     try {
       const ref = new URLSearchParams(window.location.search).get("ref") || undefined;
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, ref }),
+        body: JSON.stringify({ name, email, password, phone: cleanPhone, ref }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -175,6 +182,12 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
   const pwExtra = (
     <button type="button" className={styles.pwToggle} onClick={() => setShowPw((s) => !s)} aria-label={showPw ? t("auth.hidePassword") : t("auth.showPassword")} aria-pressed={showPw}>
       <EyeIcon off={showPw} />
+    </button>
+  );
+
+  const pw2Extra = (
+    <button type="button" className={styles.pwToggle} onClick={() => setShowPw2((s) => !s)} aria-label={showPw2 ? t("auth.hidePassword") : t("auth.showPassword")} aria-pressed={showPw2}>
+      <EyeIcon off={showPw2} />
     </button>
   );
 
@@ -252,9 +265,10 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               <form onSubmit={handleRegister} className={styles.form}>
                 <Field id="reg-name" label={t("auth.name")} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("contact.namePlaceholder")} icon={<UserIcon />} autoComplete="name" />
                 <Field id="reg-email" label={t("auth.email")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" icon={<MailIcon />} autoComplete="email" />
+                <Field id="reg-phone" label={t("auth.phone")} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("auth.phonePlaceholder")} icon={<PhoneIcon />} autoComplete="tel" />
                 <div className={styles.row}>
                   <Field id="reg-pw" label={t("auth.password")} type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" icon={<LockIcon />} autoComplete="new-password" extra={pwExtra} />
-                  <Field id="reg-pw2" label={t("auth.confirmPassword")} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" icon={<LockIcon />} autoComplete="new-password" />
+                  <Field id="reg-pw2" label={t("auth.confirmPassword")} type={showPw2 ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" icon={<LockIcon />} autoComplete="new-password" extra={pw2Extra} />
                 </div>
                 <motion.button type="submit" className={styles.submitBtn} disabled={loading} whileTap={{ scale: 0.99 }}>
                   {loading ? t("common.loading") : `${t("auth.createAccount")} →`}

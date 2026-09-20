@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
@@ -129,6 +130,66 @@ function PlanSelector({ selected = [], onChange, plans = [] }) {
   );
 }
 
+/* ── Who can view — shared audience picker ─────────────────── */
+function AudiencePanel({ visibility, onVisibility, allowedPlans, onPlans, plans, disabled }) {
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
+        {VISIBILITY_OPTIONS.map((o) => {
+          const Icon = o.icon;
+          const active = visibility === o.value;
+          const hint = o.value === 'all' ? 'Everyone, incl. guests' : o.value === 'plan' ? 'Only chosen plans' : 'Staff only';
+          return (
+            <button
+              key={o.value} type="button" disabled={disabled}
+              onClick={() => onVisibility(o.value)}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
+                padding: '14px 14px', borderRadius: 12, cursor: disabled ? 'default' : 'pointer',
+                border: active ? '1.5px solid #2E7D5B' : '1px solid var(--line-2, rgba(38,51,44,0.12))',
+                background: active ? 'rgba(46,125,91,0.07)' : '#fff',
+                transition: 'all 0.2s ease', textAlign: 'left',
+              }}
+            >
+              <span style={{
+                width: 32, height: 32, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: active ? '#1a4d35' : 'rgba(38,51,44,0.06)', color: active ? '#fff' : 'var(--text-2)',
+              }}>
+                <Icon size={16} />
+              </span>
+              <strong style={{ fontSize: 13 }}>{o.label}</strong>
+              <span style={{ fontSize: 11.5, color: 'var(--text-3)' }}>{hint}</span>
+            </button>
+          );
+        })}
+      </div>
+      {visibility === 'plan' && (
+        <div>
+          <div className={s.drawerSectionTitle} style={{ marginBottom: 8 }}>Which plans? ({allowedPlans.length} selected)</div>
+          <PlanSelector selected={allowedPlans} onChange={onPlans} plans={plans} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Lock background scroll for fullscreen sheets (with scrollbar compensation
+   so the page behind never jumps or stays scrollable) */
+function useSheetLock(open) {
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevPadding = document.body.style.paddingRight;
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (scrollBarWidth > 0) document.body.style.paddingRight = `${scrollBarWidth}px`;
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPadding;
+    };
+  }, [open ]);
+}
+
 function UploadModal({ onClose, onSuccess, plans }) {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
@@ -140,6 +201,7 @@ function UploadModal({ onClose, onSuccess, plans }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  useSheetLock(true);
 
   const handleFileSelect = useCallback((f) => {
     setFile(f);
@@ -182,87 +244,92 @@ function UploadModal({ onClose, onSuccess, plans }) {
     }
   };
 
-  return (
-    <div className={s.drawerOverlay} onClick={onClose}>
-      <div className={s.drawer} onClick={e => e.stopPropagation()}>
-        <div className={s.drawerHeader}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)' }}>Upload Asset</div>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>Add a new file to the content library</div>
+  return createPortal(
+    <div className={s.sheetBackdrop} onClick={onClose}>
+      <div className={s.sheet} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Upload asset">
+        <div className={s.sheetHeader}>
+          <div className={s.sheetTitleWrap}>
+            <span className={s.sheetAvatar}><LuUpload size={20} /></span>
+            <div>
+              <h3>Add Content</h3>
+              <p>Upload a file, then choose exactly who can view it.</p>
+            </div>
           </div>
-          <button type="button" className={s.drawerClose} onClick={onClose}><LuX size={18} /></button>
+          <button type="button" className={s.modalClose} onClick={onClose} aria-label="Close"><LuX size={18} /></button>
         </div>
-        <div className={s.drawerBody}>
-          {error && (
-            <div className={`${s.feedbackBanner} ${s.bannerError}`}>
-              <span className={s.bannerIcon}><LuCircleAlert /></span>
-              <p className={s.bannerText}>{error}</p>
-            </div>
-          )}
-          <div
-            className={s.dropzone}
-            style={{ borderColor: dragOver ? 'var(--c-primary)' : undefined, background: dragOver ? 'var(--c-primary-light)' : undefined, cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.6 : 1 }}
-            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => !uploading && fileInputRef.current?.click()}
-          >
-            {file ? (
-              <>
-                <div style={{ fontSize: 40, opacity: 0.6 }}>{TYPE_ICONS[file.name?.split('.').pop()] || '\u{1F4C4}'}</div>
-                <div style={{ fontWeight: 600, fontSize: 13 }}>{file.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{(file.size / 1024 / 1024).toFixed(1)} MB</div>
-                {!uploading && (
-                  <button type="button" className={s.btn} style={{ marginTop: 6, padding: '4px 12px', fontSize: 12 }} onClick={e => { e.stopPropagation(); setFile(null); }}>
-                    <LuReplace size={12} /> Change File
-                  </button>
+        <div className={s.sheetBody}>
+          <div className={`${s.sheetGrid} ${s.sheetGridBrand}`}>
+            {/* LEFT — the file */}
+            <section className={s.sheetSection}>
+              <h4><span className={s.stepNum}>1</span> The file</h4>
+              {error && (
+                <div className={`${s.feedbackBanner} ${s.bannerError}`} style={{ marginBottom: 14 }}>
+                  <span className={s.bannerIcon}><LuCircleAlert /></span>
+                  <p className={s.bannerText}>{error}</p>
+                </div>
+              )}
+              <div
+                className={s.dropzone}
+                style={{ borderColor: dragOver ? 'var(--c-primary)' : undefined, background: dragOver ? 'var(--c-primary-light)' : undefined, cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.6 : 1 }}
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => !uploading && fileInputRef.current?.click()}
+              >
+                {file ? (
+                  <>
+                    <div style={{ fontSize: 40, opacity: 0.6 }}>{TYPE_ICONS[file.name?.split('.').pop()] || '\u{1F4C4}'}</div>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{file.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                    {!uploading && (
+                      <button type="button" className={s.btn} style={{ marginTop: 6, padding: '4px 12px', fontSize: 12 }} onClick={e => { e.stopPropagation(); setFile(null); }}>
+                        <LuReplace size={12} /> Change File
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className={s.dropIcon}><LuUpload /></div>
+                    <div style={{ fontWeight: 700, fontFamily: 'var(--font-display)' }}>Drop file here or click to browse</div>
+                    <div className={s.cardDesc} style={{ margin: 0 }}>PDF, Video, Audio, Documents up to 500MB</div>
+                  </>
                 )}
-              </>
-            ) : (
-              <>
-                <div className={s.dropIcon}><LuUpload /></div>
-                <div style={{ fontWeight: 700, fontFamily: 'var(--font-display)' }}>Drop file here or click to browse</div>
-                <div className={s.cardDesc} style={{ margin: 0 }}>PDF, Video, Audio, Documents up to 500MB</div>
-              </>
-            )}
-            <input ref={fileInputRef} type="file" hidden onChange={e => e.target.files[0] && handleFileSelect(e.target.files[0])} />
+                <input ref={fileInputRef} type="file" hidden onChange={e => e.target.files[0] && handleFileSelect(e.target.files[0])} />
+              </div>
+              {uploading && <ProgressBar percent={progress} />}
+              <div className={s.drawerSection} style={{ marginTop: 16 }}>
+                <div className={s.drawerSectionTitle}>Asset Name</div>
+                <input className={s.input} value={name} onChange={e => setName(e.target.value)} placeholder="Enter asset name" disabled={uploading} />
+              </div>
+              <div className={s.drawerSection} style={{ marginTop: 12 }}>
+                <div className={s.drawerSectionTitle}>Category</div>
+                <select className={s.input} value={category} onChange={e => setCategory(e.target.value)} disabled={uploading}>
+                  {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </section>
+
+            {/* RIGHT — who can view */}
+            <section className={s.sheetSection}>
+              <h4><span className={s.stepNum}>2</span> Who can view it?</h4>
+              <AudiencePanel visibility={visibility} onVisibility={setVisibility} allowedPlans={allowedPlans} onPlans={setAllowedPlans} plans={plans} disabled={uploading} />
+            </section>
           </div>
-          {uploading && <ProgressBar percent={progress} />}
-          <div className={s.drawerSection}>
-            <div className={s.drawerSectionTitle}>Asset Name</div>
-            <input className={s.input} value={name} onChange={e => setName(e.target.value)} placeholder="Enter asset name" disabled={uploading} />
-          </div>
-          <div className={s.drawerSection}>
-            <div className={s.drawerSectionTitle}>Category</div>
-            <select className={s.input} value={category} onChange={e => setCategory(e.target.value)} disabled={uploading}>
-              {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div className={s.drawerSection}>
-            <div className={s.drawerSectionTitle}>Visibility</div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {VISIBILITY_OPTIONS.map(o => (
-                <button key={o.value} type="button" className={`${s.chip} ${visibility === o.value ? s.chipActive : ''}`} onClick={() => setVisibility(o.value)} disabled={uploading}>
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {visibility === 'plan' && (
-            <div className={s.drawerSection}>
-              <div className={s.drawerSectionTitle}>Allowed Membership Plans</div>
-              <PlanSelector selected={allowedPlans} onChange={setAllowedPlans} plans={plans} />
-            </div>
-          )}
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-            <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={handleUpload} disabled={uploading || !file} style={{ flex: 1 }}>
+        </div>
+        <div className={s.sheetFooter}>
+          <span className={s.sheetFooterHint}>
+            {visibility === 'all' ? 'Visible to everyone, including guests.' : visibility === 'admin' ? 'Only staff will see this.' : allowedPlans.length > 0 ? `Visible to ${allowedPlans.length} plan${allowedPlans.length !== 1 ? 's' : ''}.` : 'Pick at least one plan below.'}
+          </span>
+          <div className={s.modalActions}>
+            <button type="button" className={s.btnGhost} onClick={onClose} disabled={uploading}>Cancel</button>
+            <button type="button" className={s.btnPrimary} onClick={handleUpload} disabled={uploading || !file}>
               {uploading ? <><LuLoader className={s.spin} size={14} /> Uploading...</> : <><LuUpload size={14} /> Upload Asset</>}
             </button>
-            <button type="button" className={s.btn} onClick={onClose} disabled={uploading}>Cancel</button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -274,6 +341,7 @@ function EditModal({ asset, onClose, onSuccess, plans }) {
   const [allowedPlans, setAllowedPlans] = useState(asset.allowedPlans || []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  useSheetLock(true);
 
   const handleSave = async () => {
     setSaving(true);
@@ -288,79 +356,97 @@ function EditModal({ asset, onClose, onSuccess, plans }) {
   };
 
   return (
-    <div className={s.modalOverlay} onClick={onClose}>
-      <div className={s.modalBox} onClick={e => e.stopPropagation()} style={{ width: 480, textAlign: 'left' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)' }}>Edit Asset</div>
-          <button type="button" className={s.drawerClose} onClick={onClose}><LuX size={18} /></button>
-        </div>
-        {error && (
-          <div className={`${s.feedbackBanner} ${s.bannerError}`} style={{ marginBottom: 16 }}>
-            <span className={s.bannerIcon}><LuCircleAlert /></span>
-            <p className={s.bannerText}>{error}</p>
+    <div className={s.sheetBackdrop} onClick={onClose}>
+      <div className={s.sheet} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Edit asset">
+        <div className={s.sheetHeader}>
+          <div className={s.sheetTitleWrap}>
+            <span className={s.sheetAvatar}><LuPencilLine size={20} /></span>
+            <div>
+              <h3>Edit Content</h3>
+              <p>{asset.originalName || asset.name} — update details or change who can view it.</p>
+            </div>
           </div>
-        )}
-        <div style={{ marginBottom: 16 }}>
-          <div className={s.drawerSectionTitle}>Asset Name</div>
-          <input className={s.input} value={name} onChange={e => setName(e.target.value)} />
+          <button type="button" className={s.modalClose} onClick={onClose} aria-label="Close"><LuX size={18} /></button>
         </div>
-        <div style={{ marginBottom: 16 }}>
-          <div className={s.drawerSectionTitle}>Category</div>
-          <select className={s.input} value={category} onChange={e => setCategory(e.target.value)}>
-            {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <div className={s.drawerSectionTitle}>Description</div>
-          <textarea className={s.textarea} value={description} onChange={e => setDescription(e.target.value)} rows={3} />
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <div className={s.drawerSectionTitle}>Visibility</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {VISIBILITY_OPTIONS.map(o => (
-              <button key={o.value} type="button" className={`${s.chip} ${visibility === o.value ? s.chipActive : ''}`} onClick={() => setVisibility(o.value)}>
-                {o.label}
-              </button>
-            ))}
+        <div className={s.sheetBody}>
+          <div className={`${s.sheetGrid} ${s.sheetGridLight}`}>
+            {/* LEFT — details */}
+            <section className={s.sheetSection}>
+              <h4><span className={s.stepNum}>1</span> Details</h4>
+              {error && (
+                <div className={`${s.feedbackBanner} ${s.bannerError}`} style={{ marginBottom: 14 }}>
+                  <span className={s.bannerIcon}><LuCircleAlert /></span>
+                  <p className={s.bannerText}>{error}</p>
+                </div>
+              )}
+              <div style={{ marginBottom: 16 }}>
+                <div className={s.drawerSectionTitle}>Asset Name</div>
+                <input className={s.input} value={name} onChange={e => setName(e.target.value)} />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <div className={s.drawerSectionTitle}>Category</div>
+                <select className={s.input} value={category} onChange={e => setCategory(e.target.value)}>
+                  {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: 4 }}>
+                <div className={s.drawerSectionTitle}>Description</div>
+                <textarea className={s.textarea} value={description} onChange={e => setDescription(e.target.value)} rows={4} />
+              </div>
+            </section>
+
+            {/* RIGHT — who can view */}
+            <section className={s.sheetSection}>
+              <h4><span className={s.stepNum}>2</span> Who can view it?</h4>
+              <AudiencePanel visibility={visibility} onVisibility={setVisibility} allowedPlans={allowedPlans} onPlans={setAllowedPlans} plans={plans} disabled={saving} />
+            </section>
           </div>
         </div>
-        {visibility === 'plan' && (
-          <div style={{ marginBottom: 16 }}>
-            <div className={s.drawerSectionTitle}>Allowed Membership Plans</div>
-            <PlanSelector selected={allowedPlans} onChange={setAllowedPlans} plans={plans} />
+        <div className={s.sheetFooter}>
+          <span className={s.sheetFooterHint}>
+            {visibility === 'all' ? 'Visible to everyone, including guests.' : visibility === 'admin' ? 'Only staff will see this.' : allowedPlans.length > 0 ? `Visible to ${allowedPlans.length} plan${allowedPlans.length !== 1 ? 's' : ''}.` : 'Pick at least one plan.'}
+          </span>
+          <div className={s.modalActions}>
+            <button type="button" className={s.btnGhost} onClick={onClose}>Cancel</button>
+            <button type="button" className={s.btnPrimary} onClick={handleSave} disabled={saving}>
+              {saving ? <><LuLoader className={s.spin} size={14} /> Saving...</> : <><LuSave size={14} /> Save Changes</>}
+            </button>
           </div>
-        )}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={handleSave} disabled={saving} style={{ flex: 1 }}>
-            {saving ? <><LuLoader className={s.spin} size={14} /> Saving...</> : <><LuSave size={14} /> Save Changes</>}
-          </button>
-          <button type="button" className={s.btn} onClick={onClose}>Cancel</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
 function ConfirmModal({ title, message, onConfirm, onClose }) {
   const [loading, setLoading] = useState(false);
+  useSheetLock(true);
   const handleConfirm = async () => {
     setLoading(true);
     try { await onConfirm(); } catch { setLoading(false); }
   };
-  return (
-    <div className={s.modalOverlay} onClick={onClose}>
-      <div className={s.modalBox} onClick={e => e.stopPropagation()}>
-        <div style={{ fontSize: 36, marginBottom: 12 }}>{'\u26A0\uFE0F'}</div>
-        <div style={{ fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)', marginBottom: 8 }}>{title}</div>
-        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 22, lineHeight: 1.5 }}>{message}</div>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <button type="button" className={`${s.btn} ${s.btnDanger}`} onClick={handleConfirm} disabled={loading}>
-            {loading ? <><LuLoader className={s.spin} size={14} /> Processing...</> : <>Confirm</>}
-          </button>
-          <button type="button" className={s.btn} onClick={onClose}>Cancel</button>
+  return createPortal(
+    <div className={s.sheetBackdrop} onClick={onClose}>
+      <div className={s.sheetCompact} onClick={e => e.stopPropagation()} role="alertdialog" aria-modal="true" aria-label={title}>
+        <div className={s.sheetCompactHead}>
+          <span className={s.sheetCompactIcon} style={{ background: 'rgba(220,38,38,0.1)', color: '#DC2626' }}>⚠️</span>
+          <div>
+            <div className={s.sheetCompactTitle}>{title}</div>
+            <div className={s.sheetCompactSub}>{message}</div>
+          </div>
+        </div>
+        <div className={s.sheetCompactBody}>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button type="button" className={s.btnGhost} onClick={onClose}>Cancel</button>
+            <button type="button" className={`${s.btn} ${s.btnDanger}`} onClick={handleConfirm} disabled={loading}>
+              {loading ? <><LuLoader className={s.spin} size={14} /> Processing...</> : <>Confirm</>}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -369,6 +455,7 @@ function ReplaceFileModal({ asset, onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  useSheetLock(true);
   const handleReplace = async () => {
     if (!file) { setError('Select a file'); return; }
     setUploading(true);
@@ -383,29 +470,32 @@ function ReplaceFileModal({ asset, onClose, onSuccess }) {
       setUploading(false);
     }
   };
-  return (
-    <div className={s.modalOverlay} onClick={onClose}>
-      <div className={s.modalBox} onClick={e => e.stopPropagation()} style={{ width: 400, textAlign: 'left' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-display)' }}>Replace File</div>
-          <button type="button" className={s.drawerClose} onClick={onClose}><LuX size={18} /></button>
+  return createPortal(
+    <div className={s.sheetBackdrop} onClick={onClose}>
+      <div className={s.sheetCompact} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Replace file">
+        <div className={s.sheetCompactHead}>
+          <span className={s.sheetCompactIcon} style={{ background: 'rgba(46,125,91,0.1)', color: '#1a4d35' }}><LuReplace size={20} /></span>
+          <div>
+            <div className={s.sheetCompactTitle}>Replace File</div>
+            <div className={s.sheetCompactSub}>Current file: <strong>{asset.originalName}</strong></div>
+          </div>
         </div>
-        {error && <div className={`${s.feedbackBanner} ${s.bannerError}`} style={{ marginBottom: 12 }}><p className={s.bannerText}>{error}</p></div>}
-        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>
-          Current file: <strong>{asset.originalName}</strong>
-        </div>
-        <div className={s.dropzone} style={{ padding: 20, cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
-          {file ? <div style={{ fontWeight: 600 }}>{file.name}</div> : <><LuUpload size={20} /> Click to select replacement file</>}
-          <input ref={fileInputRef} type="file" hidden onChange={e => e.target.files[0] && setFile(e.target.files[0])} />
-        </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-          <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={handleReplace} disabled={uploading || !file} style={{ flex: 1 }}>
-            {uploading ? <><LuLoader className={s.spin} size={14} /> Uploading...</> : <><LuReplace size={14} /> Replace</>}
-          </button>
-          <button type="button" className={s.btn} onClick={onClose}>Cancel</button>
+        <div className={s.sheetCompactBody}>
+          {error && <div className={`${s.feedbackBanner} ${s.bannerError}`} style={{ marginBottom: 12 }}><p className={s.bannerText}>{error}</p></div>}
+          <div className={s.dropzone} style={{ padding: 22, cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
+            {file ? <div style={{ fontWeight: 600 }}>{file.name}</div> : <><LuUpload size={20} /> Click to select replacement file</>}
+            <input ref={fileInputRef} type="file" hidden onChange={e => e.target.files[0] && setFile(e.target.files[0])} />
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
+            <button type="button" className={s.btnGhost} onClick={onClose}>Cancel</button>
+            <button type="button" className={s.btnPrimary} onClick={handleReplace} disabled={uploading || !file}>
+              {uploading ? <><LuLoader className={s.spin} size={14} /> Uploading...</> : <><LuReplace size={14} /> Replace</>}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import c from "./ListCards.module.css";
 import {
@@ -33,6 +33,22 @@ const C = {
 
 const row = { display: "flex", alignItems: "center", gap: 8 };
 
+function StepLabel({ n, title, hint }) {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 2 }}>
+      <span style={{
+        width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+        background: "#2E7D5B", color: "#fff",
+        fontSize: 12, fontWeight: 800,
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        transform: "translateY(3px)",
+      }}>{n}</span>
+      <span style={{ fontSize: 14, fontWeight: 700, color: "#2D1406" }}>{title}</span>
+      {hint && <span style={{ fontSize: 12, color: "#9C8B78" }}>{hint}</span>}
+    </div>
+  );
+}
+
 function PremiumConsultationCard({ consultation, onCancel, busy }) {
   const hasMeetingLink = !!consultation.zoomUrl;
   const isActive = consultation.status === "upcoming" || consultation.status === "confirmed";
@@ -50,7 +66,10 @@ function PremiumConsultationCard({ consultation, onCancel, busy }) {
         background: C.card,
         borderRadius: 18,
         border: `1px solid ${C.border}`,
-        boxShadow: "0 2px 8px rgba(45,20,6,0.06)",
+        borderLeft: `3px solid ${consultation.status === "confirmed" ? C.green : C.amber}`,
+        boxShadow: consultation.status === "confirmed"
+          ? "0 4px 20px rgba(22,163,74,0.1)"
+          : "0 2px 8px rgba(45,20,6,0.06)",
         overflow: "hidden",
         transition: "box-shadow 0.2s, transform 0.2s",
       }}
@@ -255,6 +274,11 @@ export default function ConsultationPage({ student, reload }) {
   const [slots, setSlots] = useState([]);
   const [fee, setFee] = useState(FEE);
   const [duration, setDuration] = useState(DURATION);
+  const [maxDate, setMaxDate] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() + 2);
+    return d.toISOString().split("T")[0];
+  });
+  const [horizonDays, setHorizonDays] = useState(2);
   const [topic, setTopic] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
@@ -278,12 +302,27 @@ export default function ConsultationPage({ student, reload }) {
       setSlots(res.slots || []);
       setFee(res.fee || FEE);
       setDuration(res.duration || DURATION);
-    } catch {
+      if (res.maxDate) setMaxDate(res.maxDate);
+      if (res.bookingHorizonDays) setHorizonDays(res.bookingHorizonDays);
+    } catch (err) {
       setSlots([]);
+      setMsg(err.message || "Could not load slots for this date.");
     } finally {
       setLoadingSlots(false);
     }
   }
+
+  // Learn the booking window on mount (today's lookup carries horizon info)
+  useEffect(() => {
+    (async () => {
+      try {
+        const today = new Date().toISOString().split("T")[0];
+        const res = await getConsultationSlots(today);
+        if (res.maxDate) setMaxDate(res.maxDate);
+        if (res.bookingHorizonDays) setHorizonDays(res.bookingHorizonDays);
+      } catch { /* default 2-day window stands */ }
+    })();
+  }, []);
 
   async function handleDateChange(e) {
     const val = e.target.value;
@@ -356,26 +395,12 @@ export default function ConsultationPage({ student, reload }) {
                   <span style={{ fontWeight: 600, fontSize: 15, color: "#2D1406" }}>Book a Consultation</span>
                 </div>
 
-                <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 18 }}>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 16, background: "rgba(46,125,91,0.05)", borderRadius: 12, padding: "14px 16px" }}>
-                    <div style={{ flex: 1, minWidth: 140 }}>
-                      <div style={{ fontSize: 11, color: "#9C8B78", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Fee</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: "#2D1406" }}>KES {fee}</div>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 140 }}>
-                      <div style={{ fontSize: 11, color: "#9C8B78", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Duration</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: "#2D1406" }}>{duration} min</div>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 140 }}>
-                      <div style={{ fontSize: 11, color: "#9C8B78", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Session</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: "#2D1406" }}>1-on-1</div>
-                    </div>
-                  </div>
-
+                <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 20 }}>
+                  <StepLabel n="1" title="Pick a date" hint={`Bookings open ${horizonDays} day${horizonDays === 1 ? "" : "s"} ahead`} />
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <label style={{ fontSize: 13, fontWeight: 600, color: "#2D1406" }}>Select Date</label>
                     <input type="date" value={date} onChange={handleDateChange} required
                       min={new Date().toISOString().split("T")[0]}
+                      max={maxDate}
                       style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--color-border)", fontSize: 14, background: "#fff" }} />
                   </div>
 
@@ -385,18 +410,18 @@ export default function ConsultationPage({ student, reload }) {
 
                   {!loadingSlots && slots.length > 0 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      <label style={{ fontSize: 13, fontWeight: 600, color: "#2D1406" }}>Available Time Slots</label>
+                      <StepLabel n="2" title="Choose a time" hint={`${slots.filter((s) => s.available).length} of ${slots.length} slots free`} />
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                         {slots.map((s) => (
                           <button key={s.time} type="button" disabled={!s.available}
                             onClick={() => setTimeSlot(s.time)}
                             style={{
-                              padding: "8px 16px", borderRadius: 8,
+                              padding: "10px 18px", borderRadius: 10,
                               border: `1.5px solid ${timeSlot === s.time ? "#2E7D5B" : s.available ? "var(--color-border)" : "#eee"}`,
                               background: timeSlot === s.time ? "rgba(46,125,91,0.1)" : s.available ? "#fff" : "#f9f9f9",
                               color: s.available ? "#2D1406" : "#ccc",
                               cursor: s.available ? "pointer" : "not-allowed",
-                              fontWeight: timeSlot === s.time ? 600 : 400, fontSize: 14, transition: "all 0.15s",
+                              fontWeight: timeSlot === s.time ? 700 : 400, fontSize: 14, transition: "all 0.15s",
                             }}>
                             {s.time}
                           </button>
@@ -410,7 +435,7 @@ export default function ConsultationPage({ student, reload }) {
                   )}
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <label style={{ fontSize: 13, fontWeight: 600, color: "#2D1406" }}>Topic (optional)</label>
+                    <StepLabel n="3" title="Topic & confirm" hint="Optional — helps your consultant prepare" />
                     <input type="text" value={topic}
                       onChange={(e) => setTopic(e.target.value)}
                       placeholder="e.g. Stress management, flexibility goals"
@@ -419,9 +444,8 @@ export default function ConsultationPage({ student, reload }) {
 
                   <div style={{ background: "rgba(46,125,91,0.06)", borderRadius: 12, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
                     <div>
-                      <div style={{ fontSize: 12, color: "#9C8B78" }}>Booking Summary</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2D1406", marginTop: 2 }}>
-                        {date ? formatDate(date) : "—"} · {timeSlot || "—"} · {duration} min
+                      <div style={{ fontSize: 12, color: "#9C8B78" }}>
+                        {date ? formatDate(date) : "Pick a date"} · {timeSlot || "pick a time"} · {duration} min · 1-on-1
                       </div>
                     </div>
                     <div style={{ fontSize: 18, fontWeight: 700, color: "#2E7D5B" }}>KES {fee}</div>

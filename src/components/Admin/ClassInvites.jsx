@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import s from './YogaAdmin.module.css';
 import { PageHeader, KpiCard, Avatar } from './ui/Primitives';
+import { ConfirmSheet } from './ui/Sheets.jsx';
 import Badge from './Badge';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -13,7 +14,7 @@ import {
   LuMail, LuUser, LuCalendar, LuClock, LuX, LuSearch, LuCheck, LuLoader,
   LuPlus, LuChevronLeft, LuLink, LuUsers, LuSend, LuCopy, LuTrash2, LuBell,
   LuEye, LuRefreshCw, LuCircleAlert, LuVideo, LuMapPin, LuFileText,
-  LuCopyPlus, LuArrowLeft, LuChevronDown, LuCopyCheck,
+  LuCopyPlus, LuArrowLeft, LuChevronDown, LuCopyCheck, LuNavigation,
   LuLock, LuCircleCheck, LuCircle,
   LuFilter, LuHash, LuDownload, LuCalendarDays,
   LuClock3, LuClock4, LuBookOpen, LuGraduationCap,
@@ -39,7 +40,7 @@ function isSingleSessionService(name) {
 const EMPTY_FORM = {
   title: '', description: '', date: '', startTime: '', endTime: '',
   duration: 60, instructor: '', platform: 'Zoom', meetingLink: '',
-  meetingPassword: '', notes: '', attachments: '',
+  meetingPassword: '', location: '', notes: '', attachments: '',
   recipientType: '', batchId: '', serviceId: '', courseId: '', workshopId: '',
   reminderEnabled: false,
 };
@@ -660,69 +661,16 @@ function StickyCard({ title, icon, children, accent }) {
 function ConfirmModal({ open, onClose, onConfirm, title, message, confirmText, confirmIcon, loading, danger }) {
   if (!open) return null;
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(45,20,6,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backdropFilter: 'blur(4px)', animation: 'fadeIn 0.2s ease',
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          background: C.surface, borderRadius: 24, padding: '34px 30px',
-          width: 420, maxWidth: '92vw', border: `1px solid ${C.line}`,
-          textAlign: 'center', boxShadow: '0 18px 40px -12px rgba(45,20,6,0.16)',
-          animation: 'modalScale 0.24s cubic-bezier(0.22,1,0.36,1)',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div style={{
-          width: 58, height: 58, borderRadius: 16, margin: '0 auto 16px',
-          display: 'grid', placeItems: 'center', fontSize: 26,
-          background: danger ? 'rgba(220,38,38,0.12)' : C.primarySoft,
-          color: danger ? C.danger : C.primary,
-        }}>
-          {confirmIcon || <LuSend size={24} />}
-        </div>
-        <h3 style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", fontSize: 19, color: C.text1, margin: '0 0 8px', fontWeight: 800, letterSpacing: '-0.02em' }}>{title}</h3>
-        <p style={{ fontSize: 13, color: C.text2, lineHeight: 1.6, marginBottom: 24 }}>{message}</p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1, padding: '11px 16px', border: `1px solid ${C.line}`,
-              background: C.surface3, borderRadius: 11, cursor: 'pointer',
-              fontSize: 13, fontFamily: "'Inter', system-ui, sans-serif",
-              color: C.text1, fontWeight: 600, transition: 'background 0.18s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = C.surface2}
-            onMouseLeave={e => e.currentTarget.style.background = C.surface3}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            style={{
-              flex: 1, padding: '11px 16px', border: 'none',
-              background: danger ? C.danger : C.grad,
-              color: '#fff', borderRadius: 11, cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: 13, fontWeight: 700, opacity: loading ? 0.7 : 1,
-              fontFamily: "'Inter', system-ui, sans-serif",
-              transition: 'filter 0.18s, transform 0.1s',
-              boxShadow: danger ? 'none' : '0 4px 14px rgba(46,125,91,0.35)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-            onMouseEnter={e => { if (!loading) e.currentTarget.style.filter = 'brightness(1.07)'; }}
-            onMouseLeave={e => { if (!loading) e.currentTarget.style.filter = 'none'; }}
-          >
-            {loading ? <><LuLoader size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Sending…</> : confirmText || 'Send Invitation'}
-          </button>
-        </div>
-      </div>
-      <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } @keyframes modalScale { from { opacity: 0; transform: scale(0.94) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-    </div>
+    <ConfirmSheet
+      icon={confirmIcon || <LuSend size={20} />}
+      tone={danger ? 'danger' : 'info'}
+      title={title}
+      message={message}
+      confirmLabel={loading ? 'Sending…' : (confirmText || 'Send Invitation')}
+      busy={loading}
+      onConfirm={onConfirm}
+      onClose={onClose}
+    />
   );
 }
 
@@ -741,6 +689,8 @@ export default function ClassInvites() {
   const [statusFilter, setStatusFilter] = useState('all');
 
   const [form, setForm] = useState(EMPTY_FORM);
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState('');
   const [recipientCandidates, setRecipientCandidates] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -758,6 +708,43 @@ export default function ClassInvites() {
   const flash = useCallback((message, type = 'success') => {
     setFeedback({ message, type });
     setTimeout(() => setFeedback(null), 4000);
+  }, []);
+
+  // Fill venue from the admin's current device location (reverse-geocoded)
+  const useCurrentLocation = useCallback(() => {
+    setLocError('');
+    if (!('geolocation' in navigator)) {
+      setLocError('Location is not supported on this device — please type the venue.');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+            { headers: { Accept: 'application/json' } },
+          );
+          const data = await res.json();
+          const label = data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          setForm((prev) => ({ ...prev, location: prev.location || label }));
+        } catch {
+          setForm((prev) => ({ ...prev, location: prev.location || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` }));
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocating(false);
+        setLocError(
+          err.code === err.PERMISSION_DENIED
+            ? 'Location permission denied — please type the venue.'
+            : 'Could not detect location — please type the venue.',
+        );
+      },
+      { enableHighAccuracy: true, timeout: 12000 },
+    );
   }, []);
 
   const loadInvites = useCallback(async () => {
@@ -961,8 +948,9 @@ export default function ClassInvites() {
         duration: Number(form.duration) || 60,
         instructor: form.instructor || undefined,
         platform: form.platform || 'Zoom',
-        meetingLink: form.meetingLink || undefined,
-        meetingPassword: form.meetingPassword || undefined,
+        meetingLink: form.platform === 'Offline' ? undefined : (form.meetingLink || undefined),
+        meetingPassword: form.platform === 'Offline' ? undefined : (form.meetingPassword || undefined),
+        location: form.platform === 'Offline' ? (form.location || undefined) : undefined,
         notes: form.notes || undefined,
         attachments: form.attachments || undefined,
         recipientType: form.recipientType,
@@ -1106,6 +1094,9 @@ export default function ClassInvites() {
           validationErrors={validationErrors}
           onSaveDraft={saveDraft}
           singleSessionData={singleSessionData}
+          useCurrentLocation={useCurrentLocation}
+          locating={locating}
+          locError={locError}
         />
       )}
 
@@ -1318,7 +1309,7 @@ function CreateView({
   loadingRecipients, toggleStudent, toggleSelectAll,
   batches, services, courses, workshops,
   saving, getRecipientCount, onSend, onBack, canSubmit, validationErrors, onSaveDraft,
-  singleSessionData,
+  singleSessionData, useCurrentLocation, locating, locError,
 }) {
   return (
     <>
@@ -1398,11 +1389,48 @@ function CreateView({
           </CollapsibleCard>
 
           <CollapsibleCard title="Meeting Settings" icon={<LuVideo size={17} />}>
+            <div style={{ fontSize: 12, color: C.text2, marginBottom: 8, lineHeight: 1.5 }}>
+              Where will students join from? <strong>Online</strong> sends them a video link · <strong>Offline</strong> sends them a venue.
+            </div>
             <ChipSelect label="Platform" options={PLATFORM_OPTIONS} value={form.platform} onChange={v => update({ platform: v })} />
             <div style={{ height: 10 }} />
-            <FloatingInput label="Meeting Link" icon={<LuLink size={15} />} value={form.meetingLink} onChange={e => update({ meetingLink: e.target.value })} helperText="Zoom, Google Meet, or other link" />
-            <div style={{ height: 8 }} />
-            <FloatingInput label="Meeting Password" icon={<LuLock size={15} />} value={form.meetingPassword} onChange={e => update({ meetingPassword: e.target.value })} type="password" />
+            {form.platform === 'Offline' ? (
+              <>
+                <FloatingInput label="Venue / Location" icon={<LuMapPin size={15} />} value={form.location} onChange={e => update({ location: e.target.value })} helperText="e.g. SomaWellness Studio, 48 Shanzu Road, Spring Valley" />
+                <div style={{ height: 8 }} />
+                <button
+                  type="button"
+                  onClick={useCurrentLocation}
+                  disabled={locating}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                    padding: '10px 12px', borderRadius: 10, cursor: locating ? 'default' : 'pointer',
+                    border: `1.5px dashed ${C.primary}`, background: 'rgba(46,125,91,0.05)',
+                    color: C.primary, fontSize: 13, fontWeight: 600,
+                  }}
+                >
+                  <LuNavigation size={15} />
+                  {locating ? 'Detecting your location…' : 'Use my current location'}
+                </button>
+                {locError && <div style={{ fontSize: 12, color: C.danger, marginTop: 6 }}>{locError}</div>}
+                {form.location && (
+                  <div style={{ fontSize: 12, color: C.text2, marginTop: 8, background: C.surface3, borderRadius: 8, padding: '8px 10px' }}>
+                    Students will see: <strong style={{ color: C.text1 }}>{form.location}</strong>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <FloatingInput label="Meeting Link" icon={<LuLink size={15} />} value={form.meetingLink} onChange={e => update({ meetingLink: e.target.value })} helperText={`Paste the ${form.platform} invite link — students join from it`} />
+                <div style={{ height: 8 }} />
+                <FloatingInput label="Meeting Password (optional)" icon={<LuLock size={15} />} value={form.meetingPassword} onChange={e => update({ meetingPassword: e.target.value })} type="password" helperText="Only if the meeting requires one" />
+                {form.meetingLink && (
+                  <div style={{ fontSize: 12, color: C.text2, marginTop: 8, background: C.surface3, borderRadius: 8, padding: '8px 10px' }}>
+                    Students will join via <strong style={{ color: C.text1 }}>{form.platform}</strong>
+                  </div>
+                )}
+              </>
+            )}
           </CollapsibleCard>
 
           <CollapsibleCard title="Notes & Reminders" icon={<LuBell size={17} />} defaultOpen={false}>
@@ -1479,7 +1507,29 @@ function CreateView({
                 <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: C.text2, marginBottom: 5 }}>Select Batch</div>
                 <select
                   value={form.batchId}
-                  onChange={e => update({ batchId: e.target.value })}
+                  onChange={e => {
+                    const batchId = e.target.value;
+                    const b = batches.find(x => x._id === batchId);
+                    // Auto-fill empty fields from the batch — never overwrites typed values.
+                    // Time always follows the batch: a batch IS its slot.
+                    const patch = {
+                      batchId,
+                      title: form.title || b?.name || '',
+                      instructor: form.instructor || b?.trainer || '',
+                      meetingLink: form.meetingLink || b?.zoomLink || '',
+                      platform: b?.zoomLink ? 'Zoom' : form.platform,
+                    };
+                    if (b?.timing) {
+                      const parts = String(b.timing).split(/\s*(?:–|—|-|to)\s*/i).filter(Boolean);
+                      const start = parseTimeInput(parts[0] || '');
+                      const end = parseTimeInput(parts[1] || '');
+                      if (start) patch.startTime = start;
+                      if (end) patch.endTime = end;
+                      const dur = calcDurationMinutes(start || form.startTime, end);
+                      if (dur > 0) patch.duration = dur;
+                    }
+                    update(patch);
+                  }}
                   style={{
                     width: '100%', padding: '10px 12px', border: `1.5px solid ${C.line}`,
                     borderRadius: 10, background: C.surface2, color: C.text1,
@@ -1494,6 +1544,14 @@ function CreateView({
                     <option key={b._id} value={b._id}>{b.name} ({b.timing})</option>
                   ))}
                 </select>
+                {(() => {
+                  const b = batches.find(x => x._id === form.batchId);
+                  return b ? (
+                    <div style={{ fontSize: 11.5, color: C.text2, marginTop: 6, lineHeight: 1.5 }}>
+                      ✓ Title, time, instructor{b.zoomLink ? ', meeting link' : ''} filled from batch · Usual timing: <strong>{b.timing}</strong> — just set the date below.
+                    </div>
+                  ) : null;
+                })()}
               </div>
             )}
 
@@ -2053,7 +2111,7 @@ function CreateView({
                   </div>
                 )}
               </div>
-              {form.meetingLink && (
+              {form.meetingLink && form.platform !== 'Offline' && (
                 <div style={{
                   marginTop: 10, padding: '8px 10px', background: C.surface,
                   borderRadius: 8, border: `1px solid ${C.line}`,
@@ -2065,7 +2123,7 @@ function CreateView({
                   <span>{form.meetingLink}</span>
                 </div>
               )}
-              {form.meetingPassword && (
+              {form.meetingPassword && form.platform !== 'Offline' && (
                 <div style={{
                   marginTop: 6, padding: '8px 10px', background: C.surface,
                   borderRadius: 8, border: `1px solid ${C.line}`,
@@ -2075,6 +2133,17 @@ function CreateView({
                 }}>
                   <LuLock size={11} style={{ flexShrink: 0, color: C.primary }} />
                   <span>Password: <strong>{form.meetingPassword}</strong></span>
+                </div>
+              )}
+              {form.platform === 'Offline' && form.location && (
+                <div style={{
+                  marginTop: 10, padding: '8px 10px', background: C.surface,
+                  borderRadius: 8, border: `1px solid ${C.line}`,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 11.5, color: C.text1,
+                }}>
+                  <LuMapPin size={11} style={{ flexShrink: 0, color: C.primary }} />
+                  <span>Venue: <strong>{form.location}</strong></span>
                 </div>
               )}
               {form.notes && (
@@ -2298,6 +2367,14 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
               <div style={{ marginBottom: 12 }}>
                 <div className={s.statLabel}>Meeting Password</div>
                 <div style={{ marginTop: 4, fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{detail.meetingPassword}</div>
+              </div>
+            )}
+            {detail.platform === 'Offline' && detail.location && (
+              <div style={{ marginBottom: 12 }}>
+                <div className={s.statLabel}>Venue</div>
+                <div style={{ marginTop: 4, fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <LuMapPin size={13} style={{ color: C.primary }} /> {detail.location}
+                </div>
               </div>
             )}
             {detail.description && (

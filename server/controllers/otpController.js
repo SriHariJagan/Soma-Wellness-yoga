@@ -77,6 +77,45 @@ function getIdentifier(body, channel) {
   return '';
 }
 
+function normalizePhoneVariants(p) {
+  const clean = String(p || '').replace(/[\s\-\(\)]/g, '');
+  const digits = clean.replace(/^\+/, '');
+  return [clean, digits, `+${digits}`].filter((v, i, a) => v && a.indexOf(v) === i);
+}
+
+async function findUserByIdentifier({ email, phone }) {
+  if (email && EMAIL_RE.test(String(email).trim())) {
+    const byEmail = await User.findOne({ email: String(email).trim().toLowerCase() });
+    if (byEmail) return byEmail;
+  }
+  if (phone && PHONE_RE.test(String(phone).replace(/[\s\-\(\)]/g, ''))) {
+    const variants = normalizePhoneVariants(phone);
+    const byPhone = await User.findOne({ phone: { $in: variants } });
+    if (byPhone) return byPhone;
+  }
+  return null;
+}
+
+// POST /api/auth/otp/check — guest checkout: does an account exist?
+// Returns { success, exists } so the client can ask new users for
+// name + contact details before sending the OTP.
+export const checkUserExists = asyncHandler(async (req, res) => {
+  const { email, phone, identifier } = req.body;
+  const channel = inferChannel({ email, phone, identifier }) || (email ? 'email' : 'sms');
+  let id = '';
+  if (channel === 'email') {
+    id = (email || identifier || '').trim().toLowerCase();
+    if (!EMAIL_RE.test(id)) throw ApiError.badRequest('Invalid email address');
+  } else {
+    id = (phone || identifier || '').trim();
+    if (!PHONE_RE.test(id.replace(/[\s\-\(\)]/g, ''))) throw ApiError.badRequest('Invalid phone number');
+  }
+  const user = await findUserByIdentifier(
+    channel === 'email' ? { email: id } : { phone: id },
+  );
+  return res.json({ success: true, exists: !!user, channel });
+});
+
 // POST /api/auth/otp/send
 export const sendOtp = asyncHandler(async (req, res) => {
   const { email, phone, identifier, channel: rawChannel, name } = req.body;
@@ -176,11 +215,20 @@ export const verifyOtp = asyncHandler(async (req, res) => {
   }
 
   if (!user) {
-    // Auto-create account
+    // Auto-create account from guest-checkout details.
+    // The client collects name + email + phone for new users; fall back
+    // to derived values so older clients keep working.
     isNew = true;
-    const derivedName = (rawName || '').trim() || (channel === 'email' ? normalizedId.split('@')[0] : `User ${normalizedId.slice(-4)}`) || 'Soma User';
+    const givenName = (rawName || '').trim();
+    const givenEmail = email && EMAIL_RE.test(String(email).trim()) ? String(email).trim().toLowerCase() : '';
+    const givenPhone = phone ? String(phone).trim() : '';
+    const derivedName = givenName
+      || (channel === 'email' ? normalizedId.split('@')[0] : `User ${normalizedId.slice(-4)}`)
+      || 'Soma User';
     const safeName = derivedName.slice(0, 100) || 'Soma User';
-    const emailForAccount = channel === 'email' ? normalizedId : (email && EMAIL_RE.test(String(email).trim()) ? String(email).trim().toLowerCase() : `${normalizedId.replace(/\+/g, '')}@phone.soma.local`);
+    const emailForAccount = channel === 'email'
+      ? normalizedId
+      : (givenEmail || `${normalizedId.replace(/\+/g, '')}@phone.soma.local`);
     // Ensure email uniqueness — if phone-derived email exists, make unique
     let finalEmail = emailForAccount;
     const emailExists = await User.findOne({ email: finalEmail });
@@ -188,14 +236,18 @@ export const verifyOtp = asyncHandler(async (req, res) => {
       // phone user with colliding derived email — append random
       finalEmail = `${normalizedId.replace(/\+/g, '')}-${Date.now().toString(36)}@phone.soma.local`;
     }
-    const tempPassword = crypto.randomBytes(8).toString('base64url');
+    // Readable temporary password, valid 7 days. Emailed to the user;
+    // password login is rejected after expiry until they reset it.
+    const tempPassword = `Soma-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+    const tempPasswordExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const hashed = await bcrypt.hash(tempPassword, await bcrypt.genSalt(12));
 
     user = await User.create({
       name: safeName,
       email: finalEmail,
       password: hashed,
-      phone: channel === 'sms' ? normalizedId : (phone || ''),
+      tempPasswordExpiresAt,
+      phone: channel === 'sms' ? normalizedId : givenPhone,
       emailVerified: channel === 'email',
       phoneVerified: channel === 'sms',
     });
@@ -203,13 +255,25 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     await ensureReferral(user);
     if (ref) await applyReferral(ref, user).catch(() => {});
 
-    // Welcome email (best-effort) — skip for synthetic phone emails
+    // Credentials email with the 7-day temporary password (best-effort).
+    // Skipped for synthetic phone-only emails that cannot receive mail.
     if (!user.email.endsWith('@phone.soma.local')) {
-      emailService.sendWelcome({
-        email: user.email,
-        name: user.name,
-        dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.co.ke'}/dashboard`,
-      }).catch((e) => logger.warn(MODULE, 'Welcome after OTP creation failed', { error: e.message }));
+      const expiryNote = 'This temporary password expires in 7 days. Please sign in and set your own password before then (Profile → Change password, or use Forgot password anytime).';
+      notificationService
+        .send(user._id, {
+          template: 'welcome',
+          channels: ['inApp', 'email'],
+          data: {
+            name: user.name,
+            email: user.email,
+            dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.co.ke'}/dashboard`,
+            password: tempPassword,
+          },
+          subject: 'Your SomaWellness account is ready — temporary password inside',
+          message: `Hello ${safeName},<br><br>Your SomaWellness account has been created so you can complete your purchase.<br><strong>Email:</strong> ${finalEmail}<br><strong>Temporary password:</strong> ${tempPassword}<br><br>${expiryNote}`,
+          priority: 'normal',
+        })
+        .catch((e) => logger.warn(MODULE, 'Credentials email after OTP creation failed', { error: e.message }));
     }
 
     emailService.sendRegistrationAdmin({
@@ -270,6 +334,7 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     token: accessToken,
     user: publicUser(user, membership ? (membership.isActive || membership.isPaused) : false),
     isNew,
+    tempPasswordExpiresAt: isNew ? user.tempPasswordExpiresAt : undefined,
   });
 });
 

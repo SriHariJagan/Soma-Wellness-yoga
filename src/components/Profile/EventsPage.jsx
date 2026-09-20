@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import c from "./ListCards.module.css";
 import {
@@ -51,6 +52,20 @@ export default function EventsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Lock background scroll while the detail modal is open
+  useEffect(() => {
+    if (!detail) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevPadding = document.body.style.paddingRight;
+    const w = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (w > 0) document.body.style.paddingRight = `${w}px`;
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPadding;
+    };
+  }, [detail]);
+
   async function handleRegister(ev) {
     const id = fid(ev);
     if (!id) return;
@@ -75,7 +90,10 @@ export default function EventsPage() {
     <motion.div
       key={fid(ev) || i}
       className={c.apptRow}
-      style={{ cursor: "pointer" }}
+      style={{
+        cursor: "pointer",
+        ...(isReg ? { borderLeft: "3px solid #16A34A" } : {}),
+      }}
       onClick={() => setDetail(ev)}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
@@ -131,29 +149,39 @@ export default function EventsPage() {
         )}
 
         {registered.length > 0 && (
-          <Panel title="My registered events" icon="ti-ticket">
-            <div className={c.list}>
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 2px 12px" }}>
+              <i className="ti ti-ticket" style={{ color: "var(--color-primary)", fontSize: 16 }} aria-hidden="true" />
+              <span style={{ fontSize: 14, fontWeight: 700 }}>My registered events</span>
+              <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>({registered.length})</span>
+            </div>
+            <div className={c.list} style={{ marginBottom: 20 }}>
               {registered.map((ev, i) => renderRow(ev, i, true))}
             </div>
-          </Panel>
+          </>
         )}
 
-        <Panel title="Upcoming events" icon="ti-confetti">
-          {loading ? (
-            <EmptyState compact icon="ti-calendar-event" title="Loading events…" />
-          ) : available.length === 0 ? (
-            <EmptyState compact icon="ti-calendar-event" title="No upcoming events right now." />
-          ) : (
-            <div className={c.list}>
-              {available.map((ev, i) => renderRow(ev, i, false))}
-            </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 2px 12px" }}>
+          <i className="ti ti-confetti" style={{ color: "var(--color-primary)", fontSize: 16 }} aria-hidden="true" />
+          <span style={{ fontSize: 14, fontWeight: 700 }}>Upcoming events</span>
+          {!loading && available.length > 0 && (
+            <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>({available.length})</span>
           )}
-        </Panel>
+        </div>
+        {loading ? (
+          <EmptyState compact icon="ti-calendar-event" title="Loading events…" />
+        ) : available.length === 0 ? (
+          <EmptyState compact icon="ti-calendar-event" title="No upcoming events right now." />
+        ) : (
+          <div className={c.list}>
+            {available.map((ev, i) => renderRow(ev, i, false))}
+          </div>
+        )}
       </Stagger>
 
       {/* Detail Modal */}
       <AnimatePresence>
-        {detail && (
+        {detail && createPortal(
           <motion.div
             style={{
               position: "fixed", inset: 0, zIndex: 1000,
@@ -282,7 +310,8 @@ export default function EventsPage() {
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
     </>

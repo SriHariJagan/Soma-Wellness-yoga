@@ -149,6 +149,17 @@ export const addToCart = asyncHandler(async (req, res) => {
       itemImage = book.coverImage || '';
       break;
     }
+    case 'offering': {
+      const Offering = (await import('../models/Offering.js')).default;
+      const offering = await Offering.findById(itemId).lean();
+      if (!offering) throw ApiError.notFound('Offering not found');
+      if (offering.status !== 'available') throw ApiError.badRequest('This offering is not currently available');
+      if (!offering.bookingEnabled) throw ApiError.badRequest('Booking is not enabled for this offering');
+      itemName = offering.name;
+      itemPrice = offering.price || 0;
+      itemImage = offering.image || '';
+      break;
+    }
     default:
       throw ApiError.badRequest('Invalid item type');
   }
@@ -423,6 +434,24 @@ export const checkout = asyncHandler(async (req, res) => {
       case 'consultation': {
         break;
       }
+      case 'offering': {
+        const { default: Offering } = await import('../models/Offering.js');
+        const offering = await Offering.findById(item.itemId).lean();
+        if (!offering) throw ApiError.badRequest(`${item.name} is no longer available`);
+        if (offering.status !== 'available') throw ApiError.badRequest(`${item.name} is not currently available`);
+        if (!offering.bookingEnabled) throw ApiError.badRequest(`Booking is not enabled for ${item.name}`);
+        if (offering.category === 'membership') {
+          const dupMem = await Membership.findOne({ user: userId, planType: offering.name, status: 'active', expiryDate: { $gt: new Date() } }).lean();
+          if (dupMem) throw ApiError.badRequest(`You already have an active ${item.name} membership`);
+        } else if (offering.category !== 'academy') {
+          const dupSvc = await UserService.findOne({ user: userId, offering: offering._id, status: 'active' }).lean();
+          if (dupSvc) throw ApiError.badRequest(`You already have an active ${item.name}`);
+        } else {
+          const yttcUser = await User.findById(userId).select('yttcEnrollment').lean();
+          if (yttcUser?.yttcEnrollment?.isEnrolled) throw ApiError.badRequest('You are already enrolled in teacher training');
+        }
+        break;
+      }
       case 'yttc': {
         const mode = item.itemId || 'online';
         if (!['online', 'hybrid'].includes(mode)) throw ApiError.badRequest(`Invalid YTTC mode`);
@@ -559,20 +588,8 @@ export const checkout = asyncHandler(async (req, res) => {
         metadata: { orderId: String(order._id), orderNumber: order.orderNumber },
       });
 
-      // Update coupon usage (reserve the coupon)
-      if (couponId) {
-        await Coupon.findByIdAndUpdate(couponId, { $inc: { usageCount: 1 } });
-        await CouponUsage.create({
-          coupon: couponId,
-          user: userId,
-          order: order._id,
-          discountAmount: couponDiscount,
-          usedAt: now,
-        });
-      }
-
-      // Clear the cart
-      await CartItem.deleteMany({ cart: cart._id });
+      // Coupon accounting intentionally happens at capture time
+      // (see finalizePurchase) — abandoned checkouts must not burn uses.
 
       return { payment, order, mpesaOrder };
     };

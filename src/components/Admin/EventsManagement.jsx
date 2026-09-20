@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
 import { PageHeader, KpiCard, Avatar } from './ui/Primitives';
+import { Sheet, ConfirmSheet } from './ui/Sheets.jsx';
 import { eventsApi } from '../api/AdminServices.js';
 import {
   LuCalendar, LuClock, LuUsers, LuPlus, LuTrash2, LuMapPin,
@@ -400,65 +401,57 @@ export default function EventsManagement({ onChanged } = {}) {
 
       {/* Confirm Delete Modal */}
       {confirmAction && (
-        <div className={s.modalOverlay} onClick={() => setConfirmAction(null)}>
-          <div className={s.modalBox} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalIcon}><LuTrash2 /></div>
-            <h3 className={s.modalTitle}>Delete Event</h3>
-            <p className={s.modalText}>
-              Are you sure you want to delete <strong>"{confirmAction.title}"</strong>?<br />
-              This permanently removes the event and all its registrations. This cannot be undone.
-            </p>
-            <div className={s.modalActions}>
-              <button type="button" className={s.btnCancel} onClick={() => setConfirmAction(null)}>Cancel</button>
-              <button type="button" className={s.btnConfirmLogout} onClick={handleDelete}>Delete</button>
-            </div>
-          </div>
-        </div>
+        <ConfirmSheet
+          icon={<LuTrash2 size={20} />}
+          tone="danger"
+          title="Delete Event"
+          message={`Delete "${confirmAction.title}"? This permanently removes the event and all its registrations. This cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+          onClose={() => setConfirmAction(null)}
+        />
       )}
 
       {/* Registrations Modal */}
       {regModal && (
-        <div className={s.modalOverlay} onClick={() => setRegModal(null)}>
-          <div className={s.modalBox} onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560, width: '100%', textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h3 className={s.modalTitle} style={{ margin: 0, textAlign: 'left' }}>
-                Registrations — {regModal.title}
-              </h3>
-              <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={() => setRegModal(null)}><LuX size={14} /></button>
+        <Sheet
+          title={`Registrations — ${regModal.title}`}
+          subtitle={regData && regData.count > 0 ? `${regData.count} student${regData.count !== 1 ? "s" : ""} reserved` : "Reservation list"}
+          avatar={<LuUsers size={20} />}
+          onClose={() => setRegModal(null)}
+        >
+          {regLoading ? (
+            <p style={{ fontSize: 14, color: "var(--text-3)" }}>Loading registrations…</p>
+          ) : !regData || regData.count === 0 ? (
+            <div className={s.emptyState} style={{ padding: "24px 8px" }}>
+              <div className={s.emptyIcon}><LuUsers /></div>
+              No students have registered yet.
             </div>
-            {regLoading ? (
-              <p className={s.modalText} style={{ textAlign: 'left' }}>Loading registrations…</p>
-            ) : !regData || regData.count === 0 ? (
-              <div className={s.emptyState} style={{ padding: '24px 8px' }}>
-                <div className={s.emptyIcon}><LuUsers /></div>
-                No students have registered yet.
-              </div>
-            ) : (
-              <div className={s.tableWrap} style={{ maxHeight: '55vh', overflowY: 'auto' }}>
-                <table className={s.table}>
-                  <thead>
-                    <tr>
-                      <th>Student</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Registered On</th>
+          ) : (
+            <div className={s.tableWrap}>
+              <table className={s.table}>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Registered On</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {regData.registrations.map((r) => (
+                    <tr key={r._id}>
+                      <td><div className={s.cellUser}><Avatar name={r.name} size={s.avatarSm} />{r.name}</div></td>
+                      <td className={s.tdMuted}>{r.email}</td>
+                      <td className={s.tdMuted}>{r.phone || '—'}</td>
+                      <td className={s.tdMuted}>{formatDateTime(r.registeredAt)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {regData.registrations.map((r) => (
-                      <tr key={r._id}>
-                        <td><div className={s.cellUser}><Avatar name={r.name} size={s.avatarSm} />{r.name}</div></td>
-                        <td className={s.tdMuted}>{r.email}</td>
-                        <td className={s.tdMuted}>{r.phone || '—'}</td>
-                        <td className={s.tdMuted}>{formatDateTime(r.registeredAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Sheet>
       )}
     </div>
   );

@@ -27,10 +27,10 @@ export const PAYMENT_ITEM_TYPES = [
 ]  ;
 
 // ── Cart/Order Item Types (subset) ───────────────────────────
-export const CART_ITEM_TYPES = ['plan', 'service', 'course', 'workshop', 'consultation', 'yttc', 'book']  ;
+export const CART_ITEM_TYPES = ['plan', 'service', 'course', 'workshop', 'consultation', 'yttc', 'book', 'offering']  ;
 
 // ── Payment Routes Valid Item Types ──────────────────────────
-export const VALID_ITEM_TYPES = ['membership', 'service', 'workshop', 'consultation', 'booking', 'event', 'course', 'yttc', 'book', 'order', 'other']  ;
+export const VALID_ITEM_TYPES = ['membership', 'service', 'workshop', 'consultation', 'booking', 'event', 'course', 'yttc', 'book', 'order', 'other', 'offering']  ;
 
 // ── Order Statuses ───────────────────────────────────────────
 // Legacy service/membership order statuses (kept for backward compatibility):

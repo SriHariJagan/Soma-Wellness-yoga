@@ -4,7 +4,7 @@
 import express from 'express';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { validate, schemas } from '../middleware/validate.js';
-import { sendOtp, verifyOtp } from '../controllers/otpController.js';
+import { sendOtp, verifyOtp, checkUserExists } from '../controllers/otpController.js';
 
 const router = express.Router();
 
@@ -22,5 +22,7 @@ const otpVerifyLimiter = rateLimit({
 
 router.post('/send', otpSendLimiter, validate(schemas.otpSend), sendOtp);
 router.post('/verify', otpVerifyLimiter, validate(schemas.otpVerify), verifyOtp);
+// Guest checkout: does an account already exist for this email/phone?
+router.post('/check', otpSendLimiter, validate(schemas.otpCheck), checkUserExists);
 
 export default router;

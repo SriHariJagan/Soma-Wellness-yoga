@@ -9,12 +9,13 @@
 // reads from here so future edits need one change.
 // ─────────────────────────────────────────────────────────
 export const CONTACT_INFO = {
-  address: "Spring Valley, Nairobi, Kenya — Integrated Wellness Center",
-  phoneDisplay: "+254 700 000 000",
-  phoneHref: "+254700000000",
-  email: "hello@somawellness.co.ke",
+  address: "48 Shanzu Road, Spring Valley, Nairobi, Kenya",
+  phoneDisplay: "+254 702 080 070",
+  phoneHref: "+254702080070",
+  email: "somawellnesslimited@gmail.com",
+  website: "Somawellnessnairobi.com",
   hours: "Mon – Sat · 6:00 AM – 8:00 PM",
-  mapsQuery: "Spring Valley, Nairobi, Kenya",
+  mapsQuery: "48 Shanzu Road, Spring Valley, Nairobi, Kenya",
 };
 
 export const SOCIAL_LINKS = [
@@ -25,12 +26,13 @@ export const SOCIAL_LINKS = [
 ];
 
 export const SOMA_NAV = [
-  { label: "Join", path: "/classes" },
-  { label: "One-to-One", path: "/private" },
-  { label: "Life Stages", path: "/life-stages" },
-  { label: "Restore", path: "/restore" },
-  { label: "Learn & Partner", path: "/yttc" },
-  { label: "Founding Members", path: "/founding" },
+  { label: "Home", path: "/" },
+  { label: "Services", path: "/services" },
+  { label: "Spa & Rituals", path: "/spa-rituals" },
+  { label: "Courses", path: "/courses" },
+  { label: "Blogs", path: "/blogs" },
+  { label: "Events", path: "/events" },
+  { label: "Contact", path: "/contact" },
 ];
 
 export const HERO_FLOATING_CARDS = [

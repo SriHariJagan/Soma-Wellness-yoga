@@ -1,5 +1,6 @@
 /* ── AttendancePage ── */
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import styles from "./AttendancePage.module.css";
 import w from "./widgets/DashboardWidgets.module.css";
@@ -66,6 +67,20 @@ export default function AttendancePage() {
       .catch(() => { if (mounted) setAttendanceData(null); });
     return () => { mounted = false; };
   }, [selectedEnrollment]);
+
+  // Lock background scroll while the detail modal is open
+  useEffect(() => {
+    if (!selectedRecord) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevPadding = document.body.style.paddingRight;
+    const w = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (w > 0) document.body.style.paddingRight = `${w}px`;
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPadding;
+    };
+  }, [selectedRecord]);
   // loadingAttendance is set via the derived logic below
 
   const handleEnrollmentChange = (enrollment) => {
@@ -219,13 +234,15 @@ export default function AttendancePage() {
                 {cells.map((cell, i) => (
                   <motion.div
                     key={i}
-                    className={`${styles.cell} ${styles[STATUS_CLASS[cell.status]] || styles.future} ${cell.record ? styles.clickable : ''}`}
+                    className={`${styles.cell} ${styles[STATUS_CLASS[cell.status]] || styles.future} ${cell.record ? styles.clickable : ''} ${cell.day === today.getDate() ? styles.todayCell : ''}`}
                     title={cell.date || ""}
                     initial={{ opacity: 0, scale: 0.6 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.25, delay: Math.min(i * 0.006, 0.5), ease: [0.22, 1, 0.36, 1] }}
                     onClick={() => cell.record && setSelectedRecord(cell.record)}
-                  />
+                  >
+                    {cell.day ? <span className={styles.cellDay}>{cell.day}</span> : null}
+                  </motion.div>
                 ))}
               </div>
 
@@ -276,7 +293,7 @@ export default function AttendancePage() {
 
       {/* Attendance Detail Modal */}
       <AnimatePresence>
-        {selectedRecord && (
+        {selectedRecord && createPortal(
           <motion.div
             className={styles.backdrop}
             initial={{ opacity: 0 }}
@@ -367,7 +384,8 @@ export default function AttendancePage() {
                 </div>
               )}
             </motion.div>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
     </>

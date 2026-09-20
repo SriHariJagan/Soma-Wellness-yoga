@@ -178,6 +178,8 @@
     "rememberMe": "Remember me",
     "dontHave": "Don't have an account?",
     "name": "Full Name",
+    "phone": "Phone number",
+    "phonePlaceholder": "+2547XXXXXXXX",
     "email": "Email address",
     "password": "Password",
     "alreadyHave": "Already have an account?",
@@ -339,6 +341,9 @@
     "services": "Services",
     "events": "Events",
     "blogs": "Blogs",
+    "services": "Services",
+    "spaRituals": "Spa & Rituals",
+    "courses": "Courses",
     "join": "Services",
     "private": "Private",
     "oneToOne": "Private Sessions",
@@ -875,7 +880,8 @@
     "server": "Server error. Please try again later."
   },
   "validation": {
-    "passwordMismatch": "Passwords do not match."
+    "passwordMismatch": "Passwords do not match.",
+    "invalidPhone": "Enter a valid phone number with country code, e.g. +2547XXXXXXXX."
   },
   "language": {
     "selectLanguage": "Select Language"
@@ -886,7 +892,9 @@
     "myCart": "My Cart",
     "orderHistory": "Order History",
     "browsePlans": "Browse Plans",
-    "activePlan": "Active Plan",
+    "navPlans": "Membership Plans",
+    "navAllServices": "All Services",
+    "activePlan": "Active Membership",
     "activeServices": "Active Services",
     "browseServices": "Browse Services",
     "yttc": "Academy",
@@ -910,6 +918,10 @@
     "statusExpired": "Expired",
     "noActivePlan": "No active plan",
     "navAria": "Dashboard navigation",
+    "secOverview": "Overview",
+    "secPractice": "My Practice",
+    "secShop": "Shop",
+    "secMine": "My Account",
     "enrollBook": "Enroll / Book",
     "signOut": "Sign Out"
   },

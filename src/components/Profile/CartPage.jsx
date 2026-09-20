@@ -118,7 +118,6 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
 
       // For M-Pesa, show the M-Pesa checkout form
       setMpesaCheckout(res);
-      window.dispatchEvent(new CustomEvent("cart-update", { detail: { count: 0 } }));
       setCheckingOut(false);
     } catch (err) {
       const msg = err.message || "Checkout failed. Please try again.";

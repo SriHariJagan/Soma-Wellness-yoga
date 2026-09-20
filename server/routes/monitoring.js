@@ -1,8 +1,11 @@
 import express from 'express';
 import asyncHandler from '../utils/asyncHandler.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import * as mon from '../controllers/monitoringController.js';
 
 const router = express.Router();
+
+router.use(requireAuth, requireAdmin);
 
 router.get('/health', asyncHandler(mon.adminHealth));
 router.get('/queues', asyncHandler(mon.adminQueues));

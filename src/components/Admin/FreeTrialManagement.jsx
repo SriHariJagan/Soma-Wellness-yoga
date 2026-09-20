@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import s from './YogaAdmin.module.css';
 import { PageHeader, KpiCard } from './ui/Primitives';
+import { Sheet } from './ui/Sheets.jsx';
 import Badge from './Badge';
 import {
   getFreeTrials, getTrialStats, getTrialDetail,
@@ -1050,20 +1051,12 @@ export default function FreeTrialManagement({ onChanged } = {}) {
 
       {/* ── Bulk Create Sessions Modal ── */}
       {bulkOpen && (
-        <div className={s.modalOverlay} onClick={() => setBulkOpen(false)} style={{ zIndex: 1100 }}>
-          <div className={s.modalBox} style={{ maxWidth: 820, width: '95vw', maxHeight: '95vh', overflow: 'auto', textAlign: 'left', padding: 28 }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <div>
-                <h2 style={{ fontSize: 20, display: 'flex', alignItems: 'center', gap: 10, fontWeight: 800, letterSpacing: '-0.02em' }}>
-                  <span style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--c-primary-soft)', color: 'var(--c-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <LuLayers size={18} />
-                  </span>
-                  Bulk Trial Session
-                </h2>
-                <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 2 }}>Create a session for multiple trial students at once</div>
-              </div>
-              <button type="button" onClick={() => setBulkOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 6, borderRadius: 8 }}><LuX size={20} /></button>
-            </div>
+        <Sheet
+          title="Bulk Trial Session"
+          subtitle="Create a session for multiple trial students at once"
+          avatar={<LuLayers size={20} />}
+          onClose={() => setBulkOpen(false)}
+        >
 
             {bulkSubmitStage === 'form' && (
               <>
@@ -1353,8 +1346,7 @@ export default function FreeTrialManagement({ onChanged } = {}) {
                 </div>
               </div>
             )}
-          </div>
-        </div>
+          </Sheet>
       )}
     </div>
   );

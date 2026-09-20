@@ -101,7 +101,7 @@ export default function ActivePlanPage({ reload }) {
   if (loading) {
     return (
       <div>
-        <PageHeader title="Active Plan" />
+        <PageHeader title="Active Membership" />
         <div className={styles.overview} style={{ opacity: 0.5 }}>
           <div className={styles.overviewDeco} />
         </div>
@@ -112,7 +112,7 @@ export default function ActivePlanPage({ reload }) {
   if (!membership) {
     return (
       <>
-        <PageHeader title="Active Plan" />
+        <PageHeader title="Active Membership" />
         <Stagger>
           <Item className={styles.overview}>
             <div className={styles.overviewDeco} aria-hidden="true" />
@@ -198,7 +198,7 @@ export default function ActivePlanPage({ reload }) {
   return (
     <>
       <PageHeader
-        title="Active Plan"
+        title="Active Membership"
         actions={renderStatusPill()}
       />
 
@@ -432,3 +432,4 @@ export default function ActivePlanPage({ reload }) {
     </>
   );
 }
+

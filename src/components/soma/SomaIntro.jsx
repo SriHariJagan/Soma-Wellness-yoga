@@ -11,7 +11,6 @@ const SomaIntro = () => {
   const visualRef = useRef(null);
 
   const stats = [
-    { label: t("home.intro.stats.smallGroupsLabel"), sub: t("home.intro.stats.smallGroupsSub") },
     { label: t("home.intro.stats.consciousTeachersLabel"), sub: t("home.intro.stats.consciousTeachersSub") },
     { label: t("home.intro.stats.premiumLabel"), sub: t("home.intro.stats.premiumSub") },
   ];

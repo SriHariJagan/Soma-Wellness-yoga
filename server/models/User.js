@@ -90,6 +90,11 @@ const UserSchema = new mongoose.Schema(
     // ── Password reset ──
     resetTokenHash:    { type: String, default: null, select: false },
     resetTokenExpires: { type: Date, default: null, select: false },
+
+    // ── Temporary password (guest checkout auto-accounts) ──
+    // Hashed temp password expiry. After this date password login is
+    // rejected and the user must reset via Forgot password.
+    tempPasswordExpiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -110,6 +115,7 @@ UserSchema.set('toJSON', {
     delete ret.refreshTokens;
     delete ret.resetTokenHash;
     delete ret.resetTokenExpires;
+    delete ret.tempPasswordExpiresAt;
     return ret;
   },
 });

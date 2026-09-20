@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./ClassesPage.module.css";
 import w from "./widgets/DashboardWidgets.module.css";
@@ -105,6 +106,20 @@ export default function ClassesPage() {
   }, []);
 
   useEffect(() => { fetchInvites(true); }, [fetchInvites]);
+
+  // Lock background scroll while the detail modal is open
+  useEffect(() => {
+    if (!modalOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevPadding = document.body.style.paddingRight;
+    const w = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (w > 0) document.body.style.paddingRight = `${w}px`;
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPadding;
+    };
+  }, [modalOpen]);
 
   useEffect(() => {
     pollRef.current = setInterval(() => { fetchInvites(false); }, 30000);
@@ -239,7 +254,7 @@ export default function ClassesPage() {
                   return (
                     <motion.div
                       key={inv._id}
-                      className={styles.classCard}
+                      className={`${styles.classCard} ${styles[`st_${cat}`] || ""}`}
                       layout
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -290,6 +305,7 @@ export default function ClassesPage() {
                       {/* Actions */}
                       <div className={styles.cardActions}>
                         <StatusBadge status={cat} />
+                        {cat === 'live' && <span className={styles.liveDot} aria-hidden="true" />}
                         {countdown && cat === 'upcoming' && (
                           <span className={styles.countdown}>
                             Starts in {countdown}
@@ -315,7 +331,7 @@ export default function ClassesPage() {
 
       {/* Detail Modal */}
       <AnimatePresence>
-        {modalOpen && (
+        {modalOpen && createPortal(
           <motion.div
             className={styles.modalOverlay}
             initial={{ opacity: 0 }}
@@ -470,7 +486,8 @@ export default function ClassesPage() {
                 </div>
               )}
             </motion.div>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
     </>

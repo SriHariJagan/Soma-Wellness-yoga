@@ -62,7 +62,7 @@ const Contact = () => {
       setSent(true);
       setForm({ name: "", email: "", phone: "", message: "" });
     } catch (err) {
-      setError("Something went wrong. Please try again or email us directly at hello@somawellness.co.ke.");
+      setError("Something went wrong. Please try again or email us directly at somawellnesslimited@gmail.com.");
     } finally {
       setLoading(false);
     }
@@ -77,9 +77,9 @@ const Contact = () => {
           name: "SomaWellness",
           image: "https://somawellness.co.ke/images/soma/og-image.webp",
           url: "https://somawellness.co.ke",
-          telephone: "+254700000000",
-          email: "hello@somawellness.co.ke",
-          address: { "@type": "PostalAddress", streetAddress: "Spring Valley", addressLocality: "Nairobi", addressCountry: "KE" },
+          telephone: "+254702080070",
+          email: "somawellnesslimited@gmail.com",
+          address: { "@type": "PostalAddress", streetAddress: "48 Shanzu Road, Spring Valley", addressLocality: "Nairobi", addressCountry: "KE" },
           openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], opens: "06:00", closes: "20:00" }],
           geo: { "@type": "GeoCoordinates", latitude: -1.2667, longitude: 36.8 },
         })}
@@ -148,7 +148,7 @@ const Contact = () => {
             </form>
 
             <div className="contact-quick">
-              <a className="contact-quick-btn" href={`tel:${STUDIO.phoneHref}`}><FaPhoneAlt /> +254 700 000 000</a>
+              <a className="contact-quick-btn" href={`tel:${STUDIO.phoneHref}`}><FaPhoneAlt /> +254 702 080 070</a>
               <div className="contact-quick-social">
                 {socials.map((s) => <a key={s.label} href={s.href} target="_blank" rel="noreferrer" aria-label={s.label}>{s.icon}</a>)}
               </div>

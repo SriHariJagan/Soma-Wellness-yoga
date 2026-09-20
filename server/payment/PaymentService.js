@@ -9,6 +9,7 @@ import ActivityLog from '../models/ActivityLog.js';
 import User from '../models/User.js';
 import emailService from '../services/email/email.service.js';
 import { notifyBookOrderPaid } from '../services/bookEmailService.js';
+import { finalizePurchase } from './services/finalizePurchase.js';
 import logger from '../notification/logger.js';
 import {
   PaymentInitiationError,
@@ -64,7 +65,11 @@ export class PaymentService {
           await this.fulfillmentService.activateItem(item, payment._id, user, session);
         }
 
-        await this.repository.setFulfillmentStatus(payment._id, 'completed', session);
+      await this.repository.setFulfillmentStatus(payment._id, 'completed', session);
+
+      // Coupon usage + purchased-cart cleanup — only on verified capture,
+      // so abandoned checkouts keep their cart and burn no coupon uses.
+      await finalizePurchase(user, payment, session);
 
         await this.repository.addAuditEntry(payment._id, {
           action: 'fulfill_free',

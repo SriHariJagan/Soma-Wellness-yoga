@@ -5,6 +5,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import { validate, schemas } from '../middleware/validate.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import * as a from '../controllers/adminController.js';
@@ -185,7 +186,7 @@ router.get('/free-trials/stats', trialCtrl.getTrialStats);
 router.get('/free-trials/:id', trialCtrl.getTrialDetail);
 router.post('/free-trials/sessions', trialCtrl.createTrialSession);
 router.post('/free-trials/bulk-sessions', trialCtrl.createBulkSessions);
-router.put('/free-trials/sessions/:id', trialCtrl.updateTrialSession);
+router.put('/free-trials/sessions/:id', validate(schemas.trialSessionUpdate), trialCtrl.updateTrialSession);
 router.patch('/free-trials/sessions/:id/cancel', trialCtrl.cancelTrialSession);
 router.patch('/free-trials/sessions/:id/attendance', trialCtrl.markSessionAttendance);
 router.post('/free-trials/notify', trialCtrl.sendTrialNotification);

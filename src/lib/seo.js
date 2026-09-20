@@ -41,12 +41,32 @@ const ROUTE_META = {
     description: "Clear guide to SomaWellness: memberships, private programs, mindfulness, pregnancy, children, seniors, massage, corporate & booking in Spring Valley.",
   },
   "/events": {
-    title: "Gatherings — Wellness Experiences & Rituals | SomaWellness",
-    description: "Signature experiences and wellness rituals at SomaWellness.",
+    title: "Events — Wellness Experiences & Workshops | SomaWellness",
+    description: "Upcoming wellness events, workshops and gatherings at SomaWellness, Spring Valley, Nairobi.",
+  },
+  "/services": {
+    title: "Services — Group Yoga, Private Sessions, Therapy | SomaWellness",
+    description: "Explore SomaWellness services: group yoga, private sessions, restorative therapy, corporate wellness and teacher training in Spring Valley, Nairobi.",
+  },
+  "/spa-rituals": {
+    title: "Spa & Rituals — Massage, Meditation & Signature Journeys | SomaWellness",
+    description: "Restore at SomaWellness: massage, aromatherapy, STILLNESS ritual, THE ACACIA journey, and couples experiences in Spring Valley, Nairobi.",
+  },
+  "/courses": {
+    title: "Courses — 200-Hour Yoga Teacher Training | SomaWellness Academy",
+    description: "Yoga Alliance certified 200-Hour Teacher Training at SomaWellness Academy. Online & offline modes, flexible schedule, global certification.",
+  },
+  "/blogs": {
+    title: "Journal — Wellness Insights & Reflections | SomaWellness",
+    description: "Thoughts on practice, breath, rest, and the art of living well — from the SomaWellness teachers and community.",
+  },
+  "/blogs/:id": {
+    title: "Journal Article | SomaWellness",
+    description: "Read this story from the SomaWellness journal — practice, breath, rest and living well.",
   },
   "/contact": {
     title: "Contact SomaWellness — Spring Valley, Nairobi",
-    description: "Contact SomaWellness in Spring Valley. Book private programs, restoration, massage or memberships. +254 700 000 000.",
+    description: "Contact SomaWellness in Spring Valley. Book private programs, restoration, massage or memberships. +254 702 080 070.",
   },
   "/login": { title: "Sign In — SomaWellness", description: "Sign in to your SomaWellness account." },
   "/newuser": { title: "Begin Your Wellness Journey — Join SomaWellness", description: "Create your SomaWellness account." },
@@ -65,16 +85,21 @@ const PATH_TO_SEO_KEY = {
   "/yttc": "yttc",
   "/faq": "faq",
   "/contact": "contact",
+  "/services": "services",
+  "/spa-rituals": "spaRituals",
+  "/courses": "courses",
+  "/blogs": "blogs",
 };
 
 export const getLocalizedMeta = (path, t) => {
-  const key = PATH_TO_SEO_KEY[path];
+  const normalized = path.startsWith("/blogs/") ? "/blogs/:id" : path;
+  const key = PATH_TO_SEO_KEY[normalized];
   if (key && t) {
-    const title = t(`seo.${key}Title`, { defaultValue: ROUTE_META[path]?.title });
-    const description = t(`seo.${key}Desc`, { defaultValue: ROUTE_META[path]?.description });
+    const title = t(`seo.${key}Title`, { defaultValue: ROUTE_META[normalized]?.title });
+    const description = t(`seo.${key}Desc`, { defaultValue: ROUTE_META[normalized]?.description });
     if (title !== `seo.${key}Title`) return { title, description };
   }
-  return ROUTE_META[path] || ROUTE_META["/"];
+  return ROUTE_META[normalized] || ROUTE_META["/"];
 };
 
 const applyMeta = ({ title, description }) => {
