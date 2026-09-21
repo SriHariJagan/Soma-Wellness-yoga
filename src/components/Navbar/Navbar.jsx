@@ -54,6 +54,9 @@ const Navbar = ({ user, onLogout }) => {
 
   useEffect(() => {
     if (user && user.role !== "admin" && user.role !== "manager" && user.role !== "reception") {
+      // Skip the call when logged out / token missing — otherwise every
+      // page load fires an unauthenticated request that 401s in the console.
+      if (!localStorage.getItem("token")) return;
       getMembershipStatus().then((res) => setMembershipStatus(res)).catch(() => {});
     }
   }, [user]);

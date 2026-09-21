@@ -12,10 +12,11 @@ const STUDENT_URL = `${API_DOMAIN}/api/student`;
 
 function authHeaders() {
   const token = localStorage.getItem("token");
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
+  const headers = { "Content-Type": "application/json" };
+  // Omit Authorization entirely when logged out — avoids sending
+  // "Bearer null" which always 401s and pollutes the console.
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
 }
 
 // Attempt to refresh the access token using the HttpOnly refresh cookie.
@@ -48,7 +49,11 @@ async function api(path, { method = "GET", body, base = STUDENT_URL } = {}) {
 
   let res = await fetch(`${base}${path}`, opts);
 
-  if (res.status === 401 && (await tryRefresh())) {
+  // Only attempt a silent refresh when we actually had a token (i.e. the
+  // user was logged in and it just expired). When logged out there is no
+  // refresh cookie either, so skip the extra /refresh round-trip that only
+  // produces a second noisy 401 in the console.
+  if (res.status === 401 && localStorage.getItem("token") && (await tryRefresh())) {
     opts.headers = authHeaders();
     res = await fetch(`${base}${path}`, opts);
   }
@@ -246,7 +251,9 @@ async function blogApi(path, opts = {}) {
   const base = opts.base || BLOG_URL;
   const authHeadersVal = () => {
     const token = localStorage.getItem("token");
-    return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
   };
   const fetchOpts = {
     method: opts.method || "GET",
@@ -254,7 +261,7 @@ async function blogApi(path, opts = {}) {
     ...(opts.body !== undefined ? { body: JSON.stringify(opts.body) } : {}),
   };
   let res = await fetch(`${base}${path}`, fetchOpts);
-  if (res.status === 401 && (await tryRefresh())) {
+  if (res.status === 401 && localStorage.getItem("token") && (await tryRefresh())) {
     fetchOpts.headers = authHeadersVal();
     res = await fetch(`${base}${path}`, fetchOpts);
   }

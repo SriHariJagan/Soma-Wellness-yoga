@@ -245,11 +245,16 @@ export const login = asyncHandler(async (req, res) => {
 
   const { accessToken, refreshToken } = await issueTokens(user);
 
-  // Set refresh token as HttpOnly cookie (secure in production, same-site strict)
+  // Refresh token as HttpOnly cookie. In production the frontend (Vercel /
+  // custom domain) and API (Render) are cross-site, so the cookie must be
+  // SameSite=None + Secure or the browser will never send it back to
+  // POST /api/auth/refresh (result: refresh always 401s in prod while
+  // working on localhost). Locally use Lax so HTTP still works.
+  const isProd = process.env.NODE_ENV?.toLowerCase() === "production";
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV?.toLowerCase() === "production",
-    sameSite: "strict",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     path: "/api/auth",
   });
@@ -312,8 +317,15 @@ export const logout = asyncHandler(async (req, res) => {
       /* token already invalid — nothing to revoke */
     }
   }
-  // Clear the HttpOnly cookie
-  res.clearCookie("refreshToken", { path: "/api/auth" });
+  // Clear the HttpOnly cookie (attributes must match how it was set,
+  // otherwise the browser keeps the cross-site cookie on logout).
+  const isProd = process.env.NODE_ENV?.toLowerCase() === "production";
+  res.clearCookie("refreshToken", {
+    path: "/api/auth",
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  });
 
   if (userId) {
     ActivityLog.create({
