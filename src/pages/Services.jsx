@@ -9,6 +9,8 @@ import styles from "./Services.module.css";
 const fmt = (n) => n?.toLocaleString() || "0";
 const perSession = (total, count) => count ? Math.round(total / count) : total;
 
+const API = import.meta.env.VITE_API_URL || "";
+
 const HERO_IMG = "https://images.unsplash.com/photo-1545389336-cf090694435e?q=80&w=2000&auto=format&fit=crop";
 
 /* 36 unique curated photos — one per service, no repeats */
@@ -195,7 +197,7 @@ const Services = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/offerings")
+    fetch(`${API}/api/offerings`)
       .then((r) => r.json())
       .then((data) => setOfferings(data.filter((o) => o.status === "available")))
       .catch(() => setOfferings([]))
