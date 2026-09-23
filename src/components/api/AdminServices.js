@@ -76,13 +76,13 @@ async function request(path, { method = "GET", body, base = ADMIN_URL } = {}) {
       throw unreachable();
     }
   }
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : {};
-  if (!res.ok) throw new Error(data.error || data.message || "Request failed");
-  return data;
-}
 
-// ── Overview & analytics ───────────────────────────────────
+  // If still 401 after refresh attempt, auto-expire the token.
+  if (res.status === 401 && localStorage.getItem("token") && !((await tryRefresh()))) {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("storage"));
+  }
+
 export const getOverview = () => request("/overview");
 export const getRevenueAnalytics = () => request("/analytics/revenue");
 export const getLogs = () => request("/logs");

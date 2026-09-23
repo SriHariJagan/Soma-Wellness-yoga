@@ -58,6 +58,13 @@ async function api(path, { method = "GET", body, base = STUDENT_URL } = {}) {
     res = await fetch(`${base}${path}`, opts);
   }
 
+  // If still 401 after refresh attempt, auto-expire the token so the
+  // user is effectively logged out (isAuthenticated becomes false).
+  if (res.status === 401 && localStorage.getItem("token") && !((await tryRefresh()))) {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("storage"));
+  }
+
   const text = await res.text();
   let data = {};
   try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text, error: text.slice(0, 200) }; }
@@ -264,6 +271,12 @@ async function blogApi(path, opts = {}) {
   if (res.status === 401 && localStorage.getItem("token") && (await tryRefresh())) {
     fetchOpts.headers = authHeadersVal();
     res = await fetch(`${base}${path}`, fetchOpts);
+  }
+
+  // If still 401 after refresh attempt, auto-expire the token.
+  if (res.status === 401 && localStorage.getItem("token") && !((await tryRefresh()))) {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("storage"));
   }
   const text = await res.text();
   let data = {};
