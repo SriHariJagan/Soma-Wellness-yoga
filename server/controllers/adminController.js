@@ -33,7 +33,8 @@ import Service from '../models/Service.js';
 import Instructor from '../models/Instructor.js';
 import UserService from '../models/UserService.js';
 import ClassInvite from '../models/ClassInvite.js';
-import { renewUserService } from '../services/serviceService.js';
+import Offering from '../models/Offering.js';
+import { purchaseService, renewUserService } from '../services/serviceService.js';
 import { ensureReferral } from '../services/referralService.js';
 import { notify, notifyPlanMembers } from '../services/notificationService.js';
 import { syncDailyWithMembership } from '../services/dailyService.js';
@@ -43,6 +44,7 @@ import { markAttendanceAtomic } from '../services/attendanceService.js';
 import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
 import { USER_STATUSES, USER_ROLES, ATTENDANCE_STATUSES, MEMBERSHIP_STATUSES, NOTIFICATION_TYPES, PRIORITY_LEVELS, PAYMENT_STATUSES } from '../shared/constants/index.js';
+import { normalizePhone, validatePhone } from '../utils/phone.js';
 
 const MODULE = 'AdminCtrl';
 const DAY = 86400000;
@@ -133,14 +135,14 @@ export const getStudents = asyncHandler(async (req, res) => {
 
 export const getStudentById = asyncHandler(async (req, res) => {
   const student = await User.findById(req.params.id);
-  if (!student) throw ApiError.notFound('Student not found');
+  if (!student || student.isDeleted) throw ApiError.notFound('Student not found');
   const [membership, payments, attendanceRecords, classSessions, activityLogs, services] = await Promise.all([
     Membership.findOne({ user: student._id }).sort({ createdAt: -1 }),
     Payment.find({ user: student._id }).sort({ createdAt: -1 }),
     Attendance.find({ user: student._id }).sort({ date: -1 }),
     ClassSession.find({ enrolledUsers: student._id }).sort({ date: -1 }),
     ActivityLog.find({ targetUser: student._id }).sort({ createdAt: -1 }).limit(50),
-    UserService.find({ user: student._id }).populate('service instructor').sort({ createdAt: -1 }),
+    UserService.find({ user: student._id }).populate('service', 'name').populate('offering', 'name').populate('instructor', 'name avatar').sort({ createdAt: -1 }),
   ]);
   const mappedPayments = payments.map((p) => {
     const obj = typeof p.toObject === 'function' ? p.toObject() : p;
@@ -152,24 +154,140 @@ export const getStudentById = asyncHandler(async (req, res) => {
 });
 
 export const createStudent = asyncHandler(async (req, res) => {
-  const { name, email, password, phone, city, style, level, planMonths, role } = req.body;
+  let { name, email, password, phone, city, style, level, planMonths, role, membership, planType, planName, planId, price } = req.body;
   if (!name || !email) throw ApiError.badRequest('Name and email are required');
   if (await User.findOne({ email: email.toLowerCase().trim() })) throw ApiError.conflict('Email already registered');
+  // Kenya phone: fixed 9 digits after +254, normalize
+  if (phone) {
+    const err = validatePhone(phone);
+    if (err) throw ApiError.badRequest(err);
+    phone = normalizePhone(phone);
+  }
 
   // Only allow 'manager' role from admin. Everything else becomes 'student'.
   // Never allow creating 'admin' or other privileged roles via this endpoint.
   const VALID_CREATABLE_ROLES = ['student', 'manager'];
   const requestedRole = VALID_CREATABLE_ROLES.includes(role) && req.user?.role === 'admin' ? role : 'student';
 
+  // Resolve membership plan identifier if provided via various aliases
+  const rawPlanIdentifier = planId || planType || membership || planName || null;
+  const hasRequestedMembership = rawPlanIdentifier && String(rawPlanIdentifier).trim() && String(rawPlanIdentifier).trim().toLowerCase() !== 'no plan' && String(rawPlanIdentifier).trim().toLowerCase() !== 'none';
+
   const raw = password && password.trim() ? password : crypto.randomBytes(12).toString('base64url');
   const hashed = await bcrypt.hash(raw, await bcrypt.genSalt(12));
+  // Determine planMonths to store on user — prefer explicit planMonths, else derive from membership plan
+  let resolvedPlanMonths = planMonths || 0;
+  let resolvedPlan = null;
+  if (hasRequestedMembership) {
+    if (planId) {
+      try { resolvedPlan = await Plan.findById(planId); } catch { /* ignore */ }
+    }
+    if (!resolvedPlan) {
+      resolvedPlan = await Plan.findOne({ name: String(rawPlanIdentifier).trim() });
+    }
+    // Fallback: try case-insensitive search
+    if (!resolvedPlan) {
+      resolvedPlan = await Plan.findOne({ name: new RegExp(`^${String(rawPlanIdentifier).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') });
+    }
+    if (resolvedPlan) {
+      resolvedPlanMonths = resolvedPlan.durationMonths;
+    } else if (!planMonths) {
+      // For SOMA plans which are all 1 month, default to 1 when name matches known SOMA tier but plan not found
+      const somaMatch = /SOMA (JUA|AMANI|UZIMA|FAMILY)/i.test(String(rawPlanIdentifier));
+      if (somaMatch) resolvedPlanMonths = 1;
+    }
+  }
+
   const student = await User.create({
     name, email: email.toLowerCase().trim(), password: hashed,
     phone: phone || '', city: city || '', style: style || 'Hatha', level: level || 'Beginner',
-    planMonths: planMonths || 0, role: requestedRole, status: 'active',
+    planMonths: resolvedPlanMonths || 0, role: requestedRole, status: 'active',
   });
   await ensureReferral(student);
   await log(`Added student: ${student.email}`, req, student._id);
+
+  // If a membership plan was requested, create the membership & payment record atomically
+  let createdMembership = null;
+  if (hasRequestedMembership) {
+    try {
+      let plan = resolvedPlan;
+      if (!plan && planId) {
+        try { plan = await Plan.findById(planId); } catch { /* ignore */ }
+      }
+      if (!plan) {
+        plan = await Plan.findOne({ name: String(rawPlanIdentifier).trim() });
+      }
+      if (!plan) {
+        // Attempt to create a minimal plan reference fallback — still create membership with provided name/price
+        const fallbackPrice = price != null ? Number(price) : 0;
+        const fallbackMonths = Number(resolvedPlanMonths) || 1;
+        const fallbackName = String(rawPlanIdentifier).trim();
+        // Only create membership if we have at least a name to store
+        if (fallbackName) {
+          const paymentRepo = new PaymentRepository();
+          const payment = await paymentRepo.createManualPayment({
+            user: student._id,
+            label: fallbackName,
+            amount: fallbackPrice * 100,
+            description: `Admin creation: ${fallbackName}`,
+            adminId: req.user._id,
+          });
+          const expiry = new Date(Date.now() + fallbackMonths * 30 * DAY);
+          createdMembership = await Membership.create({
+            user: student._id,
+            plan: null,
+            invoice: payment._id,
+            planType: fallbackName,
+            planMonths: fallbackMonths,
+            price: fallbackPrice,
+            status: 'active',
+            startDate: new Date(),
+            expiryDate: expiry,
+            history: [{ action: 'created', planMonths: fallbackMonths, note: `Created with ${fallbackName}` }],
+          });
+          await log(`Created fallback membership ${fallbackName} for ${student.email}`, req, student._id);
+        }
+      } else {
+        const assignedPrice = price != null ? Number(price) : (plan.price || 0);
+        const paymentRepo = new PaymentRepository();
+        const payment = await paymentRepo.createManualPayment({
+          user: student._id,
+          label: plan.name,
+          amount: assignedPrice * 100,
+          description: `Admin creation: ${plan.name}`,
+          adminId: req.user._id,
+        });
+        const expiry = new Date(Date.now() + Number(plan.durationMonths) * 30 * DAY);
+        createdMembership = await Membership.findOneAndUpdate(
+          { user: student._id },
+          {
+            user: student._id,
+            plan: plan._id,
+            invoice: payment._id,
+            planType: plan.name,
+            planMonths: plan.durationMonths,
+            price: assignedPrice,
+            status: 'active',
+            startDate: new Date(),
+            expiryDate: expiry,
+            $push: { history: { action: 'created', planMonths: plan.durationMonths, note: `Created with ${plan.name}` } },
+          },
+          { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+        );
+        // Ensure user planMonths is synced if not already
+        if (student.planMonths !== plan.durationMonths) {
+          await User.findByIdAndUpdate(student._id, { planMonths: plan.durationMonths });
+          student.planMonths = plan.durationMonths;
+        }
+        await notify(student._id, { title: 'Plan activated', message: `Your ${plan.name} is now active.`, type: 'success' }).catch(() => {});
+        await syncDailyWithMembership(student._id).catch(() => {});
+        await log(`Assigned ${plan.name} to new student ${student.email}`, req, student._id);
+      }
+    } catch (e) {
+      logger.error(MODULE, 'Failed to auto-create membership during createStudent', { error: e.message, stack: e.stack, studentId: String(student._id), rawPlanIdentifier });
+      // Don't fail the whole request — student was created; membership can be assigned manually via /plans/assign
+    }
+  }
 
   // Send welcome email with credentials.
   const autoGenerated = !(password && password.trim());
@@ -200,6 +318,13 @@ export const updateStudent = asyncHandler(async (req, res) => {
   const allowed = ['name', 'email', 'phone', 'city', 'style', 'level', 'planMonths', 'status', 'bio', 'notes', 'gender', 'dateOfBirth', 'emergencyContact'];
   const updates = {};
   for (const f of allowed) if (req.body[f] !== undefined) updates[f] = req.body[f];
+  if (updates.phone !== undefined) {
+    if (updates.phone) {
+      const err = validatePhone(updates.phone);
+      if (err) throw ApiError.badRequest(err);
+      updates.phone = normalizePhone(updates.phone);
+    }
+  }
 
   if (updates.email) {
     const owner = await User.findOne({ email: updates.email.toLowerCase().trim() });
@@ -213,8 +338,14 @@ export const updateStudent = asyncHandler(async (req, res) => {
 });
 
 export const deleteStudent = asyncHandler(async (req, res) => {
-  const student = await User.findByIdAndUpdate(req.params.id, { isDeleted: true, status: 'banned' }, { returnDocument: 'after' });
+  const student = await User.findByIdAndUpdate(req.params.id, { isDeleted: true, deletedAt: new Date(), status: 'banned' }, { returnDocument: 'after' });
   if (!student) throw ApiError.notFound('Student not found');
+  // Also deactivate any active membership so it doesn't linger as "active" after user deletion
+  try {
+    await Membership.updateMany({ user: req.params.id, status: 'active' }, { $set: { status: 'expired', deactivated: true } });
+  } catch (e) {
+    logger.error(MODULE, 'Failed to deactivate membership on student delete', { error: e.message, studentId: req.params.id });
+  }
   await log(`Soft-deleted student: ${student.email}`, req, student._id);
   res.json({ success: true, msg: 'Student deactivated and archived' });
 });
@@ -913,59 +1044,187 @@ export const getAllServices = asyncHandler(async (req, res) => {
   res.json(svcs);
 });
 
+// ── Service → Offering mirror ─────────────────────────────────────
+// The public Services page renders the Offering catalog, NOT the Service
+// collection. To keep the website in sync, every admin Service create/update
+// mirrors content fields into the same-named Offering (matched by name).
+// Creates the Offering when missing so admin creates appear on the site.
+// Only content fields are mirrored — category/status/visibility stay under
+// the Offerings Catalog panel (except active/visibility toggles). Never throws.
+async function mirrorServiceToOffering(svc, oldName = null) {
+  try {
+    if (!svc) return null;
+    const lookupName = oldName || svc.name;
+    if (!lookupName) return null;
+    const { offeringCategoryFor } = await import('../config/publicCatalog.js');
+    const patch = {
+      name: svc.name,
+      description: svc.description || '',
+      price: Number(svc.price) || 0,
+      pricingModel: ['flat', 'monthly', 'per_session', 'contact'].includes(svc.pricingModel)
+        ? svc.pricingModel : 'flat',
+      sessions: Number(svc.totalSessions) || 0,
+      sessionDuration: Number(svc.sessionDuration) || 60,
+      validityDuration: Number(svc.validityDuration) || 0,
+      validityUnit: ['single', 'sessions', 'days', 'weeks', 'months'].includes(svc.validityUnit)
+        ? svc.validityUnit
+        : ((Number(svc.validityDuration) || 0) > 0 ? (svc.validityUnit || 'weeks') : 'single'),
+      displayOrder: Number(svc.displayOrder) || 0,
+      isPopular: !!svc.isPopular,
+      featured: !!svc.featured,
+      visibility: svc.visibility === 'hidden' ? 'hidden'
+        : svc.visibility === 'private' ? 'private'
+        : 'public',
+      icon: svc.icon || '',
+      image: svc.image || '',
+      images: Array.isArray(svc.images) ? svc.images : [],
+      tags: Array.isArray(svc.tags) ? svc.tags : [],
+    };
+    if (svc.subtitle) patch.subtitle = svc.subtitle;
+    // Archive when the service is inactive; otherwise leave offering status
+    // under the Offerings Catalog panel (except re-activate from archived).
+    if (svc.active === false) {
+      patch.status = 'archived';
+    }
+    // validityUnit for sessions packs: Offering allows 'sessions'
+    if (patch.sessions > 0 && patch.validityDuration === 0 && patch.validityUnit === 'weeks') {
+      patch.validityUnit = 'sessions';
+    }
+    if (patch.validityDuration === 0 && patch.sessions <= 1) {
+      patch.validityUnit = 'single';
+    }
+
+    const off = await Offering.findOne({ name: lookupName });
+    if (off) {
+      await Offering.updateOne({ _id: off._id }, { $set: patch });
+      logger.info(MODULE, 'Mirrored service edit to offering', { service: svc.name });
+      return off._id;
+    }
+
+    // Create a public Offering so admin-created services show on the site.
+    const created = await Offering.create({
+      category: offeringCategoryFor(svc.category),
+      whatIncluded: [],
+      benefits: [],
+      bookingEnabled: true,
+      currency: 'KES',
+      originalPrice: null,
+      ...patch,
+      subtitle: patch.subtitle || '',
+      status: patch.status || 'available',
+    });
+    logger.info(MODULE, 'Created offering from service', { service: svc.name, offering: created._id });
+    return created._id;
+  } catch (e) {
+    logger.error(MODULE, 'Service→offering mirror failed', { error: e.message, service: svc?.name });
+    return null;
+  }
+}
+
+const SERVICE_ALLOWED_FIELDS = [
+  'name', 'slug', 'description', 'mode', 'category', 'type', 'instructor',
+  'price', 'pricingModel', 'totalSessions', 'sessionDuration',
+  'validityDuration', 'validityUnit', 'durationWeeks',
+  'scheduleDays', 'scheduleTime', 'timeSlots', 'contactEmail', 'contactPhone',
+  'icon', 'images', 'image', 'tags', 'featured', 'isPopular', 'visibility',
+  'active', 'displayOrder', 'subtitle',
+];
+
 export const createService = asyncHandler(async (req, res) => {
-  const allowedFields = ['name', 'description', 'mode', 'category', 'type', 'price', 'pricingModel', 'totalSessions', 'sessionDuration', 'validityDuration', 'validityUnit', 'scheduleDays', 'scheduleTime', 'timeSlots', 'active', 'isPopular', 'displayOrder', 'contactEmail'];
   const data = {};
-  for (const key of allowedFields) {
+  for (const key of SERVICE_ALLOWED_FIELDS) {
     if (req.body[key] !== undefined) data[key] = req.body[key];
   }
   const doc = await Service.create(data);
+  await mirrorServiceToOffering(doc);
   await log(`Created service`, req, null, { id: doc._id });
   res.status(201).json(doc);
 });
 
 export const updateService = asyncHandler(async (req, res) => {
-  const allowedFields = ['name', 'description', 'mode', 'category', 'type', 'price', 'pricingModel', 'totalSessions', 'sessionDuration', 'validityDuration', 'validityUnit', 'scheduleDays', 'scheduleTime', 'timeSlots', 'active', 'isPopular', 'displayOrder', 'contactEmail'];
   const updates = {};
-  for (const key of allowedFields) {
+  for (const key of SERVICE_ALLOWED_FIELDS) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
   }
+  const before = await Service.findById(req.params.id).select('name').lean();
   const doc = await Service.findByIdAndUpdate(req.params.id, { $set: updates }, { returnDocument: 'after', runValidators: true });
   if (!doc) throw ApiError.notFound('Service not found');
+  await mirrorServiceToOffering(doc, before?.name);
   res.json(doc);
+});
+
+// Push ALL services to their same-named offerings (creates missing).
+export const syncServicesToOfferings = asyncHandler(async (req, res) => {
+  const svcs = await Service.find().select('name description price pricingModel totalSessions sessionDuration validityDuration validityUnit displayOrder isPopular featured visibility active category icon image images tags').lean();
+  let mirrored = 0;
+  const missing = [];
+  for (const svc of svcs) {
+    const id = await mirrorServiceToOffering(svc);
+    if (id) mirrored += 1;
+    else missing.push(svc.name);
+  }
+  await log(`Pushed services to offerings (${mirrored} mirrored)`, req);
+  res.json({ success: true, mirrored, missing });
 });
 
 export const removeService = asyncHandler(async (req, res) => {
   const doc = await Service.findByIdAndDelete(req.params.id);
   if (!doc) throw ApiError.notFound('Service not found');
+  // Keep the public Services page in lockstep with admin deletes.
+  try {
+    await Offering.deleteOne({ name: doc.name });
+  } catch (e) {
+    logger.error(MODULE, 'Failed to delete matching offering', { error: e.message, name: doc.name });
+  }
   await log(`Deleted service`, req, null, { id: req.params.id });
   res.json({ success: true });
 });
 
 export const syncOfficialServices = asyncHandler(async (req, res) => {
-  const { SOMA_SERVICES, LEGACY_SERVICE_NAMES } = await import('../config/somaCatalog.js');
-  await Service.deleteMany({ name: { $in: LEGACY_SERVICE_NAMES } });
+  const {
+    PUBLIC_CATALOG,
+    PUBLIC_SERVICE_NAMES,
+    RETIRED_SERVICE_NAMES,
+    RETIRED_OFFERING_NAMES,
+    toServiceDoc,
+    toOfferingDoc,
+  } = await import('../config/publicCatalog.js');
+
+  // WHITELIST: delete every Service/Offering not on the official list
+  await Service.deleteMany({
+    $or: [
+      { name: { $nin: PUBLIC_SERVICE_NAMES } },
+      { name: { $in: RETIRED_SERVICE_NAMES } },
+    ],
+  });
+  await Offering.deleteMany({
+    $or: [
+      { name: { $nin: PUBLIC_SERVICE_NAMES } },
+      { name: { $in: RETIRED_OFFERING_NAMES } },
+    ],
+  });
 
   await UserService.updateMany(
     { serviceName: 'Yoga at Home' },
     { $set: { serviceName: 'Home / Hotel Session' } }
   );
-  await UserService.updateMany(
-    { serviceName: 'Pranayama & Meditation' },
-    { $set: { serviceName: 'Meditation / Breathwork / Yoga Nidra' } }
-  );
-
-  const OFFICIAL_SERVICES = SOMA_SERVICES;
 
   const results = [];
-  for (const svc of OFFICIAL_SERVICES) {
+  for (const entry of PUBLIC_CATALOG) {
     const doc = await Service.findOneAndUpdate(
-      { name: svc.name },
-      { $set: svc },
+      { name: entry.name },
+      { $set: toServiceDoc(entry) },
       { upsert: true, returnDocument: 'after' }
     );
     results.push(doc);
+    await Offering.findOneAndUpdate(
+      { name: entry.name },
+      { $set: toOfferingDoc(entry) },
+      { upsert: true, returnDocument: 'after' }
+    );
+    await mirrorServiceToOffering(doc);
   }
+
   await log(`Synced official services`, req);
   res.json({ success: true, count: results.length });
 });
@@ -975,16 +1234,34 @@ export const instructors = crud(Instructor, 'instructor', [
 ]);
 
 // ── Membership Plans Migration (force-sync official offerings) ──
+// Membership shows ONLY Bronze / Silver / Gold (3 / 6 / 12 months).
+// All SOMA tiers (JUA/AMANI/UZIMA/FAMILY) and other tiers live in Services.
 const OFFICIAL_PLANS = [
-  { name: 'SOMA JUA', description: 'Move · Energise · Shine. 8 group yoga classes/month + member rates on everything else.', price: 12000, durationMonths: 1, pauseDays: 0, displayOrder: 1, benefits: ['8 group yoga classes per month', 'Member rates on everything else'], badge: '', isPopular: false, isRecommended: false },
-  { name: 'SOMA AMANI', description: 'Move into balance. Unlimited group yoga, meditation & breathwork, SOMA DAILY included.', price: 18500, durationMonths: 1, pauseDays: 0, displayOrder: 2, benefits: ['Unlimited group yoga', 'Meditation and breathwork', 'SOMA DAILY included', 'Member rates on everything else'], badge: '', isPopular: false, isRecommended: true },
-  { name: 'SOMA UZIMA', description: 'Yoga and recovery, complete. Unlimited yoga & meditation, SOMA DAILY, 2×60-min massages, 1 private yoga/therapy session, priority booking, 2 guest passes, 15% off.', price: 28500, durationMonths: 1, pauseDays: 0, displayOrder: 3, benefits: ['Unlimited yoga and meditation', 'SOMA DAILY included', '2 sixty-minute massages', '1 private yoga or therapy session', 'Priority booking · 2 guest passes', '15% off everything else'], badge: 'BEST VALUE', isPopular: true, isRecommended: false },
-  { name: 'SOMA FAMILY', description: 'One household, one plan. 2 adults unlimited yoga, 1 children/teen programme, meditation & breathwork, SOMA DAILY, 10% off.', price: 35000, durationMonths: 1, pauseDays: 0, displayOrder: 4, benefits: ['2 adults, unlimited yoga', "1 children's or teen programme", 'Meditation and breathwork', 'SOMA DAILY included', '10% off everything else'], badge: '', isPopular: false, isRecommended: false },
+  { name: 'Bronze', description: 'Three months of unlimited group yoga — build your foundation.', price: 48000, currency: 'KES', durationMonths: 3, pauseDays: 7, displayOrder: 1, benefits: ['Unlimited group yoga classes', '1 meditation session per week', 'Mat and props provided', 'Post-class herbal tea'], badge: '', isPopular: false, isRecommended: false, active: true, visibility: 'public' },
+  { name: 'Silver', description: 'Six months of unlimited practice plus recovery — our most loved tier.', price: 88000, currency: 'KES', durationMonths: 6, pauseDays: 14, displayOrder: 2, benefits: ['Everything in Bronze', '2 steam sessions per month', '1 massage per quarter', 'Priority class booking'], badge: 'Most Popular', isPopular: true, isRecommended: true, active: true, visibility: 'public' },
+  { name: 'Gold', description: 'Twelve months of all-inclusive wellness — yoga, recovery and personal guidance.', price: 160000, currency: 'KES', durationMonths: 12, pauseDays: 30, displayOrder: 3, benefits: ['Everything in Silver', '4 steam sessions per month', '1 massage per month', '1 private session per quarter', 'Guest passes (2 per year)'], badge: 'Best Value', isPopular: false, isRecommended: false, active: true, visibility: 'public' },
 ];
 
 export const syncOfficialPlans = asyncHandler(async (req, res) => {
   const OLD_DEMO_NAMES = ['Monthly Pass', 'Quarterly Pass', 'Half-Yearly Pass', 'Annual Pass', '2-Year Pass', '1 Month Membership', '3 Month Membership', '6 Month Membership', '12 Month Membership'];
+  const SOMA_MEMBERSHIP_NAMES = ['SOMA JUA', 'SOMA AMANI', 'SOMA UZIMA', 'SOMA FAMILY'];
   await Plan.deleteMany({ name: { $in: OLD_DEMO_NAMES } });
+  // Remove SOMA tiers from Membership — they belong in Services. Keep them as Services if missing.
+  const somaInPlans = await Plan.find({ name: { $in: SOMA_MEMBERSHIP_NAMES } }).lean();
+  if (somaInPlans.length > 0) {
+    await Plan.deleteMany({ name: { $in: SOMA_MEMBERSHIP_NAMES } });
+    // Ensure each SOMA tier exists as a Service (move to services if not exists)
+    const { SOMA_SERVICES } = await import('../config/somaCatalog.js');
+    const somaServiceMap = new Map(SOMA_SERVICES.filter(s => SOMA_MEMBERSHIP_NAMES.includes(s.name)).map(s => [s.name, s]));
+    for (const plan of somaInPlans) {
+      const svc = somaServiceMap.get(plan.name);
+      if (!svc) continue;
+      const exists = await Service.findOne({ name: svc.name });
+      if (!exists) {
+        await Service.create({ ...svc });
+      }
+    }
+  }
 
   for (const plan of OFFICIAL_PLANS) {
     await Plan.findOneAndUpdate(
@@ -994,30 +1271,44 @@ export const syncOfficialPlans = asyncHandler(async (req, res) => {
     );
   }
 
+  // Clean up any stray non-Bronze/Silver/Gold membership plans (keep only the 3 official)
+  const allowed = new Set(OFFICIAL_PLANS.map(p => p.name));
+  await Plan.deleteMany({ name: { $nin: Array.from(allowed) } });
+
   const updated = await Plan.find().sort({ displayOrder: 1 });
-  await log(`Synced official membership plans (${updated.length} plans)`, req);
-  res.json({ success: true, message: `${updated.length} official plans synced`, plans: updated });
+  await log(`Synced official membership plans (${updated.length} plans) - Bronze/Silver/Gold only`, req);
+  res.json({ success: true, message: `${updated.length} official plans synced (Bronze/Silver/Gold)`, plans: updated });
 });
 
 
 // ── Service Assignments ─────────────────────────────────────────
 export const getServiceAssignments = asyncHandler(async (req, res) => {
-  const { search, status, serviceId } = req.query;
-  const q = {};
-  if (status) q.status = status;
-  if (serviceId) q.service = serviceId;
-  if (search) {
-    const safe = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const users = await User.find({ role: 'student', $or: [{ name: new RegExp(safe, 'i') }, { email: new RegExp(safe, 'i') }] }).select('_id');
-    q.user = { $in: users.map((u) => u._id) };
+  try {
+    const { search, status, serviceId } = req.query;
+    const q = {};
+    if (status) q.status = status;
+    if (serviceId) q.service = serviceId;
+    if (search) {
+      const safe = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const users = await User.find({ role: 'student', $or: [{ name: new RegExp(safe, 'i') }, { email: new RegExp(safe, 'i') }] }).select('_id');
+      q.user = { $in: users.map((u) => u._id) };
+    }
+    // Limit + lean projection: Users table only needs user link, names and
+    // status for the Services column. Full detail lives in getStudentById.
+    const assignments = await UserService.find(q)
+      .select('user service offering serviceName offeringName status')
+      .populate('user', 'name email phone')
+      .populate('service', 'name')
+      .populate('offering', 'name')
+      .sort({ createdAt: -1 })
+      .limit(2000)
+      .lean({ virtuals: true });
+    res.json(assignments);
+  } catch (err) {
+    logger.error('AdminCtrl', 'getServiceAssignments failed', { error: err.message, stack: err.stack });
+    // Fail open with empty list so Users table still renders membership
+    res.json([]);
   }
-  const assignments = await UserService.find(q)
-    .populate('user', 'name email phone')
-    .populate('service', 'name')
-    .populate('instructor', 'name')
-    .populate('payment', 'amount status method invoiceNo')
-    .sort({ createdAt: -1 });
-  res.json(assignments);
 });
 
 export const getServiceAnalytics = asyncHandler(async (req, res) => {

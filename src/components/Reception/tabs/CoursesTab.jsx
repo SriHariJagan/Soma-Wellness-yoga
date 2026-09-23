@@ -2,7 +2,7 @@
 import ReceptionModal from '../Modal.jsx';
 import { useAuth } from '../../../context/AuthContext';
 import { receptionApi } from '../../api/AdminServices';
-import {
+import { LuLock, LuCheck, LuTriangleAlert,
   LuGraduationCap, LuRefreshCw, LuSearch, LuX, LuEye,
   LuShoppingBag, LuBadgeCheck, LuClock, LuTag, LuSparkles, LuTicket,
 } from 'react-icons/lu';
@@ -24,12 +24,12 @@ function formatKES(n) {
 }
 
 function itemTitle(kind, it) {
-  return kind === 'course' ? (it.title || 'â€”') : (it.name || 'â€”');
+  return kind === 'course' ? (it.title || '—') : (it.name || '—');
 }
 
 function itemSubtitle(kind, it) {
   if (kind === 'course') return it.duration || it.mode || '';
-  if (kind === 'service') return [it.category, it.mode].filter(Boolean).join(' Â· ');
+  if (kind === 'service') return [it.category, it.mode].filter(Boolean).join(' · ');
   return it.durationMonths ? `${it.durationMonths} month${it.durationMonths !== 1 ? 's' : ''}` : '';
 }
 
@@ -113,16 +113,18 @@ export default function CoursesTab() {
     try {
       const res = await receptionApi.purchases.create(studentId, {
         kind,
-        itemId: selling._id,
-        method: sale.method,
-      });
+          itemId: selling._id,
+          paymentMethod: sale.method,
+        });
+      // Payment.amount is stored in minor units (cents) — display KES.
+      const paidKES = (res?.payment?.amount ?? (selling.price ?? 0) * 100) / 100;
       setSold({
         item: itemTitle(kind, selling),
         student: res?.student?.name || 'customer',
-        amount: res?.payment?.amount ?? selling.price,
+        amount: paidKES,
         method: sale.method,
       });
-      setFeedback({ type: 'success', message: `"${itemTitle(kind, selling)}" sold to ${res?.student?.name || 'customer'} â€” ${formatKES(res?.payment?.amount ?? selling.price)}.` });
+      setFeedback({ type: 'success', message: `"${itemTitle(kind, selling)}" sold to ${res?.student?.name || 'customer'} — ${formatKES(paidKES)}.` });
     } catch (err) {
       setFeedback({ type: 'error', message: err.message || 'Failed to record sale.' });
     }
@@ -136,7 +138,7 @@ export default function CoursesTab() {
           <h2 className={s.sectionTitle}><LuGraduationCap size={20} /> Courses & Services</h2>
         </div>
         <div className={s.emptyState}>
-          <div className={s.emptyIcon}>ðŸ”’</div>
+          <div className={s.emptyIcon}><LuLock size={40} /></div>
           <h3 className={s.emptyTitle}>No access</h3>
           <p className={s.emptyDesc}>You don't have permission to view the catalog. Contact an admin to grant courses.view access.</p>
         </div>
@@ -148,12 +150,12 @@ export default function CoursesTab() {
 
   return (
     <div className={s.recPage}>
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* ── Header ── */}
       <div className={s.sectionHeader}>
         <h2 className={s.sectionTitle}>
           <LuGraduationCap size={20} /> Courses & Services
           <span className={s.chipCount} style={{ fontSize: 12 }}>
-            Â· {catalog.courses.length} courses Â· {catalog.services.length} services
+            · {catalog.courses.length} courses · {catalog.services.length} services
           </span>
         </h2>
         <div className={s.toolbar}>
@@ -163,10 +165,10 @@ export default function CoursesTab() {
         </div>
       </div>
 
-      {/* â”€â”€ Feedback â”€â”€ */}
+      {/* ── Feedback ── */}
       {feedback && (
         <div className={`${s.feedbackInline} ${feedback.type === 'success' ? s.bannerSuccess : s.bannerError}`}>
-          <span>{feedback.type === 'success' ? 'âœ“' : 'âš '}</span>
+          <span>{feedback.type === 'success' ? <LuCheck size={15} /> : <LuTriangleAlert size={15} />}</span>
           <span>{feedback.message}</span>
           <button type="button" className={s.btnGhost} onClick={() => setFeedback(null)} aria-label="Dismiss">
             <LuX size={14} />
@@ -174,7 +176,7 @@ export default function CoursesTab() {
         </div>
       )}
 
-      {/* â”€â”€ One main card â”€â”€ */}
+      {/* ── One main card ── */}
       <div className={`${s.card} ${s.cardNoPad}`}>
         <div style={{ padding: '18px 20px 0' }}>
           <div className={s.filterBar} style={{ marginBottom: 14 }}>
@@ -196,7 +198,7 @@ export default function CoursesTab() {
                 className={s.searchInput}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder={`Search ${meta.label.toLowerCase()}â€¦`}
+                placeholder={`Search ${meta.label.toLowerCase()}…`}
                 aria-label="Search catalog"
               />
               {searchInput && (
@@ -214,7 +216,7 @@ export default function CoursesTab() {
           </div>
         ) : visible.length === 0 ? (
           <div className={s.emptyState}>
-            <div className={s.emptyIcon}>ðŸŽ“</div>
+            <div className={s.emptyIcon}><LuGraduationCap size={40} /></div>
             <h3 className={s.emptyTitle}>No {meta.label.toLowerCase()} found</h3>
             <p className={s.emptyDesc}>{q ? 'Try a different search term.' : `No ${meta.label.toLowerCase()} are on sale right now.`}</p>
           </div>
@@ -243,7 +245,7 @@ export default function CoursesTab() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5 }}>
-                          <LuClock size={12} /> {itemSubtitle(kind, it) || 'â€”'}
+                          <LuClock size={12} /> {itemSubtitle(kind, it) || '—'}
                         </div>
                         {kind === 'course' && it.earlyPrice ? (
                           <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', marginTop: 2 }}>
@@ -282,13 +284,23 @@ export default function CoursesTab() {
         </p>
       )}
 
-      {/* â”€â”€ Details modal (explain the item) â”€â”€ */}
+      {/* ── Details modal (explain the item) ── */}
       {detail && (
         <ReceptionModal
           title={itemTitle(kind, detail) || KIND_META[kind].singular}
           subtitle={itemSubtitle(kind, detail)}
           icon={<LuTag size={20} />}
           onClose={() => setDetail(null)}
+          footer={(
+            <>
+              {canSell && (
+                <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => { const it = detail; setDetail(null); openSell(it); }}>
+                  <LuShoppingBag size={15} /> Sell this {KIND_META[kind].singular.toLowerCase()}
+                </button>
+              )}
+              <button type="button" className={s.btn} onClick={() => setDetail(null)}>Close</button>
+            </>
+          )}
         >
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {itemSubtitle(kind, detail) && <span className={s.chip}><LuClock size={12} /> {itemSubtitle(kind, detail)}</span>}
@@ -296,34 +308,32 @@ export default function CoursesTab() {
                 {detail.hours ? <span className={s.chip}>{detail.hours} hours</span> : null}
                 {detail.category && <span className={s.chip}>{detail.category}</span>}
               </div>
-              {detail.description && <p style={{ fontSize: 14, color: 'var(--text-2)', margin: 0, lineHeight: 1.6 }}>{detail.description}</p>}
+              {detail.description && <p style={{ fontSize: 14, color: 'var(--text-2)', margin: 0, lineHeight: 1.65 }}>{detail.description}</p>}
               {kind === 'plan' && Array.isArray(detail.benefits) && detail.benefits.length > 0 && (
-                <ul className={s.list}>
-                  {detail.benefits.map((b, i) => <li key={i} className={s.listItem}><span>{b}</span></li>)}
-                </ul>
-              )}
-              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line-2)', borderRadius: 12, padding: '12px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 800 }}>
-                  <LuTag size={16} /> {formatKES(detail.price)}
-                </div>
-                {detail.earlyPrice ? (
-                  <div style={{ fontSize: 13, color: '#16A34A', fontWeight: 700, marginTop: 4 }}>
-                    Early enrolment: {formatKES(detail.earlyPrice)}
+                <div className={s.recSection}>
+                  <div className={s.recSectionHead}>What is included</div>
+                  <div className={s.recSectionBody}>
+                    {detail.benefits.map((b, i) => (
+                      <div key={i} className={s.recKV}>
+                        <span className={s.recKVIcon}><LuBadgeCheck size={14} /></span>
+                        <span className={s.recKVLabel} style={{ color: 'var(--text-1)', fontWeight: 600 }}>{b}</span>
+                        <span />
+                      </div>
+                    ))}
                   </div>
+                </div>
+              )}
+              <div className={s.recPriceBox}>
+                <div className={s.recPriceLabel}>Price</div>
+                <div className={s.recPriceValue}>{formatKES(detail.price)}</div>
+                {detail.earlyPrice ? (
+                  <div className={s.recPriceSub}>Early enrolment: {formatKES(detail.earlyPrice)}</div>
                 ) : null}
-              </div>
-              <div className={s.modalActions}>
-                {canSell && (
-                  <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => { const it = detail; setDetail(null); openSell(it); }}>
-                    <LuShoppingBag size={15} /> Sell this {KIND_META[kind].singular.toLowerCase()}
-                  </button>
-                )}
-                <button type="button" className={s.btn} onClick={() => setDetail(null)}>Close</button>
               </div>
         </ReceptionModal>
       )}
 
-      {/* â”€â”€ Sell modal (pick the customer) â”€â”€ */}
+      {/* ── Sell modal (pick the customer) ── */}
       {selling && (
         <ReceptionModal
           title={`Sell: ${itemTitle(kind, selling)}`}
@@ -332,12 +342,14 @@ export default function CoursesTab() {
           onClose={() => { setSelling(null); setSold(null); }}
         >
             {sold ? (
-              <div className={s.modalBody}>
-                <div className={`${s.feedbackInline} ${s.bannerSuccess}`}>
-                  <LuBadgeCheck size={16} />
-                  <span><strong>{sold.student}</strong> is now enrolled in <strong>{sold.item}</strong> â€” {formatKES(sold.amount)} via {sold.method}.</span>
+              <div className={s.recReceipt}>
+                <div className={s.recReceiptTitle}><LuBadgeCheck size={17} /> Sale confirmed</div>
+                <div style={{ fontSize: 13.5, color: 'var(--text-1)' }}>
+                  <strong>{sold.student}</strong> is now enrolled in <strong>{sold.item}</strong>
                 </div>
-                <div className={s.modalActions}>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{formatKES(sold.amount)}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-2)' }}>Paid via {sold.method}</div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
                   <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => { setSelling(null); setSold(null); }}>Done</button>
                 </div>
               </div>
@@ -347,9 +359,9 @@ export default function CoursesTab() {
                   <label className={s.fieldLabel}>
                     Customer *
                     <select value={sale.studentId} onChange={(e) => setSale({ ...sale, studentId: e.target.value })} required>
-                      <option value="">Select a customerâ€¦</option>
+                      <option value="">Select a customer…</option>
                       {students.map((st) => (
-                        <option key={st._id} value={String(st._id)}>{st.name} Â· {st.email}</option>
+                        <option key={st._id} value={String(st._id)}>{st.name} · {st.email}</option>
                       ))}
                     </select>
                   </label>
@@ -360,7 +372,7 @@ export default function CoursesTab() {
                       value={manualId}
                       onChange={(e) => setManualId(e.target.value)}
                       required={!sale.studentId}
-                      placeholder="Paste student _id (copy from Customers â†’ View)"
+                      placeholder="Paste student _id (copy from Customers → View)"
                     />
                   </label>
                 )}
@@ -370,14 +382,14 @@ export default function CoursesTab() {
                     {paymentMethods.map((m) => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </label>
-                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line-2)', borderRadius: 12, padding: '12px 16px', fontSize: 14 }}>
-                  <div><strong>{itemTitle(kind, selling)}</strong> Â· {itemSubtitle(kind, selling)}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>{formatKES(selling.price)}</div>
+                <div className={s.recPriceBox}>
+                  <div className={s.recPriceLabel}>{itemTitle(kind, selling)}{itemSubtitle(kind, selling) ? ` · ${itemSubtitle(kind, selling)}` : ''}</div>
+                  <div className={s.recPriceValue}>{formatKES(selling.price)}</div>
                 </div>
                 <div className={s.modalActions}>
                   <button type="button" className={s.btn} onClick={() => { setSelling(null); setSold(null); }}>Cancel</button>
                   <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={sellingNow || (!sale.studentId && !manualId.trim())}>
-                    {sellingNow ? 'Processingâ€¦' : <><LuBadgeCheck size={15} /> Confirm sale Â· {formatKES(selling.price)}</>}
+                    {sellingNow ? 'Processing…' : <><LuBadgeCheck size={15} /> Confirm sale · {formatKES(selling.price)}</>}
                   </button>
                 </div>
               </form>

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validatePhone, normalizePhone } from '../utils/phone.js';
 
 export function validate(schema) {
   return (req, res, next) => {
@@ -19,13 +20,25 @@ export function validate(schema) {
   };
 }
 
+// ── Kenya phone helpers — default +254, fixed 9 digits ──
+function kenyaPhoneRequired(msg = 'Phone is required') {
+  return z.string().min(1, msg).max(20).trim()
+    .refine((v) => validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' }))
+    .transform((v) => normalizePhone(v));
+}
+function kenyaPhoneOptional() {
+  return z.string().max(20).trim().optional().default('')
+    .refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' }))
+    .transform((v) => (v ? normalizePhone(v) : v));
+}
+
 export const schemas = {
   // ── Auth ─────────────────────────────────────────────────────
   register: z.object({
     name: z.string().min(1, 'Name is required').max(100).trim(),
     email: z.string().email('Invalid email').max(255).trim().toLowerCase(),
     password: z.string().min(8, 'Password must be at least 8 characters').max(128).optional(),
-    phone: z.string().max(20).optional().default(''),
+    phone: kenyaPhoneOptional(),
     city: z.string().max(100).optional().default(''),
     style: z.string().optional().default('Hatha'),
     level: z.string().optional().default('Beginner'),
@@ -52,7 +65,7 @@ export const schemas = {
 
   updateProfile: z.object({
     name: z.string().min(1).max(100).trim().optional(),
-    phone: z.string().max(20).optional(),
+    phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
     city: z.string().max(100).optional(),
     style: z.string().optional(),
     level: z.string().optional(),
@@ -65,7 +78,7 @@ export const schemas = {
   booking: z.object({
     name: z.string().min(1, 'Name is required').max(200).trim(),
     email: z.string().email('Invalid email').max(255).trim().toLowerCase(),
-    phone: z.string().min(1, 'Phone is required').max(20).trim(),
+    phone: kenyaPhoneRequired(),
     city: z.string().max(100).optional().default(''),
     courseName: z.string().min(1, 'Course name is required').max(200).trim(),
     coursePrice: z.union([z.number(), z.string().min(1, 'Course price is required').max(50)]),
@@ -78,7 +91,7 @@ export const schemas = {
 
   lead: z.object({
     name: z.string().min(1, 'Name is required').max(200).trim(),
-    phone: z.string().max(20).optional().default(''),
+    phone: kenyaPhoneOptional(),
     email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional().or(z.literal('')),
     interestType: z.string().max(100).optional().default(''),
     notes: z.string().max(2000).optional().default(''),
@@ -87,7 +100,7 @@ export const schemas = {
   // ── OTP ──────────────────────────────────────────────────────
   otpSend: z.object({
     email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
-    phone: z.string().max(20).trim().optional(),
+    phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
     identifier: z.string().max(255).trim().optional(),
     channel: z.enum(['email', 'sms', 'mobile', 'phone']).optional(),
     name: z.string().max(100).trim().optional(),
@@ -95,7 +108,7 @@ export const schemas = {
 
   otpVerify: z.object({
     email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
-    phone: z.string().max(20).trim().optional(),
+    phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
     identifier: z.string().max(255).trim().optional(),
     channel: z.enum(['email', 'sms', 'mobile', 'phone']).optional(),
     otp: z.string().regex(/^\d{6}$/, 'OTP must be 6 digits'),
@@ -105,7 +118,7 @@ export const schemas = {
 
   otpCheck: z.object({
     email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
-    phone: z.string().max(20).trim().optional(),
+    phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
     identifier: z.string().max(255).trim().optional(),
   }).refine((d) => d.email || d.phone || d.identifier, { message: 'Provide email or phone' }).strip(),
 
@@ -289,7 +302,7 @@ export const schemas = {
     organisationName: z.string().min(1, 'Organisation name is required').max(200).trim(),
     contactPerson: z.string().min(1, 'Contact person is required').max(150).trim(),
     email: z.string().email('Enter a valid email address').max(255).trim().toLowerCase(),
-    phone: z.string().min(1, 'Phone is required').max(20).trim(),
+    phone: kenyaPhoneRequired(),
     bookTitle: z.string().max(200).optional().default(''),
     quantity: z.number().int().min(1, 'Minimum quantity is 1').max(100000),
     state: z.string().max(100).optional().default(''),

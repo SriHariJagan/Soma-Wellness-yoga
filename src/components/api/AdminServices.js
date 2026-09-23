@@ -251,6 +251,7 @@ export const assetsApi = {
 export const servicesApi = {
   ...resource("services"),
   syncOfficial: () => request("/services/sync-official", { method: "POST" }),
+  syncOfferings: () => request("/services/sync-offerings", { method: "POST" }),
 };
 
 // ── Instructors ───────────────────────────────────────────────
@@ -544,6 +545,7 @@ export const receptionStaffApi = {
   updatePermissions: (id, permissions) => request(`/reception/${id}/permissions`, { method: "PUT", body: { permissions } }),
   resetPassword: (id) => request(`/reception/${id}/reset-password`, { method: "POST" }),
   setStatus: (id, status) => request(`/reception/${id}/status`, { method: "PATCH", body: { status } }),
+  remove: (id) => request(`/reception/${id}`, { method: "DELETE" }),
 };
 
 // ── Reception API (for reception users) ───────────────────────
@@ -579,6 +581,7 @@ export const receptionApi = {
     mark: (payload) => request("/attendance", { method: "POST", body: payload, base: `${API_DOMAIN}/api/reception` }),
     bulkMark: (payload) => request("/attendance/bulk", { method: "POST", body: payload, base: `${API_DOMAIN}/api/reception` }),
     markAll: (inviteId) => request("/attendance/mark-all", { method: "POST", body: { inviteId }, base: `${API_DOMAIN}/api/reception` }),
+    reset: (inviteId) => request(`/attendance/reset/${inviteId}`, { method: "POST", base: `${API_DOMAIN}/api/reception` }),
   },
   classInvites: {
     list: async (params = {}) => {
@@ -614,6 +617,7 @@ export const receptionApi = {
     get: (id) => request(`/class-invites/${id}`, { base: `${API_DOMAIN}/api/reception` }),
     cancel: (id, reason) => request(`/class-invites/${id}/cancel`, { method: "PATCH", body: reason ? { reason } : {}, base: `${API_DOMAIN}/api/reception` }),
     resend: (id) => request(`/class-invites/${id}/resend`, { method: "POST", base: `${API_DOMAIN}/api/reception` }),
+    duplicate: (id) => request(`/class-invites/${id}/duplicate`, { method: "POST", base: `${API_DOMAIN}/api/reception` }),
   },
   courses: {
     list: () => request("/courses", { base: `${API_DOMAIN}/api/reception` }),

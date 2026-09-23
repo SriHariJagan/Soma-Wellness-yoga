@@ -268,7 +268,7 @@ const YTTC = () => {
               {[
                 { step: "01", title: "Yoga Foundations 25h", desc: "Weekend intensive · Breath, movement, philosophy", meta: "30,000 KES · 3 days" },
                 { step: "02", title: "SOMA 100 — Foundation Teacher Course", desc: "Anatomy, sequencing, hands-on guidance, practicum", meta: "85,000 KES · 3 months" },
-                { step: "03", title: "SOMA 200 — Yoga Teacher Training", desc: "Full training · Mentorship, practice labs, corporate track", meta: "165,000 KES · Early 145,000 · 6 months", accent: true },
+                { step: "03", title: "SOMA 200 Yoga Teacher Training", desc: "Full training · Mentorship, practice labs, corporate track", meta: "130,000 KES · 6 months", accent: true },
               ].map((s, i) => (
                 <motion.div
                   key={s.step}

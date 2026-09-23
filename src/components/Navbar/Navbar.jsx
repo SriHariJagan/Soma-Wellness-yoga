@@ -13,11 +13,12 @@ import { SOCIAL_LINKS } from "../../config/siteContent";
 const navLinksConfig = [
   { key: "navigation.home", path: "/", num: "01" },
   { key: "navigation.services", path: "/services", num: "02" },
-  { key: "navigation.spaRituals", path: "/spa-rituals", num: "03" },
-  { key: "navigation.courses", path: "/courses", num: "04" },
-  { key: "navigation.blogs", path: "/blogs", num: "05" },
-  { key: "navigation.events", path: "/events", num: "06" },
-  { key: "navigation.contact", path: "/contact", num: "07" },
+  { key: "navigation.memberships", path: "/memberships", num: "03" },
+  { key: "navigation.spaRituals", path: "/spa-rituals", num: "04" },
+  { key: "navigation.courses", path: "/courses", num: "05" },
+  { key: "navigation.blogs", path: "/blogs", num: "06" },
+  { key: "navigation.events", path: "/events", num: "07" },
+  { key: "navigation.contact", path: "/contact", num: "08" },
 ];
 
 const socialIcon = { facebook: <FaFacebookF />, instagram: <FaInstagram />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
@@ -100,7 +101,7 @@ const Navbar = ({ user, onLogout }) => {
     navigate("/login", { replace: true });
   };
 
-  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/login", "/newuser", "/payment", "/services", "/spa-rituals", "/courses", "/blogs", "/founding"];
+  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/login", "/newuser", "/payment", "/services", "/memberships", "/spa-rituals", "/courses", "/blogs", "/founding"];
   const isHome = location.pathname === "/";
   const solidNav = solidNavPages.includes(location.pathname);
   const dashboardPath = user?.role === "admin" || user?.role === "manager" ? "/yogaadmin" : user?.role === "reception" ? "/reception" : "/studentdashboard";

@@ -12,8 +12,8 @@ import styles from './FoundingMembers.module.css';
 
 const TIERS = [
   { key:'JUA', label:'SOMA JUA', normal:'12,000', founding:'10,000', save:'17%', icon:'☀️', desc:'8 classes/month · Member rates', popular:false },
-  { key:'AMANI', label:'SOMA AMANI', normal:'18,500', founding:'15,000', save:'19%', icon:'🧘', desc:'Unlimited · Daily included', popular:false },
-  { key:'UZIMA', label:'SOMA UZIMA', normal:'28,500', founding:'24,000', save:'16%', icon:'✨', desc:'Unlimited + 2 massages + private', popular:true },
+  { key:'AMANI', label:'SOMA AMANI', normal:'16,500', founding:'13,500', save:'18%', icon:'🧘', desc:'Unlimited · Daily included', popular:false },
+  { key:'UZIMA', label:'SOMA UZIMA', normal:'22,500', founding:'19,000', save:'16%', icon:'✨', desc:'Unlimited + 2 massages + private', popular:true },
   { key:'FAMILY', label:'SOMA FAMILY', normal:'35,000', founding:'28,500', save:'19%', icon:'👨‍👩‍👧‍👦', desc:'2 adults unlimited + Young', popular:false },
 ];
 

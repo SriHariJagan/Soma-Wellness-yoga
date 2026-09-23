@@ -165,6 +165,7 @@ router.post('/services', a.createService);
 router.put('/services/:id', a.updateService);
 router.delete('/services/:id', a.removeService);
 router.post('/services/sync-official', a.syncOfficialServices);
+router.post('/services/sync-offerings', a.syncServicesToOfferings);
 
 // Instructors
 router.get('/instructors', a.instructors.list);
@@ -217,6 +218,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import ActivityLog from '../models/ActivityLog.js';
 import { ALL_PERMISSIONS } from '../shared/constants/permissions.js';
+import { normalizePhone, validatePhone } from '../utils/phone.js';
 
 // List all reception staff
 router.get('/reception', asyncHandler(async (req, res) => {
@@ -228,7 +230,7 @@ router.get('/reception', asyncHandler(async (req, res) => {
 
 // Create reception staff account
 router.post('/reception', adminWriteLimiter, asyncHandler(async (req, res) => {
-  const { name, email, phone, password, status, permissions } = req.body;
+  let { name, email, phone, password, status, permissions } = req.body;
 
   if (!name || !email) throw new (await import('../utils/ApiError.js')).default.badRequest('Name and email are required');
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -248,6 +250,12 @@ router.post('/reception', adminWriteLimiter, asyncHandler(async (req, res) => {
 
   const hashed = await bcrypt.hash(raw, await bcrypt.genSalt(12));
 
+  // Validate phone — Kenya +254 fixed 9 digits if provided
+  if (phone) {
+    const pe = validatePhone(phone);
+    if (pe) throw new (await import('../utils/ApiError.js')).default.badRequest(pe);
+    phone = normalizePhone(phone);
+  }
   // Validate permissions — reject unknown keys instead of silently dropping.
   const invalidPerms = (permissions || []).filter((p) => !ALL_PERMISSIONS.includes(p));
   if (invalidPerms.length > 0) throw new (await import('../utils/ApiError.js')).default.badRequest(`Invalid permission key(s): ${invalidPerms.join(', ')}`);
@@ -392,6 +400,21 @@ router.patch('/reception/:id/status', adminWriteLimiter, asyncHandler(async (req
   }).catch(() => {});
 
   res.json(user);
+}));
+
+// Delete reception staff account (admin only, permanent)
+router.delete('/reception/:id', adminWriteLimiter, asyncHandler(async (req, res) => {
+  const user = await User.findOneAndDelete({ _id: req.params.id, role: 'reception' });
+  if (!user) throw new (await import('../utils/ApiError.js')).default.notFound('Reception staff not found');
+
+  ActivityLog.create({
+    action: 'reception_deleted',
+    performedBy: req.user._id,
+    targetUser: user._id,
+    meta: { email: user.email },
+  }).catch(() => {});
+
+  res.json({ success: true, message: 'Reception account deleted' });
 }));
 
 export default router;

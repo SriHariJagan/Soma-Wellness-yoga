@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 const FIELD_ERR = {
   name: 'Please enter your full name (at least 2 characters).',
@@ -11,7 +13,8 @@ function validate({ name, email, phone, message }) {
   const e = {};
   if (!name || name.trim().length < 2) e.name = FIELD_ERR.name;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = FIELD_ERR.email;
-  if (!phone || !/^[+\d][\d\s\-()]{6,19}$/.test(phone.trim())) e.phone = FIELD_ERR.phone;
+  const phoneErr = validatePhone(phone);
+  if (phoneErr) e.phone = phoneErr;
   if (!message || message.trim().length < 10) e.message = FIELD_ERR.message;
   return e;
 }
@@ -72,7 +75,7 @@ const ChatbotEnquiryForm = ({
     onSubmit?.({
       name: form.name.trim(),
       email: form.email.trim().toLowerCase(),
-      phone: form.phone.trim(),
+      phone: form.phone ? normalizePhone(form.phone) : '',
       interestedType: form.interestedType || 'general',
       interestedItem: form.interestedItem?.trim() || '',
       interestedItemId: initialInterestedItemId || '',
@@ -127,23 +130,7 @@ const ChatbotEnquiryForm = ({
         {show('email') && <p id="soma-cb-err-email" className="soma-cb-field-err" role="alert">{errors.email}</p>}
       </div>
 
-      <div className="soma-cb-field">
-        <label htmlFor="soma-cb-phone">Phone *</label>
-        <input
-          id="soma-cb-phone"
-          name="phone"
-          type="tel"
-          autoComplete="tel"
-          placeholder="+254 7XX XXX XXX"
-          value={form.phone}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          aria-invalid={!!show('phone')}
-          aria-describedby={show('phone') ? 'soma-cb-err-phone' : undefined}
-          required
-        />
-        {show('phone') && <p id="soma-cb-err-phone" className="soma-cb-field-err" role="alert">{errors.phone}</p>}
-      </div>
+      <PhoneInput value={form.phone} onChange={(v) => { setForm((f) => ({ ...f, phone: v })); setTouched((t) => ({ ...t, phone: true })); }} label="Phone *" required id="soma-cb-phone" error={show('phone') ? errors.phone : undefined} />
 
       <div className="soma-cb-field">
         <label htmlFor="soma-cb-interest">Interested in</label>

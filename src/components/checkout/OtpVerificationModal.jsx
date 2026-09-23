@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './checkout.css';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -77,11 +79,12 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
     setMsg({ type: '', text: '' });
     setDevOtp('');
     setCreatedMsg('');
-    const identifier = channel === 'email' ? email.trim().toLowerCase() : sanitizePhone(phone.trim());
+    const identifier = channel === 'email' ? email.trim().toLowerCase() : (phone ? normalizePhone(phone) : '');
     if (channel === 'email') {
       if (!EMAIL_RE.test(identifier)) { setMsg({ type: 'error', text: 'Enter a valid email address' }); return; }
     } else {
-      if (!PHONE_RE.test(identifier)) { setMsg({ type: 'error', text: 'Enter phone with country code, e.g. +2547XXXXXXX' }); return; }
+      const err = validatePhone(phone);
+      if (err) { setMsg({ type: 'error', text: err }); return; }
     }
     setChecking(true);
     try {
@@ -113,10 +116,11 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
     setDevOtp('');
     const name = fullName.trim();
     const dEmail = detailEmail.trim().toLowerCase();
-    const dPhone = sanitizePhone(detailPhone.trim());
+    const dPhone = detailPhone ? normalizePhone(detailPhone) : '';
     if (name.length < 2) { setMsg({ type: 'error', text: 'Please enter your full name' }); return; }
     if (!EMAIL_RE.test(dEmail)) { setMsg({ type: 'error', text: 'Enter a valid email address' }); return; }
-    if (!PHONE_RE.test(dPhone)) { setMsg({ type: 'error', text: 'Enter mobile with country code, e.g. +2547XXXXXXX' }); return; }
+    const phoneErr = validatePhone(detailPhone);
+    if (phoneErr) { setMsg({ type: 'error', text: phoneErr }); return; }
     // OTP goes to the channel the user started with
     const identifier = channel === 'email' ? dEmail : dPhone;
     setSending(true);
@@ -142,7 +146,7 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
     setDevOtp('');
     const identifier = channel === 'email'
       ? (detailEmail || email).trim().toLowerCase()
-      : sanitizePhone((detailPhone || phone).trim());
+      : normalizePhone((detailPhone || phone) || '');
     const displayName = fullName.trim() || intent?.name || 'there';
     setSending(true);
     try {
@@ -165,11 +169,11 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
     if (!/^\d{6}$/.test(code)) { setMsg({ type: 'error', text: 'Enter the 6-digit OTP' }); return; }
     const identifier = channel === 'email'
       ? (detailEmail || email).trim().toLowerCase()
-      : sanitizePhone((detailPhone || phone).trim());
+      : normalizePhone((detailPhone || phone) || '');
     // New-user details travel along so the account is created complete
     const vName = fullName.trim() || undefined;
     const vEmail = detailEmail.trim() ? detailEmail.trim().toLowerCase() : undefined;
-    const vPhone = detailPhone.trim() ? sanitizePhone(detailPhone.trim()) : undefined;
+    const vPhone = detailPhone.trim() ? normalizePhone(detailPhone.trim()) : undefined;
     setVerifying(true);
     setMsg({ type: '', text: '' });
     try {
@@ -249,10 +253,7 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
                 <input className="checkout-input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} />
               </label>
             ) : (
-              <label className="checkout-label">Mobile number
-                <input className="checkout-input" type="tel" placeholder="+2547XXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} />
-                <span className="checkout-hint">Include country code (e.g. +254 for Kenya, +91 for India)</span>
-              </label>
+              <PhoneInput value={phone} onChange={setPhone} label="Mobile number" required id="otp-phone" />
             )}
             {intent && (
               <div className="checkout-intent-mini">
@@ -274,9 +275,7 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
             <label className="checkout-label">Email address
               <input className="checkout-input" type="email" placeholder="you@example.com" value={detailEmail} onChange={(e) => setDetailEmail(e.target.value)} />
             </label>
-            <label className="checkout-label">Mobile number
-              <input className="checkout-input" type="tel" placeholder="+2547XXXXXXXX" value={detailPhone} onChange={(e) => setDetailPhone(e.target.value)} />
-            </label>
+            <PhoneInput value={detailPhone} onChange={setDetailPhone} label="Mobile number" required id="otp-detail-phone" />
             {intent && (
               <div className="checkout-intent-mini">
                 <span className="mini-label">You’re purchasing</span>

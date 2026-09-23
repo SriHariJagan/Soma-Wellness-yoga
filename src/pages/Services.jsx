@@ -61,6 +61,7 @@ const CAT_ORDER = {
   therapy: [8, 9, 10, 11, 12, 13, 26, 33],
   mama: [14, 15, 16, 32],
   meditation: [17, 18, 0, 19, 28, 35],
+  corporate: [30, 7, 12, 26, 33, 19],
   couple: [7, 30],
 };
 
@@ -211,13 +212,14 @@ const Services = () => {
   const meditation = group("meditation");
   const therapy = group("therapy");
   const mama = group("mama");
+  const corporate = group("corporate");
 
   const indSingle = personal.find((o) => /one-to-one/i.test(o.name) && o.sessions === 1);
-  const indPack5 = personal.find((o) => /one-to-one/i.test(o.name) && o.sessions === 5);
-  const indPack10 = personal.find((o) => /one-to-one/i.test(o.name) && o.sessions === 10);
+  const indPack5 = personal.find((o) => /5 private/i.test(o.name) || (/one-to-one/i.test(o.name) && o.sessions === 5));
+  const indPack10 = personal.find((o) => /10 private/i.test(o.name) || (/one-to-one/i.test(o.name) && o.sessions === 10));
   const couSingle = personal.find((o) => /couple/i.test(o.name) && o.sessions === 1);
-  const couPack5 = personal.find((o) => /couple/i.test(o.name) && o.sessions === 5);
-  const couPack10 = personal.find((o) => /couple/i.test(o.name) && o.sessions === 10);
+  const couPack5 = personal.find((o) => /5 couple/i.test(o.name) || (/couple/i.test(o.name) && o.sessions === 5));
+  const couPack10 = personal.find((o) => /10 couple/i.test(o.name) || (/couple/i.test(o.name) && o.sessions === 10));
 
   const therapySingle = therapy.find((o) => o.sessions === 1);
   const therapyPack5 = therapy.find((o) => o.sessions === 5);
@@ -243,7 +245,8 @@ const Services = () => {
           <p className={styles.heroEyebrow}>Our services</p>
           <h1 className={styles.heroTitle}>Wellness, <em>thoughtfully</em> experienced</h1>
           <p className={styles.heroSub}>
-            Group classes, private 1:1, couple sessions, therapy, memberships and breathwork —
+            Group classes, private 1:1, couple sessions, therapy, memberships,
+            breathwork and corporate wellness —
             clear pricing, flexible packages.
           </p>
           <div className={styles.heroCtas}>
@@ -267,6 +270,7 @@ const Services = () => {
           <a href="#therapy">Therapy</a>
           <a href="#mama">Mama</a>
           <a href="#stillness">Stillness</a>
+          <a href="#corporate">Corporate</a>
         </div>
       </nav>
 
@@ -289,7 +293,13 @@ const Services = () => {
               </div>
               {memberships.length > 0 && (
                 <>
-                  <p className={styles.subLabel}>Unlimited memberships</p>
+                  <p className={styles.subLabel}>
+                    Unlimited memberships
+                    {" · "}
+                    <Link to="/memberships" style={{ color: "var(--soma-primary)", fontWeight: 800, textDecoration: "none" }}>
+                      3 · 6 · 12-month terms (Bronze, Silver & Gold) →
+                    </Link>
+                  </p>
                   <div className={styles.grid}>
                     {memberships.map((item, i) => (
                       <OfferCard key={item._id} item={item} index={i} image={pic(item)} />
@@ -402,6 +412,24 @@ const Services = () => {
                 <div className={styles.grid}>
                   {meditation.map((item, i) => (
                     <OfferCard key={item._id} item={item} index={i} image={pic(item)} ctaLabel="Drop in" />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {corporate.length > 0 && (
+            <section id="corporate" className={styles.sectionAlt}>
+              <div className={styles.container}>
+                <SectionHead
+                  eyebrow="Work well"
+                  title="Corporate"
+                  titleEm="wellness"
+                  desc="Yoga, mobility and mindfulness for teams — at your offices or at SOMA. Single sessions or a monthly programme of four."
+                />
+                <div className={styles.grid}>
+                  {corporate.map((item, i) => (
+                    <OfferCard key={item._id} item={item} index={i} image={pic(item)} ctaLabel="Enquire" />
                   ))}
                 </div>
               </div>

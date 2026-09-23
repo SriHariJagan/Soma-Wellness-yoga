@@ -8,6 +8,8 @@ import PageFAQSection from "../components/soma/PageFAQSection";
 import { PAGE_FAQS, CONTACT_INFO, SOCIAL_LINKS } from "../config/siteContent";
 import "./Contact.css";
 import { useTranslation } from "react-i18next";
+import PhoneInput from "../components/common/PhoneInput.jsx";
+import { validatePhone } from "../lib/phone.js";
 
 const STUDIO = {
   address: CONTACT_INFO.address,
@@ -50,6 +52,10 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.phone) {
+      const pe = validatePhone(form.phone);
+      if (pe) { setError(pe); return; }
+    }
     setLoading(true);
     setError("");
     try {
@@ -138,7 +144,9 @@ const Contact = () => {
             <form className="contact-form" onSubmit={handleSubmit} id="join-community">
               <div className="contact-field-row">
                 <label className="contact-field"><span>{t("contact.name")}</span><input type="text" name="name" value={form.name} onChange={handleChange} placeholder={t("contact.namePlaceholder")} required aria-label={t("contact.name")} /></label>
-                <label className="contact-field"><span>{t("contact.phone")}</span><input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder={t("contact.phonePlaceholder")} aria-label={t("contact.phone")} /></label>
+                <div className="contact-field" style={{ flex: 1 }}>
+                  <PhoneInput value={form.phone} onChange={(v) => setForm(f => ({ ...f, phone: v }))} label={t("contact.phone")} id="contact-phone" />
+                </div>
               </div>
               <label className="contact-field"><span>{t("contact.emailLabel")}</span><input type="email" name="email" value={form.email} onChange={handleChange} placeholder={t("contact.emailPlaceholder")} required aria-label={t("contact.emailLabel")} /></label>
               <label className="contact-field"><span>{t("contact.messageLabel")}</span><textarea name="message" value={form.message} onChange={handleChange} rows={5} placeholder={t("contact.messagePlaceholder")} required aria-label={t("contact.messageLabel")} /></label>

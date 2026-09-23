@@ -3,6 +3,8 @@ import { createAppointment, createQuoteRequest } from '../../lib/somaApi.js';
 import { useTranslation } from 'react-i18next';
 import CheckoutGate from '../checkout/CheckoutGate.jsx';
 import { isLoggedIn } from '../../utils/payment.js';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 function HealthDisclosureStep({ onChange }) {
   const { t } = useTranslation();
@@ -78,7 +80,11 @@ export function QuoteForm({ typeLabel }) {
   const [msg, setMsg] = useState('');
   const submit = async () => {
     setMsg('');
-    try { await createQuoteRequest({ ...form, name: form.name, email: form.email, phone: form.phone, type:'home_hotel', distanceKm:Number(form.distanceKm)||0, groupSize:Number(form.groupSize), durationMin:Number(form.durationMin), venueAddress:form.venueAddress, notes:form.notes }); setMsg(t('booking.quoteSuccess')); } catch(e){ setMsg(e.message); }
+    if (form.phone) {
+      const err = validatePhone(form.phone);
+      if (err) { setMsg(err); return; }
+    }
+    try { await createQuoteRequest({ ...form, name: form.name, email: form.email, phone: form.phone ? normalizePhone(form.phone) : '', type:'home_hotel', distanceKm:Number(form.distanceKm)||0, groupSize:Number(form.groupSize), durationMin:Number(form.durationMin), venueAddress:form.venueAddress, notes:form.notes }); setMsg(t('booking.quoteSuccess')); } catch(e){ setMsg(e.message); }
   };
   return (
     <div style={{ border:'1px solid var(--soma-line-light)', borderRadius:16, padding:16, background:'#FFFDF7', display:'flex', flexDirection:'column', gap:10 }}>
@@ -86,7 +92,7 @@ export function QuoteForm({ typeLabel }) {
       <div style={{ fontSize:11, color:'#5a6b63' }}>{t('booking.quoteDesc')}</div>
       <input placeholder={t('booking.namePlaceholder')} value={form.name} onChange={e=>setForm({...form,name:e.target.value})} aria-label={t('common.name')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
       <input placeholder={t('booking.emailPlaceholder')} value={form.email} onChange={e=>setForm({...form,email:e.target.value})} aria-label={t('common.email')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
-      <input placeholder={t('booking.phonePlaceholder')} value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} aria-label={t('common.phone')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
+      <PhoneInput value={form.phone} onChange={(v)=>setForm({...form, phone: v})} label={t('common.phone') || 'Phone'} id="quote-phone" />
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
         <input placeholder={t('booking.distanceKm')} value={form.distanceKm} onChange={e=>setForm({...form,distanceKm:e.target.value})} aria-label={t('booking.distanceKm')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
         <input type="number" placeholder={t('booking.groupSize')} value={form.groupSize} onChange={e=>setForm({...form,groupSize:e.target.value})} aria-label={t('booking.groupSize')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
@@ -106,7 +112,11 @@ export function CorporateQuoteForm() {
   const [form, setForm] = useState({ companyName:'', contactName:'', email:'', phone:'', headcount:'', venue:'', programme:'Single session', notes:'' });
   const [msg, setMsg] = useState('');
   const submit = async () => {
-    try { await createQuoteRequest({ ...form, name: form.contactName, type:'corporate', companyName: form.companyName, headcount: Number(form.headcount)||0, venue: form.venue, programme: form.programme, notes: form.notes }); setMsg(t('booking.corporateSuccess')); } catch(e){ setMsg(e.message); }
+    if (form.phone) {
+      const err = validatePhone(form.phone);
+      if (err) { setMsg(err); return; }
+    }
+    try { await createQuoteRequest({ ...form, name: form.contactName, type:'corporate', companyName: form.companyName, headcount: Number(form.headcount)||0, venue: form.venue, programme: form.programme, notes: form.notes, phone: form.phone ? normalizePhone(form.phone) : '' }); setMsg(t('booking.corporateSuccess')); } catch(e){ setMsg(e.message); }
   };
   return (
     <div style={{ border:'1px solid var(--soma-line-light)', borderRadius:16, padding:16, background:'#fff', display:'flex', flexDirection:'column', gap:10 }}>
@@ -115,15 +125,12 @@ export function CorporateQuoteForm() {
       <input placeholder={t('booking.companyName')} value={form.companyName} onChange={e=>setForm({...form,companyName:e.target.value})} aria-label={t('booking.companyName')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
       <input placeholder={t('booking.contactName')} value={form.contactName} onChange={e=>setForm({...form,contactName:e.target.value})} aria-label={t('booking.contactName')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
       <input placeholder={t('booking.emailPlaceholder')} value={form.email} onChange={e=>setForm({...form,email:e.target.value})} aria-label={t('common.email')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
-      <input placeholder={t('booking.phonePlaceholder')} value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} aria-label={t('common.phone')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
+      <PhoneInput value={form.phone} onChange={(v)=>setForm({...form, phone: v})} label={t('common.phone') || 'Phone'} id="corporate-phone" />
       <input placeholder={t('booking.headcount')} value={form.headcount} onChange={e=>setForm({...form,headcount:e.target.value})} aria-label={t('booking.headcount')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
       <input placeholder={t('booking.venuePlaceholder')} value={form.venue} onChange={e=>setForm({...form,venue:e.target.value})} aria-label={t('booking.venuePlaceholder')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
       <select value={form.programme} onChange={e=>setForm({...form,programme:e.target.value})} aria-label={t('booking.corporateTitle')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }}>
         <option>{t('booking.programmeSingle')}</option>
         <option>{t('booking.programmeMonthly4')}</option>
-        <option>{t('booking.programmeMonthly8')}</option>
-        <option>{t('booking.programmeWellnessDay')}</option>
-        <option>{t('booking.programmeAnnual')}</option>
       </select>
       <textarea placeholder={t('booking.notesPlaceholder')} value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={3} aria-label={t('common.message')} style={{ padding:10, border:'1px solid var(--soma-line-light)', borderRadius:8 }} />
       <button onClick={submit} style={{ padding:12, borderRadius:9999, background:'var(--soma-forest)', color:'#fff', fontWeight:800 }}>{t('booking.requestCorporateQuote')}</button>

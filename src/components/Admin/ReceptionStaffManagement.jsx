@@ -6,9 +6,11 @@ import { PERMISSION_GROUPS } from '../../config/permissions';
 import {
   LuUsers, LuPlus, LuPencil, LuShield, LuKey, LuCheck, LuX,
   LuEye, LuEyeOff, LuRefreshCw, LuCircleAlert, LuInfo, LuSearch,
-  LuPhone, LuMail, LuCalendar, LuUserCog,
+  LuPhone, LuMail, LuCalendar, LuUserCog, LuTrash2,
 } from 'react-icons/lu';
 import s from './YogaAdmin.module.css';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 const PERMISSIONS = PERMISSION_GROUPS;
 const ALL_KEYS = Object.values(PERMISSIONS).flatMap((g) => g.permissions.map((p) => p.key));
@@ -104,29 +106,42 @@ export default function ReceptionStaffManagement({ onFeedback }) {
       onFeedback?.('Name and email are required', 'error');
       return;
     }
+    if (form.phone) {
+      const err = validatePhone(form.phone);
+      if (err) { onFeedback?.(err, 'error'); return; }
+    }
     setSaving(true);
     try {
       if (sheet.mode === 'create') {
         const result = await receptionStaffApi.create({
           name: form.name.trim(), email: form.email.trim(),
-          phone: form.phone.trim(), password: form.password || undefined,
+          phone: form.phone ? normalizePhone(form.phone) : '', password: form.password || undefined,
           permissions: perms,
         });
+        const createdEmail = form.email.trim();
+        // Close the create popup immediately on success + reset form
+        setSheet(null);
+        setForm({ name: '', email: '', phone: '', password: '' });
+        setPerms([]);
+        setPermSearch('');
         onFeedback?.('Reception account created successfully', 'success');
         if (result.temporaryPassword) {
-          setShowTempPassword({ email: form.email.trim(), password: result.temporaryPassword });
+          setShowTempPassword({ email: createdEmail, password: result.temporaryPassword });
         }
       } else {
-        await receptionStaffApi.update(sheet.user._id, { name: form.name.trim(), phone: form.phone.trim() });
-        await receptionStaffApi.updatePermissions(sheet.user._id, perms);
+        const editId = sheet.user._id;
+        await receptionStaffApi.update(editId, { name: form.name.trim(), phone: form.phone ? normalizePhone(form.phone) : '' });
+        await receptionStaffApi.updatePermissions(editId, perms);
+        setSheet(null);
         onFeedback?.('Reception staff updated', 'success');
       }
-      setSheet(null);
-      await loadStaff();
     } catch (err) {
       onFeedback?.(err.message || 'Failed to save', 'error');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
+    // Refresh list in background without overwriting the success feedback
+    try { await loadStaff(); } catch {}
   };
 
   const handleToggleStatus = async (user) => {
@@ -138,6 +153,19 @@ export default function ReceptionStaffManagement({ onFeedback }) {
       await loadStaff();
     } catch (err) {
       onFeedback?.(err.message || 'Failed to change status', 'error');
+    }
+    setActingId(null);
+  };
+
+  const handleDelete = async (user) => {
+    if (!window.confirm(`Delete reception account for ${user.name} (${user.email})? This cannot be undone.`)) return;
+    setActingId(user._id);
+    try {
+      await receptionStaffApi.remove(user._id);
+      onFeedback?.('Reception account deleted', 'success');
+      await loadStaff();
+    } catch (err) {
+      onFeedback?.(err.message || 'Failed to delete account', 'error');
     }
     setActingId(null);
   };
@@ -254,6 +282,15 @@ export default function ReceptionStaffManagement({ onFeedback }) {
                     >
                       {active ? <><LuEyeOff size={13} /> Deactivate</> : <><LuEye size={13} /> Activate</>}
                     </button>
+                    <button
+                      type="button"
+                      className={`${s.btn} ${s.btnSm} ${s.btnDanger}`}
+                      disabled={actingId === u._id}
+                      onClick={() => handleDelete(u)}
+                      title="Delete this reception account permanently"
+                    >
+                      <LuTrash2 size={13} /> Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -314,10 +351,7 @@ export default function ReceptionStaffManagement({ onFeedback }) {
                     />
                   </label>
                   {isEdit && <p className={s.fieldHint}>Email is locked after creation — contact an admin to change it.</p>}
-                  <label className={s.fieldLabel}>
-                    Phone
-                    <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="e.g. +254 702 080 070" />
-                  </label>
+                  <PhoneInput value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} label="Phone" id="staff-phone" />
                   {!isEdit && (
                     <label className={s.fieldLabel}>
                       Password

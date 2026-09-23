@@ -1,15 +1,15 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { receptionApi } from '../../api/AdminServices';
-import { LuBookOpen, LuRefreshCw, LuSearch, LuX } from 'react-icons/lu';
+import { LuLock, LuGraduationCap, LuBookOpen, LuRefreshCw, LuSearch, LuX } from 'react-icons/lu';
 import s from '../../Admin/YogaAdmin.module.css';
 
-// â”€â”€ Safe render helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Safe render helpers ─────────────────────────────────────────
 // The classsessions collection contains legacy documents where fields like
 // `schedule` are objects ({days, startTime, endTime, timezone}). Rendering
 // an object directly crashes React ("Objects are not valid as a React
 // child"), so every DB-driven value goes through these formatters.
-function safeText(value, fallback = 'â€”') {
+function safeText(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
@@ -26,18 +26,18 @@ function formatDays(days) {
 export function formatSchedule(schedule, timing, time) {
   if (typeof timing === 'string' && timing) return timing;
   if (typeof time === 'string' && time) return time;
-  if (!schedule) return 'â€”';
+  if (!schedule) return '—';
   if (typeof schedule === 'string') return schedule;
   if (typeof schedule === 'object') {
     const parts = [];
     const days = formatDays(schedule.days);
     if (days) parts.push(days);
     if (schedule.startTime) {
-      parts.push(schedule.endTime ? `${schedule.startTime}â€“${schedule.endTime}` : schedule.startTime);
+      parts.push(schedule.endTime ? `${schedule.startTime}–${schedule.endTime}` : schedule.startTime);
     }
-    return parts.length > 0 ? parts.join(' Â· ') : 'â€”';
+    return parts.length > 0 ? parts.join(' · ') : '—';
   }
-  return 'â€”';
+  return '—';
 }
 
 export default function ClassesTab() {
@@ -87,7 +87,7 @@ export default function ClassesTab() {
           <h2 className={s.sectionTitle}><LuBookOpen size={20} /> Classes & Courses</h2>
         </div>
         <div className={s.emptyState}>
-          <div className={s.emptyIcon}>ðŸ”’</div>
+          <div className={s.emptyIcon}><LuLock size={40} /></div>
           <h3 className={s.emptyTitle}>No access</h3>
           <p className={s.emptyDesc}>You don't have permission to view classes or courses. Contact an admin to grant classes.view or courses.view access.</p>
         </div>
@@ -111,12 +111,12 @@ export default function ClassesTab() {
 
   return (
     <div className={s.recPage}>
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* ── Header ── */}
       <div className={s.sectionHeader}>
         <h2 className={s.sectionTitle}>
           <LuBookOpen size={20} /> Classes & Courses
           <span className={s.chipCount} style={{ fontSize: 12 }}>
-            Â· {canViewClasses ? `${classes.length} classes` : ''}{showToggle ? ' Â· ' : ''}{canViewCourses ? `${courses.length} courses` : ''}
+            · {canViewClasses ? `${classes.length} classes` : ''}{showToggle ? ' · ' : ''}{canViewCourses ? `${courses.length} courses` : ''}
           </span>
         </h2>
         <div className={s.toolbar}>
@@ -126,7 +126,7 @@ export default function ClassesTab() {
         </div>
       </div>
 
-      {/* â”€â”€ One main card â”€â”€ */}
+      {/* ── One main card ── */}
       <div className={`${s.card} ${s.cardNoPad}`}>
         <div style={{ padding: '18px 20px 0' }}>
           <div className={s.filterBar} style={{ marginBottom: 14 }}>
@@ -154,7 +154,7 @@ export default function ClassesTab() {
                 className={s.searchInput}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder={activeView === 'classes' ? 'Search class, instructor or venueâ€¦' : 'Search coursesâ€¦'}
+                placeholder={activeView === 'classes' ? 'Search class, instructor or venue…' : 'Search courses…'}
                 aria-label="Search"
               />
               {searchInput && (
@@ -174,7 +174,7 @@ export default function ClassesTab() {
         ) : activeView === 'courses' ? (
           visibleCourses.length === 0 && !coursesError ? (
             <div className={s.emptyState}>
-              <div className={s.emptyIcon}>ðŸ“š</div>
+              <div className={s.emptyIcon}><LuGraduationCap size={40} /></div>
               <h3 className={s.emptyTitle}>No courses found</h3>
               <p className={s.emptyDesc}>{q ? 'Try a different search term.' : 'No published courses right now.'}</p>
             </div>
@@ -193,7 +193,7 @@ export default function ClassesTab() {
                     {visibleCourses.map((c) => (
                       <tr key={c._id}>
                         <td style={{ fontWeight: 700 }}>{safeText(c.title, 'Untitled course')}</td>
-                        <td>{safeText(c.duration, 'â€”')}</td>
+                        <td>{safeText(c.duration, '—')}</td>
                         <td style={{ textAlign: 'right', fontWeight: 700 }}>
                           KES {typeof c.price === 'number' ? c.price.toLocaleString() : safeText(c.price, '0')}
                         </td>
@@ -210,7 +210,7 @@ export default function ClassesTab() {
         ) : (
           visibleClasses.length === 0 && !classesError ? (
             <div className={s.emptyState}>
-              <div className={s.emptyIcon}>ðŸ§˜</div>
+              <div className={s.emptyIcon}><LuBookOpen size={40} /></div>
               <h3 className={s.emptyTitle}>No classes found</h3>
               <p className={s.emptyDesc}>{q ? 'Try a different search term.' : 'No classes scheduled right now.'}</p>
             </div>
@@ -232,13 +232,13 @@ export default function ClassesTab() {
                       const enrolled = typeof cl.enrolled === 'number' ? cl.enrolled : (cl.enrolledUsers?.length ?? null);
                       const seats = typeof cl.capacity === 'number'
                         ? (enrolled !== null ? `${enrolled}/${cl.capacity}` : `${cl.capacity}`)
-                        : 'â€”';
+                        : '—';
                       return (
                         <tr key={cl._id}>
                           <td style={{ fontWeight: 700 }}>{safeText(cl.name, 'Unnamed class')}</td>
-                          <td>{safeText(cl.instructor || cl.trainer, 'â€”')}</td>
+                          <td>{safeText(cl.instructor || cl.trainer, '—')}</td>
                           <td style={{ fontSize: 12.5 }}>{formatSchedule(cl.schedule, cl.timing, cl.time)}</td>
-                          <td>{safeText(cl.location, 'â€”')}</td>
+                          <td>{safeText(cl.location, '—')}</td>
                           <td style={{ textAlign: 'right' }}>{seats}</td>
                         </tr>
                       );

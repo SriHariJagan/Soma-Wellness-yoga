@@ -95,6 +95,10 @@ const UserSchema = new mongoose.Schema(
     // Hashed temp password expiry. After this date password login is
     // rejected and the user must reset via Forgot password.
     tempPasswordExpiresAt: { type: Date, default: null },
+
+    // ── Soft delete ──
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

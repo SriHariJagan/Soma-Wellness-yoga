@@ -18,7 +18,11 @@ const ROUTE_META = {
   },
   "/classes": {
     title: "Join SomaWellness — Wellness Memberships JUA AMANI UZIMA FAMILY",
-    description: "Join SomaWellness: JUA 12K, AMANI 18.5K, UZIMA 28.5K, FAMILY 35K KES/month. Discovery 3K, passes, pay-ahead savings & SOMA DAILY included.",
+    description: "Join SomaWellness: Group classes 2,000 KES; SOMA JUA – 10-Class Pass 11,500; Private Yoga 4,500; Couple Yoga 6,500; 5 Private Sessions 21,000; 5 Couple Yoga Sessions 30,500; 10 Private Sessions 40,000; 10 Couple Yoga Sessions 58,000; SOMA Work Well – Single 13,500; SOMA Work Well – Monthly 45,000; Yoga Therapy Individual 5,500; 5 Sessions 25,000; 10 Sessions 45,000; SOMA MAMA Prenatal 5,500; 5 Sessions 25,000; 10 Sessions 45,000; SOMA 200 Yoga Teacher Training 130,000. Corporate and prenatal options available.",
+  },
+  "/memberships": {
+    title: "Memberships — Bronze, Silver & Gold (3 · 6 · 12 Months) | SomaWellness",
+    description: "SomaWellness term memberships: Bronze 3 months 48K, Silver 6 months 88K (Most Popular), Gold 12 months 160K (Best Value). Unlimited yoga + recovery. Spring Valley, Nairobi.",
   },
   "/private": {
     title: "Private Wellness Programs — One-to-One | SomaWellness",
@@ -50,7 +54,7 @@ const ROUTE_META = {
   },
   "/spa-rituals": {
     title: "Spa & Rituals — Massage, Meditation & Signature Journeys | SomaWellness",
-    description: "Restore at SomaWellness: massage, aromatherapy, STILLNESS ritual, THE ACACIA journey, and couples experiences in Spring Valley, Nairobi.",
+    description: "Restore at SomaWellness: Single Session 2,000; 10-Class Pass 11,500; Private One-to-One 4,500; Couple Yoga 6,500; 5 Private Sessions 21,000; 5 Couple Yoga Sessions 30,500; 10 Private Sessions 40,000; 10 Couple Yoga Sessions 58,000; Yoga Therapy Individual 5,500; 5 Sessions 25,000; 10 Sessions 45,000; Prenatal Yoga 5,500; 5 Sessions 25,000; 10 Sessions 45,000; SOMA 200 Yoga Teacher Training 130,000. Enquire only. Offers at your offices.",
   },
   "/courses": {
     title: "Courses — 200-Hour Yoga Teacher Training | SomaWellness Academy",
@@ -79,6 +83,7 @@ const PATH_TO_SEO_KEY = {
   "/": "home",
   "/about": "about",
   "/classes": "join",
+  "/memberships": "memberships",
   "/private": "private",
   "/life-stages": "lifeStages",
   "/restore": "restore",

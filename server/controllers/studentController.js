@@ -115,10 +115,14 @@ export const getMembership = asyncHandler(async (req, res) => {
 });
 
 // ── GET /api/student/membership-plans (active plans for student view) ──
+// Membership shows ONLY the Bronze / Silver / Gold term plans (3 / 6 / 12
+// months). All other tiers (SOMA JUA/AMANI/UZIMA/FAMILY, passes, DAILY) live
+// in Services — they are hidden here via visibility + this allowlist.
 export const getMembershipPlans = asyncHandler(async (req, res) => {
   const plans = await Plan.find({
     active: true,
     visibility: { $ne: 'hidden' },
+    name: { $in: ['Bronze', 'Silver', 'Gold'] },
   }).sort({ displayOrder: 1, durationMonths: 1 });
   res.json(plans);
 });

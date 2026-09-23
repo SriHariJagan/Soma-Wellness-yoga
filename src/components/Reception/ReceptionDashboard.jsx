@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { receptionApi } from '../api/AdminServices';
-import {
+import { LuFlower2,
   LuLayoutDashboard, LuUsers, LuCalendarCheck, LuMail, LuBookOpen,
   LuLogOut, LuChevronsLeft, LuChevronsRight, LuArrowLeft,
   LuMenu, LuCalendarDays, LuGraduationCap,
@@ -123,7 +123,7 @@ export default function ReceptionDashboard({ onLogout = () => {} }) {
       <aside className={`${s.sidebar} ${collapsed ? s.sidebarCollapsed : ''} ${mobileOpen ? s.sidebarOpen : ''}`}>
         <div className={s.sbHeader}>
           <div className={s.sbLogo}>
-            <span className={s.sbLogoIcon}>🪷</span>
+            <span className={s.sbLogoIcon}><LuFlower2 size={20} /></span>
             {!collapsed && (
               <div className={s.sbLogoText}>
                 <span className={s.sbLogoTitle}>SomaWellness</span>

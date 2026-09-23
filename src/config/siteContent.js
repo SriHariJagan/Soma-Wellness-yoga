@@ -28,6 +28,7 @@ export const SOCIAL_LINKS = [
 export const SOMA_NAV = [
   { label: "Home", path: "/" },
   { label: "Services", path: "/services" },
+  { label: "Memberships", path: "/memberships" },
   { label: "Spa & Rituals", path: "/spa-rituals" },
   { label: "Courses", path: "/courses" },
   { label: "Blogs", path: "/blogs" },
@@ -58,22 +59,22 @@ export const SOMA_EXPERIENCES = [
 // Nairobi membership tiers (KES, VAT included)
 export const MEMBERSHIPS = [
   { name: "SOMA JUA", sub: "Move · Energise · Shine", price: "12,000", per: "a month", features: ["8 group yoga classes a month", "Member rates on everything else"], accent: false },
-  { name: "SOMA AMANI", sub: "Move into balance", price: "18,500", per: "a month", features: ["Unlimited group yoga", "Meditation and breathwork", "SOMA DAILY included", "Member rates on everything else"], accent: false },
-  { name: "SOMA UZIMA", sub: "Yoga and recovery, complete", price: "28,500", per: "a month", badge: "BEST VALUE", features: ["Unlimited yoga and meditation", "SOMA DAILY included", "2 sixty-minute massages", "1 private yoga or therapy session", "Priority booking · 2 guest passes", "15% off everything else"], accent: true },
+  { name: "SOMA AMANI", sub: "Move into balance", price: "16,500", per: "a month", features: ["Unlimited group yoga", "Meditation and breathwork", "SOMA DAILY included", "Member rates on everything else"], accent: false },
+  { name: "SOMA UZIMA", sub: "Yoga and recovery, complete", price: "22,500", per: "a month", badge: "BEST VALUE", features: ["Unlimited yoga and meditation", "SOMA DAILY included", "2 sixty-minute massages", "1 private yoga or therapy session", "Priority booking · 2 guest passes", "15% off everything else"], accent: true },
   { name: "SOMA FAMILY", sub: "One household, one plan", price: "35,000", per: "a month", features: ["2 adults, unlimited yoga", "1 children's or teen programme", "Meditation and breathwork", "SOMA DAILY included", "10% off everything else"], accent: false },
 ];
 
 export const MEMBERSHIP_PAY_AHEAD = [
-  { label: "Monthly —", jua: "12,000", amani: "18,500", uzima: "28,500", family: "35,000", note: "" },
-  { label: "3 months 10%", jua: "32,000", amani: "49,500", uzima: "76,500", family: "94,500", note: "save 10%" },
-  { label: "6 months 15%", jua: "61,000", amani: "94,000", uzima: "145,000", family: "178,500", note: "save 15%" },
-  { label: "12 months 25%", jua: "108,000", amani: "166,500", uzima: "256,500", family: "315,000", note: "save 25%" },
+  { label: "Monthly —", jua: "12,000", amani: "16,500", uzima: "22,500", family: "35,000", note: "" },
+  { label: "3 months 10%", jua: "32,000", amani: "44,550", uzima: "60,750", family: "94,500", note: "save 10%" },
+  { label: "6 months 15%", jua: "61,000", amani: "75,500", uzima: "114,750", family: "178,500", note: "save 15%" },
+  { label: "12 months 25%", jua: "108,000", amani: "125,500", uzima: "202,500", family: "315,000", note: "save 25%" },
 ];
 
 export const FOUNDING_RATES = [
   { tier: "SOMA JUA", founding: "10,000", normal: "12,000", save: "17%" },
-  { tier: "SOMA AMANI", founding: "15,000", normal: "18,500", save: "19%" },
-  { tier: "SOMA UZIMA", founding: "24,000", normal: "28,500", save: "16%" },
+  { tier: "SOMA AMANI", founding: "13,500", normal: "16,500", save: "18%" },
+  { tier: "SOMA UZIMA", founding: "19,000", normal: "22,500", save: "16%" },
   { tier: "SOMA FAMILY", founding: "28,500", normal: "35,000", save: "19%" },
 ];
 
@@ -126,17 +127,12 @@ export const SIGNATURE_EXPERIENCES = [
 ];
 
 export const ACADEMY = [
-  { name: "Yoga Foundations", len: "25 hours", price: "30,000" },
-  { name: "SOMA 100 — Foundation Teacher Course", len: "100 hours", price: "85,000" },
-  { name: "SOMA 200 — Yoga Teacher Training", len: "200 hours", price: "165,000", note: "Early enrolment 145,000. Instalments available." },
+  { name: "SOMA 200 Yoga Teacher Training", len: "200 hours", price: "130,000" },
 ];
 
 export const CORPORATE = [
-  { name: "Single session", desc: "60 minutes of yoga and mobility at your offices, up to 20 people", price: "18,000" },
-  { name: "Monthly programme — 4 sessions", desc: "4 sessions a month at your offices", price: "65,000" },
-  { name: "Monthly programme — 8 sessions", desc: "8 sessions a month at your offices", price: "120,000" },
-  { name: "Wellness day", desc: "Half or full day, at SOMA or at your offices", price: "from 150,000" },
-  { name: "Annual contract", desc: "Weekly sessions, a workshop each quarter, member rates for your staff", price: "from 600,000" },
+  { name: "SOMA Work Well – Single", desc: "60 minutes of yoga and mobility at your offices, up to about 20 people", price: "13,500" },
+  { name: "SOMA Work Well – Monthly", desc: "Four onsite sessions per month for the same group", price: "45,000" },
 ];
 
 export const SOMA_TESTIMONIALS = [

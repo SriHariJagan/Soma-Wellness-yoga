@@ -1,5 +1,5 @@
 import ApiError from '../utils/ApiError.js';
-import { getRedisClient } from '../config/redis.js';
+import { getRedisClient, isRedisReady } from '../config/redis.js';
 
 const memoryStore = new Map();
 
@@ -9,24 +9,8 @@ function getWindowStart(windowMs) {
 
 export function rateLimit({ windowMs = 15 * 60 * 1000, max = 100, message } = {}) {
   return async (req, res, next) => {
-    try {
-      const redis = getRedisClient();
-      const key = `rateLimit:${req.ip}:${req.baseUrl}${req.path}:${getWindowStart(windowMs)}`;
-
-      const count = await redis.incr(key);
-      if (count === 1) {
-        await redis.pexpire(key, windowMs).catch(() => {});
-      }
-
-      res.setHeader('X-RateLimit-Limit', max);
-      res.setHeader('X-RateLimit-Remaining', Math.max(0, max - count));
-
-      if (count > max) {
-        return next(new ApiError(429, message || 'Too many requests, please try again later.'));
-      }
-      next();
-    } catch {
-      // Redis unavailable — fall back to in-memory rate limiting
+    // In-memory fallback shared by the catch path and the fast-fail path
+    const useMemory = () => {
       const memKey = `${req.ip}:${req.baseUrl}${req.path}`;
       const now = Date.now();
       const windowKey = Math.floor(now / windowMs);
@@ -45,6 +29,30 @@ export function rateLimit({ windowMs = 15 * 60 * 1000, max = 100, message } = {}
       res.setHeader('X-RateLimit-Remaining', 'degraded');
 
       next();
+    };
+
+    // Fast-fail when Redis is not connected — don't wait 2s per request
+    // when running locally without Redis.
+    if (!isRedisReady()) return useMemory();
+    try {
+      const redis = getRedisClient();
+      const key = `rateLimit:${req.ip}:${req.baseUrl}${req.path}:${getWindowStart(windowMs)}`;
+
+      const count = await redis.incr(key);
+      if (count === 1) {
+        await redis.pexpire(key, windowMs).catch(() => {});
+      }
+
+      res.setHeader('X-RateLimit-Limit', max);
+      res.setHeader('X-RateLimit-Remaining', Math.max(0, max - count));
+
+      if (count > max) {
+        return next(new ApiError(429, message || 'Too many requests, please try again later.'));
+      }
+      next();
+    } catch {
+      // Redis unavailable mid-request — fall back to in-memory rate limiting
+      return useMemory();
     }
   };
 }

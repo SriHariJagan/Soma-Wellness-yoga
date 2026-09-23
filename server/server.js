@@ -9,7 +9,6 @@ import express from "express";
 import compression from "compression";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
-import { SOMA_SERVICES, LEGACY_SERVICE_NAMES } from "./config/somaCatalog.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 import asyncHandler from "./utils/asyncHandler.js";
 import { rateLimit } from "./middleware/rateLimit.js";
@@ -277,6 +276,9 @@ setInterval(() => {
 import { startSomaCron } from "./services/cron/somaCron.js";
 
 // ── Seed / update official membership plans (SOMA tiers) ──
+// NOTE: SOMA tiers are hidden from Membership listings (visibility: 'hidden')
+// — Membership shows ONLY Bronze / Silver / Gold. These tiers live in
+// Services instead. Existing purchases are unaffected (records, not plans).
 const OFFICIAL_PLANS = [
   {
     name: "SOMA JUA",
@@ -290,12 +292,13 @@ const OFFICIAL_PLANS = [
     badge: "",
     isPopular: false,
     isRecommended: false,
+    visibility: "hidden",
   },
   {
     name: "SOMA AMANI",
     description:
       "Move into balance. Unlimited group yoga, meditation & breathwork, SOMA DAILY included.",
-    price: 18500,
+    price: 16500,
     durationMonths: 1,
     pauseDays: 0,
     displayOrder: 2,
@@ -308,12 +311,13 @@ const OFFICIAL_PLANS = [
     badge: "",
     isPopular: false,
     isRecommended: true,
+    visibility: "hidden",
   },
   {
     name: "SOMA UZIMA",
     description:
       "Yoga and recovery, complete. Unlimited yoga & meditation, SOMA DAILY, 2×60-min massages, 1 private yoga/therapy session, priority booking, 2 guest passes, 15% off.",
-    price: 28500,
+    price: 22500,
     durationMonths: 1,
     pauseDays: 0,
     displayOrder: 3,
@@ -328,6 +332,7 @@ const OFFICIAL_PLANS = [
     badge: "BEST VALUE",
     isPopular: true,
     isRecommended: false,
+    visibility: "hidden",
   },
   {
     name: "SOMA FAMILY",
@@ -347,6 +352,7 @@ const OFFICIAL_PLANS = [
     badge: "",
     isPopular: false,
     isRecommended: false,
+    visibility: "hidden",
   },
 ];
 
@@ -376,26 +382,47 @@ async function seedDefaultPlans() {
 }
 
 // ── Seed / update official services (approved SOMA catalog) ──
-const OFFICIAL_SERVICES = SOMA_SERVICES;
-
+// WHITELIST: only PUBLIC_CATALOG items may exist. Everything else
+// in Service + Offering is deleted on every boot.
 async function seedDefaultServices() {
-  const ADMIN_ID = null;
-  await Service.deleteMany({ name: { $in: LEGACY_SERVICE_NAMES } });
+  const {
+    PUBLIC_CATALOG,
+    PUBLIC_SERVICE_NAMES,
+    RETIRED_SERVICE_NAMES,
+    RETIRED_OFFERING_NAMES,
+    toServiceDoc,
+    toOfferingDoc,
+  } = await import("./config/publicCatalog.js");
+  const Offering = (await import("./models/Offering.js")).default;
 
-  // Migrate enrollments pointing at retired names
+  // Hard wipe: remove anything not on the official list
+  await Service.deleteMany({
+    $or: [
+      { name: { $nin: PUBLIC_SERVICE_NAMES } },
+      { name: { $in: RETIRED_SERVICE_NAMES } },
+    ],
+  });
+  await Offering.deleteMany({
+    $or: [
+      { name: { $nin: PUBLIC_SERVICE_NAMES } },
+      { name: { $in: RETIRED_OFFERING_NAMES } },
+    ],
+  });
+
   await UserService.updateMany(
     { serviceName: "Yoga at Home" },
     { $set: { serviceName: "Home / Hotel Session" } },
   );
-  await UserService.updateMany(
-    { serviceName: "Pranayama & Meditation" },
-    { $set: { serviceName: "Meditation / Breathwork / Yoga Nidra" } },
-  );
 
-  for (const svc of OFFICIAL_SERVICES) {
+  for (const entry of PUBLIC_CATALOG) {
     await Service.findOneAndUpdate(
-      { name: svc.name },
-      { $set: svc },
+      { name: entry.name },
+      { $set: toServiceDoc(entry) },
+      { upsert: true, returnDocument: "after" },
+    );
+    await Offering.findOneAndUpdate(
+      { name: entry.name },
+      { $set: toOfferingDoc(entry) },
       { upsert: true, returnDocument: "after" },
     );
   }
@@ -404,17 +431,17 @@ async function seedDefaultServices() {
 // ── SOMA: Seed SOMA tier plans (KES) ─────────────────────────
 async function seedSomaPlans() {
   const SOMA_PLANS = [
-    // Base tiers (monthly)
-    { name: 'SOMA JUA', description: '8 group yoga classes/month · Member rates else', price: 12000, currency: 'KES', durationMonths: 1, tier: 'JUA', tierLabel: 'SOMA JUA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: 8 }, foundingMonthly: 10000, termPricing: { 1: 12000, 3: 32000, 6: 61000, 12: 108000 }, benefits: ['8 group yoga classes a month', 'Member rates on everything else'], displayOrder: 10, isPopular: false, active: true },
-    { name: 'SOMA AMANI', description: 'Unlimited yoga, meditation & breathwork · SOMA DAILY', price: 18500, currency: 'KES', durationMonths: 1, tier: 'AMANI', tierLabel: 'SOMA AMANI', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1 }, foundingMonthly: 15000, termPricing: { 1: 18500, 3: 49500, 6: 94000, 12: 166500 }, benefits: ['Unlimited group yoga', 'Meditation and breathwork', 'SOMA DAILY included', 'Member rates on everything else'], displayOrder: 11, isPopular: false, active: true },
-    { name: 'SOMA UZIMA', description: 'Unlimited yoga & meditation · 2 massages + 1 private · 15% off', price: 28500, currency: 'KES', durationMonths: 1, tier: 'UZIMA', tierLabel: 'SOMA UZIMA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, massages60: 2, privateSessions: 1, guestPasses: 2 }, foundingMonthly: 24000, termPricing: { 1: 28500, 3: 76500, 6: 145000, 12: 256500 }, benefits: ['Unlimited yoga and meditation', 'SOMA DAILY included', '2 sixty-minute massages', '1 private yoga or therapy session', 'Priority booking · 2 guest passes', '15% off everything else'], badge: 'BEST VALUE', isPopular: true, displayOrder: 12, active: true },
-    { name: 'SOMA FAMILY', description: '2 adults unlimited · 1 Young programme · SOMA DAILY · 10% off', price: 35000, currency: 'KES', durationMonths: 1, tier: 'FAMILY', tierLabel: 'SOMA FAMILY', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, familyAdults: 2, childrenPrograms: 1 }, foundingMonthly: 28500, termPricing: { 1: 35000, 3: 94500, 6: 178500, 12: 315000 }, benefits: ['2 adults, unlimited yoga', "1 children's or teen programme", 'Meditation and breathwork', 'SOMA DAILY included', '10% off everything else'], displayOrder: 13, active: true },
-    // Passes
-    { name: '5-Class Pass', description: '5 classes · 6 weeks · 2,200/class', price: 11000, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 20, active: true },
-    { name: '10-Class Pass', description: '10 classes · 3 months · 2,100/class', price: 21000, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 21, active: true },
-    // Daily
-    { name: 'SOMA DAILY — Monthly', description: 'Weekly podcast, daily reflection, monthly guided audio, seasonal notes', price: 1500, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 30, active: true },
-    { name: 'SOMA DAILY — Annual', description: 'Annual, 2 months free vs monthly', price: 15000, currency: 'KES', durationMonths: 12, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 31, active: true },
+    // Base tiers (monthly) — hidden from Membership (live in Services)
+    { name: 'SOMA JUA', description: '8 group yoga classes/month · Member rates else', price: 12000, currency: 'KES', durationMonths: 1, tier: 'JUA', tierLabel: 'SOMA JUA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: 8 }, foundingMonthly: 10000, termPricing: { 1: 12000, 3: 32000, 6: 61000, 12: 108000 }, benefits: ['8 group yoga classes a month', 'Member rates on everything else'], displayOrder: 10, isPopular: false, active: true, visibility: 'hidden' },
+    { name: 'SOMA AMANI', description: 'Unlimited yoga, meditation & breathwork · SOMA DAILY', price: 16500, currency: 'KES', durationMonths: 1, tier: 'AMANI', tierLabel: 'SOMA AMANI', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1 }, foundingMonthly: 13500, termPricing: { 1: 16500, 3: 44550, 6: 75500, 12: 125500 }, benefits: ['Unlimited group yoga', 'Meditation and breathwork', 'SOMA DAILY included', 'Member rates on everything else'], displayOrder: 11, isPopular: false, active: true, visibility: 'hidden' },
+    { name: 'SOMA UZIMA', description: 'Unlimited yoga & meditation · 2 massages + 1 private · 15% off', price: 22500, currency: 'KES', durationMonths: 1, tier: 'UZIMA', tierLabel: 'SOMA UZIMA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, massages60: 2, privateSessions: 1, guestPasses: 2 }, foundingMonthly: 19000, termPricing: { 1: 22500, 3: 60750, 6: 114750, 12: 202500 }, benefits: ['Unlimited yoga and meditation', 'SOMA DAILY included', '2 sixty-minute massages', '1 private yoga or therapy session', 'Priority booking · 2 guest passes', '15% off everything else'], badge: 'BEST VALUE', isPopular: true, displayOrder: 12, active: true, visibility: 'hidden' },
+    { name: 'SOMA FAMILY', description: '2 adults unlimited · 1 Young programme · SOMA DAILY · 10% off', price: 35000, currency: 'KES', durationMonths: 1, tier: 'FAMILY', tierLabel: 'SOMA FAMILY', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, familyAdults: 2, childrenPrograms: 1 }, foundingMonthly: 28500, termPricing: { 1: 35000, 3: 94500, 6: 178500, 12: 315000 }, benefits: ['2 adults, unlimited yoga', "1 children's or teen programme", 'Meditation and breathwork', 'SOMA DAILY included', '10% off everything else'], displayOrder: 13, active: true, visibility: 'hidden' },
+    // Passes — hidden from Membership (live in Services)
+    { name: '5-Class Pass', description: '5 classes · 6 weeks · 2,200/class', price: 11000, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 20, active: true, visibility: 'hidden' },
+    { name: '10-Class Pass', description: '10 classes · 3 months · 1,150/class', price: 11500, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 21, active: true, visibility: 'hidden' },
+    // Daily — hidden from Membership (live in Services)
+    { name: 'SOMA DAILY — Monthly', description: 'Weekly podcast, daily reflection, monthly guided audio, seasonal notes', price: 1500, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 30, active: true, visibility: 'hidden' },
+    { name: 'SOMA DAILY — Annual', description: 'Annual, 2 months free vs monthly', price: 15000, currency: 'KES', durationMonths: 12, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 31, active: true, visibility: 'hidden' },
   ];
   for (const p of SOMA_PLANS) {
     await Plan.findOneAndUpdate({ name: p.name }, { $set: p }, { upsert: true, returnDocument: 'after' });
@@ -436,10 +463,10 @@ async function seedFoundingSettings() {
 async function seedSomaCourses() {
   const Course = (await import('./models/Course.js')).default;
   const SOMA_COURSES = [
-    { title: 'Yoga Foundations', duration: '25 hours', price: 30000, hours: 25, installmentsAllowed: false, description: '25-hr foundations', active: true, category: 'academy' },
-    { title: 'SOMA 100 — Foundation Teacher Course', duration: '100 hours', price: 85000, hours: 100, installmentsAllowed: true, installmentsConfig: { count: 3, interval: 'monthly' }, active: true, category: 'academy' },
-    { title: 'SOMA 200 — Yoga Teacher Training', duration: '200 hours', price: 165000, hours: 200, earlyPrice: 145000, earlyCap: 12, installmentsAllowed: true, installmentsConfig: { count: 6, interval: 'monthly' }, active: true, category: 'academy' },
+    { title: 'SOMA 200 Yoga Teacher Training', duration: '200 hours', price: 130000, hours: 200, installmentsAllowed: true, installmentsConfig: { count: 6, interval: 'monthly' }, active: true, category: 'academy' },
   ];
+  const keep = SOMA_COURSES.map((c) => c.title);
+  await Course.deleteMany({ title: { $nin: keep } });
   for (const c of SOMA_COURSES) {
     await Course.findOneAndUpdate({ title: c.title }, { $set: c }, { upsert: true, returnDocument: 'after' });
   }
@@ -488,27 +515,48 @@ connectDB(process.env.MONGO_URI)
         logger.warn(MODULE, "SMTP verification issue", { error: err.message });
       });
 
+    // Skip BullMQ-backed workers when Redis is down (local dev without
+    // Redis). Otherwise every worker logs "Command timed out" every few
+    // seconds and every rate-limited request waits 2s. Direct-send fallback
+    // in notificationQueue still delivers notifications.
+    let redisOk = false;
     try {
-      startBullWorker();
+      const { pingRedis } = await import("./notification/queue/connection.js");
+      redisOk = await pingRedis(1500);
     } catch (err) {
-      logger.error(MODULE, "Failed to start BullMQ worker", {
+      logger.warn(MODULE, "Redis ping failed — running without BullMQ workers", {
         error: err.message,
       });
     }
 
-    try {
-      startWebhookWorker();
-    } catch (err) {
-      logger.error(MODULE, "Failed to start webhook retry worker", {
-        error: err.message,
-      });
-    }
+    if (redisOk) {
+      try {
+        startBullWorker();
+      } catch (err) {
+        logger.error(MODULE, "Failed to start BullMQ worker", {
+          error: err.message,
+        });
+      }
 
-    notificationScheduler.start().catch((err) => {
-      logger.error(MODULE, "Failed to start reminder scheduler", {
-        error: err.message,
+      try {
+        startWebhookWorker();
+      } catch (err) {
+        logger.error(MODULE, "Failed to start webhook retry worker", {
+          error: err.message,
+        });
+      }
+
+      notificationScheduler.start().catch((err) => {
+        logger.error(MODULE, "Failed to start reminder scheduler", {
+          error: err.message,
+        });
       });
-    });
+    } else {
+      logger.warn(
+        MODULE,
+        "Redis unavailable — skipped BullMQ notification worker, webhook worker and reminder scheduler",
+      );
+    }
 
     notificationWorker.start();
 

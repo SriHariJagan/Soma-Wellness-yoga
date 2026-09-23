@@ -38,6 +38,7 @@ export default function ReceptionModal({
   }, [onClose]);
 
   const sizeClass = s[`recModal--${size}`] || '';
+  const toneClass = tone ? (s[`recModal--${tone}`] || '') : '';
   const BodyTag = onSubmit ? 'form' : 'div';
 
   return createPortal(
@@ -48,8 +49,8 @@ export default function ReceptionModal({
       aria-modal="true"
       aria-label={typeof title === 'string' ? title : 'Dialog'}
     >
-      <div className={`${s.recModal} ${sizeClass}`} onClick={(e) => e.stopPropagation()}>
-        <div className={s.recModalAccent} />
+      <div className={`${s.recModal} ${sizeClass} ${toneClass}`} onClick={(e) => e.stopPropagation()}>
+        <div className={s.recModalAccent} aria-hidden="true" />
         <div className={s.recModalHeader}>
           {icon && (
             <div className={`${s.recModalIcon} ${tone === 'success' ? s['recModalIcon--success'] : ''}`}>

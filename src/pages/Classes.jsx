@@ -87,6 +87,15 @@ const Classes = () => {
         </motion.div>
 
         {/* Membership grid — premium tilt */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <Link
+            to="/memberships"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--soma-forest)", background: "linear-gradient(135deg, #FFF7E6 0%, #FFFBF0 100%)", border: "1px solid rgba(244,180,0,0.35)", padding: "10px 18px", borderRadius: 9999, boxShadow: "0 6px 18px rgba(244,180,0,0.12)", textDecoration: "none" }}
+          >
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--soma-gold)", boxShadow: "0 0 8px rgba(244,180,0,0.4)" }} aria-hidden="true" />
+            Prefer 3 · 6 · 12 months? See Bronze, Silver & Gold →
+          </Link>
+        </div>
         <motion.div
           initial="hidden"
           whileInView="visible"

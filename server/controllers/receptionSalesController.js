@@ -44,7 +44,12 @@ export const getCatalog = asyncHandler(async (req, res) => {
       .select('title price duration mode description hours earlyPrice currency category')
       .sort({ price: 1 })
       .lean(),
-    Plan.find({}).select('name price durationMonths benefits').sort({ price: 1 }).lean(),
+    // Membership counter sales: only active plans (Bronze/Silver/Gold).
+    // Hidden/inactive tiers (e.g. SOMA monthly tiers) live in Services.
+    Plan.find({ active: { $ne: false }, visibility: { $ne: 'hidden' } })
+      .select('name price durationMonths pauseDays benefits badge')
+      .sort({ price: 1 })
+      .lean(),
     Service.find({ active: { $ne: false } })
       .select('name price category mode')
       .sort({ price: 1 })
@@ -114,13 +119,17 @@ export const recordPurchase = asyncHandler(async (req, res) => {
   }
 
   const now = new Date();
+  // Payment.amount convention is minor units (cents) everywhere else in the
+  // system (admin manual payments, cart, M-Pesa). Store cents so revenue
+  // reports and invoices stay consistent.
+  const amountCents = Math.round(Number(price) * 100);
   const paymentItem = {
     itemType,
     itemId: String(item._id),
     name,
     quantity: 1,
-    unitPrice: price,
-    totalPrice: price,
+    unitPrice: amountCents,
+    totalPrice: amountCents,
     metadata: { paymentMethod, soldBy: String(req.user._id) },
   };
 
@@ -129,7 +138,7 @@ export const recordPurchase = asyncHandler(async (req, res) => {
     label: name,
     description: `Counter sale (${paymentMethod}) by ${req.user.name || req.user.email}`,
     items: [paymentItem],
-    amount: price,
+    amount: amountCents,
     currency: 'KES',
     gateway: 'manual',
     source: 'admin',

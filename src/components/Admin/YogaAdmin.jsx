@@ -184,14 +184,19 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
       flash('Error: Name, Email, and Phone are mandatory.', 'error');
       return;
     }
-    const planMonths = /SOMA (JUA|AMANI|UZIMA|FAMILY)/.test(studentForm.plan || '') ? 1 : 0;
+    const hasMembership = studentForm.plan && String(studentForm.plan).trim() && !/no plan/i.test(String(studentForm.plan));
+    const MEMBERSHIP_MONTHS = { Bronze: 3, Silver: 6, Gold: 12 };
+    const planMonths = hasMembership ? (MEMBERSHIP_MONTHS[studentForm.plan] || 0) : 0;
     try {
       await createStudent({
         name: studentForm.name, email: studentForm.email, phone: studentForm.phone,
         city: studentForm.city || '', style: studentForm.style || 'Hatha',
         level: studentForm.level || 'Beginner', planMonths,
+        membership: hasMembership ? studentForm.plan : undefined,
+        planType: hasMembership ? studentForm.plan : undefined,
+        planName: hasMembership ? studentForm.plan : undefined,
       });
-      flash(`Student ${studentForm.name} created. Credentials emailed.`, 'success');
+      flash(`Student ${studentForm.name} created${hasMembership ? ` with ${studentForm.plan}` : ''}. Credentials emailed.`, 'success');
       setStudentForm({ name: '', email: '', phone: '', city: '', style: '', level: '', batch: '', plan: '' });
       await loadAll();
     } catch (err) {

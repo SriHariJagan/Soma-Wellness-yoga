@@ -38,14 +38,14 @@ const SomaPricingPreview = () => {
     },
     {
       key: "amani",
-      price: "18,500",
+      price: "16,500",
       per: t("home.pricing.perMonth"),
       accent: false,
       badge: null,
     },
     {
       key: "uzima",
-      price: "28,500",
+      price: "22,500",
       per: t("home.pricing.perMonth"),
       accent: true,
       badge: t("home.pricing.badgeBest"),
@@ -85,7 +85,10 @@ const SomaPricingPreview = () => {
             </h2>
             <p className={styles.sub}>{t("home.pricing.sub")}</p>
           </div>
-          <motion.div whileHover={reduced ? {} : { y: -2 }} whileTap={{ scale: 0.98 }}>
+          <motion.div whileHover={reduced ? {} : { y: -2 }} whileTap={{ scale: 0.98 }} style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <Link to="/memberships" className={styles.viewAll} aria-label="Bronze, Silver and Gold term memberships">
+              3 · 6 · 12-month terms <span>→</span>
+            </Link>
             <Link to="/classes" className={styles.viewAll} aria-label={t("home.pricing.viewAll")}>
               {t("home.pricing.viewAll")} <span>→</span>
             </Link>

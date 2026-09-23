@@ -2,12 +2,14 @@
 import ReceptionModal from '../Modal.jsx';
 import { useAuth } from '../../../context/AuthContext';
 import { receptionApi } from '../../api/AdminServices';
-import {
-  LuSearch, LuPlus, LuX, LuPencil, LuEye, LuRefreshCw,
+import { LuLock, LuCheck, LuTriangleAlert,
+  LuSearch, LuPlus, LuX, LuPencil, LuEye, LuEyeOff, LuRefreshCw,
   LuPhone, LuMail, LuMapPin, LuCalendarDays, LuUsers, LuUserPlus,
-  LuShoppingBag, LuReceipt, LuBadgeCheck,
+  LuShoppingBag, LuReceipt, LuBadgeCheck, LuBookOpen, LuKey,
 } from 'react-icons/lu';
 import s from '../../Admin/YogaAdmin.module.css';
+import PhoneInput from '../../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../../lib/phone.js';
 
 const EMPTY_FORM = { name: '', email: '', phone: '', city: '', password: '' };
 const EMPTY_PURCHASE = { kind: 'course', itemId: '', method: 'Cash' };
@@ -24,7 +26,7 @@ function isNewThisMonth(createdAt) {
 }
 
 function formatDate(createdAt) {
-  if (!createdAt) return 'â€”';
+  if (!createdAt) return '—';
   return new Date(createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
@@ -46,6 +48,7 @@ export default function CustomersTab({ createSignal = 0 }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', city: '' });
   const [saving, setSaving] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [createdCreds, setCreatedCreds] = useState(null);
   // Purchase flow
@@ -84,7 +87,7 @@ export default function CustomersTab({ createSignal = 0 }) {
 
   useEffect(() => { if (canView) loadStudents(); else setLoading(false); }, [loadStudents, canView]);
 
-  // Opened via Overview â†’ "New Student" quick action.
+  // Opened via Overview → "New Student" quick action.
   useEffect(() => {
     if (createSignal > 0 && canCreate) setShowCreate(true);
   }, [createSignal, canCreate]);
@@ -111,12 +114,16 @@ export default function CustomersTab({ createSignal = 0 }) {
       setFeedback({ type: 'error', message: 'Set a login password of at least 8 characters so the customer can sign in.' });
       return;
     }
+    if (form.phone) {
+      const err = validatePhone(form.phone);
+      if (err) { setFeedback({ type: 'error', message: err }); return; }
+    }
     setSaving(true);
     try {
       await receptionApi.students.create({
         name: form.name.trim(),
         email: form.email.trim(),
-        phone: form.phone.trim(),
+        phone: form.phone ? normalizePhone(form.phone) : '',
         city: form.city.trim(),
         password: form.password,
       });
@@ -140,12 +147,16 @@ export default function CustomersTab({ createSignal = 0 }) {
   const handleEdit = async (e) => {
     e.preventDefault();
     if (!editing) return;
+    if (editForm.phone) {
+      const err = validatePhone(editForm.phone);
+      if (err) { setFeedback({ type: 'error', message: err }); return; }
+    }
     setSaving(true);
     try {
-      // Email is immutable in the reception flow â€” only profile fields are sent.
+      // Email is immutable in the reception flow — only profile fields are sent.
       await receptionApi.students.update(editing._id, {
         name: editForm.name.trim(),
-        phone: editForm.phone.trim(),
+        phone: editForm.phone ? normalizePhone(editForm.phone) : '',
         city: editForm.city.trim(),
       });
       setEditing(null);
@@ -157,7 +168,7 @@ export default function CustomersTab({ createSignal = 0 }) {
     setSaving(false);
   };
 
-  // â”€â”€ Purchase flow â”€â”€
+  // ── Purchase flow ──
   const openEnroll = async (st) => {
     setEnrolling(st);
     setPurchase(EMPTY_PURCHASE);
@@ -194,12 +205,14 @@ export default function CustomersTab({ createSignal = 0 }) {
       const res = await receptionApi.purchases.create(enrolling._id, {
         kind: purchase.kind,
         itemId: purchase.itemId,
-        method: purchase.method,
+        paymentMethod: purchase.method,
       });
       setEnrolling(null);
+      // Payment.amount is stored in minor units (cents) — display KES.
+      const paidKES = (res?.payment?.amount ?? (selectedItem?.price ?? 0) * 100) / 100;
       setFeedback({
         type: 'success',
-        message: `${res?.fulfillment ? 'Enrolled' : 'Sold'} "${selectedItem?.title || selectedItem?.name || 'item'}" to ${enrolling.name} â€” ${formatKES(res?.payment?.amount)}.`,
+        message: `${res?.fulfillment ? 'Enrolled' : 'Sold'} "${selectedItem?.title || selectedItem?.name || 'item'}" to ${enrolling.name} — ${formatKES(paidKES)}.`,
       });
     } catch (err) {
       setFeedback({ type: 'error', message: err.message || 'Failed to record purchase.' });
@@ -227,7 +240,7 @@ export default function CustomersTab({ createSignal = 0 }) {
           <h2 className={s.sectionTitle}><LuUsers size={20} /> Customers</h2>
         </div>
         <div className={s.emptyState}>
-          <div className={s.emptyIcon}>ðŸ”’</div>
+          <div className={s.emptyIcon}><LuLock size={40} /></div>
           <h3 className={s.emptyTitle}>No access</h3>
           <p className={s.emptyDesc}>You don't have permission to view customers. Contact an admin to grant customers.view access.</p>
         </div>
@@ -237,11 +250,11 @@ export default function CustomersTab({ createSignal = 0 }) {
 
   return (
     <div className={s.recPage}>
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* ── Header ── */}
       <div className={s.sectionHeader}>
         <h2 className={s.sectionTitle}>
           <LuUsers size={20} /> Customers
-          <span className={s.chipCount} style={{ fontSize: 12 }}>Â· {counts.all} total</span>
+          <span className={s.chipCount} style={{ fontSize: 12 }}>· {counts.all} total</span>
         </h2>
         <div className={s.toolbar}>
           <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={loadStudents} disabled={loading} title="Refresh list">
@@ -255,7 +268,7 @@ export default function CustomersTab({ createSignal = 0 }) {
         </div>
       </div>
 
-      {/* â”€â”€ Summary strip â”€â”€ */}
+      {/* ── Summary strip ── */}
       <div className={s.recSummary}>
         <div className={s.recSummaryCell}>
           <div className={s.statLabel}>Total Customers</div>
@@ -271,10 +284,10 @@ export default function CustomersTab({ createSignal = 0 }) {
         </div>
       </div>
 
-      {/* â”€â”€ Feedback â”€â”€ */}
+      {/* ── Feedback ── */}
       {feedback && (
         <div className={`${s.feedbackInline} ${feedback.type === 'success' ? s.bannerSuccess : s.bannerError}`}>
-          <span>{feedback.type === 'success' ? 'âœ“' : 'âš '}</span>
+          <span>{feedback.type === 'success' ? <LuCheck size={15} /> : <LuTriangleAlert size={15} />}</span>
           <span>{feedback.message}</span>
           <button type="button" className={s.btnGhost} onClick={() => setFeedback(null)} aria-label="Dismiss">
             <LuX size={14} />
@@ -282,7 +295,7 @@ export default function CustomersTab({ createSignal = 0 }) {
         </div>
       )}
 
-      {/* â”€â”€ Search + filters â”€â”€ */}
+      {/* ── Search + filters ── */}
       <div className={s.filterBar} style={{ marginBottom: 16 }}>
         <div className={s.searchWrapper} style={{ maxWidth: 420 }}>
           <span className={s.searchIcon}><LuSearch size={16} /></span>
@@ -290,7 +303,7 @@ export default function CustomersTab({ createSignal = 0 }) {
             className={s.searchInput}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by name, email or cityâ€¦"
+            placeholder="Search by name, email or city…"
             aria-label="Search customers"
           />
           {searchInput && (
@@ -317,7 +330,7 @@ export default function CustomersTab({ createSignal = 0 }) {
         </div>
       </div>
 
-      {/* â”€â”€ List â”€â”€ */}
+      {/* ── List ── */}
       <div className={`${s.card} ${s.cardNoPad}`}>
         {loading ? (
           <div style={{ padding: 22 }}>
@@ -325,7 +338,7 @@ export default function CustomersTab({ createSignal = 0 }) {
           </div>
         ) : visible.length === 0 ? (
           <div className={s.emptyState}>
-            <div className={s.emptyIcon}>ðŸ‘¤</div>
+            <div className={s.emptyIcon}><LuUsers size={40} /></div>
             <h3 className={s.emptyTitle}>
               {search || filter !== 'all' ? 'No matches found' : 'No customers yet'}
             </h3>
@@ -368,8 +381,8 @@ export default function CustomersTab({ createSignal = 0 }) {
                           </div>
                         </div>
                       </td>
-                      <td>{st.phone || 'â€”'}</td>
-                      <td>{st.city || 'â€”'}</td>
+                      <td>{st.phone || '—'}</td>
+                      <td>{st.city || '—'}</td>
                       <td>
                         <span className={`${s.badge} ${st.status === 'active' ? s.badgeGreen : s.badgeRed}`}>
                           {st.status === 'active' ? 'Active' : (st.status || 'Unknown')}
@@ -415,12 +428,12 @@ export default function CustomersTab({ createSignal = 0 }) {
         </p>
       )}
 
-      {/* â”€â”€ View details modal â”€â”€ */}
+      {/* ── View details modal ── */}
       {viewing && (
         <ReceptionModal
-          title={viewing.name}
-          subtitle={viewing.email}
-          icon={<span className={`${s.receptionStudentAvatar} ${s.av0}`} style={{ width: 42, height: 42 }}>{initials(viewing.name)}</span>}
+          title="Customer Details"
+          subtitle="Full profile at a glance"
+          icon={<LuUsers size={20} />}
           onClose={() => setViewing(null)}
           footer={(
             <>
@@ -437,51 +450,52 @@ export default function CustomersTab({ createSignal = 0 }) {
             </>
           )}
         >
-          <span className={`${s.badge} ${viewing.status === 'active' ? s.badgeGreen : s.badgeRed}`} style={{ alignSelf: 'flex-start' }}>
-                {viewing.status === 'active' ? 'Active' : (viewing.status || 'Unknown')}
-              </span>
-              <div>
-                <div className={s.sectionLabel}>Email</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-                  <LuMail size={15} /> {viewing.email}
-                </div>
+          <div className={s.recProfileHead}>
+            <div className={s.recProfileAvatar}>{initials(viewing.name)}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className={s.recProfileName}>{viewing.name}</div>
+              <div className={s.recProfileSub}>{viewing.email}</div>
+              <div className={s.recProfileTags}>
+                <span className={`${s.badge} ${viewing.status === 'active' ? s.badgeGreen : s.badgeRed}`}>
+                  {viewing.status === 'active' ? 'Active' : (viewing.status || 'Unknown')}
+                </span>
+                {(viewing.style || viewing.level) && (
+                  <span className={s.badge} style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+                    {[viewing.style, viewing.level].filter(Boolean).join(' · ')}
+                  </span>
+                )}
               </div>
-              <div>
-                <div className={s.sectionLabel}>Phone</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-                  <LuPhone size={15} /> {viewing.phone || 'â€”'}
-                </div>
+            </div>
+          </div>
+          <div className={s.recSection}>
+            <div className={s.recSectionHead}><LuMail size={13} /> Contact</div>
+            <div className={s.recSectionBody}>
+              <div className={s.recKV}>
+                <span className={s.recKVIcon}><LuMail size={14} /></span>
+                <span className={s.recKVLabel}>Email</span>
+                <span className={s.recKVValue}>{viewing.email}</span>
               </div>
-              <div className={s.grid2}>
-                <div>
-                  <div className={s.sectionLabel}>City</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-                    <LuMapPin size={15} /> {viewing.city || 'â€”'}
-                  </div>
-                </div>
-                <div>
-                  <div className={s.sectionLabel}>Joined</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-                    <LuCalendarDays size={15} /> {formatDate(viewing.createdAt)}
-                  </div>
-                </div>
+              <div className={s.recKV}>
+                <span className={s.recKVIcon}><LuPhone size={14} /></span>
+                <span className={s.recKVLabel}>Phone</span>
+                <span className={s.recKVValue}>{viewing.phone || '—'}</span>
               </div>
-              {(viewing.style || viewing.level) && (
-                <div className={s.grid2}>
-                  <div>
-                    <div className={s.sectionLabel}>Style</div>
-                    <div style={{ fontSize: 14 }}>{viewing.style || 'â€”'}</div>
-                  </div>
-                  <div>
-                    <div className={s.sectionLabel}>Level</div>
-                    <div style={{ fontSize: 14 }}>{viewing.level || 'â€”'}</div>
-                  </div>
-                </div>
-              )}
+              <div className={s.recKV}>
+                <span className={s.recKVIcon}><LuMapPin size={14} /></span>
+                <span className={s.recKVLabel}>City</span>
+                <span className={s.recKVValue}>{viewing.city || '—'}</span>
+              </div>
+              <div className={s.recKV}>
+                <span className={s.recKVIcon}><LuCalendarDays size={14} /></span>
+                <span className={s.recKVLabel}>Joined</span>
+                <span className={s.recKVValue}>{formatDate(viewing.createdAt)}</span>
+              </div>
+            </div>
+          </div>
         </ReceptionModal>
       )}
 
-      {/* â”€â”€ Add modal (password required so the customer can sign in) â”€â”€ */}
+      {/* ── Add modal (password required so the customer can sign in) ── */}
       {showCreate && (
         <ReceptionModal
           title="Add Customer"
@@ -498,42 +512,70 @@ export default function CustomersTab({ createSignal = 0 }) {
             </>
           )}
         >
-              <div className={s.grid2}>
-                <label className={s.fieldLabel}>
-                  Full Name *
-                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="e.g. Amina Odhiambo" />
-                </label>
-                <label className={s.fieldLabel}>
-                  Email *
-                  <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required placeholder="name@example.com" />
-                </label>
+              <div className={s.recSection}>
+                <div className={s.recSectionHead}><LuUserPlus size={13} /> Personal details</div>
+                <div className={s.recSectionBody}>
+                  <div className={s.recFormGrid}>
+                    <label className={s.fieldLabel}>
+                      Full Name *
+                      <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="e.g. Amina Odhiambo" autoComplete="name" />
+                    </label>
+                    <label className={s.fieldLabel}>
+                      Email *
+                      <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required placeholder="name@example.com" autoComplete="email" />
+                    </label>
+                    <PhoneInput value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} label="Phone" id="customer-phone" />
+                    <label className={s.fieldLabel}>
+                      City
+                      <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Nairobi" autoComplete="address-level2" />
+                    </label>
+                  </div>
+                </div>
               </div>
-              <div className={s.grid2}>
-                <label className={s.fieldLabel}>
-                  Phone
-                  <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+254 700 000 000" />
-                </label>
-                <label className={s.fieldLabel}>
-                  City
-                  <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Nairobi" />
-                </label>
+              <div className={s.recSection}>
+                <div className={s.recSectionHead}><LuKey size={13} /> Sign-in credentials</div>
+                <div className={s.recSectionBody}>
+                  <label className={s.fieldLabel}>
+                    Login password *
+                    <span className={s.recPwWrap}>
+                      <input
+                        type={showPw ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        required
+                        minLength={8}
+                        placeholder="Min 8 characters"
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        className={s.recPwToggle}
+                        onClick={() => setShowPw((v) => !v)}
+                        aria-label={showPw ? 'Hide password' : 'Show password'}
+                        title={showPw ? 'Hide password' : 'Show password'}
+                      >
+                        {showPw ? <LuEyeOff size={16} /> : <LuEye size={16} />}
+                      </button>
+                    </span>
+                  </label>
+                  <div className={s.recPwHints}>
+                    <span className={`${s.recPwHint} ${form.password.length >= 8 ? s['recPwHint--ok'] : ''}`}>
+                      <LuCheck size={11} /> 8+ characters
+                    </span>
+                    <span className={`${s.recPwHint} ${/[0-9]/.test(form.password) ? s['recPwHint--ok'] : ''}`}>
+                      <LuCheck size={11} /> Includes a number
+                    </span>
+                    <span className={`${s.recPwHint} ${/[A-Za-z]/.test(form.password) ? s['recPwHint--ok'] : ''}`}>
+                      <LuCheck size={11} /> Includes a letter
+                    </span>
+                  </div>
+                  <p className={s.recFieldNote}>Share this password with the customer so they can sign in.</p>
+                </div>
               </div>
-              <label className={s.fieldLabel}>
-                Login password * (share with the customer so they can sign in)
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  required
-                  minLength={8}
-                  placeholder="Min 8 characters"
-                  autoComplete="new-password"
-                />
-              </label>
         </ReceptionModal>
       )}
 
-      {/* â”€â”€ Credentials confirmation (share with the customer) â”€â”€ */}
+      {/* ── Credentials confirmation (share with the customer) ── */}
       {createdCreds && (
         <ReceptionModal
           title="Customer Registered"
@@ -546,12 +588,16 @@ export default function CustomersTab({ createSignal = 0 }) {
             <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => setCreatedCreds(null)}>Done</button>
           )}
         >
-              <p style={{ fontSize: 14, color: 'var(--text-2)', margin: 0 }}>
-                <strong style={{ color: 'var(--text-1)' }}>{createdCreds.name}</strong> can now sign in with:
-              </p>
-              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line-2)', borderRadius: 12, padding: '12px 16px', fontSize: 14 }}>
-                <div><strong>Email:</strong> {createdCreds.email}</div>
-                <div><strong>Password:</strong> <code>{createdCreds.password}</code></div>
+              <div className={s.recProfileHead}>
+                <div className={s.recProfileAvatar}>{initials(createdCreds.name)}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className={s.recProfileName}>{createdCreds.name}</div>
+                  <div className={s.recProfileSub}>Account ready — share these sign-in details</div>
+                </div>
+              </div>
+              <div className={s.recCredBox}>
+                <div className={s.recCredRow}><strong>Email</strong><code>{createdCreds.email}</code></div>
+                <div className={s.recCredRow}><strong>Password</strong><code>{createdCreds.password}</code></div>
               </div>
               <p style={{ fontSize: 12.5, color: 'var(--text-3)', margin: 0 }}>
                 Share these details with the customer. You can now sell them a course from the Enroll button.
@@ -559,7 +605,7 @@ export default function CustomersTab({ createSignal = 0 }) {
         </ReceptionModal>
       )}
 
-      {/* â”€â”€ Enroll / sell modal â”€â”€ */}
+      {/* ── Enroll / sell modal ── */}
       {enrolling && (
         <ReceptionModal
           title={`Sell to ${enrolling.name}`}
@@ -603,20 +649,19 @@ export default function CustomersTab({ createSignal = 0 }) {
                   <label className={s.fieldLabel}>
                     {purchase.kind === 'course' ? 'Course' : purchase.kind === 'plan' ? 'Plan' : 'Service'} *
                     <select value={purchase.itemId} onChange={(e) => setPurchase({ ...purchase, itemId: e.target.value })} required>
-                      <option value="">Selectâ€¦</option>
+                      <option value="">Select…</option>
                       {catalogItems.map((it) => (
                         <option key={it._id} value={String(it._id)}>
-                          {it.title || it.name} â€” {formatKES(it.price)}
+                          {it.title || it.name} — {formatKES(it.price)}{purchase.kind === 'plan' && it.durationMonths ? ` — ${it.durationMonths}mo` : ''}
                         </option>
                       ))}
                     </select>
                   </label>
                   {selectedItem && (
-                    <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line-2)', borderRadius: 12, padding: '12px 16px', fontSize: 14 }}>
-                      <div><strong>{selectedItem.title || selectedItem.name}</strong></div>
-                      <div style={{ color: 'var(--text-2)', fontSize: 13 }}>
-                        Price: {formatKES(selectedItem.price)} Â· Paying by {purchase.method}
-                      </div>
+                    <div className={s.recPriceBox}>
+                      <div className={s.recPriceLabel}>{selectedItem.title || selectedItem.name}</div>
+                      <div className={s.recPriceValue}>{formatKES(selectedItem.price)}</div>
+                      <div className={s.recPriceSub}>Paying by {purchase.method}</div>
                     </div>
                   )}
                 </>
@@ -624,7 +669,7 @@ export default function CustomersTab({ createSignal = 0 }) {
         </ReceptionModal>
       )}
 
-      {/* â”€â”€ Purchase history modal â”€â”€ */}
+      {/* ── Purchase history modal ── */}
       {historyStudent && (
         <ReceptionModal
           title={`Purchases — ${historyStudent.name}`}
@@ -649,54 +694,55 @@ export default function CustomersTab({ createSignal = 0 }) {
               ) : (
                 <>
                   {(history.courses?.length > 0 || history.memberships?.length > 0 || history.services?.length > 0) && (
-                    <div>
-                      <div className={s.sectionLabel}>Active enrollments</div>
-                      <ul className={s.list}>
+                    <div className={s.recSection}>
+                      <div className={s.recSectionHead}><LuBadgeCheck size={13} /> Active enrollments</div>
+                      <div className={s.recSectionBody}>
                         {(history.courses || []).map((c) => (
-                          <li key={c._id} className={s.listItem}>
-                            <span>ðŸ“˜ {c.title}</span>
-                            <span className={s.listMeta}>{formatKES(c.price)}</span>
-                          </li>
+                          <div key={c._id} className={s.recKV}>
+                            <span className={s.recKVIcon}><LuBookOpen size={14} /></span>
+                            <span className={s.recKVLabel}>{c.title}</span>
+                            <span className={s.recKVValue}>{formatKES(c.price)}</span>
+                          </div>
                         ))}
                         {(history.memberships || []).filter((m) => m.status === 'active').map((m) => (
-                          <li key={m._id} className={s.listItem}>
-                            <span>ðŸŽŸï¸ {m.planType}</span>
-                            <span className={s.listMeta}>until {formatDate(m.expiryDate)}</span>
-                          </li>
+                          <div key={m._id} className={s.recKV}>
+                            <span className={s.recKVIcon}><LuBadgeCheck size={14} /></span>
+                            <span className={s.recKVLabel}>{m.planType}</span>
+                            <span className={s.recKVValue}>until {formatDate(m.expiryDate)}</span>
+                          </div>
                         ))}
                         {(history.services || []).filter((sv) => sv.status === 'active').map((sv) => (
-                          <li key={sv._id} className={s.listItem}>
-                            <span>âœ¨ {sv.serviceName}</span>
-                            <span className={s.listMeta}>{formatKES(sv.price)}</span>
-                          </li>
+                          <div key={sv._id} className={s.recKV}>
+                            <span className={s.recKVIcon}><LuShoppingBag size={14} /></span>
+                            <span className={s.recKVLabel}>{sv.serviceName}</span>
+                            <span className={s.recKVValue}>{formatKES(sv.price)}</span>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
-                  <div>
-                    <div className={s.sectionLabel}>Payment history ({history.payments?.length || 0})</div>
-                    {(history.payments || []).length === 0 ? (
-                      <p style={{ fontSize: 13, color: 'var(--text-3)', margin: 0 }}>No payments recorded yet.</p>
-                    ) : (
-                      <ul className={s.list}>
-                        {history.payments.map((p) => (
-                          <li key={p._id} className={s.listItem}>
-                            <span>{p.label}</span>
-                            <span className={s.listMeta}>
-                              {formatKES(p.amount)} Â· {p.paymentStatus}
-                              {p.capturedAt ? ` Â· ${formatDate(p.capturedAt)}` : ''}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                  <div className={s.recSection}>
+                    <div className={s.recSectionHead}><LuReceipt size={13} /> Payment history ({history.payments?.length || 0})</div>
+                    <div className={s.recSectionBody}>
+                      {(history.payments || []).length === 0 ? (
+                        <p style={{ fontSize: 13, color: 'var(--text-3)', margin: '8px 0' }}>No payments recorded yet.</p>
+                      ) : (
+                        history.payments.map((p) => (
+                          <div key={p._id} className={s.recKV}>
+                            <span className={s.recKVIcon}><LuReceipt size={14} /></span>
+                            <span className={s.recKVLabel}>{p.label}<br /><span style={{ fontWeight: 400, fontSize: 11 }}>{p.paymentStatus}{p.capturedAt ? ` · ${formatDate(p.capturedAt)}` : ''}</span></span>
+                            <span className={s.recKVValue}>{formatKES((p.amount || 0) / 100)}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </>
               )}
         </ReceptionModal>
       )}
 
-      {/* â”€â”€ Edit modal â”€â”€ */}
+      {/* ── Edit modal ── */}
       {editing && (
         <ReceptionModal
           title="Edit Customer"
@@ -713,25 +759,26 @@ export default function CustomersTab({ createSignal = 0 }) {
             </>
           )}
         >
-              <div className={s.grid2}>
-                <label className={s.fieldLabel}>
-                  Full Name *
-                  <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required />
-                </label>
-                <label className={s.fieldLabel}>
-                  Email (read-only)
-                  <input type="email" value={editForm.email} disabled title="Email cannot be changed from reception" />
-                </label>
-              </div>
-              <div className={s.grid2}>
-                <label className={s.fieldLabel}>
-                  Phone
-                  <input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
-                </label>
-                <label className={s.fieldLabel}>
-                  City
-                  <input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} />
-                </label>
+              <div className={s.recSection}>
+                <div className={s.recSectionHead}><LuUserPlus size={13} /> Personal details</div>
+                <div className={s.recSectionBody}>
+                  <div className={s.recFormGrid}>
+                    <label className={s.fieldLabel}>
+                      Full Name *
+                      <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required autoComplete="name" />
+                    </label>
+                    <label className={s.fieldLabel}>
+                      Email (read-only)
+                      <input type="email" value={editForm.email} disabled title="Email cannot be changed from reception" />
+                    </label>
+                    <PhoneInput value={editForm.phone} onChange={(v) => setEditForm({ ...editForm, phone: v })} label="Phone" id="customer-edit-phone" />
+                    <label className={s.fieldLabel}>
+                      City
+                      <input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} autoComplete="address-level2" />
+                    </label>
+                  </div>
+                  <p className={s.recFieldNote}>Email is locked after creation — contact an admin to change it.</p>
+                </div>
               </div>
         </ReceptionModal>
       )}

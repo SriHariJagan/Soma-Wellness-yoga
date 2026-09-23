@@ -5,6 +5,8 @@ import MpesaCheckout from './MpesaCheckout';
 import { parsePrice, isLoggedIn } from '../../utils/payment';
 import CheckoutGate from '../checkout/CheckoutGate.jsx';
 import './PaymentPage.css';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -32,6 +34,7 @@ export default function PaymentPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form,
+        phone: form.phone ? normalizePhone(form.phone) : '',
         courseName: course.name,
         coursePrice: course.price,
         courseTime: course.time,
@@ -51,6 +54,8 @@ export default function PaymentPage() {
       setError(t('payment.nameEmailRequired'));
       return;
     }
+    const phoneErr = validatePhone(form.phone);
+    if (phoneErr) { setError(phoneErr); return; }
     setLoading(true);
     try {
       await saveBooking({
@@ -144,10 +149,7 @@ export default function PaymentPage() {
                   <label>{t('payment.emailAddress')} *</label>
                   <input type="email" placeholder={t('payment.emailPlaceholder')} value={form.email} onChange={set('email')} />
                 </div>
-                <div className="pay-field-group">
-                  <label>{t('payment.phoneNumber')} *</label>
-                  <input type="tel" placeholder={t('payment.phonePlaceholder')} value={form.phone} onChange={set('phone')} />
-                </div>
+                <PhoneInput value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} label={t('payment.phoneNumber') || 'Phone number'} required id="payment-phone" />
               </div>
               <div className="pay-field-group">
                 <label>{t('payment.city')}</label>
@@ -165,6 +167,8 @@ export default function PaymentPage() {
                 className="pay-btn"
                 onClick={() => {
                   if (!form.name || !form.email || !form.phone) { setError(t('payment.nameEmailRequired')); return; }
+                  const pe = validatePhone(form.phone);
+                  if (pe) { setError(pe); return; }
                   setError('');
                   setStep(2);
                 }}

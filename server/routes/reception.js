@@ -91,6 +91,9 @@ router.get('/attendance/invites', requirePermission('attendance.view', 'classes.
 router.post('/attendance', requirePermission('attendance.create', 'classes.attendance.create'), staffWriteLimiter, a.markAttendance);
 router.post('/attendance/bulk', requirePermission('attendance.create', 'classes.attendance.create'), staffBulkLimiter, a.bulkMarkAttendance);
 router.post('/attendance/mark-all', requirePermission('attendance.create', 'classes.attendance.create'), staffBulkLimiter, a.markAllPresent);
+// Clear unlocked records for a class so front-desk can fix marking mistakes.
+// Locking stays admin-only.
+router.post('/attendance/reset/:inviteId', requirePermission('attendance.edit', 'classes.attendance.edit'), staffWriteLimiter, a.resetAttendance);
 router.get('/attendance/:id', requirePermission('attendance.view', 'classes.attendance'), a.getStudentAttendance);
 
 // ── Class Invites (walk-in booking) ──────────────────────────
@@ -99,6 +102,7 @@ router.get('/class-invites/stats', requirePermission('bookings.view', 'sections.
 router.get('/class-invites/recipients', requirePermission('bookings.view', 'sections.view'), inviteCtrl.getRecipients);
 router.get('/class-invites/service-eligible-students/:serviceId', requirePermission('bookings.view', 'sections.view'), inviteCtrl.getServiceEligibleStudents);
 router.post('/class-invites', requirePermission('bookings.create', 'sections.booking'), staffWriteLimiter, inviteCtrl.createInvite);
+router.post('/class-invites/:id/duplicate', requirePermission('bookings.create', 'sections.booking'), staffWriteLimiter, inviteCtrl.duplicateInvite);
 router.get('/class-invites/:id', requirePermission('bookings.view', 'sections.view'), inviteCtrl.getInviteById);
 router.patch('/class-invites/:id/cancel', requirePermission('bookings.cancel'), staffWriteLimiter, inviteCtrl.cancelInvite);
 router.post('/class-invites/:id/resend', requirePermission('bookings.create'), staffWriteLimiter, inviteCtrl.resendInvite);

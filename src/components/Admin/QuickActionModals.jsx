@@ -14,6 +14,8 @@ import {
   LuFileText, LuStickyNote, LuTarget, LuZap, LuTrendingUp,
   LuGlobe, LuDollarSign, LuReceipt,
 } from 'react-icons/lu';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone } from '../../lib/phone.js';
 
 /* ── Design system constants ────────────────────────────── */
 const CARD = {
@@ -311,7 +313,7 @@ export function AddStudentModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', city: '', gender: '', dateOfBirth: '',
     emergencyContact: '', style: 'Hatha', level: 'Beginner',
-    membership: 'SOMA JUA', notes: '',
+    membership: '', notes: '',
   });
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', type: '' });
@@ -324,16 +326,29 @@ export function AddStudentModal({ onClose, onSuccess }) {
       setFeedback({ message: 'Name, Email, and Phone are required.', type: 'error' });
       return;
     }
+    const phoneErr = validatePhone(form.phone);
+    if (phoneErr) {
+      setFeedback({ message: phoneErr, type: 'error' });
+      return;
+    }
     setSaving(true);
     setFeedback({ message: '', type: '' });
     try {
-      const planMonths = 1;
+      const hasMembership = form.membership && String(form.membership).trim() && String(form.membership).trim().toLowerCase() !== 'no plan' && String(form.membership).trim().toLowerCase() !== 'none';
+      const MEMBERSHIP_MONTHS = { Bronze: 3, Silver: 6, Gold: 12 };
+      const planMonths = hasMembership ? (MEMBERSHIP_MONTHS[form.membership] || 0) : 0;
+      // Backend now creates Membership atomically if membership/planType is provided.
+      // Send all aliases so backend can resolve regardless of which key it checks.
       await createStudent({
         name: form.name, email: form.email, phone: form.phone,
         city: form.city || undefined, style: form.style, level: form.level,
-        planMonths, planType: form.membership,
+        planMonths,
+        membership: hasMembership ? form.membership : undefined,
+        planType: hasMembership ? form.membership : undefined,
+        planName: hasMembership ? form.membership : undefined,
+        notes: form.notes || undefined,
       });
-      setFeedback({ message: `Student "${form.name}" created successfully.`, type: 'success' });
+      setFeedback({ message: `Student "${form.name}" created successfully${hasMembership ? ` with ${form.membership}` : ''}.`, type: 'success' });
       setTimeout(() => { onSuccess?.(); onClose(); }, 1200);
     } catch (err) {
       setFeedback({ message: err.message || 'Failed to create student.', type: 'error' });
@@ -360,9 +375,9 @@ export function AddStudentModal({ onClose, onSuccess }) {
           <FieldGroup icon={<LuMail size={15} />} label="Email" required>
             <FocusInput type="email" value={form.email} onChange={set('email')} placeholder="student@example.com" />
           </FieldGroup>
-          <FieldGroup icon={<LuPhone size={15} />} label="Phone" required>
-            <FocusInput value={form.phone} onChange={set('phone')} placeholder="+254 712 345 678" />
-          </FieldGroup>
+          <div style={{ gridColumn: 'span 1' }}>
+            <PhoneInput value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} label="Phone" required id="add-student-phone" />
+          </div>
           <FieldGroup icon={<LuMapPin size={15} />} label="City">
             <FocusInput value={form.city} onChange={set('city')} placeholder="e.g. Nairobi" />
           </FieldGroup>
@@ -383,10 +398,9 @@ export function AddStudentModal({ onClose, onSuccess }) {
           <FieldGroup icon={<LuBookOpen size={15} />} label="Membership Plan">
             <FocusSelect value={form.membership} onChange={set('membership')}>
               <option value="">No Plan</option>
-              <option value="SOMA JUA">SOMA JUA</option>
-              <option value="SOMA AMANI">SOMA AMANI</option>
-              <option value="SOMA UZIMA">SOMA UZIMA</option>
-              <option value="SOMA FAMILY">SOMA FAMILY</option>
+              <option value="Bronze">Bronze — 3 months (KES 48,000)</option>
+              <option value="Silver">Silver — 6 months (KES 88,000) Most Popular</option>
+              <option value="Gold">Gold — 12 months (KES 160,000) Best Value</option>
             </FocusSelect>
           </FieldGroup>
         </SectionCard>
@@ -423,6 +437,10 @@ export function AddLeadModal({ onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e?.preventDefault();
     if (!form.name) { setFeedback({ message: 'Lead name is required.', type: 'error' }); return; }
+    if (form.phone) {
+      const phoneErr = validatePhone(form.phone);
+      if (phoneErr) { setFeedback({ message: phoneErr, type: 'error' }); return; }
+    }
     setSaving(true);
     setFeedback({ message: '', type: '' });
     try {
@@ -452,9 +470,9 @@ export function AddLeadModal({ onClose, onSuccess }) {
           <FieldGroup icon={<LuUser size={15} />} label="Full Name" required>
             <FocusInput value={form.name} onChange={set('name')} placeholder="e.g. Rahul Verma" />
           </FieldGroup>
-          <FieldGroup icon={<LuPhone size={15} />} label="Phone">
-            <FocusInput value={form.phone} onChange={set('phone')} placeholder="+254 712 345 678" />
-          </FieldGroup>
+          <div style={{ gridColumn: 'span 1' }}>
+            <PhoneInput value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} label="Phone" id="add-lead-phone" />
+          </div>
           <FieldGroup icon={<LuMail size={15} />} label="Email">
             <FocusInput type="email" value={form.email} onChange={set('email')} placeholder="lead@example.com" />
           </FieldGroup>

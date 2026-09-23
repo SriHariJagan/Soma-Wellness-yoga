@@ -7,8 +7,8 @@ export default function MembershipComparison() {
   const tiers = tiersData && typeof tiersData === 'object' ? tiersData : {};
   const list = [
     { key: 'jua', price: '12,000' },
-    { key: 'amani', price: '18,500', badgeKey: null },
-    { key: 'uzima', price: '28,500', badgeKey: 'home.pricing.badgeBest' },
+    { key: 'amani', price: '16,500', badgeKey: null },
+    { key: 'uzima', price: '22,500', badgeKey: 'home.pricing.badgeBest' },
     { key: 'family', price: '35,000' },
   ];
 

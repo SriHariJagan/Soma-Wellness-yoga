@@ -3,6 +3,8 @@ import s from './YogaAdmin.module.css';
 import { PageHeader, KpiCard, Avatar } from './ui/Primitives';
 import { getLeads, createLead, updateLeadStage, deleteLead } from '../api/AdminServices.js';
 import { LuPlus, LuX, LuPhone, LuTag, LuGripVertical } from 'react-icons/lu';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 const STAGES = [
   { id: 'New',       label: 'New',       dot: s.leadColDotO, accent: 'orange' },
@@ -53,9 +55,14 @@ export default function PipelineCRMLeads() {
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!form.name) { flash('Name is required.', 'error'); return; }
+    if (form.phone) {
+      const err = validatePhone(form.phone);
+      if (err) { flash(err, 'error'); return; }
+    }
     setSaving(true);
     try {
-      const data = await createLead(form);
+      const payload = { ...form, phone: form.phone ? normalizePhone(form.phone) : '' };
+      const data = await createLead(payload);
       setLeads(prev => [data, ...prev]);
       setForm(EMPTY);
       setShowForm(false);
@@ -127,7 +134,7 @@ export default function PipelineCRMLeads() {
           <h3 className={s.cardTitle}><span className={s.cardTitleIcon}><LuPlus /></span>Add New Lead</h3>
           <div className={s.grid3} style={{ marginBottom: '12px' }}>
             <input type="text"  placeholder="Full name *"      value={form.name}         onChange={e => setForm({ ...form, name: e.target.value })}         required />
-            <input type="text"  placeholder="Phone number"     value={form.phone}        onChange={e => setForm({ ...form, phone: e.target.value })}        />
+            <PhoneInput value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} label="Phone" id="lead-phone" />
             <input type="email" placeholder="Email (optional)" value={form.email}        onChange={e => setForm({ ...form, email: e.target.value })}        />
           </div>
           <div className={s.grid2} style={{ marginBottom: '14px' }}>

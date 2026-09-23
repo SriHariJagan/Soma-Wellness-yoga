@@ -43,7 +43,7 @@ router.get('/services', publicCache, asyncHandler(async (req, res) => {
 router.get('/courses', publicCache, asyncHandler(async (req, res) => {
   res.json(await Course.find({ active: true }).select('-enrolledUsers -earlyEnrolled').lean());
 }));
-router.get('/plans', publicCache, asyncHandler(async (req, res) => res.json(await Plan.find({ active: true }).sort({ displayOrder: 1 }).lean())));
+router.get('/plans', publicCache, asyncHandler(async (req, res) => res.json(await Plan.find({ active: true, visibility: { $ne: 'hidden' }, name: { $in: ['Bronze', 'Silver', 'Gold'] } }).sort({ displayOrder: 1 }).lean())));
 router.get('/batches', publicCache, asyncHandler(async (req, res) => res.json(await Batch.find({ status: { $ne: 'Closed' } }).sort({ createdAt: -1 }).lean())));
 router.get('/workshops', publicCache, asyncHandler(async (req, res) => res.json(await Workshop.find({ status: 'available', date: { $gte: new Date() } }).sort({ date: 1 }).lean())));
 router.get('/events', publicCache, publicGetEvents);

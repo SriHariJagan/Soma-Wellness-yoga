@@ -16,8 +16,10 @@ import { useAuth } from './context/AuthContext.jsx';
 // ── Route-level code splitting: only Home loads eagerly. Everything else is
 //    fetched on demand so the initial bundle stays small. ──
 const ChatbotWidget = lazy(() => import('./components/chatbot/ChatbotWidget.jsx'));
+const MembershipPrompt = lazy(() => import('./components/soma/MembershipPrompt.jsx'));
 const About = lazy(() => import('./pages/About'));
 const Classes = lazy(() => import('./pages/Classes'));
+const Memberships = lazy(() => import('./pages/Memberships'));
 const NewClasses = lazy(() => import('./pages/NewClasses'));
 const Services = lazy(() => import('./pages/Services'));
 const SpaRituals = lazy(() => import('./pages/SpaRituals'));
@@ -158,6 +160,7 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
             <Route path="/blogs"   element={<Blogs />} />
             <Route path="/blogs/:id" element={<BlogDetail />} />
             <Route path="/classes" element={<Classes />} />
+            <Route path="/memberships" element={<Memberships />} />
             <Route path="/offerings" element={<NewClasses />} />
             <Route path="/private" element={<Private />} />
             <Route path="/life-stages" element={<LifeStages />} />
@@ -238,6 +241,11 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
       {!onDashboardRoute && (
         <Suspense fallback={null}>
           <ChatbotWidget />
+        </Suspense>
+      )}
+      {!onDashboardRoute && (
+        <Suspense fallback={null}>
+          <MembershipPrompt />
         </Suspense>
       )}
     </>

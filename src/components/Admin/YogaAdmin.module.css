@@ -452,6 +452,8 @@
 /* ═══════════════ MAIN + TOPBAR ═══════════════ */
 .contentArea {
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: rgba(255,255,255,0.96);
@@ -646,11 +648,13 @@
 /* ── Main content ─────────────────────────────────────────────── */
 .main {
   flex: 1;
+  min-height: 0;
   padding: 26px 30px 60px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
   animation: pageIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: auto;
 }
 .tabFallback {
   display: flex;
@@ -801,7 +805,7 @@
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
   pointer-events: none;
 }
-.cardNoPad { padding: 0; overflow: hidden; }
+.cardNoPad { padding: 0; overflow: visible; }
 .cardTitle {
   font-family: var(--font-display);
   font-size: 16px;
@@ -964,10 +968,12 @@ select.input {
 .chipCount { font-size: 10.5px; opacity: 0.7; }
 
 /* ── Table ───────────────────────────────────────────────────── */
-.tableWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; overscroll-behavior: contain; }
-.tableWrap::-webkit-scrollbar { height: 6px; }
+.tableWrap { overflow: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; overscroll-behavior: auto; cursor: grab; touch-action: pan-x; max-width: 100%; }
+.tableWrap:active { cursor: grabbing; }
+.tableWrap::-webkit-scrollbar { height: 8px; }
 .tableWrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
-.table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+.tableWrap::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
 .table thead { background: var(--surface-3); position: sticky; top: 0; z-index: 1; }
 .table th {
   text-align: left;
@@ -2924,42 +2930,267 @@ select.input {
 }
 .recModal {
   position: relative; width: 100%; margin: auto;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: 20px; overflow: hidden;
-  box-shadow: 0 24px 80px rgba(10, 25, 18, 0.35), 0 4px 18px rgba(10, 25, 18, 0.18);
-  animation: recPopIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FDFBF6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  outline: 1px solid var(--line-2);
+  border-radius: 22px; overflow: hidden;
+  box-shadow: 0 32px 90px rgba(10, 25, 18, 0.38), 0 6px 22px rgba(10, 25, 18, 0.18), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  animation: recPopIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: calc(100vh - 40px);
+  display: flex; flex-direction: column;
 }
-.recModal--sm { max-width: 440px; }
-.recModal--md { max-width: 580px; }
-.recModal--lg { max-width: 760px; }
-.recModalAccent { height: 5px; background: var(--c-grad); }
-.recModalHeader { display: flex; align-items: flex-start; gap: 12px; padding: 20px 22px 0; }
+.recModal--sm { max-width: 450px; }
+.recModal--md { max-width: 600px; }
+.recModal--lg { max-width: 780px; }
+.recModal--xl { max-width: 1020px; }
+.recModal--success .recModalAccent { background: linear-gradient(135deg, #16A34A, #4ADE80); }
+.recModalAccent { height: 5px; background: var(--c-grad); flex-shrink: 0; }
+.recModalHeader {
+  display: flex; align-items: center; gap: 13px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--line-2);
+  background: linear-gradient(180deg, rgba(46, 125, 91, 0.05), transparent);
+  flex-shrink: 0;
+}
 .recModalIcon {
-  width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
-  display: grid; place-items: center;
-  background: var(--c-primary-soft); color: var(--c-primary);
-  border: 1px solid var(--c-primary-line);
+  width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+  display: grid; place-items: center; font-size: 20px;
+  background: linear-gradient(135deg, #183D2D 0%, #2E7D5B 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(46, 125, 91, 0.32), 0 1px 0 rgba(255, 255, 255, 0.25) inset;
 }
-.recModalIcon--success { background: rgba(22, 163, 74, 0.12); color: #16A34A; border-color: rgba(22, 163, 74, 0.25); }
+.recModalIcon--success { background: linear-gradient(135deg, #15803D, #22C55E); box-shadow: 0 4px 14px rgba(22, 163, 74, 0.32), 0 1px 0 rgba(255, 255, 255, 0.25) inset; }
 .recModalTitleWrap { flex: 1; min-width: 0; }
-.recModalTitle { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-1); }
-.recModalSub { margin: 3px 0 0; font-size: 12.5px; color: var(--text-3); }
+.recModalTitle { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-1); line-height: 1.25; }
+.recModalSub { margin: 3px 0 0; font-size: 12.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recModalClose {
-  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
-  border: 1px solid var(--line-2); background: var(--surface-2); color: var(--text-2);
+  width: 34px; height: 34px; border-radius: 11px; flex-shrink: 0;
+  border: 1px solid var(--line-2); background: var(--surface); color: var(--text-2);
   cursor: pointer; display: grid; place-items: center;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.15s;
 }
-.recModalClose:hover { color: var(--text-1); border-color: var(--line); background: var(--surface-3); }
-.recModalBody { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; }
-.recModalFooter { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; padding-top: 4px; }
+.recModalClose:hover { color: var(--c-danger); border-color: rgba(220, 38, 38, 0.3); background: rgba(220, 38, 38, 0.07); transform: rotate(90deg); }
+.recModalBody {
+  padding: 20px 22px; display: flex; flex-direction: column; gap: 16px;
+  font-size: 13.5px; overflow-y: auto;
+}
+.recModalFooter {
+  display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+  margin: 2px -22px -22px; padding: 14px 22px 18px;
+  border-top: 1px solid var(--line-2);
+  background: rgba(248, 244, 236, 0.65);
+  border-radius: 0 0 22px 22px;
+  position: sticky; bottom: 0;
+}
 .recModalInfoBox { background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 16px; font-size: 13.5px; line-height: 1.6; }
+
+/* ── Reception popup buttons: chunky, professional, consistent ── */
+.recModal .btn {
+  min-height: 42px; padding: 10px 22px; border-radius: 12px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.01em;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s, background 0.15s;
+}
+.recModal .btn:active { transform: scale(0.97); }
+.recModal .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.recModal .btnPrimary {
+  background: linear-gradient(135deg, #183D2D 0%, #2E7D5B 60%, #3a9a73 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25); color: #fff;
+  box-shadow: 0 6px 18px rgba(46, 125, 91, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.recModal .btnPrimary:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(46, 125, 91, 0.4); }
+.recModal .btnDanger {
+  background: linear-gradient(135deg, #B91C1C, #DC2626); border-color: transparent; color: #fff;
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.3);
+}
+.recModal .btnDanger:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); }
+.recModal .modalActions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+.recModal .linkBtn {
+  background: none; border: none; cursor: pointer; padding: 2px 4px;
+  font-size: 12px; font-weight: 700; color: var(--c-primary);
+}
+.recModal .linkBtn:hover { text-decoration: underline; }
+
+/* ── Reception popup form fields ─────────────────────────────── */
+.recModal .fieldLabel {
+  display: flex; flex-direction: column; gap: 7px; margin: 0;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--text-2);
+}
+.recModal .fieldLabel input,
+.recModal .fieldLabel select,
+.recModal .fieldLabel textarea {
+  height: 44px; width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--line); border-radius: 12px;
+  padding: 0 14px; font-size: 13.5px; font-weight: 500;
+  background: #fff; color: var(--text-1);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  text-transform: none; letter-spacing: normal;
+}
+.recModal .fieldLabel textarea { height: auto; padding: 12px 14px; resize: vertical; }
+.recModal .fieldLabel input::placeholder,
+.recModal .fieldLabel textarea::placeholder { color: var(--text-3); font-weight: 400; }
+.recModal .fieldLabel input:focus,
+.recModal .fieldLabel select:focus,
+.recModal .fieldLabel textarea:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px var(--c-primary-soft);
+}
+.recModal .fieldLabel input:disabled { background: var(--surface-3); color: var(--text-3); cursor: not-allowed; }
+.recPwWrap { position: relative; }
+.recPwWrap input { width: 100%; padding-right: 44px !important; font-family: ui-monospace, 'SF Mono', monospace; letter-spacing: 0.04em; }
+.recPwToggle {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; border-radius: 9px; border: none;
+  background: transparent; color: var(--text-3); cursor: pointer;
+  display: grid; place-items: center; transition: background 0.15s, color 0.15s;
+}
+.recPwToggle:hover { background: var(--surface-3); color: var(--c-primary); }
+.recPwHints { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.recPwHint {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  background: var(--surface-3); color: var(--text-3); border: 1px solid var(--line-2);
+  text-transform: none; letter-spacing: normal;
+}
+.recPwHint--ok { background: rgba(22, 163, 74, 0.1); color: #15803D; border-color: rgba(22, 163, 74, 0.25); }
+.recFieldNote { font-size: 12px; color: var(--text-3); margin: 8px 0 0; line-height: 1.5; text-transform: none; letter-spacing: normal; font-weight: 400; }
+
+/* ── Reception empty states: soft icon tile instead of bare glyph ── */
+.emptyIcon {
+  width: 72px; height: 72px; margin: 0 auto 12px; border-radius: 20px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, rgba(46, 125, 91, 0.1), rgba(129, 178, 154, 0.07));
+  border: 1px solid var(--line-2);
+  color: var(--c-primary); font-size: 40px;
+}
+.emptyIcon svg { width: 34px; height: 34px; }
+
+/* ── Reception modal content system ────────────────────────────
+   Professional building blocks shared by every reception popup:
+   profile header, key-value rows, section dividers, price summary,
+   credential box, recipient picker, receipt. */
+.recProfileHead {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, rgba(46, 125, 91, 0.08), rgba(129, 178, 154, 0.06));
+  border: 1px solid var(--c-primary-line);
+  border-radius: 16px; padding: 16px;
+}
+.recProfileAvatar {
+  width: 52px; height: 52px; border-radius: 15px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--c-grad); color: #fff;
+  font-family: var(--font-display); font-weight: 700; font-size: 20px;
+  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.14), 0 6px 16px rgba(46, 125, 91, 0.28);
+}
+.recProfileName { font-size: 16px; font-weight: 800; color: var(--text-1); letter-spacing: -0.01em; line-height: 1.3; }
+.recProfileSub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.recProfileTags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.recSection {
+  border: 1px solid var(--line-2); border-radius: 14px;
+  background: var(--surface); overflow: hidden;
+}
+.recSectionHead {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 16px;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--line-2);
+  font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-2);
+}
+.recSectionBody { padding: 6px 16px 10px; }
+.recKV {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--line-2);
+  font-size: 13.5px;
+}
+.recKV:last-child { border-bottom: none; }
+.recKVIcon {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  display: grid; place-items: center; font-size: 14px;
+  background: var(--c-primary-soft); color: var(--c-primary);
+}
+.recKVLabel { flex: 1; min-width: 0; color: var(--text-3); font-size: 12px; font-weight: 600; }
+.recKVValue { font-weight: 700; color: var(--text-1); text-align: right; overflow-wrap: anywhere; }
+.recPriceBox {
+  border-radius: 14px; padding: 16px 18px;
+  background: linear-gradient(135deg, #183D2D 0%, #2E7D5B 70%, #3a9a73 100%);
+  color: #fff; position: relative; overflow: hidden;
+  box-shadow: 0 8px 24px rgba(24, 61, 45, 0.3);
+}
+.recPriceBox::after {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 70%);
+  pointer-events: none;
+}
+.recPriceLabel { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
+.recPriceValue { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.recPriceSub { font-size: 12.5px; opacity: 0.85; margin-top: 2px; }
+.recCredBox {
+  border: 1px dashed var(--c-primary-line); border-radius: 14px;
+  background: rgba(46, 125, 91, 0.05); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.recCredRow { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.recCredRow strong { min-width: 74px; color: var(--text-2); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.recCredRow code {
+  font-family: ui-monospace, 'SF Mono', monospace; font-size: 13.5px; font-weight: 700;
+  background: var(--surface); border: 1px solid var(--line);
+  padding: 4px 10px; border-radius: 8px; color: var(--text-1);
+}
+.recPickSearch { position: relative; margin-bottom: 8px; }
+.recPickList {
+  max-height: 220px; overflow-y: auto;
+  border: 1px solid var(--line-2); border-radius: 12px; padding: 6px;
+  background: var(--surface);
+}
+.recPickItem {
+  display: flex; gap: 10px; align-items: center;
+  padding: 9px 10px; border-radius: 9px; cursor: pointer;
+  transition: background 0.12s;
+}
+.recPickItem:hover { background: var(--surface-3); }
+.recPickItem--on { background: var(--c-primary-soft); }
+.recPickItem input { width: 16px; height: 16px; accent-color: var(--c-primary); flex-shrink: 0; }
+.recPickName { display: block; font-size: 13px; font-weight: 700; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recPickSub { display: block; font-size: 11px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recPickGrid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  max-height: 260px; overflow-y: auto;
+  border: 1px solid var(--line-2); border-radius: 12px; padding: 8px;
+  background: var(--surface);
+}
+@media (max-width: 640px) {
+  .recPickGrid { grid-template-columns: 1fr; }
+}
+.recPickGrid .recPickItem { border: 1px solid transparent; }
+.recPickGrid .recPickItem--on { border-color: var(--c-primary-line); }
+/* ── Split popup layout: form left, picker right ─────────────── */
+.recSplit { display: grid; grid-template-columns: 1fr 1.05fr; gap: 14px; align-items: start; }
+.recSplit .recSection { margin: 0; }
+@media (max-width: 760px) {
+  .recSplit { grid-template-columns: 1fr; }
+}
+.recReceipt {
+  border-radius: 14px; border: 1px solid rgba(22, 163, 74, 0.25);
+  background: linear-gradient(180deg, rgba(22, 163, 74, 0.08), rgba(22, 163, 74, 0.03));
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
+}
+.recReceiptTitle { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; color: #15803D; }
+.recFormGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.recFormGrid--3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 560px) {
+  .recFormGrid, .recFormGrid--3 { grid-template-columns: 1fr; }
+}
 @keyframes recFadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes recPopIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes recPopIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
 @media (max-width: 560px) {
   .recModalBackdrop { padding: 0; align-items: flex-end; }
-  .recModal { border-radius: 20px 20px 0 0; max-width: 100%; }
-  .recModalBody { padding: 16px 18px 20px; }
+  .recModal { border-radius: 22px 22px 0 0; max-width: 100%; max-height: 94vh; }
+  .recModalBody { padding: 16px 18px; }
+  .recModalFooter { padding: 12px 18px 18px; }
+  .recModalFooter .btn, .recModalFooter .btnPrimary { flex: 1; justify-content: center; }
 }
 
 /* ── One-line KPI strip ─────────────────────────────────────── */

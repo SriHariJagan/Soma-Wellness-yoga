@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { initiateStkPush, queryMpesaTransaction } from "../api/MpesaServices";
 import "./MpesaCheckout.css";
+import PhoneInput from "../common/PhoneInput.jsx";
+import { validatePhone, normalizePhone } from "../../lib/phone.js";
 
 const POLL_INTERVAL_MS = 4000;
 const MAX_POLLS = 25;
@@ -16,24 +18,21 @@ export default function MpesaCheckout({ amount, accountRef, description, payment
   const pollCountRef = useRef(0);
 
   const normalisePhone = (raw) => {
-    let p = raw.replace(/[\s\-()]/g, "");
-    if (p.startsWith("+")) p = p.slice(1);
-    if (p.startsWith("0")) p = "254" + p.slice(1);
-    if (p.startsWith("254") && p.length === 12) return p;
-    if (p.startsWith("91") && p.length === 12) return p;
-    if (p.length === 10 && (p.startsWith("6") || p.startsWith("7") || p.startsWith("8") || p.startsWith("9"))) return "91" + p;
-    if (!p.startsWith("254") && !p.startsWith("91") && p.length === 9) return "254" + p;
-    return p;
+    // kept for backward compat, delegates to shared lib then strips +
+    const n = normalizePhone(raw || '');
+    return n ? n.replace(/^\+/, '') : '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!phone || !amount) return;
+    const err = validatePhone(phone);
+    if (err) { setStatus("failed"); setMessage(err); return; }
     setLoading(true);
     setStatus("idle");
     setMessage("");
     try {
-      const res = await initiateStkPush({ phone: normalisePhone(phone), amount, accountRef, description, paymentId, orderId });
+      const res = await initiateStkPush({ phone: normalizePhone(phone).replace(/^\+/, ''), amount, accountRef, description, paymentId, orderId });
       if (res.success) {
         setStatus("polling");
         setMessage(t("payment.stkPushSent"));
@@ -120,22 +119,7 @@ export default function MpesaCheckout({ amount, accountRef, description, payment
   return (
     <div className="mpesa-inline">
       <form onSubmit={handleSubmit} className="mpesa-form">
-        <div className="mpesa-field">
-          <label>{t("payment.phoneNumber")} *</label>
-          <div className="mpesa-input-wrap">
-            <span className="mpesa-prefix">+254</span>
-            <input
-              type="tel"
-              placeholder="712 345 678"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              disabled={loading}
-              className="mpesa-input"
-            />
-          </div>
-          <span className="mpesa-hint">{t("payment.phoneHint")}</span>
-        </div>
+        <PhoneInput value={phone} onChange={setPhone} label={t("payment.phoneNumber") || 'Phone number'} required id="mpesa-phone" disabled={loading} />
 
         {(status === "polling") && (
           <div className="mpesa-polling">

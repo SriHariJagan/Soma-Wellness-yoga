@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
 import { PageHeader, KpiCard, Avatar } from './ui/Primitives';
-import { getStudents, deleteStudent } from '../api/AdminServices.js';
+import { getStudents, deleteStudent, serviceAssignmentsApi } from '../api/AdminServices.js';
 import StudentProfileWorkspace from './StudentProfileWorkspace';
+import PhoneInput from '../common/PhoneInput.jsx';
 import {
-  LuUserPlus, LuX, LuSearch, LuTrash2, LuUsers, LuBadgeCheck, LuClock,
+  LuUserPlus, LuX, LuSearch, LuTrash2, LuUsers, LuBadgeCheck, LuClock, LuLayers, LuSparkles,
 } from 'react-icons/lu';
 
 export default function StudentsHistory({ form, setForm, onSave, onChanged, feedback, selectedStudentId }) {
@@ -18,6 +19,7 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
   const [quickFilter, setQuickFilter] = useState('all');
   const [selected, setSelected]     = useState(null);
   const [localFeedback, setLocalFeedback] = useState({ message: '', type: '' });
+  const [serviceMap, setServiceMap] = useState({});
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -32,7 +34,34 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
     }
   };
 
+  // Guard against concurrent / repeated service-assignments fetches.
+  // Previously three effects fired this on mount (StrictMode doubles it),
+  // hammering GET /api/admin/service-assignments with a heavy populate query.
+  const serviceFetchInflight = useRef(false);
+  const refreshServiceMap = async () => {
+    if (serviceFetchInflight.current) return;
+    serviceFetchInflight.current = true;
+    try {
+      const data = await serviceAssignmentsApi.list();
+      const list = Array.isArray(data) ? data : data?.assignments || data?.data || [];
+      const map = {};
+      list.forEach(a => {
+        const uid = String(a.user?._id || a.user || a.userId || '');
+        if (!uid) return;
+        if (!map[uid]) map[uid] = [];
+        map[uid].push(a);
+      });
+      setServiceMap(map);
+    } catch {
+      // Leave previous map intact so the Services column keeps last good data
+    } finally {
+      serviceFetchInflight.current = false;
+    }
+  };
+
   useEffect(() => { fetchStudents(); }, []);
+  // Single mount fetch for the Services column (in-flight guarded)
+  useEffect(() => { refreshServiceMap(); }, []);
 
   useEffect(() => {
     if (feedback?.type === 'success') {
@@ -64,9 +93,18 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
     }
   };
 
+  // Membership is strictly Bronze (3mo) / Silver (6mo) / Gold (12mo) — other services show only in Services column
+  const getMembershipLabel = (st) => {
+    if (st.planMonths === 3) return 'Bronze';
+    if (st.planMonths === 6) return 'Silver';
+    if (st.planMonths === 12) return 'Gold';
+    return 'No Membership';
+  };
   const getPlanStatus = (st) => {
-    if (!st.planMonths || st.planMonths === 0) return 'No Plan';
-    return 'Active';
+    if (st.planMonths === 3) return 'Bronze — Membership';
+    if (st.planMonths === 6) return 'Silver — Membership';
+    if (st.planMonths === 12) return 'Gold — Membership';
+    return 'No Membership';
   };
 
   const bySearch = students.filter(st =>
@@ -74,16 +112,17 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
     st.email.toLowerCase().includes(search.toLowerCase()) ||
     (st.city || '').toLowerCase().includes(search.toLowerCase())
   );
+  const isMembership = (st) => st.planMonths === 3 || st.planMonths === 6 || st.planMonths === 12;
   const filtered = bySearch.filter(st => {
-    if (quickFilter === 'active') return st.planMonths > 0;
-    if (quickFilter === 'pending') return !st.planMonths || st.planMonths === 0;
+    if (quickFilter === 'active') return isMembership(st);
+    if (quickFilter === 'pending') return !isMembership(st);
     return true;
   });
 
   const counts = {
     all: students.length,
-    active: students.filter(st => st.planMonths > 0).length,
-    pending: students.filter(st => !st.planMonths || st.planMonths === 0).length,
+    active: students.filter(isMembership).length,
+    pending: students.filter(st => !isMembership(st)).length,
   };
 
   return (
@@ -110,7 +149,7 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
           <div className={s.grid3} style={{ marginBottom: '12px' }}>
             <input type="text"  placeholder="Full name *"     value={form.name}  onChange={e => setForm({ ...form, name: e.target.value })}  required />
             <input type="email" placeholder="Email address *" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
-            <input type="text"  placeholder="Phone number *"  value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} required />
+            <PhoneInput value={form.phone || ''} onChange={(v) => setForm({ ...form, phone: v })} required id="studentshistory-phone" />
           </div>
           <div className={s.grid3} style={{ marginBottom: '16px' }}>
             <input type="text" placeholder="City"       value={form.city}  onChange={e => setForm({ ...form, city: e.target.value })}  />
@@ -134,7 +173,7 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
           <input placeholder="Search by name, email or city…" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          {[['all', 'All'], ['active', 'On Plan'], ['pending', 'No Plan']].map(([k, lbl]) => (
+          {[['all', 'All'], ['active', 'On Plan'], ['pending', 'No Membership']].map(([k, lbl]) => (
             <button key={k} type="button" className={`${s.chip} ${quickFilter === k ? s.chipActive : ''}`} onClick={() => setQuickFilter(k)}>
               {lbl} <span className={s.chipCount}>{counts[k]}</span>
             </button>
@@ -162,7 +201,7 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
             <table className={s.table}>
               <thead>
                 <tr>
-                  <th>User</th><th>Contact</th><th>City</th><th>Style / Level</th><th>Plan</th><th>Status</th><th>Joined</th><th></th>
+                  <th>User</th><th>Contact</th><th>City</th><th>Style / Level</th><th>Membership</th><th>Services</th><th>Status</th><th>Joined</th><th></th>
                 </tr>
               </thead>
               <tbody>
@@ -183,7 +222,43 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
                       <div>{st.style || '—'}</div>
                       {st.level && <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '2px' }}>{st.level}</div>}
                     </td>
-                    <td>{st.planMonths ? `${st.planMonths} mo` : <span className={s.tdMuted}>None</span>}</td>
+                    <td>
+                      {(() => {
+                        const label = getMembershipLabel(st);
+                        const isNoMem = label === 'No Membership';
+                        const isMembershipTier = ['Bronze','Silver','Gold'].includes(label);
+                        return isNoMem
+                          ? <span className={s.tdMuted}>No Membership</span>
+                          : <span style={{ fontWeight: 700, color: '#2D1406' }}>{label} <span style={{ fontWeight: 400, color: 'var(--text-3)', fontSize: 11 }}>· {isMembershipTier ? 'Membership' : 'Service'}</span></span>;
+                      })()}
+                    </td>
+                    <td>
+                      {(() => {
+                        const svcs = serviceMap[st._id] || [];
+                        if (svcs.length === 0) return <span className={s.tdMuted} style={{ fontSize: 11 }}>—</span>;
+                        const active = svcs.filter(x => x.status === 'active' || x.isActive);
+                        const displayList = active.length > 0 ? active : svcs;
+                        const first = displayList[0];
+                        // Robust name resolution: serviceName > populated service/offering > offeringName > fallback to ID
+                        const name = first.serviceName
+                          || first.service?.name
+                          || first.offering?.name
+                          || first.offeringName
+                          || (first.service ? String(first.service).slice(-6) : '')
+                          || (first.offering ? String(first.offering).slice(-6) : '')
+                          || 'Service';
+                        const count = displayList.length;
+                        const total = svcs.length;
+                        const isActive = active.length > 0;
+                        const svcId = first._id ? String(first._id).slice(-6) : '';
+                        return (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }} title={`${name} — ${svcId ? `ID: ${svcId}` : ''} — ${first.status || ''}`}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: isActive ? 'rgba(37,99,235,0.10)' : 'rgba(100,116,139,0.08)', color: isActive ? '#2563EB' : '#64748b', border: `1px solid ${isActive ? 'rgba(37,99,235,0.14)' : 'rgba(100,116,139,0.12)'}`, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}><LuSparkles size={10} />{count}{total !== count ? `/${total}` : ''}</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-2)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}{count>1 ? ` +${count-1}` : ''}</span>
+                          </div>
+                        );
+                      })()}
+                    </td>
                     <td><Badge label={getPlanStatus(st)} /></td>
                     <td className={s.tdMuted} style={{ fontSize: '11px' }}>
                       {st.createdAt
@@ -212,8 +287,8 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
       {selected && (
         <StudentProfileWorkspace
           student={selected}
-          onClose={() => { setSelected(null); onChanged?.(); }}
-          onRefresh={onChanged}
+          onClose={() => { setSelected(null); refreshServiceMap(); onChanged?.(); }}
+          onRefresh={() => { refreshServiceMap(); onChanged?.(); }}
         />
       )}
     </div>

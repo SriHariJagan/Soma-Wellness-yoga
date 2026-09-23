@@ -8,6 +8,8 @@ import {
   LuSparkles, LuUsers, LuListChecks, LuTrash2, LuPlus, LuCheck, LuSearch, LuRefreshCw,
   LuPencil, LuX,
 } from 'react-icons/lu';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 const EMPTY_SERVICE = {
   name: '', description: '', category: 'General', type: '',
@@ -191,12 +193,16 @@ export default function ServicesManagement({ onChanged } = {}) {
   const handleSaveInstructor = async (e) => {
     e.preventDefault();
     if (!instructorForm.name) { flash('Instructor name is required.', 'error'); return; }
+    if (instructorForm.phone) {
+      const err = validatePhone(instructorForm.phone);
+      if (err) { flash(err, 'error'); return; }
+    }
     setSaving(true);
     try {
       const payload = {
         name: instructorForm.name,
         email: instructorForm.email,
-        phone: instructorForm.phone,
+        phone: instructorForm.phone ? normalizePhone(instructorForm.phone) : '',
         bio: instructorForm.bio,
         specialties: instructorForm.specialties
           ? instructorForm.specialties.split(',').map(s => s.trim()).filter(Boolean)
@@ -362,9 +368,10 @@ export default function ServicesManagement({ onChanged } = {}) {
               <select value={serviceForm.category} onChange={e => setServiceForm({ ...serviceForm, category: e.target.value })}>
                 <option value="Group">Group</option>
                 <option value="Personal">Personal</option>
-                <option value="Specialty">Specialty</option>
                 <option value="Corporate">Corporate</option>
                 <option value="Therapy">Therapy</option>
+                <option value="Mama">Mama</option>
+                <option value="Academy">Academy</option>
                 <option value="General">General</option>
               </select>
               <select value={serviceForm.mode} onChange={e => setServiceForm({ ...serviceForm, mode: e.target.value })}>
@@ -426,17 +433,30 @@ export default function ServicesManagement({ onChanged } = {}) {
 
           <h3 className={s.cardTitle} style={{ margin: '6px 2px 14px' }}>
             <span className={s.cardTitleIcon}><LuSparkles /></span>Service Catalog
-            <button type="button" onClick={async () => {
-              try {
-                await servicesApi.syncOfficial();
-                flash('Official services synced.');
-                fetchAll();
-              } catch (err) {
-                flash(err.message || 'Sync failed', 'error');
-              }
-            }} className={`${s.btn} ${s.btnSm}`} style={{ marginLeft: 'auto', border: '1px solid #E7D7BE', borderRadius: 8, background: '#fff', cursor: 'pointer', color: '#6B5E4E', display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12 }}>
-              <LuRefreshCw size={13} /> Sync Official
-            </button>
+            <span style={{ marginLeft: 'auto', display: 'inline-flex', gap: 8 }}>
+              <button type="button" onClick={async () => {
+                try {
+                  const res = await servicesApi.syncOfferings();
+                  flash(`Website updated: ${res.mirrored} service(s) pushed to the Services page.`);
+                  fetchAll();
+                } catch (err) {
+                  flash(err.message || 'Push failed', 'error');
+                }
+              }} className={`${s.btn} ${s.btnSm}`} title="Push all service edits to the public Services page" style={{ border: '1px solid #2E7D5B', borderRadius: 8, background: '#2E7D5B', cursor: 'pointer', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12 }}>
+                <LuRefreshCw size={13} /> Push to Website
+              </button>
+              <button type="button" onClick={async () => {
+                try {
+                  await servicesApi.syncOfficial();
+                  flash('Official services synced.');
+                  fetchAll();
+                } catch (err) {
+                  flash(err.message || 'Sync failed', 'error');
+                }
+              }} className={`${s.btn} ${s.btnSm}`} style={{ border: '1px solid #E7D7BE', borderRadius: 8, background: '#fff', cursor: 'pointer', color: '#6B5E4E', display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12 }}>
+                <LuRefreshCw size={13} /> Sync Official
+              </button>
+            </span>
           </h3>
           {loading ? (
             <div className={s.catalogGrid}>{[1,2,3].map(i => <div key={i} className={`${s.skel} ${s.skelCard}`} style={{ height: 200 }} />)}</div>
@@ -500,7 +520,7 @@ export default function ServicesManagement({ onChanged } = {}) {
             <div className={s.grid3} style={{ marginBottom: 10 }}>
               <input type="text" placeholder="Instructor name *" value={instructorForm.name} onChange={e => setInstructorForm({ ...instructorForm, name: e.target.value })} />
               <input type="email" placeholder="Email" value={instructorForm.email} onChange={e => setInstructorForm({ ...instructorForm, email: e.target.value })} />
-              <input type="text" placeholder="Phone" value={instructorForm.phone} onChange={e => setInstructorForm({ ...instructorForm, phone: e.target.value })} />
+              <PhoneInput value={instructorForm.phone} onChange={(v) => setInstructorForm({ ...instructorForm, phone: v })} label="Phone" id="instructor-phone" />
               <input type="text" placeholder="Specialties (comma separated)" value={instructorForm.specialties} onChange={e => setInstructorForm({ ...instructorForm, specialties: e.target.value })} style={{ gridColumn: 'span 2' }} />
               <input type="text" placeholder="Bio (optional)" value={instructorForm.bio} onChange={e => setInstructorForm({ ...instructorForm, bio: e.target.value })} style={{ gridColumn: 'span 2' }} />
             </div>

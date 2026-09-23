@@ -1,12 +1,12 @@
 // ── Frontend pricing helpers — mirrors backend pricingEngine ──
 import { formatKES } from './currency.js';
 
-export const TIER_MONTHLY = { JUA: 12000, AMANI: 18500, UZIMA: 28500, FAMILY: 35000 };
-export const FOUNDING_MONTHLY = { JUA: 10000, AMANI: 15000, UZIMA: 24000, FAMILY: 28500 };
+export const TIER_MONTHLY = { JUA: 12000, AMANI: 16500, UZIMA: 22500, FAMILY: 35000 };
+export const FOUNDING_MONTHLY = { JUA: 10000, AMANI: 13500, UZIMA: 19000, FAMILY: 28500 };
 export const PAY_AHEAD_PRICING = {
   JUA:    { 1: 12000, 3: 32000, 6: 61000, 12: 108000 },
-  AMANI:  { 1: 18500, 3: 49500, 6: 94000, 12: 166500 },
-  UZIMA:  { 1: 28500, 3: 76500, 6: 145000, 12: 256500 },
+  AMANI:  { 1: 16500, 3: 44550, 6: 75500, 12: 125500 },
+  UZIMA:  { 1: 22500, 3: 60750, 6: 114750, 12: 202500 },
   FAMILY: { 1: 35000, 3: 94500, 6: 178500, 12: 315000 },
 };
 

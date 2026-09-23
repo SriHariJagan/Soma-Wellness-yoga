@@ -38,7 +38,11 @@ export default function BrowsePlansPage({ student, reload }) {
   useEffect(() => {
     Promise.all([getMembershipPlans(), getActiveMembership()])
       .then(([p, m]) => {
-        setPlans(p);
+        // Membership shows ONLY Bronze / Silver / Gold term plans.
+        // (Backend filters too — this is a safety net for stale data.)
+        const list = Array.isArray(p) ? p : [];
+        const allowed = new Set(["bronze", "silver", "gold"]);
+        setPlans(list.filter((plan) => allowed.has(String(plan?.name || "").toLowerCase())));
         setActiveMembership(m);
       })
       .catch(() => {})

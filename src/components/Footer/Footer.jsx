@@ -85,6 +85,7 @@ const Footer = () => {
               {[
                 { to: "/", label: t("navigation.home") },
                 { to: "/services", label: t("navigation.services") },
+                { to: "/memberships", label: t("navigation.memberships") },
                 { to: "/spa-rituals", label: t("navigation.spaRituals") },
                 { to: "/courses", label: t("navigation.courses") },
                 { to: "/blogs", label: t("navigation.blogs") },

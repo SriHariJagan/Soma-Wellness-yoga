@@ -74,6 +74,15 @@ export function getSubscriberClient() {
   return subscriber;
 }
 
+/**
+ * True only when the shared client is connected and ready.
+ * Rate limiter uses this to fail fast to in-memory mode instead of
+ * waiting 2s per request when Redis is down.
+ */
+export function isRedisReady() {
+  return !!client && client.status === 'ready';
+}
+
 export async function closeRedisClients() {
   const tasks = [];
   if (client) {
@@ -88,4 +97,4 @@ export async function closeRedisClients() {
   logger.info(MODULE, 'Clients closed');
 }
 
-export default { getRedisClient, getSubscriberClient, closeRedisClients };
+export default { getRedisClient, getSubscriberClient, closeRedisClients, isRedisReady };

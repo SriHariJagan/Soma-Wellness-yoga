@@ -20,7 +20,7 @@ export const PRICING_MODELS = ['flat', 'monthly', 'per_session', 'contact']  ;
 export const VALIDITY_UNITS = ['days', 'weeks', 'months']  ;
 
 // ── Service Categories ───────────────────────────────────────
-export const SERVICE_CATEGORIES = ['Group', 'Personal', 'Specialty', 'Corporate', 'Therapy', 'General']  ;
+export const SERVICE_CATEGORIES = ['Group', 'Personal', 'Corporate', 'Therapy', 'Mama', 'Academy', 'General']  ;
 
 // ── Class Session Statuses ───────────────────────────────────
 export const CLASS_SESSION_STATUSES = ['upcoming', 'completed', 'cancelled']  ;

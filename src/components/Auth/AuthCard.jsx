@@ -5,6 +5,8 @@ import styles from "./LoginForm.module.css";
 import { useTranslation } from "react-i18next";
 import AuthShell from "./AuthShell.jsx";
 import SocialButtons from "./SocialButtons.jsx";
+import PhoneInput from "../common/PhoneInput.jsx";
+import { validatePhone, normalizePhone } from "../../lib/phone.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -131,8 +133,11 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
   const handleRegister = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) { setError(t("validation.passwordMismatch")); return; }
-    const cleanPhone = phone.replace(/[\s\-()]/g, "");
-    if (cleanPhone && !/^\+?[0-9]{7,15}$/.test(cleanPhone)) { setError(t("validation.invalidPhone")); return; }
+    if (phone) {
+      const pe = validatePhone(phone);
+      if (pe) { setError(pe); return; }
+    }
+    const cleanPhone = phone ? normalizePhone(phone) : "";
     setLoading(true); setError("");
     try {
       const ref = new URLSearchParams(window.location.search).get("ref") || undefined;
@@ -265,7 +270,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               <form onSubmit={handleRegister} className={styles.form}>
                 <Field id="reg-name" label={t("auth.name")} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("contact.namePlaceholder")} icon={<UserIcon />} autoComplete="name" />
                 <Field id="reg-email" label={t("auth.email")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" icon={<MailIcon />} autoComplete="email" />
-                <Field id="reg-phone" label={t("auth.phone")} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("auth.phonePlaceholder")} icon={<PhoneIcon />} autoComplete="tel" />
+                <PhoneInput value={phone} onChange={setPhone} label={t("auth.phone")} id="reg-phone" />
                 <div className={styles.row}>
                   <Field id="reg-pw" label={t("auth.password")} type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" icon={<LockIcon />} autoComplete="new-password" extra={pwExtra} />
                   <Field id="reg-pw2" label={t("auth.confirmPassword")} type={showPw2 ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" icon={<LockIcon />} autoComplete="new-password" extra={pw2Extra} />

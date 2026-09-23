@@ -6,10 +6,12 @@ import Badge from './Badge';
 import { Avatar } from './ui/Primitives';
 import {
   getStudentDetail, updateStudent, deleteStudent,
-  createPayment,
+  createPayment, serviceAssignmentsApi,
 } from '../api/AdminServices.js';
 import RenewPlanModal from './RenewPlanModal';
 import UpgradePlanModal from './UpgradePlanModal';
+import PhoneInput from '../common/PhoneInput.jsx';
+import { validatePhone, normalizePhone } from '../../lib/phone.js';
 import {
   LuX, LuUser, LuMail, LuPhone, LuMapPin, LuCalendar, LuDumbbell,
   LuActivity, LuCreditCard, LuClock, LuBookOpen, LuStickyNote,
@@ -17,7 +19,7 @@ import {
   LuChevronRight, LuPen, LuRefreshCw, LuCheck, LuCircleAlert, LuArrowUp,
   LuTrash2, LuSend, LuPlus, LuDownload, LuBadgeCheck, LuChartBar,
   LuZap, LuTarget, LuList, LuChevronDown, LuCalendarCheck, LuPlay,
-  LuSearch, LuFilter, LuIndianRupee, LuFileText, LuLayers,
+  LuSearch, LuFilter, LuIndianRupee, LuFileText, LuLayers, LuArrowLeftRight,
 } from 'react-icons/lu';
 
 /* ─── Design tokens ─────────────────────────────────────── */
@@ -71,7 +73,7 @@ function WorkspaceDrawer({ open, onClose, children }) {
               boxShadow: '-8px 0 40px rgba(0,0,0,0.12)',
             }}
           >
-            <div style={{ flex: 1, overflow: 'hidden auto' }}>
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0, WebkitOverflowScrolling: 'touch' }}>
               {children}
             </div>
           </motion.div>
@@ -296,9 +298,10 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ amount: '', label: '', method: 'UPI', status: 'paid' });
 
-  /* Premium Renew & Upgrade modals */
+  /* Premium Renew & Switch modals */
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [removingServiceId, setRemovingServiceId] = useState(null);
 
   const loadAll = useCallback(async () => {
     if (!student?._id) return;
@@ -375,10 +378,39 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
     }
   };
 
+  const handleRemoveService = async (serviceId, serviceName) => {
+    if (!window.confirm(`Remove "${serviceName}" enrollment for ${sDetail?.name || 'this user'}? This cannot be undone.`)) return;
+    setRemovingServiceId(serviceId);
+    try {
+      await serviceAssignmentsApi.remove(serviceId);
+      flash(`Service "${serviceName}" removed`);
+      loadAll();
+      onRefresh?.();
+    } catch (err) {
+      flash(err.message || 'Failed to remove service', 'error');
+    } finally {
+      setRemovingServiceId(null);
+    }
+  };
+
   const handleSaveEdit = async () => {
+    // Validate phones are Kenya fixed digits
+    if (editForm.phone) {
+      const pe = validatePhone(editForm.phone);
+      if (pe) { flash(pe, 'error'); return; }
+    }
+    if (editForm.emergencyContact) {
+      const pe2 = validatePhone(editForm.emergencyContact);
+      if (pe2) { flash(`Emergency contact: ${pe2}`, 'error'); return; }
+    }
     setSaving(true);
     try {
-      await updateStudent(student._id, editForm);
+      const payload = {
+        ...editForm,
+        phone: editForm.phone ? normalizePhone(editForm.phone) : editForm.phone,
+        emergencyContact: editForm.emergencyContact ? normalizePhone(editForm.emergencyContact) : editForm.emergencyContact,
+      };
+      await updateStudent(student._id, payload);
       flash('Profile updated successfully');
       setEditing(false);
       loadAll();
@@ -495,7 +527,9 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <FormInput label="Full Name" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
               <FormInput label="Email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
-              <FormInput label="Phone" value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
+              <div>
+                <PhoneInput value={editForm.phone || ''} onChange={(v) => setEditForm({ ...editForm, phone: v })} label="Phone" id="edit-phone" />
+              </div>
               <FormInput label="Gender" value={editForm.gender} onChange={e => setEditForm({ ...editForm, gender: e.target.value })} />
               <FormInput label="Date of Birth" type="date" value={editForm.dateOfBirth} onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
               <FormInput label="City" value={editForm.city} onChange={e => setEditForm({ ...editForm, city: e.target.value })} />
@@ -504,7 +538,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
             </div>
           </SectionCard>
           <SectionCard icon={<LuPhone size={18} />} title="Emergency Contact">
-            <FormInput label="Emergency Contact" value={editForm.emergencyContact} onChange={e => setEditForm({ ...editForm, emergencyContact: e.target.value })} />
+            <PhoneInput value={editForm.emergencyContact || ''} onChange={(v) => setEditForm({ ...editForm, emergencyContact: v })} label="Emergency Contact" id="edit-emergency-phone" />
           </SectionCard>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
             <GhostBtn onClick={() => setEditing(false)}>Cancel</GhostBtn>
@@ -550,13 +584,46 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
   };
 
   /* ─── MEMBERSHIP TAB ─────────────────────────────────── */
-  const renderMembershipTab = () => (
+  const renderMembershipTab = () => {
+    const ALLOWED_MEMBERSHIP = new Set(['bronze','silver','gold']);
+    const isValidMembership = membership && membership.planType && ALLOWED_MEMBERSHIP.has(String(membership.planType).trim().toLowerCase());
+    const isNoPlan = !isValidMembership;
+    const membershipTierLabel = isValidMembership ? membership.planType : 'No Membership';
+    const membershipStatusLabel = isValidMembership ? (membership?.computedStatus || membership?.status) : 'No Membership';
+    return (
     <div>
+      {!isNoPlan ? null : (
+        <>
+          <div style={{ padding: '12px 16px', borderRadius: 12, marginBottom: 12, background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.18)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(217,119,6,0.14)', color: '#b45309', display: 'grid', placeItems: 'center', flexShrink: 0 }}><LuAward size={16} /></span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#7c2d12' }}>No Membership</div>
+              <div style={{ fontSize: 12, color: '#9a3412', marginTop: 2 }}>This user has no active membership. Assign Bronze (3mo), Silver (6mo) or Gold (12mo) below.</div>
+            </div>
+            <Badge label="No Membership" />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
+            {[
+              { name: 'Bronze', months: 3, price: 48000, color: '#8a5a22', bg: 'rgba(176,121,59,0.10)', border: 'rgba(176,121,59,0.18)' },
+              { name: 'Silver', months: 6, price: 88000, color: '#5a6b7a', bg: 'rgba(138,155,168,0.12)', border: 'rgba(138,155,168,0.18)' },
+              { name: 'Gold', months: 12, price: 160000, color: '#8a6d00', bg: 'rgba(201,162,39,0.12)', border: 'rgba(201,162,39,0.18)' },
+            ].map(t => (
+              <div key={t.name} style={{ padding: 12, borderRadius: 12, border: `1px solid ${t.border}`, background: t.bg, textAlign: 'center' }}>
+                <div style={{ fontWeight: 800, color: t.color, fontSize: 13 }}>{t.name}</div>
+                <div style={{ fontSize: 11, color: C.text3 }}>{t.months} months · Membership</div>
+                <div style={{ fontWeight: 700, marginTop: 4, color: C.dark, fontSize: 12 }}>KES {t.price.toLocaleString('en-KE')}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
       <SectionCard icon={<LuAward size={18} />} title="Current Plan">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-          <InfoRow icon={<LuAward size={14} />} label="Plan Type" value={membership?.planType || 'Not Assigned'} />
+          <InfoRow icon={<LuAward size={14} />} label="Plan Type" value={
+            isNoPlan ? <span style={{ fontWeight: 700, color: C.amber }}>No Membership</span> : <span style={{ fontWeight: 700, color: C.dark }}>{membershipTierLabel} <span style={{ fontWeight: 400, color: C.text2 }}>· Membership</span></span>
+          } />
           <InfoRow icon={<LuActivity size={14} />} label="Status" value={
-            <Badge label={membership?.computedStatus || membership?.status || 'None'} />
+            <Badge label={isNoPlan ? 'No Membership' : membershipStatusLabel} />
           } />
           <InfoRow icon={<LuCalendar size={14} />} label="Start Date" value={membership?.startDate ? new Date(membership.startDate).toLocaleDateString('en-KE') : '—'} />
           <InfoRow icon={<LuCalendar size={14} />} label="Expiry Date" value={membership?.expiryDate ? new Date(membership.expiryDate).toLocaleDateString('en-KE') : '—'} />
@@ -625,14 +692,15 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
 
       <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
         <PrimaryBtn onClick={() => setShowRenewModal(true)} icon={<LuRefreshCw size={16} />}>
-          Renew Plan
+          {isNoPlan ? 'Assign Membership' : 'Renew Plan'}
         </PrimaryBtn>
-        <PrimaryBtn onClick={() => setShowUpgradeModal(true)} icon={<LuArrowUp size={16} />}>
-          Upgrade Plan
+        <PrimaryBtn onClick={() => setShowUpgradeModal(true)} icon={<LuArrowLeftRight size={16} />}>
+          {isNoPlan ? 'Assign Membership' : 'Switch Plan'}
         </PrimaryBtn>
       </div>
     </div>
   );
+  };
 
   /* ─── SERVICES TAB ───────────────────────────────────── */
   const renderServicesTab = () => {
@@ -697,6 +765,11 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                     ))}
                   </>
                 )}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+                  <GhostBtn small danger icon={<LuTrash2 size={14} />} onClick={() => handleRemoveService(svc._id, svc.serviceName || 'Service')} disabled={removingServiceId === svc._id}>
+                    {removingServiceId === svc._id ? 'Removing…' : 'Remove Service'}
+                  </GhostBtn>
+                </div>
               </SectionCard>
             );
           })
@@ -1129,7 +1202,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
       }}>
         <PrimaryBtn small onClick={startEditing} icon={<LuPen size={14} />}>Edit</PrimaryBtn>
         <PrimaryBtn small onClick={() => setShowRenewModal(true)} icon={<LuRefreshCw size={14} />}>Renew</PrimaryBtn>
-        <PrimaryBtn small onClick={() => setShowUpgradeModal(true)} icon={<LuArrowUp size={14} />}>Upgrade</PrimaryBtn>
+        <PrimaryBtn small onClick={() => setShowUpgradeModal(true)} icon={<LuArrowLeftRight size={14} />}>Switch</PrimaryBtn>
         <PrimaryBtn small onClick={() => { setShowPaymentForm(true); setActiveTab('payments'); }} icon={<LuPlus size={14} />}>Payment</PrimaryBtn>
         <GhostBtn small icon={<LuTrash2 size={14} />} danger onClick={handleDelete}>Delete</GhostBtn>
       </div>

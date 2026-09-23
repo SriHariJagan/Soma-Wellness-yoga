@@ -12,6 +12,7 @@ const ServiceSchema = new mongoose.Schema(
   {
     name:          { type: String, required: true, trim: true },
     slug:          { type: String, default: '', trim: true },
+    subtitle:      { type: String, default: '', trim: true },
     description:   { type: String, default: '' },
     category:      { type: String, default: 'General' },
     type:          { type: String, default: '' },

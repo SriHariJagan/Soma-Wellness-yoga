@@ -98,4 +98,35 @@ export async function closeRedisConnections() {
   logger.info(MODULE, 'Connections closed');
 }
 
-export default { getRedisConnection, getSubscriberConnection, closeRedisConnections };
+/**
+ * Ping Redis with a short timeout to decide whether BullMQ workers
+ * should start. Returns true when Redis answers, false otherwise.
+ * Logs only once per process to avoid spamming when Redis is down.
+ */
+let _redisUnavailableLogged = false;
+export function isRedisReady() {
+  return !!client && client.status === 'ready';
+}
+export async function pingRedis(timeoutMs = 1500) {
+  try {
+    const conn = getRedisConnection();
+    if (conn.status === 'ready') return true;
+    // Wait briefly for ready, then try a ping with timeout
+    const ping = conn.ping();
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Redis ping timed out')), timeoutMs),
+    );
+    await Promise.race([ping, timeout]);
+    return true;
+  } catch (err) {
+    if (!_redisUnavailableLogged) {
+      logger.warn(MODULE, 'Redis unavailable — BullMQ workers will be skipped (direct-send fallback active)', {
+        error: err.message,
+      });
+      _redisUnavailableLogged = true;
+    }
+    return false;
+  }
+}
+
+export default { getRedisConnection, getSubscriberConnection, closeRedisConnections, isRedisReady, pingRedis };
