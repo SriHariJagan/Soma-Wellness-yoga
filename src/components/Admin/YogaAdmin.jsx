@@ -185,7 +185,7 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
       return;
     }
     const hasMembership = studentForm.plan && String(studentForm.plan).trim() && !/no plan/i.test(String(studentForm.plan));
-    const MEMBERSHIP_MONTHS = { Bronze: 3, Silver: 6, Gold: 12 };
+    const MEMBERSHIP_MONTHS = { 'Soma Wellness Circle': 12, 'SOMA WELLNESS CIRCLE': 12 };
     const planMonths = hasMembership ? (MEMBERSHIP_MONTHS[studentForm.plan] || 0) : 0;
     try {
       await createStudent({

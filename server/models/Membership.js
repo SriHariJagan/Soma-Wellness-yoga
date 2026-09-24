@@ -27,7 +27,7 @@ const MembershipSchema = new mongoose.Schema(
     user:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     plan:       { type: mongoose.Schema.Types.ObjectId, ref: 'Plan' },
     invoice:    { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' },
-    planType:   { type: String, default: 'SOMA JUA' },
+    planType:   { type: String, default: 'Soma Wellness Circle' },
     planMonths: { type: Number, default: 1 },
     price:      { type: Number, default: 0 },
     purchaseDate:{type: Date, default: Date.now },

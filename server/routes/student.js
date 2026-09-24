@@ -19,10 +19,11 @@ const studentSensitiveLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, message
 
 router.get('/dashboard', s.getDashboard);
 
-// Membership
+// Membership (SOMA Wellness Circle — single annual membership)
 router.get('/membership', s.getMembership);
 router.get('/membership/status', s.getMembershipStatus);
 router.get('/membership/active', s.getActiveMembership);
+router.get('/membership/circle', s.getCircleStatus);
 router.get('/membership-plans', s.getMembershipPlans);
 router.post('/membership/purchase', studentSensitiveLimiter, s.purchaseMembership);
 router.post('/membership/cancel', studentSensitiveLimiter, s.cancelMembership);

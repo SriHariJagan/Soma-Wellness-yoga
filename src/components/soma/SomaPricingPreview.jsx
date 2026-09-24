@@ -86,8 +86,8 @@ const SomaPricingPreview = () => {
             <p className={styles.sub}>{t("home.pricing.sub")}</p>
           </div>
           <motion.div whileHover={reduced ? {} : { y: -2 }} whileTap={{ scale: 0.98 }} style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            <Link to="/memberships" className={styles.viewAll} aria-label="Bronze, Silver and Gold term memberships">
-              3 · 6 · 12-month terms <span>→</span>
+            <Link to="/memberships" className={styles.viewAll} aria-label="SOMA Wellness Circle annual membership">
+              SOMA Wellness Circle <span>→</span>
             </Link>
             <Link to="/classes" className={styles.viewAll} aria-label={t("home.pricing.viewAll")}>
               {t("home.pricing.viewAll")} <span>→</span>

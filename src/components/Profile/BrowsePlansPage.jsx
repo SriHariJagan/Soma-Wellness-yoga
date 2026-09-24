@@ -13,9 +13,8 @@ const BADGE_TONE = {
 };
 
 const TIER_ACCENT = {
-  Bronze: "#B0793B",
-  Silver: "#8A9BA8",
-  Gold: "#C9A227",
+  "Soma Wellness Circle": "#C9A227",
+  "SOMA WELLNESS CIRCLE": "#C9A227",
 };
 
 const perMonth = (plan) => {
@@ -38,11 +37,12 @@ export default function BrowsePlansPage({ student, reload }) {
   useEffect(() => {
     Promise.all([getMembershipPlans(), getActiveMembership()])
       .then(([p, m]) => {
-        // Membership shows ONLY Bronze / Silver / Gold term plans.
+        // Single-membership world: ONLY the SOMA Wellness Circle.
         // (Backend filters too — this is a safety net for stale data.)
         const list = Array.isArray(p) ? p : [];
-        const allowed = new Set(["bronze", "silver", "gold"]);
-        setPlans(list.filter((plan) => allowed.has(String(plan?.name || "").toLowerCase())));
+        const circleNames = new Set(["soma wellness circle"]);
+        const filtered = list.filter((plan) => circleNames.has(String(plan?.name || "").toLowerCase()));
+        setPlans(filtered.length > 0 ? filtered : list.filter((plan) => plan && plan.active !== false));
         setActiveMembership(m);
       })
       .catch(() => {})
@@ -104,8 +104,8 @@ export default function BrowsePlansPage({ student, reload }) {
   return (
     <div>
       <PageHeader
-        title="Membership Plans"
-        sub="Choose the perfect membership for your wellness journey"
+        title="SOMA Wellness Circle"
+        sub="Your year of wellness, inspiration and member-only privileges — KES 36,500 / Year"
       />
 
       {msg.text && (

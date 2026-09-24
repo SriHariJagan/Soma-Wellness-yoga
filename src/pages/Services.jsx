@@ -297,7 +297,7 @@ const Services = () => {
                     Unlimited memberships
                     {" · "}
                     <Link to="/memberships" style={{ color: "var(--soma-primary)", fontWeight: 800, textDecoration: "none" }}>
-                      3 · 6 · 12-month terms (Bronze, Silver & Gold) →
+                      SOMA Wellness Circle — Annual Privilege Membership →
                     </Link>
                   </p>
                   <div className={styles.grid}>

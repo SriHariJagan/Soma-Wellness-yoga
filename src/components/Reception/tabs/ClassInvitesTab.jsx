@@ -21,7 +21,7 @@ const SOURCE_TABS = [
   { id: 'all', label: 'Everyone', icon: <LuMail size={13} /> },
 ];
 
-const TIERS = ['Bronze', 'Silver', 'Gold'];
+const TIERS = ['Soma Wellness Circle'];
 
 const PLATFORM_STYLE = {
   Zoom: { bg: 'rgba(45,122,219,0.10)', fg: '#2563EB', border: 'rgba(45,122,219,0.20)' },
@@ -73,7 +73,7 @@ export default function ClassInvitesTab() {
   const [serviceId, setServiceId] = useState('');
   const [serviceStudents, setServiceStudents] = useState([]);
   const [serviceLoading, setServiceLoading] = useState(false);
-  const [tier, setTier] = useState('Silver');
+  const [tier, setTier] = useState('Soma Wellness Circle');
   const [tierStudents, setTierStudents] = useState([]);
   const [tierLoading, setTierLoading] = useState(false);
   const [saving, setSaving] = useState(false);

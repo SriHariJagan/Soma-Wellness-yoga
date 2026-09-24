@@ -114,24 +114,47 @@ export const getMembership = asyncHandler(async (req, res) => {
   res.json(m || null);
 });
 
-// ── GET /api/student/membership-plans (active plans for student view) ──
-// Membership shows ONLY the Bronze / Silver / Gold term plans (3 / 6 / 12
-// months). All other tiers (SOMA JUA/AMANI/UZIMA/FAMILY, passes, DAILY) live
-// in Services — they are hidden here via visibility + this allowlist.
+// ── GET /api/student/membership-plans ──
+// Single-membership world: ONLY the SOMA Wellness Circle is purchasable here.
+// (Monthly SOMA tiers live in Services.)
 export const getMembershipPlans = asyncHandler(async (req, res) => {
+  const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
   const plans = await Plan.find({
     active: true,
     visibility: { $ne: 'hidden' },
-    name: { $in: ['Bronze', 'Silver', 'Gold'] },
+    name: { $in: WELLNESS_CIRCLE.ALIASES },
   }).sort({ displayOrder: 1, durationMonths: 1 });
   res.json(plans);
 });
 
+// ── GET /api/student/membership/circle ──
+// Focused Circle status for dashboard/account display + purchase gating.
+export const getCircleStatus = asyncHandler(async (req, res) => {
+  const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
+  const { getActiveCircleMembership, circleStatusPayload } = await import('../services/circleService.js');
+  const m = await Membership.findOne({
+    user: req.user._id,
+    planType: { $in: WELLNESS_CIRCLE.ALIASES },
+    status: { $in: ['active', 'paused'] },
+  }).sort({ createdAt: -1 }).populate('plan');
+  if (m) await maybeAutoResume(m);
+  const active = await getActiveCircleMembership(req.user._id);
+  res.json({
+    ...circleStatusPayload(active),
+    membership: active,
+    display: m,
+    benefits: WELLNESS_CIRCLE.BENEFITS,
+    notIncluded: WELLNESS_CIRCLE.NOT_INCLUDED,
+    whyJoin: WELLNESS_CIRCLE.WHY_JOIN,
+    positioning: WELLNESS_CIRCLE.POSITIONING,
+  });
+});
+
 // ── POST /api/student/membership/purchase ─────────────────────
-// Initiates a Razorpay payment for the selected plan.
-// The plan is NOT activated here — activation happens after
-// the client calls /verify-payment with the Razorpay response,
-// at which point FulfillmentService creates the Membership record.
+// Initiates an M-Pesa payment for the SOMA Wellness Circle.
+// The membership is NOT activated here — activation happens only after
+// server-side payment verification, when FulfillmentService creates the
+// Membership record (start = payment date, expiry = +1 year).
 export const purchaseMembership = asyncHandler(async (req, res) => {
   const { planId, idempotencyKey } = req.body;
   if (!planId) throw ApiError.badRequest('planId is required');
@@ -140,14 +163,23 @@ export const purchaseMembership = asyncHandler(async (req, res) => {
   if (!plan) throw ApiError.notFound('Plan not found');
   if (!plan.active || plan.visibility === 'hidden') throw ApiError.badRequest('This plan is not available for purchase');
 
-  // Check for existing active membership for the same plan
-  const existing = await Membership.findOne({
-    user: req.user._id,
-    plan: planId,
-    status: 'active',
-    expiryDate: { $gt: new Date() },
-  });
-  if (existing) throw ApiError.badRequest('You already have an active subscription to this plan');
+  const { WELLNESS_CIRCLE, isCirclePlanName } = await import('../config/wellnessCircle.js');
+  if (!isCirclePlanName(plan.name)) {
+    throw ApiError.badRequest('Only the SOMA Wellness Circle membership is available for purchase.');
+  }
+  // Backend is authoritative for the Circle price.
+  if (Number(plan.price) !== Number(WELLNESS_CIRCLE.PRICE)) {
+    logger.warn(MODULE, 'Circle plan price drift detected', { planPrice: plan.price, expected: WELLNESS_CIRCLE.PRICE });
+  }
+
+  // Block overlapping Circle purchases with expiry info.
+  const { getActiveCircleMembership } = await import('../services/circleService.js');
+  const activeCircle = await getActiveCircleMembership(req.user._id);
+  if (activeCircle) {
+    throw ApiError.badRequest(
+      `You already have an active SOMA Wellness Circle membership (valid until ${new Date(activeCircle.expiryDate).toLocaleDateString('en-KE')}).`,
+    );
+  }
 
   // ── Initiate payment via PaymentService ──
   // This creates a Razorpay order and stores a pending Payment document.
@@ -178,13 +210,18 @@ export const purchaseMembership = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     success: true,
-    message: 'Payment initiated. Complete the Razorpay checkout to activate your membership.',
+    message: 'Payment initiated. Complete the M-Pesa payment to activate your SOMA Wellness Circle membership.',
     requiresPayment: true,
     payment: {
       _id: payment._id,
       amount: payment.amount,
       status: payment.paymentStatus,
       gateway: payment.gateway,
+    },
+    mpesa: {
+      order_id: payment.mpesaOrderId || payment.razorpayOrderId,
+      amount: payment.amount,
+      currency: payment.currency,
     },
     razorpay: {
       order_id: payment.razorpayOrderId,
@@ -228,11 +265,29 @@ export const getActiveMembership = asyncHandler(async (req, res) => {
     status: { $in: ['active', 'paused'] },
   }).sort({ createdAt: -1 }).populate('plan');
 
-  if (!m) return res.json(null);
+  if (!m) {
+    // No membership at all — still return Circle context so the dashboard
+    // can render the join CTA without a second round-trip.
+    try {
+      const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
+      const { getActiveCircleMembership, circleStatusPayload } = await import('../services/circleService.js');
+      const active = await getActiveCircleMembership(req.user._id);
+      return res.json({ circle: circleStatusPayload(active), circleBenefits: WELLNESS_CIRCLE.BENEFITS });
+    } catch {
+      return res.json(null);
+    }
+  }
 
   if (m.status === 'paused') await maybeAutoResume(m);
 
+  let circle = null;
+  try {
+    const { getActiveCircleMembership, circleStatusPayload } = await import('../services/circleService.js');
+    circle = circleStatusPayload(await getActiveCircleMembership(req.user._id));
+  } catch {}
+
   res.json({
+    circle,
     _id: m._id,
     planId: m.plan?._id || null,
     planType: m.planType,

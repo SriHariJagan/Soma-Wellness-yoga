@@ -93,17 +93,18 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
     }
   };
 
-  // Membership is strictly Bronze (3mo) / Silver (6mo) / Gold (12mo) — other services show only in Services column
+  // Single-membership world: the SOMA Wellness Circle (12mo). Any other
+  // historical month count renders as a neutral legacy label (no old tiers).
   const getMembershipLabel = (st) => {
-    if (st.planMonths === 3) return 'Bronze';
-    if (st.planMonths === 6) return 'Silver';
-    if (st.planMonths === 12) return 'Gold';
+    if (st.planType && /wellness circle/i.test(String(st.planType))) return 'Wellness Circle';
+    if (st.planMonths === 12) return 'Wellness Circle';
+    if (st.planMonths > 0) return 'Legacy membership';
     return 'No Membership';
   };
   const getPlanStatus = (st) => {
-    if (st.planMonths === 3) return 'Bronze — Membership';
-    if (st.planMonths === 6) return 'Silver — Membership';
-    if (st.planMonths === 12) return 'Gold — Membership';
+    if (st.planType && /wellness circle/i.test(String(st.planType))) return 'Wellness Circle — Membership';
+    if (st.planMonths === 12) return 'Wellness Circle — Membership';
+    if (st.planMonths > 0) return 'Legacy membership';
     return 'No Membership';
   };
 
@@ -226,7 +227,7 @@ export default function StudentsHistory({ form, setForm, onSave, onChanged, feed
                       {(() => {
                         const label = getMembershipLabel(st);
                         const isNoMem = label === 'No Membership';
-                        const isMembershipTier = ['Bronze','Silver','Gold'].includes(label);
+                        const isMembershipTier = ['Wellness Circle','Legacy membership'].includes(label);
                         return isNoMem
                           ? <span className={s.tdMuted}>No Membership</span>
                           : <span style={{ fontWeight: 700, color: '#2D1406' }}>{label} <span style={{ fontWeight: 400, color: 'var(--text-3)', fontSize: 11 }}>· {isMembershipTier ? 'Membership' : 'Service'}</span></span>;

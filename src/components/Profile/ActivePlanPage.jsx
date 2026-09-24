@@ -132,6 +132,14 @@ export default function ActivePlanPage({ reload }) {
   const months = membership.planMonths || 1;
   const startDate = membership.startDate;
   const expiry = membership.expiryDate;
+  const isCircle = /wellness circle/i.test(String(membership.planType || ""));
+  const fmtDMY = (d) => {
+    if (!d) return "—";
+    const dt = new Date(d);
+    const dd = String(dt.getDate()).padStart(2, "0");
+    const mm = String(dt.getMonth() + 1).padStart(2, "0");
+    return `${dd}/${mm}/${dt.getFullYear()}`;
+  };
   const daysLeft = membership.daysLeft || 0;
   const totalDays = months * 30;
   const usedPct = totalDays > 0 ? Math.round(((totalDays - daysLeft) / totalDays) * 100) : 0;
@@ -284,6 +292,13 @@ export default function ActivePlanPage({ reload }) {
             <div className={styles.planBadges}>
               {renderStatusPill()}
             </div>
+            {isCircle && (
+              <div style={{ marginTop: 8, fontSize: 12.5, lineHeight: 1.7, color: "var(--color-text-secondary)" }}>
+                <div><strong>Member Since:</strong> {fmtDMY(startDate)}</div>
+                <div><strong>Valid Until:</strong> {fmtDMY(expiry)}</div>
+                <div><strong>Member Benefit:</strong> 5% off eligible regular-priced SOMA services</div>
+              </div>
+            )}
 
             <div className={styles.benefitRow}>
               <span className={styles.benefitLabel}><i className="ti ti-video" aria-hidden="true" />Zoom access</span>

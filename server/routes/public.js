@@ -43,7 +43,29 @@ router.get('/services', publicCache, asyncHandler(async (req, res) => {
 router.get('/courses', publicCache, asyncHandler(async (req, res) => {
   res.json(await Course.find({ active: true }).select('-enrolledUsers -earlyEnrolled').lean());
 }));
-router.get('/plans', publicCache, asyncHandler(async (req, res) => res.json(await Plan.find({ active: true, visibility: { $ne: 'hidden' }, name: { $in: ['Bronze', 'Silver', 'Gold'] } }).sort({ displayOrder: 1 }).lean())));
+router.get('/plans', publicCache, asyncHandler(async (req, res) => {
+  const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
+  res.json(await Plan.find({ active: true, visibility: { $ne: 'hidden' }, name: { $in: WELLNESS_CIRCLE.ALIASES } }).sort({ displayOrder: 1 }).lean());
+}));
+// Public SOMA Wellness Circle details (price authoritative on backend).
+router.get('/wellness-circle', publicCache, asyncHandler(async (req, res) => {
+  const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
+  const plan = await Plan.findOne({ active: true, name: { $in: WELLNESS_CIRCLE.ALIASES } }).sort({ displayOrder: 1 }).lean();
+  res.json({
+    name: WELLNESS_CIRCLE.NAME,
+    subtitle: WELLNESS_CIRCLE.SUBTITLE,
+    tagline: WELLNESS_CIRCLE.TAGLINE,
+    price: plan?.price ?? WELLNESS_CIRCLE.PRICE,
+    currency: WELLNESS_CIRCLE.CURRENCY,
+    durationMonths: WELLNESS_CIRCLE.DURATION_MONTHS,
+    benefits: WELLNESS_CIRCLE.BENEFITS,
+    notIncluded: WELLNESS_CIRCLE.NOT_INCLUDED,
+    whyJoin: WELLNESS_CIRCLE.WHY_JOIN,
+    positioning: WELLNESS_CIRCLE.POSITIONING,
+    popup: WELLNESS_CIRCLE.POPUP,
+    planId: plan?._id || null,
+  });
+}));
 router.get('/batches', publicCache, asyncHandler(async (req, res) => res.json(await Batch.find({ status: { $ne: 'Closed' } }).sort({ createdAt: -1 }).lean())));
 router.get('/workshops', publicCache, asyncHandler(async (req, res) => res.json(await Workshop.find({ status: 'available', date: { $gte: new Date() } }).sort({ date: 1 }).lean())));
 router.get('/events', publicCache, publicGetEvents);

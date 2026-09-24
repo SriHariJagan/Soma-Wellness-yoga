@@ -44,8 +44,8 @@ export const getCatalog = asyncHandler(async (req, res) => {
       .select('title price duration mode description hours earlyPrice currency category')
       .sort({ price: 1 })
       .lean(),
-    // Membership counter sales: only active plans (Bronze/Silver/Gold).
-    // Hidden/inactive tiers (e.g. SOMA monthly tiers) live in Services.
+    // Membership counter sales: only active, visible plans (SOMA Wellness Circle).
+    // Hidden auxiliary plans (passes, monthly tiers) are excluded.
     Plan.find({ active: { $ne: false }, visibility: { $ne: 'hidden' } })
       .select('name price durationMonths pauseDays benefits badge')
       .sort({ price: 1 })
@@ -99,6 +99,16 @@ export const recordPurchase = asyncHandler(async (req, res) => {
   const item = await model.findById(itemId).lean();
   if (!item) throw ApiError.notFound(`${label} not found`);
   if (item.active === false) throw ApiError.badRequest(`${label} is not currently on sale`);
+
+  // Single-membership world: the counter may sell ONLY the visible
+  // SOMA Wellness Circle — never hidden monthly tiers, passes, or DAILY.
+  if (kind === 'plan') {
+    if (item.visibility === 'hidden') throw ApiError.badRequest(`${label} is not currently on sale`);
+    const { isCirclePlanName } = await import('../config/wellnessCircle.js');
+    if (!isCirclePlanName(item.name)) {
+      throw ApiError.badRequest('Only the SOMA Wellness Circle membership can be sold.');
+    }
+  }
 
   const price = Number(item.price || 0);
   const name = itemName(kind, item);

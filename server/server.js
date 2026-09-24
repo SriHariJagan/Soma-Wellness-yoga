@@ -275,84 +275,37 @@ setInterval(() => {
 // ── SOMA cron: allowance reset, voucher expiry, founding window/rollover (every hour) ──
 import { startSomaCron } from "./services/cron/somaCron.js";
 
-// ── Seed / update official membership plans (SOMA tiers) ──
-// NOTE: SOMA tiers are hidden from Membership listings (visibility: 'hidden')
-// — Membership shows ONLY Bronze / Silver / Gold. These tiers live in
-// Services instead. Existing purchases are unaffected (records, not plans).
+// ── Seed / update official membership plans ──
+// NOTE: SOMA monthly tiers are hidden from Membership listings
+// (visibility: 'hidden'). The ONLY purchasable membership is the
+// SOMA Wellness Circle (KES 36,500/year). Legacy tier catalog docs are
+// deleted — purchase history lives in Membership/Payment/Order snapshots,
+// so existing records and reports are unaffected.
 const OFFICIAL_PLANS = [
   {
-    name: "SOMA JUA",
+    name: "Soma Wellness Circle",
     description:
-      "Move · Energise · Shine. 8 group yoga classes/month + member rates on everything else.",
-    price: 12000,
-    durationMonths: 1,
+      "Annual Privilege Membership — Your year of wellness, inspiration and member-only privileges.",
+    price: 36500,
+    durationMonths: 12,
     pauseDays: 0,
-    displayOrder: 1,
-    benefits: ["8 group yoga classes per month", "Member rates on everything else"],
-    badge: "",
-    isPopular: false,
-    isRecommended: false,
-    visibility: "hidden",
-  },
-  {
-    name: "SOMA AMANI",
-    description:
-      "Move into balance. Unlimited group yoga, meditation & breathwork, SOMA DAILY included.",
-    price: 16500,
-    durationMonths: 1,
-    pauseDays: 0,
-    displayOrder: 2,
+    displayOrder: 0,
     benefits: [
-      "Unlimited group yoga",
-      "Meditation and breathwork",
-      "SOMA DAILY included",
-      "Member rates on everything else",
+      "5% saving on regular-priced SOMA services.*",
+      "Weekly motivational and wellness inspiration.",
+      "One curated “Good Read” wellness article every month.",
+      "Member-only premium content: short yoga, breathwork, meditation and wellness resources.",
+      "Complimentary access to designated SOMA meditation, garden and reading/relaxation spaces during member hours.",
+      "Priority booking for appointments, workshops and selected events.",
+      "A birthday wellness gift from SOMA.",
+      "One guest privilege each year for a selected community/meditation experience.",
+      "Early invitations to new programs, special events and member experiences.",
     ],
-    badge: "",
-    isPopular: false,
-    isRecommended: true,
-    visibility: "hidden",
-  },
-  {
-    name: "SOMA UZIMA",
-    description:
-      "Yoga and recovery, complete. Unlimited yoga & meditation, SOMA DAILY, 2×60-min massages, 1 private yoga/therapy session, priority booking, 2 guest passes, 15% off.",
-    price: 22500,
-    durationMonths: 1,
-    pauseDays: 0,
-    displayOrder: 3,
-    benefits: [
-      "Unlimited yoga and meditation",
-      "SOMA DAILY included",
-      "2 sixty-minute massages",
-      "1 private yoga or therapy session",
-      "Priority booking · 2 guest passes",
-      "15% off everything else",
-    ],
-    badge: "BEST VALUE",
+    badge: "Annual Privilege Membership",
     isPopular: true,
-    isRecommended: false,
-    visibility: "hidden",
-  },
-  {
-    name: "SOMA FAMILY",
-    description:
-      "One household, one plan. 2 adults unlimited yoga, 1 children/teen programme, meditation & breathwork, SOMA DAILY, 10% off.",
-    price: 35000,
-    durationMonths: 1,
-    pauseDays: 0,
-    displayOrder: 4,
-    benefits: [
-      "2 adults, unlimited yoga",
-      "1 children's or teen programme",
-      "Meditation and breathwork",
-      "SOMA DAILY included",
-      "10% off everything else",
-    ],
-    badge: "",
-    isPopular: false,
-    isRecommended: false,
-    visibility: "hidden",
+    isRecommended: true,
+    visibility: "public",
+    active: true,
   },
 ];
 
@@ -379,7 +332,17 @@ async function seedDefaultPlans() {
       { upsert: true, returnDocument: "after" },
     );
   }
+
+  // Permanently remove legacy + auxiliary catalog docs (history lives in snapshots).
+  // Only the SOMA Wellness Circle may exist as a plan.
+  await Plan.deleteMany({ name: { $in: ["Bronze", "Silver", "Gold", ...AUXILIARY_PLAN_NAMES] } });
 }
+
+const AUXILIARY_PLAN_NAMES = [
+  "SOMA JUA", "SOMA AMANI", "SOMA UZIMA", "SOMA FAMILY",
+  "5-Class Pass", "10-Class Pass",
+  "SOMA DAILY — Monthly", "SOMA DAILY — Annual",
+];
 
 // ── Seed / update official services (approved SOMA catalog) ──
 // WHITELIST: only PUBLIC_CATALOG items may exist. Everything else
@@ -428,24 +391,13 @@ async function seedDefaultServices() {
   }
 }
 
-// ── SOMA: Seed SOMA tier plans (KES) ─────────────────────────
+// ── Prune auxiliary plan docs ──────────────────────────────────
+// Single-membership world: monthly tiers, passes and DAILY live in the
+// Services/Offerings catalog (and somaCatalog.js config) — they must NOT
+// exist as Plan docs. This deletes any that reappear, so boot, sync and
+// migration can never reintroduce them.
 async function seedSomaPlans() {
-  const SOMA_PLANS = [
-    // Base tiers (monthly) — hidden from Membership (live in Services)
-    { name: 'SOMA JUA', description: '8 group yoga classes/month · Member rates else', price: 12000, currency: 'KES', durationMonths: 1, tier: 'JUA', tierLabel: 'SOMA JUA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: 8 }, foundingMonthly: 10000, termPricing: { 1: 12000, 3: 32000, 6: 61000, 12: 108000 }, benefits: ['8 group yoga classes a month', 'Member rates on everything else'], displayOrder: 10, isPopular: false, active: true, visibility: 'hidden' },
-    { name: 'SOMA AMANI', description: 'Unlimited yoga, meditation & breathwork · SOMA DAILY', price: 16500, currency: 'KES', durationMonths: 1, tier: 'AMANI', tierLabel: 'SOMA AMANI', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1 }, foundingMonthly: 13500, termPricing: { 1: 16500, 3: 44550, 6: 75500, 12: 125500 }, benefits: ['Unlimited group yoga', 'Meditation and breathwork', 'SOMA DAILY included', 'Member rates on everything else'], displayOrder: 11, isPopular: false, active: true, visibility: 'hidden' },
-    { name: 'SOMA UZIMA', description: 'Unlimited yoga & meditation · 2 massages + 1 private · 15% off', price: 22500, currency: 'KES', durationMonths: 1, tier: 'UZIMA', tierLabel: 'SOMA UZIMA', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, massages60: 2, privateSessions: 1, guestPasses: 2 }, foundingMonthly: 19000, termPricing: { 1: 22500, 3: 60750, 6: 114750, 12: 202500 }, benefits: ['Unlimited yoga and meditation', 'SOMA DAILY included', '2 sixty-minute massages', '1 private yoga or therapy session', 'Priority booking · 2 guest passes', '15% off everything else'], badge: 'BEST VALUE', isPopular: true, displayOrder: 12, active: true, visibility: 'hidden' },
-    { name: 'SOMA FAMILY', description: '2 adults unlimited · 1 Young programme · SOMA DAILY · 10% off', price: 35000, currency: 'KES', durationMonths: 1, tier: 'FAMILY', tierLabel: 'SOMA FAMILY', isSoma: true, somaCategory: 'membership', allowances: { groupYogaClasses: -1, meditationClasses: -1, familyAdults: 2, childrenPrograms: 1 }, foundingMonthly: 28500, termPricing: { 1: 35000, 3: 94500, 6: 178500, 12: 315000 }, benefits: ['2 adults, unlimited yoga', "1 children's or teen programme", 'Meditation and breathwork', 'SOMA DAILY included', '10% off everything else'], displayOrder: 13, active: true, visibility: 'hidden' },
-    // Passes — hidden from Membership (live in Services)
-    { name: '5-Class Pass', description: '5 classes · 6 weeks · 2,200/class', price: 11000, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 20, active: true, visibility: 'hidden' },
-    { name: '10-Class Pass', description: '10 classes · 3 months · 1,150/class', price: 11500, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'pass', displayOrder: 21, active: true, visibility: 'hidden' },
-    // Daily — hidden from Membership (live in Services)
-    { name: 'SOMA DAILY — Monthly', description: 'Weekly podcast, daily reflection, monthly guided audio, seasonal notes', price: 1500, currency: 'KES', durationMonths: 1, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 30, active: true, visibility: 'hidden' },
-    { name: 'SOMA DAILY — Annual', description: 'Annual, 2 months free vs monthly', price: 15000, currency: 'KES', durationMonths: 12, tier: null, isSoma: true, somaCategory: 'daily', displayOrder: 31, active: true, visibility: 'hidden' },
-  ];
-  for (const p of SOMA_PLANS) {
-    await Plan.findOneAndUpdate({ name: p.name }, { $set: p }, { upsert: true, returnDocument: 'after' });
-  }
+  await Plan.deleteMany({ name: { $in: AUXILIARY_PLAN_NAMES } });
 }
 
 // ── SOMA: Seed SOMA services (massage, meditation, signatures, life stages) ─

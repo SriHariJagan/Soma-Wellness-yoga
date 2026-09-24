@@ -104,6 +104,7 @@ export const addToCart = asyncHandler(async (req, res) => {
       itemImage = service.image || '';
       break;
     }
+
     case 'course': {
       const course = await Course.findById(itemId).lean();
       if (!course) throw ApiError.notFound('Course not found');
@@ -164,6 +165,52 @@ export const addToCart = asyncHandler(async (req, res) => {
       throw ApiError.badRequest('Invalid item type');
   }
 
+  // ── SOMA Wellness Circle 5% (service/offering, regular-priced only) ──
+  // Applied server-side at add time; re-validated authoritatively at checkout
+  // and payment initiation, so expiry/coupons/promotions can never stack.
+  let circleDiscount = 0;
+  if ((itemType === 'service' || itemType === 'offering') && itemPrice > 0) {
+    try {
+      const [{ getActiveCircleMembership, resolveCircleServicePrice }, OfferingMod] = await Promise.all([
+        import('../services/circleService.js'),
+        itemType === 'offering' ? import('../models/Offering.js') : Promise.resolve(null),
+      ]);
+      const circleActive = (await getActiveCircleMembership(req.user._id)) != null;
+      if (circleActive) {
+        if (itemType === 'service') {
+          const svc = await Service.findById(itemId).lean();
+          if (svc) {
+            const r = resolveCircleServicePrice(Number(svc.price) || 0, {
+              circleActive: true,
+              hasCouponDiscount: false,
+              isPromotional: !!svc.isPromotional,
+              originalPrice: svc.originalPrice,
+              currentPrice: svc.price,
+              excludeCircleDiscount: !!svc.excludeCircleDiscount,
+              circleDiscountEligible: svc.circleDiscountEligible !== false,
+              category: svc.category,
+              itemType: 'service',
+            });
+            if (r.circleApplied) circleDiscount = r.discountAmount || 0;
+          }
+        } else if (OfferingMod) {
+          const off = await OfferingMod.default.findById(itemId).lean();
+          if (off && off.category !== 'membership' && off.category !== 'academy') {
+            const r = resolveCircleServicePrice(Number(off.price) || 0, {
+              circleActive: true,
+              hasCouponDiscount: false,
+              originalPrice: off.originalPrice,
+              currentPrice: off.price,
+              category: off.category,
+              itemType: 'offering',
+            });
+            if (r.circleApplied) circleDiscount = r.discountAmount || 0;
+          }
+        }
+      }
+    } catch {}
+  }
+
   const cart = await getOrCreateCart(req.user._id);
 
   const existing = await CartItem.findOne({ cart: cart._id, itemType, itemId });
@@ -191,8 +238,8 @@ export const addToCart = asyncHandler(async (req, res) => {
     name: itemName,
     image: itemImage,
     price: itemPrice,
-    discount: 0,
-    finalPrice: itemPrice,
+    discount: circleDiscount,
+    finalPrice: Math.max(0, Math.round((itemPrice - circleDiscount) * 100) / 100),
     quantity,
   });
 
@@ -384,32 +431,55 @@ export const checkout = asyncHandler(async (req, res) => {
   const items = await CartItem.find({ cart: cart._id }).lean();
   if (items.length === 0) throw ApiError.badRequest('Cart is empty');
 
-  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const totalDiscount = items.reduce((s, i) => s + i.discount * i.quantity, 0);
-  const total = items.reduce((s, i) => s + i.finalPrice, 0);
+  // ── Authoritative Circle status (single lookup for the whole basket) ──
+  const { getActiveCircleMembership, resolveCircleServicePrice, WELLNESS_CIRCLE } = await import('../services/circleService.js');
+  const circleActive = (await getActiveCircleMembership(userId)) != null;
 
-  const appliedCoupon = items.find((i) => i.coupon);
+  const appliedCouponPre = items.find((i) => i.coupon);
   let couponId = null;
   let couponCode = '';
   let couponDiscount = 0;
 
-  if (appliedCoupon) {
-    const coupon = await Coupon.findById(appliedCoupon.coupon);
+  if (appliedCouponPre) {
+    const coupon = await Coupon.findById(appliedCouponPre.coupon);
     if (coupon) {
       couponId = coupon._id;
       couponCode = coupon.code;
-      couponDiscount = totalDiscount;
     }
   }
+  const cartHasCoupon = !!appliedCouponPre;
 
-  /* ── Validate all items are still purchasable ── */
+  /* ── Validate all items are still purchasable + recompute Circle pricing ──
+     Backend is authoritative: fresh DB prices win over stored CartItem values.
+     Circle 5% applies only to eligible regular-priced services/offerings and
+     never stacks with coupons/promotions/memberships. */
   for (const item of items) {
     switch (item.itemType) {
       case 'plan': {
         const plan = await Plan.findById(item.itemId).lean();
         if (!plan || !plan.active || plan.visibility === 'hidden') throw ApiError.badRequest(`${item.name} is no longer available`);
-        const existing = await Membership.findOne({ user: userId, plan: item.itemId, status: 'active', expiryDate: { $gt: new Date() } });
-        if (existing) throw ApiError.badRequest(`You already have an active ${item.name} membership`);
+        const { isCirclePlanName } = await import('../config/wellnessCircle.js');
+        if (isCirclePlanName(plan.name)) {
+          const dup = await Membership.findOne({
+            user: userId,
+            planType: { $in: WELLNESS_CIRCLE.ALIASES },
+            status: 'active',
+            expiryDate: { $gt: new Date() },
+          }).lean();
+          if (dup) {
+            throw ApiError.badRequest(
+              `You already have an active SOMA Wellness Circle membership (valid until ${new Date(dup.expiryDate).toLocaleDateString('en-KE')}).`,
+            );
+          }
+        } else {
+          const existing = await Membership.findOne({ user: userId, plan: item.itemId, status: 'active', expiryDate: { $gt: new Date() } });
+          if (existing) throw ApiError.badRequest(`You already have an active ${item.name} membership`);
+        }
+        // Plans never take the Circle discount.
+        if (Number(item.price) !== Number(plan.price) || Number(item.discount) !== 0) {
+          await CartItem.findByIdAndUpdate(item._id, { price: plan.price, discount: 0, finalPrice: plan.price });
+          item.price = plan.price; item.discount = 0; item.finalPrice = plan.price;
+        }
         break;
       }
       case 'service': {
@@ -417,6 +487,31 @@ export const checkout = asyncHandler(async (req, res) => {
         if (!service || !service.active) throw ApiError.badRequest(`${item.name} is no longer available`);
         const enrolledActive = await UserService.findOne({ user: userId, service: item.itemId, status: 'active' });
         if (enrolledActive) throw ApiError.badRequest(`You already have an active enrollment for ${item.name}`);
+        // Recompute authoritative price + Circle benefit.
+        const base = Math.round(Number(service.price) || 0);
+        const hasCoupon = !!item.coupon;
+        const r = resolveCircleServicePrice(base, {
+          circleActive,
+          hasCouponDiscount: hasCoupon,
+          isPromotional: !!service.isPromotional,
+          originalPrice: service.originalPrice,
+          currentPrice: service.price,
+          excludeCircleDiscount: !!service.excludeCircleDiscount,
+          circleDiscountEligible: service.circleDiscountEligible !== false,
+          category: service.category,
+          itemType: 'service',
+        });
+        const wantDiscount = hasCoupon ? (Number(item.discount) || 0) : (r.discountAmount || 0);
+        const wantFinal = hasCoupon ? Number(item.finalPrice) : r.finalPrice;
+        if (Number(item.price) !== base || Number(item.discount) !== wantDiscount || Number(item.finalPrice) !== wantFinal) {
+          if (!hasCoupon) {
+            await CartItem.findByIdAndUpdate(item._id, { price: base, discount: wantDiscount, finalPrice: wantFinal });
+            item.price = base; item.discount = wantDiscount; item.finalPrice = wantFinal;
+          } else if (Number(item.price) !== base) {
+            await CartItem.findByIdAndUpdate(item._id, { price: base });
+            item.price = base;
+          }
+        }
         break;
       }
       case 'course': {
@@ -446,6 +541,24 @@ export const checkout = asyncHandler(async (req, res) => {
         } else if (offering.category !== 'academy') {
           const dupSvc = await UserService.findOne({ user: userId, offering: offering._id, status: 'active' }).lean();
           if (dupSvc) throw ApiError.badRequest(`You already have an active ${item.name}`);
+          // Authoritative Circle recompute for offerings (promo-aware, never stacks).
+          const base = Math.round(Number(offering.price) || 0);
+          const hasCoupon = !!item.coupon;
+          const r = resolveCircleServicePrice(base, {
+            circleActive,
+            hasCouponDiscount: hasCoupon,
+            originalPrice: offering.originalPrice,
+            currentPrice: offering.price,
+            category: offering.category,
+            itemType: 'offering',
+          });
+          if (!hasCoupon && (Number(item.price) !== base || Number(item.discount) !== (r.discountAmount || 0) || Number(item.finalPrice) !== r.finalPrice)) {
+            await CartItem.findByIdAndUpdate(item._id, { price: base, discount: r.discountAmount || 0, finalPrice: r.finalPrice });
+            item.price = base; item.discount = r.discountAmount || 0; item.finalPrice = r.finalPrice;
+          } else if (Number(item.price) !== base) {
+            await CartItem.findByIdAndUpdate(item._id, { price: base });
+            item.price = base;
+          }
         } else {
           const yttcUser = await User.findById(userId).select('yttcEnrollment').lean();
           if (yttcUser?.yttcEnrollment?.isEnrolled) throw ApiError.badRequest('You are already enrolled in teacher training');
@@ -465,6 +578,12 @@ export const checkout = asyncHandler(async (req, res) => {
     }
     await CartItem.findByIdAndUpdate(item._id, { name: item.name || 'Service' });
   }
+
+  // Recompute authoritative totals AFTER per-item Circle revalidation above.
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalDiscount = items.reduce((s, i) => s + i.discount * i.quantity, 0);
+  const total = items.reduce((s, i) => s + i.finalPrice, 0);
+  if (couponId) couponDiscount = totalDiscount;
 
   const now = new Date();
 

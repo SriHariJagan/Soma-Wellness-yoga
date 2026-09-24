@@ -33,6 +33,29 @@ const PlanSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Retired single-use tier names — they were fully removed from the catalog
+// (see scripts/migrate-wellness-circle.js) and must never be recreated via
+// admin CRUD or any other path. The single membership is SOMA Wellness Circle.
+const RETIRED_PLAN_NAMES = new Set(['bronze', 'silver', 'gold']);
+
+function rejectRetiredName(name) {
+  if (name && RETIRED_PLAN_NAMES.has(String(name).trim().toLowerCase())) {
+    throw new Error(
+      `Plan name "${name}" is retired and cannot be created. Only the SOMA Wellness Circle is available.`,
+    );
+  }
+}
+
+PlanSchema.pre('save', function () {
+  if (this.isNew || this.isModified('name')) rejectRetiredName(this.name);
+});
+
+PlanSchema.pre('findOneAndUpdate', function () {
+  const update = this.getUpdate() || {};
+  const name = update.name ?? update.$set?.name;
+  if (name !== undefined) rejectRetiredName(name);
+});
+
 PlanSchema.virtual('badgeLabel').get(function () {
   if (this.badge) return this.badge;
   if (this.isPopular) return 'Most Popular';

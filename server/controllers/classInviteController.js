@@ -43,7 +43,7 @@ async function getFilteredStudents(filter) {
     case 'all_members': {
       // Paused members are excluded from invitations. Only active
       // (non-paused, non-expired) memberships are eligible.
-      // Optional planType narrows to one tier (Bronze / Silver / Gold).
+      // Optional planType narrows to one membership (e.g. SOMA Wellness Circle).
       const match = { status: 'active' };
       if (planType && String(planType).trim()) {
         match.planType = new RegExp(`^${String(planType).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');

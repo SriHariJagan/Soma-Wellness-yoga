@@ -15,6 +15,7 @@ export const PAYMENT_ITEM_TYPES = [
   'membership',
   'plan',
   'service',
+  'offering',
   'workshop',
   'consultation',
   'course',

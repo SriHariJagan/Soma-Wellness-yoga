@@ -55,43 +55,80 @@ export class FulfillmentService {
   async _activateMembership(item, paymentId, userId, session) {
     const plan = await Plan.findById(item.itemId).session(session).lean();
     if (!plan) throw new Error(`Plan not found: ${item.itemId}`);
+    if (plan.active === false) throw new Error(`Plan "${plan.name}" is not available for activation`);
 
-    // Prevent duplicate active memberships for the same user+plan
-    const existing = await Membership.findOne({
-      user: userId,
-      plan: plan._id,
-      status: 'active',
-      expiryDate: { $gt: new Date() },
-    }).session(session).lean();
-    if (existing) {
-      throw new Error(`User already has an active membership for plan "${plan.name}"`);
+    const { WELLNESS_CIRCLE, isCirclePlanName, circleExpiryFrom } = await import('../../config/wellnessCircle.js');
+    const isCircle = isCirclePlanName(plan.name);
+
+    // Prevent duplicate active memberships. For the Circle (single plan) any
+    // active Circle blocks an overlapping purchase; otherwise per-plan guard.
+    if (isCircle) {
+      const dup = await Membership.findOne({
+        user: userId,
+        planType: { $in: WELLNESS_CIRCLE.ALIASES },
+        status: 'active',
+        expiryDate: { $gt: new Date() },
+      }).session(session).lean();
+      if (dup) {
+        logger.info(MODULE, 'Circle already active – idempotent skip', {
+          userId: String(userId), membershipId: String(dup._id),
+        });
+        return { itemType: 'membership', fulfilled: true, referenceId: dup._id, note: 'Circle already active' };
+      }
+    } else {
+      const existing = await Membership.findOne({
+        user: userId,
+        plan: plan._id,
+        status: 'active',
+        expiryDate: { $gt: new Date() },
+      }).session(session).lean();
+      if (existing) {
+        throw new Error(`User already has an active membership for plan "${plan.name}"`);
+      }
     }
 
     const now = new Date();
-    const expiryDate = new Date(now);
-    expiryDate.setMonth(expiryDate.getMonth() + (plan.durationMonths || 1));
+    // Circle: exactly 1 year from verified payment date (not cron-dependent).
+    const expiryDate = isCircle
+      ? circleExpiryFrom(now)
+      : (() => { const e = new Date(now); e.setMonth(e.getMonth() + (plan.durationMonths || 1)); return e; })();
+
+    // Backend is authoritative for Circle price — never trust item amounts.
+    const authoritativePrice = isCircle ? WELLNESS_CIRCLE.PRICE : plan.price;
 
     const membership = await Membership.create([{
       user: userId,
       plan: plan._id,
       invoice: paymentId,
-      planType: plan.name,
-      planMonths: plan.durationMonths || 1,
-      price: plan.price,
+      planType: isCircle ? WELLNESS_CIRCLE.NAME : plan.name,
+      planMonths: isCircle ? WELLNESS_CIRCLE.DURATION_MONTHS : (plan.durationMonths || 1),
+      price: authoritativePrice,
       purchaseDate: now,
       status: 'active',
       startDate: now,
       expiryDate,
-      benefits: plan.benefits || [],
-      pauseDaysAllowed: plan.pauseDays || 0,
-      history: [{ action: 'created', note: 'Payment verified – membership activated', at: now }],
+      benefits: isCircle ? WELLNESS_CIRCLE.BENEFITS : (plan.benefits || []),
+      pauseDaysAllowed: isCircle ? 0 : (plan.pauseDays || 0),
+      currency: 'KES',
+      history: [{ action: 'created', note: isCircle ? 'Payment verified – SOMA Wellness Circle activated (1 year)' : 'Payment verified – membership activated', at: now }],
     }], { session });
 
     logger.info(MODULE, 'Membership activated', {
       membershipId: String(membership[0]._id),
       userId: String(userId),
       plan: plan.name,
+      circle: isCircle,
     });
+
+    if (isCircle) {
+      try {
+        await notify(userId, {
+          title: 'Welcome to the SOMA Wellness Circle',
+          message: `Your ${WELLNESS_CIRCLE.NAME} is active until ${expiryDate.toLocaleDateString('en-KE')}. Amount paid: KES ${authoritativePrice.toLocaleString('en-KE')}. Benefit: 5% off eligible regular-priced SOMA services.`,
+          type: 'success', channels: ['inApp', 'email'],
+        });
+      } catch { /* non-blocking */ }
+    }
 
     return { itemType: 'membership', fulfilled: true, referenceId: membership[0]._id };
   }

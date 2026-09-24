@@ -200,10 +200,11 @@ export const getMyTrialNotifications = () => api("/trial/notifications");
 export const markTrialNotificationRead = (id) => api(`/trial/notifications/${id}/read`, { method: "PATCH" });
 export const markAllTrialNotificationsRead = () => api("/trial/notifications/read-all", { method: "PATCH" });
 
-// ── Membership Plans (Browse) ───────────────────────────────
+// ── SOMA Wellness Circle (single annual membership) ──────────
 export const getMembershipPlans = () => api("/membership-plans");
 export const purchaseMembership = (planId) => api("/membership/purchase", { method: "POST", body: { planId } });
 export const getActiveMembership = () => api("/membership/active");
+export const getCircleStatus = () => api("/membership/circle");
 export const getMembershipStatus = () => api("/membership/status");
 export const cancelMembership = () => api("/membership/cancel", { method: "POST" });
 

@@ -40,7 +40,8 @@ router.get('/students/:id/logs', a.getStudentLogs);
 router.post('/plans/assign', a.assignPlan);
 router.put('/plans/revoke/:id', a.revokePlan);
 
-// Memberships renew & upgrade
+// Memberships (SOMA Wellness Circle — single annual membership)
+router.get('/memberships/circle', a.getCircleMembers);
 router.post('/memberships/renew', a.renewMembership);
 router.post('/memberships/upgrade', a.upgradeMembership);
 

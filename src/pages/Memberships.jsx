@@ -7,90 +7,114 @@ import PageFAQSection from "../components/soma/PageFAQSection";
 import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
 import CheckoutGate from "../components/checkout/CheckoutGate.jsx";
-import { addToCart, showToast, notifyCartUpdate } from "../utils/payment";
+import { addToCart, showToast, notifyCartUpdate, getAuthHeaders, isAuthenticated } from "../utils/payment";
 import styles from "./Memberships.module.css";
 
 const API = import.meta.env.VITE_API_URL || "";
 const fmt = (n) => Number(n || 0).toLocaleString("en-KE");
 
-// Static fallback — mirrors server/seed-tiers.js (Bronze 3mo / Silver 6mo / Gold 12mo)
-const FALLBACK_PLANS = [
-  {
-    name: "Bronze",
-    description: "Three months of unlimited group yoga — build your foundation.",
-    price: 48000,
-    durationMonths: 3,
-    pauseDays: 7,
-    benefits: [
-      "Unlimited group yoga classes",
-      "1 meditation session per week",
-      "Mat and props provided",
-      "Post-class herbal tea",
-    ],
-    badge: "",
-    isPopular: false,
-    displayOrder: 1,
-  },
-  {
-    name: "Silver",
-    description: "Six months of unlimited practice plus recovery — our most loved tier.",
-    price: 88000,
-    durationMonths: 6,
-    pauseDays: 14,
-    benefits: [
-      "Everything in Bronze",
-      "2 steam sessions per month",
-      "1 massage per quarter",
-      "Priority class booking",
-    ],
-    badge: "Most Popular",
-    isPopular: true,
-    displayOrder: 2,
-  },
-  {
-    name: "Gold",
-    description: "Twelve months of all-inclusive wellness — yoga, recovery and personal guidance.",
-    price: 160000,
-    durationMonths: 12,
-    pauseDays: 30,
-    benefits: [
-      "Everything in Silver",
-      "4 steam sessions per month",
-      "1 massage per month",
-      "1 private session per quarter",
-      "Guest passes (2 per year)",
-    ],
-    badge: "Best Value",
-    isPopular: false,
-    displayOrder: 3,
-  },
-];
-
-const TIER_STYLE = {
-  Bronze: { term: "3 months", dot: "#B0793B", accent: false },
-  Silver: { term: "6 months", dot: "#8A9BA8", accent: true },
-  Gold: { term: "12 months", dot: "#C9A227", accent: false },
+// Authoritative defaults — backend remains the source of truth for price.
+const FALLBACK = {
+  name: "SOMA WELLNESS CIRCLE",
+  subtitle: "Annual Privilege Membership",
+  tagline: "Your year of wellness, inspiration and member-only privileges.",
+  price: 36500,
+  durationMonths: 12,
+  benefits: [
+    "5% saving on regular-priced SOMA services.*",
+    "Weekly motivational and wellness inspiration.",
+    "One curated “Good Read” wellness article every month.",
+    "Member-only premium content: short yoga, breathwork, meditation and wellness resources.",
+    "Complimentary access to designated SOMA meditation, garden and reading/relaxation spaces during member hours.",
+    "Priority booking for appointments, workshops and selected events.",
+    "A birthday wellness gift from SOMA.",
+    "One guest privilege each year for a selected community/meditation experience.",
+    "Early invitations to new programs, special events and member experiences.",
+  ],
+  notIncluded: [
+    "It is not an unlimited yoga-class membership.",
+    "Yoga classes, private sessions, therapy, massage and other treatments remain separately chargeable.",
+    "The 5% benefit does not stack with already discounted packages, memberships or promotional offers.",
+  ],
+  whyJoin:
+    "A simple way to stay connected with SOMA all year — receive practical wellness guidance, enjoy member savings and belong to a calm wellness community, without committing to a full yoga package.",
+  positioning:
+    "A loyalty and lifestyle subscription for people who want ongoing connection with SOMA — not a replacement for the main yoga or therapy packages.",
 };
 
-const perMonth = (plan) => {
-  const m = Number(plan.durationMonths) || 0;
-  return m > 0 ? Math.round(Number(plan.price || 0) / m) : 0;
-};
-
-const PlanCard = ({ plan, index }) => {
-  const navigate = useNavigate();
+const Memberships = () => {
   const reduced = usePrefersReducedMotion();
+  const navigate = useNavigate();
+  const [circle, setCircle] = useState(FALLBACK);
+  const [planId, setPlanId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
-  const look = TIER_STYLE[plan.name] || { term: `${plan.durationMonths} months`, dot: "var(--soma-primary)", accent: false };
-  const badge = plan.badge || (plan.isPopular ? "Most Popular" : "");
-  const canBuy = Boolean(plan._id) && Number(plan.price) > 0;
+  const [status, setStatus] = useState(null); // { active, validUntil }
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        // Preferred: dedicated Circle endpoint (includes planId).
+        const r = await fetch(`${API}/api/public/wellness-circle`);
+        if (r.ok) {
+          const data = await r.json();
+          if (!cancelled && data) {
+            setCircle({
+              name: (data.name || FALLBACK.name).toUpperCase(),
+              subtitle: data.subtitle || FALLBACK.subtitle,
+              tagline: data.tagline || FALLBACK.tagline,
+              price: Number(data.price) || FALLBACK.price,
+              durationMonths: Number(data.durationMonths) || 12,
+              benefits: Array.isArray(data.benefits) && data.benefits.length ? data.benefits : FALLBACK.benefits,
+              notIncluded: Array.isArray(data.notIncluded) && data.notIncluded.length ? data.notIncluded : FALLBACK.notIncluded,
+              whyJoin: data.whyJoin || FALLBACK.whyJoin,
+              positioning: data.positioning || FALLBACK.positioning,
+            });
+            if (data.planId) setPlanId(data.planId);
+            if (!data.planId) {
+              // Fall back to plans list for the id only.
+              const rp = await fetch(`${API}/api/public/plans`);
+              if (rp.ok) {
+                const list = await rp.json();
+                const found = (Array.isArray(list) ? list : [])[0];
+                if (found?._id && !cancelled) setPlanId(found._id);
+              }
+            }
+          }
+        } else {
+          const rp = await fetch(`${API}/api/public/plans`);
+          if (rp.ok) {
+            const list = await rp.json();
+            const found = (Array.isArray(list) ? list : [])[0];
+            if (found && !cancelled) {
+              if (found._id) setPlanId(found._id);
+              if (Number(found.price) > 0) setCircle((c) => ({ ...c, price: Number(found.price) }));
+            }
+          }
+        }
+      } catch {}
+      finally { if (!cancelled) setLoading(false); }
+      // Authenticated: check for an existing active Circle (gates duplicate purchase).
+      try {
+        if (isAuthenticated()) {
+          const rs = await fetch(`${API}/api/student/membership/circle`, { headers: getAuthHeaders() });
+          if (rs.ok) {
+            const s = await rs.json();
+            if (!cancelled) setStatus(s);
+          }
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const buy = async () => {
-    if (!canBuy || buying) return;
+    if (!planId || buying) return;
     setBuying(true);
     try {
-      await addToCart("plan", plan._id);
-      showToast(`${plan.name} added to cart`, "success");
+      await addToCart("plan", planId);
+      showToast("SOMA Wellness Circle added to cart", "success");
       notifyCartUpdate();
       navigate("/studentdashboard?tab=cart");
     } catch (err) {
@@ -100,94 +124,36 @@ const PlanCard = ({ plan, index }) => {
     }
   };
 
-  return (
-    <motion.article
-      initial={{ opacity: 0, y: 24, scale: 0.98 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.55, delay: Math.min(index * 0.08, 0.16), ease: EASE }}
-      whileHover={reduced ? {} : look.accent ? { y: -10, scale: 1.02 } : { y: -6, scale: 1.01 }}
-      className={`${styles.card} ${look.accent ? styles.cardAccent : ""}`}
-    >
-      <div className={styles.cardSheen} aria-hidden="true" />
-      {badge && <span className={styles.badge}>{badge}</span>}
+  const alreadyActive = !!(status && status.active);
+  const validUntil = status?.validUntil ? new Date(status.validUntil).toLocaleDateString("en-KE", { day: "2-digit", month: "2-digit", year: "numeric" }) : null;
 
-      <div className={styles.termRow}>
-        <span className={styles.termDot} style={{ background: look.dot }} aria-hidden="true" />
-        <span className={styles.termLabel}>{look.term}</span>
-        <span className={styles.termSep} aria-hidden="true">·</span>
-        <span className={styles.termMonths}>
-          {plan.durationMonths} month{plan.durationMonths > 1 ? "s" : ""}
-        </span>
-      </div>
-
-      <h3 className={styles.planName}>{plan.name}</h3>
-      {plan.description && <p className={styles.planDesc}>{plan.description}</p>}
-
-      <div className={styles.priceRow}>
-        <span className={styles.price}>{fmt(plan.price)}</span>
-        <span className={styles.priceCur}>KES total</span>
-      </div>
-      <div className={styles.perMonth}>≈ KES {fmt(perMonth(plan))} per month</div>
-
-      <ul className={styles.benefits}>
-        {(plan.benefits || []).map((b) => (
-          <li key={b}>
-            <span className={styles.check} aria-hidden="true">✓</span>
-            {b}
-          </li>
-        ))}
-      </ul>
-
-      {plan.pauseDays > 0 && (
-        <div className={styles.pauseNote}>Pause for up to {plan.pauseDays} days</div>
-      )}
-
-      <div className={styles.cardActions}>
-        {canBuy && (
-          <CheckoutGate
-            intent={{ name: `${plan.name} Membership`, price: `KES ${fmt(plan.price)}`, sub: `${look.term} · unlimited practice`, type: "membership", itemType: "plan", itemId: plan._id }}
-            onProceed={buy}
-          >
-            <button type="button" className={look.accent ? styles.bookAccent : styles.book} disabled={buying}>
-              {buying ? "Adding…" : `Choose ${plan.name}`}
-            </button>
-          </CheckoutGate>
-        )}
-        <Link to="/contact" className={canBuy ? styles.enquireGhost : styles.enquire}>
-          Enquire
-        </Link>
-      </div>
-    </motion.article>
-  );
-};
-
-const Memberships = () => {
-  const reduced = usePrefersReducedMotion();
-  const [plans, setPlans] = useState(FALLBACK_PLANS);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`${API}/api/public/plans`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        const list = Array.isArray(data) ? data : [];
-        const allowed = new Set(["bronze", "silver", "gold"]);
-        const terms = list
-          .filter((p) => p && p.active !== false && allowed.has(String(p.name || "").toLowerCase()))
-          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0) || (a.durationMonths || 0) - (b.durationMonths || 0));
-        if (terms.length > 0) setPlans(terms);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const cta = (label = "BECOME A SOMA MEMBER") => {
+    if (alreadyActive) return null;
+    if (!planId) {
+      return (
+        <button type="button" className={styles.bookAccent} disabled>
+          {label}
+        </button>
+      );
+    }
+    return (
+      <CheckoutGate
+        intent={{ name: "SOMA Wellness Circle", price: `KES ${fmt(circle.price)}`, sub: "Annual Privilege Membership · 1 year", type: "membership", itemType: "plan", itemId: planId }}
+        onProceed={buy}
+      >
+        <button type="button" className={styles.bookAccent} disabled={buying}>
+          {buying ? "Adding…" : label}
+        </button>
+      </CheckoutGate>
+    );
+  };
 
   return (
     <div className={styles.page}>
       <SomaPageHeader
-        eyebrow="Memberships"
-        title="Three terms. One practice."
-        subtitle="Bronze, Silver and Gold — 3, 6 or 12 months of unlimited practice with recovery built in. All prices in KES, VAT included."
+        eyebrow="Membership"
+        title="SOMA Wellness Circle"
+        subtitle={`${circle.subtitle} — ${circle.tagline} All prices in KES, VAT included.`}
         image="/images/headers/classes-memberships.webp"
       />
 
@@ -200,65 +166,146 @@ const Memberships = () => {
           className={styles.introBar}
         >
           <span className={styles.introDot} aria-hidden="true" />
-          <p>
-            Commit to your practice for a full term and save — every tier includes unlimited group yoga,
-            with steam, massage and private sessions as you move from <strong>Bronze → Silver → Gold</strong>.
-          </p>
-          <span className={styles.introPill}>3 · 6 · 12 months</span>
+          <p>{circle.positioning}</p>
+          <span className={styles.introPill}>1 year · KES 36,500</span>
         </motion.div>
 
         {loading ? (
-          <div className={styles.grid}>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className={styles.skeleton} aria-hidden="true">
-                <div className={styles.skelLine} style={{ width: "40%" }} />
-                <div className={styles.skelLine} style={{ width: "70%", height: 26 }} />
-                <div className={styles.skelLine} style={{ width: "100%" }} />
-                <div className={styles.skelLine} style={{ width: "85%" }} />
-              </div>
-            ))}
+          <div className={styles.gridSingle}>
+            <div className={styles.skeleton} aria-hidden="true">
+              <div className={styles.skelLine} style={{ width: "40%" }} />
+              <div className={styles.skelLine} style={{ width: "70%", height: 26 }} />
+              <div className={styles.skelLine} style={{ width: "100%" }} />
+              <div className={styles.skelLine} style={{ width: "85%" }} />
+            </div>
           </div>
         ) : (
-          <div className={styles.grid}>
-            {plans.map((plan, i) => (
-              <PlanCard key={plan._id || plan.name} plan={plan} index={i} />
-            ))}
-          </div>
+          <motion.article
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.55, ease: EASE }}
+            className={`${styles.card} ${styles.cardAccent} ${styles.circleCard} ${styles.heroCard}`}
+          >
+            <div className={styles.cardSheen} aria-hidden="true" />
+            <div className={styles.heroOrbA} aria-hidden="true" />
+            <div className={styles.heroOrbB} aria-hidden="true" />
+            <span className={styles.ribbon}>{circle.subtitle}</span>
+
+            <div className={styles.heroEmblem} aria-hidden="true">
+              <span className={styles.heroEmblemInner}>◉</span>
+            </div>
+
+            <div className={styles.termRow}>
+              <span className={styles.termDot} style={{ background: "#FFD54F" }} aria-hidden="true" />
+              <span className={styles.termLabel}>Annual Privilege Membership</span>
+              <span className={styles.termSep} aria-hidden="true">·</span>
+              <span className={styles.termMonths}>12 months</span>
+            </div>
+
+            <h3 className={styles.planName}>{circle.name}</h3>
+            <p className={styles.planDesc}>{circle.tagline}</p>
+
+            <div className={styles.heroPriceRow}>
+              <span className={styles.heroPrice}>{fmt(circle.price)}</span>
+              <span className={styles.priceCur}>KES / Year</span>
+              <span className={styles.perMonth}>Just KES 100 Per Day</span>
+            </div>
+
+            <div className={styles.heroStats}>
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatNum}>12</span>
+                <span className={styles.heroStatLabel}>months of wellness</span>
+              </div>
+              <div className={styles.heroStatDiv} aria-hidden="true" />
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatNum}>9</span>
+                <span className={styles.heroStatLabel}>member privileges</span>
+              </div>
+              <div className={styles.heroStatDiv} aria-hidden="true" />
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatNum}>5%</span>
+                <span className={styles.heroStatLabel}>member saving</span>
+              </div>
+            </div>
+
+            {alreadyActive && (
+              <div className={styles.activeNote} role="status">
+                You already have an active SOMA Wellness Circle membership.
+                {validUntil && <> Valid until <strong>{validUntil}</strong>.</>}
+              </div>
+            )}
+
+            <div className={styles.cardActions}>
+              {alreadyActive ? (
+                <Link to="/studentdashboard?tab=plan" className={styles.bookAccent}>View My Membership →</Link>
+              ) : (
+                <>
+                  {cta()}
+                  <Link to="/contact" className={styles.enquireGhost}>Enquire</Link>
+                </>
+              )}
+            </div>
+          </motion.article>
         )}
 
-        {/* Compare strip */}
+        {/* WHAT MEMBERS RECEIVE */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.55, ease: EASE }}
-          className={styles.compare}
+          className={styles.perksPanel}
         >
-          <div className={styles.compareHead}>
-            <span>Compare at a glance</span>
-            <Link to="/services" className={styles.compareLink}>Prefer monthly? See Services →</Link>
+          <div className={styles.perksHead}>
+            <span className={styles.perksEyebrow}>Annual Privilege Membership</span>
+            <h3 className={styles.perksTitle}>What members <em>receive</em></h3>
+            <p className={styles.perksSub}>Nine privileges, one calm year of belonging.</p>
           </div>
-          <div className={styles.compareGrid}>
-            <div className={styles.compareCellHead}>Term</div>
-            {plans.map((p) => (
-              <div key={p.name} className={styles.compareCellTop}>{p.durationMonths} months</div>
-            ))}
-            <div className={styles.compareCellHead}>Total</div>
-            {plans.map((p) => (
-              <div key={p.name} className={styles.compareCell}>KES {fmt(p.price)}</div>
-            ))}
-            <div className={styles.compareCellHead}>Per month</div>
-            {plans.map((p) => (
-              <div key={p.name} className={styles.compareCellStrong}>KES {fmt(perMonth(p))}</div>
-            ))}
-            <div className={styles.compareCellHead}>Pause</div>
-            {plans.map((p) => (
-              <div key={p.name} className={styles.compareCell}>Up to {p.pauseDays || 0} days</div>
+          <div className={styles.perkGrid}>
+            {circle.benefits.map((b, i) => (
+              <motion.div
+                key={b}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: Math.min(i * 0.05, 0.3), ease: EASE }}
+                whileHover={reduced ? {} : { y: -4 }}
+                className={`${styles.perkCard} ${i === 0 ? styles.perkCardGold : ""}`}
+              >
+                <span className={styles.perkNum} aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                <span className={styles.perkIcon} aria-hidden="true">
+                  {["✦", "❀", "✎", "◐", "❋", "⟡", "♥", "◉", "✉"][i % 9]}
+                </span>
+                <span className={styles.perkText}>{b}</span>
+              </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Monthly tiers live in Services */}
+        {/* HOW IT WORKS */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.55, ease: EASE }}
+          className={styles.steps}
+        >
+          {[
+            { n: "01", t: "Become a member", d: "One tap starts your secure checkout." },
+            { n: "02", t: "Pay securely", d: "M-Pesa payment, verified instantly." },
+            { n: "03", t: "Enjoy a full year", d: "Savings, reads and privileges begin." },
+          ].map((s, i) => (
+            <div key={s.n} className={styles.step}>
+              <span className={styles.stepNum} aria-hidden="true">{s.n}</span>
+              <div className={styles.stepTitle}>{s.t}</div>
+              <div className={styles.stepDesc}>{s.d}</div>
+              {i < 2 && <span className={styles.stepArrow} aria-hidden="true">→</span>}
+            </div>
+          ))}
+        </motion.div>
+
+        {/* WHY JOIN */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -267,19 +314,49 @@ const Memberships = () => {
           className={styles.servicesNote}
         >
           <div>
-            <div className={styles.servicesTitle}>Looking for a monthly plan instead?</div>
-            <div className={styles.servicesDesc}>
-              SOMA JUA, AMANI, UZIMA and FAMILY — plus class passes and SOMA DAILY — live in Services.
-            </div>
+            <div className={styles.servicesTitle}>Why join?</div>
+            <div className={styles.servicesDesc}>“{circle.whyJoin}”</div>
           </div>
-          <motion.div whileHover={reduced ? {} : { y: -2 }} whileTap={{ scale: 0.98 }}>
-            <Link to="/services" className={styles.servicesBtn}>Browse Services →</Link>
-          </motion.div>
         </motion.div>
 
+        {/* WHAT IT DOES NOT INCLUDE */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.55, ease: EASE }}
+          className={styles.compare}
+        >
+          <div className={styles.compareHead}><span>Important: what it does not include</span></div>
+          <ul className={styles.circleList}>
+            {circle.notIncluded.map((b) => (
+              <li key={b}><span className={styles.cross} aria-hidden="true">•</span>{b}</li>
+            ))}
+          </ul>
+        </motion.div>
+
+        {/* Bottom CTA */}
+        {!alreadyActive && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, ease: EASE }}
+            className={styles.bottomCta}
+          >
+            <div className={styles.bottomCtaOrbs} aria-hidden="true" />
+            <div className={styles.bottomCtaEyebrow}>Your year of wellness awaits</div>
+            <div className={styles.bottomCtaPrice}>KES {fmt(circle.price)} <span>/ Year</span></div>
+            <div className={styles.bottomCtaPer}>Just KES 100 Per Day · 5% member saving included</div>
+            <div className={styles.cardActions} style={{ maxWidth: 420, margin: "14px auto 0" }}>
+              {cta()}
+            </div>
+          </motion.div>
+        )}
+
         <div className={styles.finePrint}>
-          Spring Valley, Nairobi · All prices in KES, VAT included · Life happens — pause your term with no penalty ·
-          Unused sessions don&apos;t carry over · 12h cancellation (half fee), no-show full fee.
+          Spring Valley, Nairobi · All prices in KES, VAT included · Membership activates only after verified payment ·
+          Valid for 1 year from payment date · 5% saving applies to regular-priced services only and does not stack with discounted packages or promotions.
         </div>
       </section>
 

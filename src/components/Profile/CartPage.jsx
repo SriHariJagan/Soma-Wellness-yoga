@@ -445,8 +445,8 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                             <span style={{
                               fontSize: 10, fontWeight: 600, color: "#10B981",
                               padding: "1px 6px", borderRadius: 6, background: "rgba(16,185,129,0.1)",
-                            }}>
-                              -KES {item.discount.toLocaleString()}
+                            }} title={item.coupon ? "Coupon discount" : "SOMA Wellness Circle 5% member saving"}>
+                              -KES {item.discount.toLocaleString()}{item.coupon ? "" : " · Circle 5%"}
                             </span>
                           </>
                         )}

@@ -335,7 +335,7 @@ export function AddStudentModal({ onClose, onSuccess }) {
     setFeedback({ message: '', type: '' });
     try {
       const hasMembership = form.membership && String(form.membership).trim() && String(form.membership).trim().toLowerCase() !== 'no plan' && String(form.membership).trim().toLowerCase() !== 'none';
-      const MEMBERSHIP_MONTHS = { Bronze: 3, Silver: 6, Gold: 12 };
+      const MEMBERSHIP_MONTHS = { 'Soma Wellness Circle': 12, 'SOMA WELLNESS CIRCLE': 12 };
       const planMonths = hasMembership ? (MEMBERSHIP_MONTHS[form.membership] || 0) : 0;
       // Backend now creates Membership atomically if membership/planType is provided.
       // Send all aliases so backend can resolve regardless of which key it checks.
@@ -398,9 +398,7 @@ export function AddStudentModal({ onClose, onSuccess }) {
           <FieldGroup icon={<LuBookOpen size={15} />} label="Membership Plan">
             <FocusSelect value={form.membership} onChange={set('membership')}>
               <option value="">No Plan</option>
-              <option value="Bronze">Bronze — 3 months (KES 48,000)</option>
-              <option value="Silver">Silver — 6 months (KES 88,000) Most Popular</option>
-              <option value="Gold">Gold — 12 months (KES 160,000) Best Value</option>
+              <option value="Soma Wellness Circle">Soma Wellness Circle — 12 months (KES 36,500)</option>
             </FocusSelect>
           </FieldGroup>
         </SectionCard>

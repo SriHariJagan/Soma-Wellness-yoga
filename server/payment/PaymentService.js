@@ -107,7 +107,21 @@ export class PaymentService {
   }
 
   async _doInitiate(user, items, label, description, idempotencyKey) {
-    const resolvedItems = await this.orderService.resolveItems(items);
+    // Resolve Circle status once so service/offering pricing can apply the
+    // 5% member benefit server-side (never trusted from the client).
+    let circleActive = false;
+    try {
+      if (user) {
+        const { getActiveCircleMembership } = await import('../services/circleService.js');
+        circleActive = (await getActiveCircleMembership(user)) != null;
+      }
+    } catch {}
+    const hasCouponDiscount = Array.isArray(items) && items.some((i) => i?.metadata?.couponId || i?.metadata?.couponCode);
+    const resolvedItems = await this.orderService.resolveItems(items, {
+      userId: user,
+      circleActive,
+      hasCouponDiscount,
+    });
     const totalAmount = this.orderService.calculateTotal(resolvedItems);
 
     if (totalAmount <= 0) {

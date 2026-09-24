@@ -83,6 +83,20 @@ async function request(path, { method = "GET", body, base = ADMIN_URL } = {}) {
     window.dispatchEvent(new Event("storage"));
   }
 
+  const text = await res.text();
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text, error: text.slice(0, 200) }; }
+  if (!res.ok) {
+    const detailMsg = data.details ? `: ${data.details.map(d => `${d.field} ${d.message}`).join(', ')}` : '';
+    const msg = (data.error || data.message || "Request failed") + detailMsg;
+    const err = new Error(msg);
+    err.status = res.status;
+    err.details = data.details;
+    throw err;
+  }
+  return data;
+}
+
 export const getOverview = () => request("/overview");
 export const getRevenueAnalytics = () => request("/analytics/revenue");
 export const getLogs = () => request("/logs");

@@ -36,7 +36,7 @@ export default function RenewPlanModal({ student, membership, onClose, onSuccess
     ])
       .then(([plansData, servicesData]) => {
         if (cancelled) return;
-        const ALLOWED = new Set(['bronze', 'silver', 'gold']);
+        const ALLOWED = new Set(['soma wellness circle']);
         const planItems = (plansData || [])
           .filter(p => p.active !== false && ALLOWED.has(String(p.name || '').trim().toLowerCase()))
           .map(p => ({
@@ -217,12 +217,11 @@ export default function RenewPlanModal({ student, membership, onClose, onSuccess
           opacity: isDisabled ? 0.55 : 1,
         }}
       >
-        {/* Category badge — Bronze/Silver/Gold get tier colors, services get category colors */}
+        {/* Category badge — SOMA Wellness Circle gets the gold accent, services get category colors */}
         {(() => {
           const tierColors = {
-            Bronze: { bg: 'rgba(176,121,59,0.14)', color: '#8a5a22', border: 'rgba(176,121,59,0.22)' },
-            Silver: { bg: 'rgba(138,155,168,0.18)', color: '#5a6b7a', border: 'rgba(138,155,168,0.25)' },
-            Gold:   { bg: 'rgba(201,162,39,0.18)', color: '#8a6d00', border: 'rgba(201,162,39,0.30)' },
+            'Soma Wellness Circle': { bg: 'rgba(201,162,39,0.18)', color: '#8a6d00', border: 'rgba(201,162,39,0.30)' },
+            'SOMA WELLNESS CIRCLE': { bg: 'rgba(201,162,39,0.18)', color: '#8a6d00', border: 'rgba(201,162,39,0.30)' },
           };
           const svcColors = {
             Membership: { bg: C.greenBg, color: C.green, border: 'rgba(22,163,74,0.18)' },
@@ -529,7 +528,7 @@ export default function RenewPlanModal({ student, membership, onClose, onSuccess
               </div>
             ) : filterType === 'all' ? (
               <>
-                <SectionHeader icon={<LuCrown size={14} />} title="Membership — Bronze / Silver / Gold" count={filteredMembership.length} color={C.cream} />
+                <SectionHeader icon={<LuCrown size={14} />} title="Membership — SOMA Wellness Circle" count={filteredMembership.length} color={C.cream} />
                 {filteredMembership.length === 0 ? (
                   <div style={{ fontSize: 12, color: C.text3, textAlign: 'center', padding: 16, border: `1px dashed ${C.border}`, borderRadius: 12, background: C.card }}>No membership plans match your filter.</div>
                 ) : (

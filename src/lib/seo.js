@@ -21,8 +21,8 @@ const ROUTE_META = {
     description: "Join SomaWellness: Group classes 2,000 KES; SOMA JUA – 10-Class Pass 11,500; Private Yoga 4,500; Couple Yoga 6,500; 5 Private Sessions 21,000; 5 Couple Yoga Sessions 30,500; 10 Private Sessions 40,000; 10 Couple Yoga Sessions 58,000; SOMA Work Well – Single 13,500; SOMA Work Well – Monthly 45,000; Yoga Therapy Individual 5,500; 5 Sessions 25,000; 10 Sessions 45,000; SOMA MAMA Prenatal 5,500; 5 Sessions 25,000; 10 Sessions 45,000; SOMA 200 Yoga Teacher Training 130,000. Corporate and prenatal options available.",
   },
   "/memberships": {
-    title: "Memberships — Bronze, Silver & Gold (3 · 6 · 12 Months) | SomaWellness",
-    description: "SomaWellness term memberships: Bronze 3 months 48K, Silver 6 months 88K (Most Popular), Gold 12 months 160K (Best Value). Unlimited yoga + recovery. Spring Valley, Nairobi.",
+    title: "SOMA Wellness Circle — Annual Privilege Membership KES 36,500 | SomaWellness",
+    description: "Join the SOMA Wellness Circle: 1 year of wellness for KES 36,500 (just KES 100/day). 5% off regular-priced services, monthly reads, premium content, priority booking. Spring Valley, Nairobi.",
   },
   "/private": {
     title: "Private Wellness Programs — One-to-One | SomaWellness",

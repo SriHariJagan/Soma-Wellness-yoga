@@ -276,7 +276,9 @@ export default function StudentDashboard({ onLogout }) {
           <div className={styles.profileMeta}>
             <div className={styles.sbName}>{studentName}</div>
             <div className={styles.sbPlan}>
-              {activeMembership && activeMembership.isActive
+              {activeMembership && (activeMembership.circle?.active || /wellness circle/i.test(String(activeMembership.planType || ""))) && activeMembership.isActive
+                ? <><span className={styles.sbPlanHighlight}>Wellness Circle</span> · <span style={{color:'#16A34A',fontWeight:600,fontSize:11}}>{t("dashboard.statusActive")}</span></>
+                : activeMembership && activeMembership.isActive
                 ? <><span className={styles.sbPlanHighlight}>{activeMembership.planMonths}-mo</span> {t("dashboard.plan")} · <span style={{color:'#16A34A',fontWeight:600,fontSize:11}}>{t("dashboard.statusActive")}</span></>
                 : activeMembership && activeMembership.isPaused
                   ? <><span className={styles.sbPlanHighlight}>{activeMembership.planMonths}-mo</span> {t("dashboard.plan")} · <span style={{color:'#D97706',fontWeight:600,fontSize:11}}>{t("dashboard.statusPaused")}</span></>

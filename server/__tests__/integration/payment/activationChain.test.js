@@ -231,10 +231,10 @@ describe('Payment Activation Chain', () => {
       const svc = new PaymentService();
       const user = makeUser();
 
-      const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Gold Pass', quantity: 1, unitPrice: 50000, totalPrice: 50000 }];
+      const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Wellness Circle Pass', quantity: 1, unitPrice: 50000, totalPrice: 50000 }];
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
 
-      const result = await svc.initiate({ user, items, label: 'Gold Pass' });
+      const result = await svc.initiate({ user, items, label: 'Wellness Circle Pass' });
 
       // initiate() returns the payment doc directly (not {order, payment})
       expect(result).toBeDefined();

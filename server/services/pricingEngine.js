@@ -9,6 +9,17 @@ import {
   PRIVATE_MEMBER_DISCOUNT,
   FOUNDING_MONTHLY,
 } from '../config/somaCatalog.js';
+import { WELLNESS_CIRCLE } from '../config/wellnessCircle.js';
+import {
+  circleDiscountEligibility,
+  applyCircleDiscount,
+  resolveCircleServicePrice as resolveCirclePrice,
+} from './circleService.js';
+
+export { WELLNESS_CIRCLE };
+export const CIRCLE_DISCOUNT_PCT = WELLNESS_CIRCLE.DISCOUNT_PCT;
+export const resolveCircleServicePrice = resolveCirclePrice;
+export { circleDiscountEligibility, applyCircleDiscount };
 
 /**
  * Precedence rules (documented):

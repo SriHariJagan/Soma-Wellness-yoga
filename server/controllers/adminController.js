@@ -206,7 +206,9 @@ export const createStudent = asyncHandler(async (req, res) => {
   await ensureReferral(student);
   await log(`Added student: ${student.email}`, req, student._id);
 
-  // If a membership plan was requested, create the membership & payment record atomically
+  // If a membership plan was requested, create the membership & payment record atomically.
+  // Single-membership world: ONLY the SOMA Wellness Circle can be assigned —
+  // unknown identifiers are rejected (never invented as free-text memberships).
   let createdMembership = null;
   if (hasRequestedMembership) {
     try {
@@ -217,36 +219,12 @@ export const createStudent = asyncHandler(async (req, res) => {
       if (!plan) {
         plan = await Plan.findOne({ name: String(rawPlanIdentifier).trim() });
       }
+      const { isCirclePlanName } = await import('../config/wellnessCircle.js');
       if (!plan) {
-        // Attempt to create a minimal plan reference fallback — still create membership with provided name/price
-        const fallbackPrice = price != null ? Number(price) : 0;
-        const fallbackMonths = Number(resolvedPlanMonths) || 1;
-        const fallbackName = String(rawPlanIdentifier).trim();
-        // Only create membership if we have at least a name to store
-        if (fallbackName) {
-          const paymentRepo = new PaymentRepository();
-          const payment = await paymentRepo.createManualPayment({
-            user: student._id,
-            label: fallbackName,
-            amount: fallbackPrice * 100,
-            description: `Admin creation: ${fallbackName}`,
-            adminId: req.user._id,
-          });
-          const expiry = new Date(Date.now() + fallbackMonths * 30 * DAY);
-          createdMembership = await Membership.create({
-            user: student._id,
-            plan: null,
-            invoice: payment._id,
-            planType: fallbackName,
-            planMonths: fallbackMonths,
-            price: fallbackPrice,
-            status: 'active',
-            startDate: new Date(),
-            expiryDate: expiry,
-            history: [{ action: 'created', planMonths: fallbackMonths, note: `Created with ${fallbackName}` }],
-          });
-          await log(`Created fallback membership ${fallbackName} for ${student.email}`, req, student._id);
-        }
+        throw ApiError.badRequest(`Membership plan "${String(rawPlanIdentifier).trim()}" not found. Only the SOMA Wellness Circle is available.`);
+      }
+      if (!plan.active || plan.visibility === 'hidden' || !isCirclePlanName(plan.name)) {
+        throw ApiError.badRequest('Only the SOMA Wellness Circle membership can be assigned.');
       } else {
         const assignedPrice = price != null ? Number(price) : (plan.price || 0);
         const paymentRepo = new PaymentRepository();
@@ -284,6 +262,9 @@ export const createStudent = asyncHandler(async (req, res) => {
         await log(`Assigned ${plan.name} to new student ${student.email}`, req, student._id);
       }
     } catch (e) {
+      // Validation errors (unknown/non-Circle plan) fail fast so admins
+      // notice immediately; unexpected errors keep the old safe behavior.
+      if (e instanceof ApiError) throw e;
       logger.error(MODULE, 'Failed to auto-create membership during createStudent', { error: e.message, stack: e.stack, studentId: String(student._id), rawPlanIdentifier });
       // Don't fail the whole request — student was created; membership can be assigned manually via /plans/assign
     }
@@ -362,12 +343,23 @@ export const setStudentStatus = asyncHandler(async (req, res) => {
 });
 
 // ── Plans assignment ─────────────────────────────────────────
+// Single-membership world: ONLY the SOMA Wellness Circle can be assigned.
+// The requested duration must match the Circle; arbitrary planType labels
+// are ignored so memberships can never be created under other tier names.
 export const assignPlan = asyncHandler(async (req, res) => {
-  const { studentId, planMonths, planType, price } = req.body;
+  const { studentId, planMonths, price } = req.body;
   if (!studentId || !planMonths) throw ApiError.badRequest('studentId and planMonths are required');
 
-  const plan = await Plan.findOne({ durationMonths: Number(planMonths) });
-  if (!plan) throw ApiError.notFound('Plan not found');
+  const { WELLNESS_CIRCLE, isCirclePlanName } = await import('../config/wellnessCircle.js');
+  if (Number(planMonths) !== WELLNESS_CIRCLE.DURATION_MONTHS) {
+    throw ApiError.badRequest(`Only the ${WELLNESS_CIRCLE.NAME} (${WELLNESS_CIRCLE.DURATION_MONTHS}-month) membership can be assigned.`);
+  }
+  const plan = await Plan.findOne({
+    name: { $in: WELLNESS_CIRCLE.ALIASES },
+    active: true,
+    visibility: { $ne: 'hidden' },
+  });
+  if (!plan || !isCirclePlanName(plan.name)) throw ApiError.notFound('SOMA Wellness Circle plan not found');
 
   const assignedPrice = price ?? plan.price ?? 0;
   if (!assignedPrice) throw ApiError.badRequest('Price is required for plan assignment');
@@ -376,19 +368,19 @@ export const assignPlan = asyncHandler(async (req, res) => {
   const paymentRepo = new PaymentRepository();
   const payment = await paymentRepo.createManualPayment({
     user: studentId,
-    label: planType || plan.name || `${planMonths}-Month Membership`,
+    label: plan.name,
     amount: assignedPrice * 100,
-    description: `Admin plan assignment: ${planType || plan.name}`,
+    description: `Admin plan assignment: ${plan.name}`,
     adminId: req.user._id,
   });
-  await log(`Recorded manual payment KES ${assignedPrice} for plan assignment`, req, studentId, { planType: planType || plan.name, amount: assignedPrice });
+  await log(`Recorded manual payment KES ${assignedPrice} for plan assignment`, req, studentId, { planType: plan.name, amount: assignedPrice });
 
   const expiry = new Date(Date.now() + Number(planMonths) * 30 * DAY);
   const m = await Membership.findOneAndUpdate(
     { user: studentId },
     {
       user: studentId,
-      planType: planType || plan.name || `${planMonths}-Month Membership`,
+      planType: plan.name,
       planMonths: Number(planMonths),
       price: assignedPrice,
       invoice: payment._id,
@@ -421,6 +413,62 @@ export const assignPlan = asyncHandler(async (req, res) => {
   res.json(m);
 });
 
+// ── SOMA Wellness Circle members (admin) ─────────────────────
+// Lists Circle memberships with customer, email, purchase/start/expiry
+// dates, amount paid, payment status, membership status, transaction ref.
+export const getCircleMembers = asyncHandler(async (req, res) => {
+  const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
+  const { page = 1, limit = 50, status } = req.query;
+  const q = { planType: { $in: WELLNESS_CIRCLE.ALIASES } };
+  if (status && ['active', 'expired', 'paused', 'cancelled'].includes(String(status))) {
+    q.status = status;
+  }
+  const skip = (Math.max(1, Number(page)) - 1) * Math.max(1, Math.min(200, Number(limit)));
+  const [total, memberships] = await Promise.all([
+    Membership.countDocuments(q),
+    Membership.find(q)
+      .populate('user', 'name email phone')
+      .populate('invoice', 'paymentStatus mpesaReceiptNumber razorpayPaymentId mpesaOrderId razorpayOrderId amount invoiceNo')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Math.max(1, Math.min(200, Number(limit))))
+      .lean({ virtuals: true }),
+  ]);
+  res.json({
+    plan: {
+      name: WELLNESS_CIRCLE.NAME,
+      subtitle: WELLNESS_CIRCLE.SUBTITLE,
+      price: WELLNESS_CIRCLE.PRICE,
+      currency: WELLNESS_CIRCLE.CURRENCY,
+      duration: '1 Year',
+      status: 'Active',
+    },
+    total,
+    page: Number(page),
+    limit: Number(limit),
+    members: memberships.map((m) => ({
+      _id: m._id,
+      customer: m.user?.name || '—',
+      email: m.user?.email || '—',
+      phone: m.user?.phone || '',
+      purchaseDate: m.purchaseDate,
+      startDate: m.startDate,
+      expiryDate: m.expiryDate,
+      amountPaid: m.price,
+      currency: m.currency || 'KES',
+      paymentStatus: m.invoice?.paymentStatus || 'unknown',
+      membershipStatus: m.computedStatus || m.status,
+      transactionRef:
+        m.invoice?.mpesaReceiptNumber ||
+        m.invoice?.razorpayPaymentId ||
+        m.invoice?.mpesaOrderId ||
+        m.invoice?.razorpayOrderId ||
+        String(m.invoice?._id || m.invoice || ''),
+      invoiceNo: m.invoice?.invoiceNo || '',
+    })),
+  });
+});
+
 export const revokePlan = asyncHandler(async (req, res) => {
   const m = await Membership.findOneAndUpdate(
     { user: req.params.id },
@@ -439,6 +487,10 @@ export const renewMembership = asyncHandler(async (req, res) => {
 
   const plan = await Plan.findById(planId);
   if (!plan) throw ApiError.notFound('Plan not found');
+  const { isCirclePlanName: isCircleRenew } = await import('../config/wellnessCircle.js');
+  if (!plan.active || !isCircleRenew(plan.name)) {
+    throw ApiError.badRequest('Only the SOMA Wellness Circle membership can be renewed.');
+  }
 
   const student = await User.findById(studentId);
   if (!student) throw ApiError.notFound('Student not found');
@@ -520,6 +572,10 @@ export const upgradeMembership = asyncHandler(async (req, res) => {
 
   const targetPlan = await Plan.findById(targetPlanId);
   if (!targetPlan) throw ApiError.notFound('Target plan not found');
+  const { isCirclePlanName: isCircleUpgrade } = await import('../config/wellnessCircle.js');
+  if (!targetPlan.active || !isCircleUpgrade(targetPlan.name)) {
+    throw ApiError.badRequest('Only the SOMA Wellness Circle membership can be assigned.');
+  }
 
   const student = await User.findById(studentId);
   if (!student) throw ApiError.notFound('Student not found');
@@ -1233,35 +1289,38 @@ export const instructors = crud(Instructor, 'instructor', [
   'name', 'email', 'phone', 'avatar', 'bio', 'specialties', 'active',
 ]);
 
-// ── Membership Plans Migration (force-sync official offerings) ──
-// Membership shows ONLY Bronze / Silver / Gold (3 / 6 / 12 months).
-// All SOMA tiers (JUA/AMANI/UZIMA/FAMILY) and other tiers live in Services.
-const OFFICIAL_PLANS = [
-  { name: 'Bronze', description: 'Three months of unlimited group yoga — build your foundation.', price: 48000, currency: 'KES', durationMonths: 3, pauseDays: 7, displayOrder: 1, benefits: ['Unlimited group yoga classes', '1 meditation session per week', 'Mat and props provided', 'Post-class herbal tea'], badge: '', isPopular: false, isRecommended: false, active: true, visibility: 'public' },
-  { name: 'Silver', description: 'Six months of unlimited practice plus recovery — our most loved tier.', price: 88000, currency: 'KES', durationMonths: 6, pauseDays: 14, displayOrder: 2, benefits: ['Everything in Bronze', '2 steam sessions per month', '1 massage per quarter', 'Priority class booking'], badge: 'Most Popular', isPopular: true, isRecommended: true, active: true, visibility: 'public' },
-  { name: 'Gold', description: 'Twelve months of all-inclusive wellness — yoga, recovery and personal guidance.', price: 160000, currency: 'KES', durationMonths: 12, pauseDays: 30, displayOrder: 3, benefits: ['Everything in Silver', '4 steam sessions per month', '1 massage per month', '1 private session per quarter', 'Guest passes (2 per year)'], badge: 'Best Value', isPopular: false, isRecommended: false, active: true, visibility: 'public' },
+// ── Membership Plans Migration (SOMA Wellness Circle) ──
+// Single-membership world: ONLY the SOMA Wellness Circle (KES 36,500 / year)
+// is purchasable. Legacy + auxiliary catalog docs are deleted outright —
+// purchase history is preserved in Membership/Payment/Order snapshots, so
+// reports keep working without the obsolete plans existing anywhere.
+const AUXILIARY_PLAN_NAMES = [
+  'SOMA JUA', 'SOMA AMANI', 'SOMA UZIMA', 'SOMA FAMILY',
+  '5-Class Pass', '10-Class Pass',
+  'SOMA DAILY — Monthly', 'SOMA DAILY — Annual',
 ];
-
 export const syncOfficialPlans = asyncHandler(async (req, res) => {
+  const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
+  const OFFICIAL_PLANS = [
+    {
+      name: WELLNESS_CIRCLE.NAME,
+      description: `${WELLNESS_CIRCLE.SUBTITLE} — ${WELLNESS_CIRCLE.TAGLINE}`,
+      price: WELLNESS_CIRCLE.PRICE,
+      currency: WELLNESS_CIRCLE.CURRENCY,
+      durationMonths: WELLNESS_CIRCLE.DURATION_MONTHS,
+      pauseDays: 0,
+      displayOrder: 1,
+      benefits: WELLNESS_CIRCLE.BENEFITS,
+      badge: WELLNESS_CIRCLE.SUBTITLE,
+      isPopular: true,
+      isRecommended: true,
+      active: true,
+      visibility: 'public',
+    },
+  ];
+
   const OLD_DEMO_NAMES = ['Monthly Pass', 'Quarterly Pass', 'Half-Yearly Pass', 'Annual Pass', '2-Year Pass', '1 Month Membership', '3 Month Membership', '6 Month Membership', '12 Month Membership'];
-  const SOMA_MEMBERSHIP_NAMES = ['SOMA JUA', 'SOMA AMANI', 'SOMA UZIMA', 'SOMA FAMILY'];
   await Plan.deleteMany({ name: { $in: OLD_DEMO_NAMES } });
-  // Remove SOMA tiers from Membership — they belong in Services. Keep them as Services if missing.
-  const somaInPlans = await Plan.find({ name: { $in: SOMA_MEMBERSHIP_NAMES } }).lean();
-  if (somaInPlans.length > 0) {
-    await Plan.deleteMany({ name: { $in: SOMA_MEMBERSHIP_NAMES } });
-    // Ensure each SOMA tier exists as a Service (move to services if not exists)
-    const { SOMA_SERVICES } = await import('../config/somaCatalog.js');
-    const somaServiceMap = new Map(SOMA_SERVICES.filter(s => SOMA_MEMBERSHIP_NAMES.includes(s.name)).map(s => [s.name, s]));
-    for (const plan of somaInPlans) {
-      const svc = somaServiceMap.get(plan.name);
-      if (!svc) continue;
-      const exists = await Service.findOne({ name: svc.name });
-      if (!exists) {
-        await Service.create({ ...svc });
-      }
-    }
-  }
 
   for (const plan of OFFICIAL_PLANS) {
     await Plan.findOneAndUpdate(
@@ -1271,13 +1330,13 @@ export const syncOfficialPlans = asyncHandler(async (req, res) => {
     );
   }
 
-  // Clean up any stray non-Bronze/Silver/Gold membership plans (keep only the 3 official)
-  const allowed = new Set(OFFICIAL_PLANS.map(p => p.name));
-  await Plan.deleteMany({ name: { $nin: Array.from(allowed) } });
+  // Permanently remove legacy + auxiliary catalog docs (history lives in snapshots).
+  // Only the SOMA Wellness Circle may exist as a purchasable membership plan.
+  await Plan.deleteMany({ name: { $in: ['Bronze', 'Silver', 'Gold', ...AUXILIARY_PLAN_NAMES] } });
 
   const updated = await Plan.find().sort({ displayOrder: 1 });
-  await log(`Synced official membership plans (${updated.length} plans) - Bronze/Silver/Gold only`, req);
-  res.json({ success: true, message: `${updated.length} official plans synced (Bronze/Silver/Gold)`, plans: updated });
+  await log(`Synced SOMA Wellness Circle plan (legacy/auxiliary plans removed)`, req);
+  res.json({ success: true, message: `SOMA Wellness Circle synced (KES ${WELLNESS_CIRCLE.PRICE}/year); legacy/auxiliary plans removed`, plans: updated });
 });
 
 

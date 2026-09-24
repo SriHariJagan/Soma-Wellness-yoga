@@ -585,7 +585,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
 
   /* ─── MEMBERSHIP TAB ─────────────────────────────────── */
   const renderMembershipTab = () => {
-    const ALLOWED_MEMBERSHIP = new Set(['bronze','silver','gold']);
+    const ALLOWED_MEMBERSHIP = new Set(['soma wellness circle']);
     const isValidMembership = membership && membership.planType && ALLOWED_MEMBERSHIP.has(String(membership.planType).trim().toLowerCase());
     const isNoPlan = !isValidMembership;
     const membershipTierLabel = isValidMembership ? membership.planType : 'No Membership';
@@ -598,15 +598,13 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
             <span style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(217,119,6,0.14)', color: '#b45309', display: 'grid', placeItems: 'center', flexShrink: 0 }}><LuAward size={16} /></span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#7c2d12' }}>No Membership</div>
-              <div style={{ fontSize: 12, color: '#9a3412', marginTop: 2 }}>This user has no active membership. Assign Bronze (3mo), Silver (6mo) or Gold (12mo) below.</div>
+              <div style={{ fontSize: 12, color: '#9a3412', marginTop: 2 }}>This user has no active membership. Assign the SOMA Wellness Circle (12mo, KES 36,500) below.</div>
             </div>
             <Badge label="No Membership" />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: 10, marginBottom: 14 }}>
             {[
-              { name: 'Bronze', months: 3, price: 48000, color: '#8a5a22', bg: 'rgba(176,121,59,0.10)', border: 'rgba(176,121,59,0.18)' },
-              { name: 'Silver', months: 6, price: 88000, color: '#5a6b7a', bg: 'rgba(138,155,168,0.12)', border: 'rgba(138,155,168,0.18)' },
-              { name: 'Gold', months: 12, price: 160000, color: '#8a6d00', bg: 'rgba(201,162,39,0.12)', border: 'rgba(201,162,39,0.18)' },
+              { name: 'Soma Wellness Circle', months: 12, price: 36500, color: '#8a6d00', bg: 'rgba(201,162,39,0.12)', border: 'rgba(201,162,39,0.18)' },
             ].map(t => (
               <div key={t.name} style={{ padding: 12, borderRadius: 12, border: `1px solid ${t.border}`, background: t.bg, textAlign: 'center' }}>
                 <div style={{ fontWeight: 800, color: t.color, fontSize: 13 }}>{t.name}</div>

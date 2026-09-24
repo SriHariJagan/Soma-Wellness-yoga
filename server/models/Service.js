@@ -21,6 +21,14 @@ const ServiceSchema = new mongoose.Schema(
     instructors:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'Instructor' }],
     timeSlots:     [TimeSlotSchema],
     price:         { type: Number, default: 0, min: 0 },
+    // ── SOMA Wellness Circle discount controls ──────────────
+    // originalPrice > price  ⇒  promotional (Circle 5% must NOT stack).
+    originalPrice: { type: Number, default: null, min: 0 },
+    isPromotional: { type: Boolean, default: false },
+    // Explicit opt-out for services that never take the Circle benefit.
+    excludeCircleDiscount: { type: Boolean, default: false },
+    // General eligibility toggle (default true = regular-priced ⇒ eligible).
+    circleDiscountEligible: { type: Boolean, default: true },
     pricingModel:  { type: String, enum: PRICING_MODELS, default: 'flat' },
     contactEmail:  { type: String, default: '' },
     contactPhone:  { type: String, default: '' },

@@ -4,20 +4,22 @@ import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./MembershipPrompt.module.css";
 import { EASE } from "../../lib/motion";
 
-const API = import.meta.env.VITE_API_URL || "";
 const NEVER_KEY = "soma-membership-prompt-never";
 const DELAY_MS = 5000;
 
-// Static fallback — mirrors server/seed-tiers.js
-const FALLBACK = [
-  { name: "Bronze", price: 48000, durationMonths: 3, badge: "" },
-  { name: "Silver", price: 88000, durationMonths: 6, badge: "Most Popular" },
-  { name: "Gold", price: 160000, durationMonths: 12, badge: "Best Value" },
-];
+const TITLE_TOP = "SOMA Wellness";
+const TITLE_EM = "Circle";
+const PRICE = "KES 36,500";
+const PER_DAY = "Just KES 100 per day · 1 year";
+const DESCRIPTION =
+  "Enjoy 5% off regular-priced services, monthly wellness reads, weekly inspiration, premium member content, access to selected SOMA wellness spaces, priority booking, birthday surprises and exclusive member invitations.";
 
-const TIER_DOT = { Bronze: "#B0793B", Silver: "#8A9BA8", Gold: "#C9A227" };
-const fmt = (n) => Number(n || 0).toLocaleString("en-KE");
-const perMonth = (p) => (p.durationMonths > 0 ? Math.round(p.price / p.durationMonths) : p.price);
+const PERKS = [
+  { icon: "✦", label: "5% member saving" },
+  { icon: "❀", label: "Monthly good read" },
+  { icon: "◐", label: "Premium content" },
+  { icon: "♡", label: "Birthday gift" },
+];
 
 // Routes where the prompt must never appear
 const HIDDEN_ON = ["/memberships", "/login", "/forgot-password", "/reset-password", "/payment", "/yogaadmin", "/studentdashboard", "/reception", "/profile"];
@@ -26,26 +28,6 @@ const MembershipPrompt = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [plans, setPlans] = useState(FALLBACK);
-  const [selected, setSelected] = useState("Silver");
-
-  useEffect(() => {
-    fetch(`${API}/api/public/plans`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        const list = Array.isArray(data) ? data : [];
-        const allowed = new Set(["bronze", "silver", "gold"]);
-        const terms = list
-          .filter((p) => p && allowed.has(String(p.name || "").toLowerCase()))
-          .sort((a, b) => (a.durationMonths || 0) - (b.durationMonths || 0));
-        if (terms.length > 0) {
-          setPlans(terms);
-          const popular = terms.find((t) => t.isPopular || /popular/i.test(t.badge || ""));
-          if (popular) setSelected(popular.name);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   // Shows on every public page load after a short delay — so it also
   // reappears on refresh. Only stays hidden when the visitor clicks
@@ -79,8 +61,9 @@ const MembershipPrompt = () => {
     setOpen(false);
   };
 
-  const choose = (planName) => {
+  const become = () => {
     close();
+    // Real purchase flow — the membership page CTA starts checkout/payment.
     navigate("/memberships");
   };
 
@@ -96,67 +79,55 @@ const MembershipPrompt = () => {
           onClick={close}
           role="dialog"
           aria-modal="true"
-          aria-label="Choose your membership plan"
+          aria-label="Join SOMA Wellness Circle"
         >
           <motion.div
             className={styles.modal}
-            initial={{ opacity: 0, y: 32, scale: 0.96 }}
+            initial={{ opacity: 0, y: 36, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
-            transition={{ duration: 0.45, ease: EASE }}
+            transition={{ duration: 0.5, ease: EASE }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={styles.glow} aria-hidden="true" />
+            <div className={styles.orbA} aria-hidden="true" />
+            <div className={styles.orbB} aria-hidden="true" />
+            <div className={styles.grain} aria-hidden="true" />
             <button className={styles.close} onClick={close} aria-label="Close">
               ✕
             </button>
 
+            <div className={styles.ring} aria-hidden="true">
+              <span className={styles.ringInner}>◉</span>
+            </div>
+
             <div className={styles.head}>
               <span className={styles.eyebrow}>
                 <span className={styles.eyebrowDot} aria-hidden="true" />
-                Memberships · 3 · 6 · 12 months
+                Annual Privilege Membership · 1 year
               </span>
               <h3 className={styles.title}>
-                Choose your <em>membership</em>
+                {TITLE_TOP} <em>{TITLE_EM}</em>
               </h3>
-              <p className={styles.sub}>
-                Unlimited practice with recovery built in. Pick a term to begin —
-                all prices in KES, VAT included.
-              </p>
+              <div className={styles.priceRow}>
+                <span className={styles.price}>{PRICE}</span>
+                <span className={styles.perDay}>{PER_DAY}</span>
+              </div>
+              <p className={styles.sub}>{DESCRIPTION}</p>
             </div>
 
-            <div className={styles.options} role="radiogroup" aria-label="Membership plans">
-              {plans.map((p) => {
-                const active = selected === p.name;
-                const badge = p.badge || (p.isPopular ? "Most Popular" : "");
-                return (
-                  <button
-                    key={p.name}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setSelected(p.name)}
-                    className={`${styles.option} ${active ? styles.optionActive : ""}`}
-                  >
-                    {badge && <span className={styles.optionBadge}>{badge}</span>}
-                    <span className={styles.optionTop}>
-                      <span className={styles.optionDot} style={{ background: TIER_DOT[p.name] || "var(--soma-primary)" }} aria-hidden="true" />
-                      <span className={styles.optionName}>{p.name}</span>
-                      <span className={styles.optionTerm}>{p.durationMonths} months</span>
-                      <span className={`${styles.radio} ${active ? styles.radioOn : ""}`} aria-hidden="true" />
-                    </span>
-                    <span className={styles.optionPriceRow}>
-                      <span className={styles.optionPrice}>KES {fmt(p.price)}</span>
-                      <span className={styles.optionPer}>≈ KES {fmt(perMonth(p))}/mo</span>
-                    </span>
-                  </button>
-                );
-              })}
+            <div className={styles.perks}>
+              {PERKS.map((p) => (
+                <span key={p.label} className={styles.perk}>
+                  <span className={styles.perkIcon} aria-hidden="true">{p.icon}</span>
+                  {p.label}
+                </span>
+              ))}
             </div>
 
             <div className={styles.actions}>
-              <button type="button" className={styles.cta} onClick={() => choose(selected)}>
-                Continue with {selected} →
+              <button type="button" className={styles.cta} onClick={become}>
+                <span className={styles.ctaSheen} aria-hidden="true" />
+                BECOME A SOMA MEMBER →
               </button>
               <div className={styles.dismissRow}>
                 <button type="button" className={styles.later} onClick={close}>
