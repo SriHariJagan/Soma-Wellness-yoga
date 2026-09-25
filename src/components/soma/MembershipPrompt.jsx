@@ -24,22 +24,56 @@ const PERKS = [
 // Routes where the prompt must never appear
 const HIDDEN_ON = ["/memberships", "/login", "/forgot-password", "/reset-password", "/payment", "/yogaadmin", "/studentdashboard", "/reception", "/profile"];
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 const MembershipPrompt = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [memberCheckDone, setMemberCheckDone] = useState(false);
+  const [isActiveMember, setIsActiveMember] = useState(false);
+
+  // Active Circle members never see the popup — re-checked on every
+  // navigation so a fresh purchase/login takes effect immediately.
+  // Logged-out visitors (no token) keep the default behaviour.
+  useEffect(() => {
+    let cancelled = false;
+    setMemberCheckDone(false);
+    setIsActiveMember(false);
+    let token = null;
+    try { token = localStorage.getItem("token"); } catch {}
+    if (!token) {
+      setMemberCheckDone(true);
+      return;
+    }
+    fetch(`${API_URL}/api/student/membership/circle`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return;
+        setIsActiveMember(!!d?.active);
+        setMemberCheckDone(true);
+      })
+      .catch(() => {
+        if (!cancelled) setMemberCheckDone(true);
+      });
+    return () => { cancelled = true; };
+  }, [location.pathname]);
 
   // Shows on every public page load after a short delay — so it also
   // reappears on refresh. Only stays hidden when the visitor clicks
-  // "Don't show again", or on excluded routes (memberships, dashboards…).
+  // "Don't show again", is an active member, or is on excluded routes
+  // (memberships, dashboards…).
   useEffect(() => {
+    if (!memberCheckDone || isActiveMember) return;
     if (HIDDEN_ON.includes(location.pathname)) return;
     try {
       if (localStorage.getItem(NEVER_KEY)) return;
     } catch {}
     const timer = setTimeout(() => setOpen(true), DELAY_MS);
     return () => clearTimeout(timer);
-  }, [location.pathname]);
+  }, [location.pathname, memberCheckDone, isActiveMember]);
 
   useEffect(() => {
     if (!open) return;

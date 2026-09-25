@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
 import { PageHeader, KpiCard } from './ui/Primitives';
-import { assetsApi, membershipPlansApi } from '../api/AdminServices.js';
+import { assetsApi, membershipPlansApi, coursesApi, servicesApi } from '../api/AdminServices.js';
 import {
   LuFolderLock, LuUpload, LuFileText, LuVideo, LuFileAudio,
   LuLayoutGrid, LuTable, LuX, LuTrash2, LuArchive, LuDownload,
@@ -111,20 +111,43 @@ function SkeletonGrid() {
   );
 }
 
+const PLAN_GROUPS = [
+  { kind: 'Membership', label: 'Membership plans' },
+  { kind: 'Course', label: 'Courses' },
+  { kind: 'Service', label: 'Services' },
+];
+
 function PlanSelector({ selected = [], onChange, plans = [] }) {
   const toggle = (planName) => {
     onChange(selected.includes(planName) ? selected.filter(p => p !== planName) : [...selected, planName]);
   };
+  const chip = (p) => (
+    <button key={`${p.kind || 'plan'}-${p._id || p.name}`} type="button" onClick={() => toggle(p.name)}
+      className={`${s.chip} ${selected.includes(p.name) ? s.chipActive : ''}`}
+      style={{ cursor: 'pointer', fontSize: 12 }}
+    >
+      {selected.includes(p.name) ? '\u2713 ' : ''}{p.name}
+    </button>
+  );
+  const grouped = PLAN_GROUPS.map(g => ({ ...g, items: plans.filter(p => (p.kind || 'Membership') === g.kind) }));
+  const ungrouped = plans.filter(p => !PLAN_GROUPS.some(g => g.kind === (p.kind || 'Membership')));
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-      {plans.map(p => (
-        <button key={p._id || p.name} type="button" onClick={() => toggle(p.name)}
-          className={`${s.chip} ${selected.includes(p.name) ? s.chipActive : ''}`}
-          style={{ cursor: 'pointer', fontSize: 12 }}
-        >
-          {selected.includes(p.name) ? '\u2713 ' : ''}{p.name}
-        </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {grouped.map(g => g.items.length > 0 && (
+        <div key={g.kind}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>
+            {g.label} ({g.items.length})
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {g.items.map(chip)}
+          </div>
+        </div>
       ))}
+      {ungrouped.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {ungrouped.map(chip)}
+        </div>
+      )}
       {plans.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-3)', padding: 4 }}>No plans found</div>}
     </div>
   );
@@ -524,9 +547,24 @@ export default function ContentControl({ contentItems: parentItems, onRefresh })
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    const asArray = (res) => {
+      if (Array.isArray(res)) return res;
+      if (!res || typeof res !== 'object') return [];
+      return res.courses || res.services || res.plans || res.data || res.items || [];
+    };
+    const safeList = (p) => p.then(asArray).catch(() => []);
+    const [planList, courseList, serviceList] = await Promise.all([
+      safeList(membershipPlansApi.list()),
+      safeList(coursesApi.list()),
+      safeList(servicesApi.list()),
+    ]);
+    setPlans([
+      ...planList.map(p => ({ _id: p._id, name: p.name, kind: 'Membership' })),
+      ...courseList.map(c => ({ _id: c._id, name: c.title || c.name, kind: 'Course' })),
+      ...serviceList.map(sv => ({ _id: sv._id, name: sv.name, kind: 'Service' })),
+    ].filter(p => p.name));
     await Promise.all([
       fetchAssets(),
-      membershipPlansApi.list().then(setPlans).catch(() => {}),
       assetsApi.stats().then(setStats).catch(() => {}),
     ]);
     setLoading(false);

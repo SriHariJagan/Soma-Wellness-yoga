@@ -12,9 +12,7 @@ import styles from "./YTTC.module.css";
 import { useTranslation } from "react-i18next";
 
 const faculty = [
-  { name: "Amina J.", role: "Therapy & Breath Lead", img: "/images/team/amina-yttc.webp" },
-  { name: "Daniel K.", role: "Movement & Anatomy", img: "/images/team/daniel-yttc.webp" },
-  { name: "Zawadi M.", role: "Meditation & Philosophy", img: "/images/team/zawadi-yttc.webp" },
+  { name: "Dr. Kapil Dev Kesari, PhD", role: "Lead Trainer · Yoga Science & Therapy", img: "/images/team/Kapil.png" },
 ];
 
 const YTTC = () => {
@@ -151,7 +149,7 @@ const YTTC = () => {
                 <motion.img
                   src={f.img}
                   alt={f.name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
                   loading="lazy"
                   whileHover={reduced ? {} : { scale: 1.06 }}
                   transition={{ duration: 0.7, ease: EASE }}

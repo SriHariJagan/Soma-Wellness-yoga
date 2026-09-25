@@ -392,42 +392,41 @@
       }
     },
     "team": {
-      "eyebrow": "Our teachers",
-      "titleBefore": "Teachers who",
-      "titleEm": "hold",
-      "titleAfter": "you.",
-      "sub": "Experienced, certified, and deeply caring. Each practitioner brings a unique background in restorative practice, anatomy, mindfulness, and breathwork.",
+      "eyebrow": "Our leadership",
+      "titleBefore": "Guided by",
+      "titleEm": "vision",
+      "titleAfter": "& wisdom.",
+      "sub": "SOMA Wellness is led by a visionary founder and an internationally experienced yoga educator — blending authentic yogic wisdom with a modern, evidence-informed approach to wellbeing.",
       "alt": "{{name}}, {{role}} at SomaWellness",
-      "members": {
-        "amina": {
-          "name": "Amina Juma",
-          "role": "Lead Wellness Therapist",
-          "cred": "500hr Certified · Restorative Practice Specialist",
-          "accent": "Therapy & Breathwork"
+      "leaders": {
+        "kapil": {
+          "name": "Dr. Kapil Dev Kesari, PhD",
+          "role": "CEO & Lead Yoga Trainer",
+          "cred": "PhD · 15+ yrs · Yoga Education, Research & Therapy",
+          "accent": "Leadership · Yoga Science",
+          "bio": [
+            "Dr. Kapil Dev Kesari is an internationally experienced yoga educator, researcher, author and wellness leader with more than 15 years of experience in yoga teaching, yoga education and holistic wellbeing.",
+            "Having contributed significantly to promoting and teaching yoga in Kenya, he brings together traditional yogic wisdom with a practical, evidence-informed approach to physical, mental and emotional wellbeing — spanning yoga therapy, meditation, stress management, lifestyle wellness, corporate wellbeing and professional yoga education.",
+            "As Lead Trainer at SOMA Wellness, he shapes the centre's academic and wellness vision while personally guiding yoga programs, specialised sessions and wellness initiatives. His philosophy is simple: yoga should not remain limited to the mat; it should become a practical way of creating healthier bodies, calmer minds and more conscious lives."
+          ],
+          "highlights": ["Yoga Therapy & Meditation", "Teacher Training & Research", "Corporate & Lifestyle Wellness"]
         },
-        "daniel": {
-          "name": "Daniel Ochieng",
-          "role": "Movement & Anatomy Teacher",
-          "cred": "500hr RYT · Sports Science",
-          "accent": "Movement & Anatomy"
-        },
-        "zawadi": {
-          "name": "Zawadi Mwangi",
-          "role": "Meditation & Philosophy Guide",
-          "cred": "300hr RYT · Mindfulness Certified",
-          "accent": "Meditation & Mindfulness"
-        },
-        "leah": {
-          "name": "Leah Njeri",
-          "role": "Prenatal & Restorative Specialist",
-          "cred": "85hr Prenatal · RYT 500",
-          "accent": "Prenatal & Restorative"
+        "rebecca": {
+          "name": "Rebecca Miano, EGH",
+          "role": "Founder & Director",
+          "cred": "EGH · Former KenGen CEO · Cabinet Secretary",
+          "accent": "Founder · Vision",
+          "bio": [
+            "Rebecca Miano, EGH, is a distinguished Kenyan lawyer, public servant and business leader with more than three decades of legal, corporate and executive leadership experience, including as Managing Director & CEO of KenGen.",
+            "A committed yoga practitioner, she values yoga and holistic wellbeing as foundations for balance, resilience and mindful leadership. As Founder & Director of SOMA Wellness, her vision is to create a trusted space where wellness becomes part of everyday life — supporting healthier individuals, stronger communities and a more balanced way of living."
+          ],
+          "highlights": ["Vision & Governance", "Mindful Leadership", "Community Wellness"]
         }
       },
       "footer": {
-        "yogaAlliance": "Certified Practitioners",
-        "years": "18+ years experience",
-        "medical": "Doctor-referred"
+        "yogaAlliance": "Evidence-informed practice",
+        "years": "15+ years yoga leadership",
+        "medical": "Traditional wisdom · Modern science"
       }
     },
     "pricing": {

@@ -7,6 +7,8 @@ import Download from '../models/Download.js';
 import Membership from '../models/Membership.js';
 import ActivityLog from '../models/ActivityLog.js';
 import Plan from '../models/Plan.js';
+import Course from '../models/Course.js';
+import UserService from '../models/UserService.js';
 import { notifyPlanMembers } from '../services/notificationService.js';
 import logger from '../notification/logger.js';
 
@@ -262,6 +264,43 @@ export const deleteAsset = asyncHandler(async (req, res) => {
   res.json({ success: true });
 });
 
+// ── Entitlements: every plan-like name that unlocks plan-gated content ──
+// Active membership plan + enrolled course titles + paid service names.
+// allowedPlans matching stays fuzzy (either side includes) to tolerate
+// legacy free-text entries.
+function matchesAllowed(allowedPlans, entitlementNames) {
+  return allowedPlans.some((ap) => {
+    const apLower = String(ap || '').toLowerCase().trim();
+    if (!apLower) return false;
+    return entitlementNames.some((n) => {
+      const nLower = String(n || '').toLowerCase().trim();
+      return nLower && (nLower.includes(apLower) || apLower.includes(nLower));
+    });
+  });
+}
+
+async function getUserEntitlements(userId) {
+  const [membership, courses, services] = await Promise.all([
+    Membership.findOne({ user: userId, status: 'active', expiryDate: { $gt: new Date() } }).sort({ createdAt: -1 }),
+    Course.find({ 'enrolledUsers.user': userId }).select('title').lean(),
+    UserService.find({ user: userId, status: 'active', paymentStatus: 'paid' })
+      .populate('service', 'name').populate('offering', 'name').lean(),
+  ]);
+  const names = [];
+  if (membership) {
+    const plan = await Plan.findOne({ name: membership.planType }).lean();
+    names.push(plan?.name || membership.planType);
+  }
+  for (const c of courses) if (c.title) names.push(c.title);
+  for (const us of services) {
+    if (us.serviceName) names.push(us.serviceName);
+    if (us.offeringName) names.push(us.offeringName);
+    if (us.service?.name) names.push(us.service.name);
+    if (us.offering?.name) names.push(us.offering.name);
+  }
+  return names.filter(Boolean);
+}
+
 export const downloadAsset = asyncHandler(async (req, res) => {
   const asset = await Download.findById(req.params.id);
   if (!asset) throw ApiError.notFound('Asset not found');
@@ -273,17 +312,15 @@ export const downloadAsset = asyncHandler(async (req, res) => {
     throw ApiError.forbidden('This content is restricted to admins');
   }
   if (asset.visibility === 'plan' && user.role !== 'admin') {
-    const membership = await Membership.findOne({ user: user._id, status: 'active', expiryDate: { $gt: new Date() } }).sort({ createdAt: -1 });
-    if (!membership) throw ApiError.forbidden('Your plan has expired. Renew to access this content.');
-
-    const plan = await Plan.findOne({ name: membership.planType });
-    const userPlanName = plan?.name || membership.planType;
-
-    const hasAccess = asset.allowedPlans.length === 0 || asset.allowedPlans.some((ap) => {
-      const apLower = ap.toLowerCase();
-      return userPlanName.toLowerCase().includes(apLower) || apLower.includes(userPlanName.toLowerCase());
-    });
-    if (!hasAccess) throw ApiError.forbidden('This content is not included in your current plan');
+    if (asset.allowedPlans.length === 0) {
+      // Legacy "All Plans" — membership required (unchanged behaviour).
+      const membership = await Membership.findOne({ user: user._id, status: 'active', expiryDate: { $gt: new Date() } }).sort({ createdAt: -1 });
+      if (!membership) throw ApiError.forbidden('Your plan has expired. Renew to access this content.');
+    } else {
+      const entitlements = await getUserEntitlements(user._id);
+      if (entitlements.length === 0) throw ApiError.forbidden('Your plan has expired. Renew to access this content.');
+      if (!matchesAllowed(asset.allowedPlans, entitlements)) throw ApiError.forbidden('This content is not included in your current plan');
+    }
   }
 
   await Download.findByIdAndUpdate(req.params.id, { $inc: { downloadCount: 1 } });
@@ -300,12 +337,7 @@ export const getStudentAssets = asyncHandler(async (req, res) => {
   const membership = user.role === 'admin'
     ? null
     : await Membership.findOne({ user: user._id, status: 'active', expiryDate: { $gt: new Date() } }).sort({ createdAt: -1 });
-
-  let planName = '';
-  if (membership) {
-    const plan = await Plan.findOne({ name: membership.planType });
-    planName = plan?.name || membership.planType;
-  }
+  const entitlements = user.role === 'admin' ? [] : await getUserEntitlements(user._id);
 
   const allAssets = await Download.find({ active: true }).sort({ createdAt: -1 });
 
@@ -313,12 +345,9 @@ export const getStudentAssets = asyncHandler(async (req, res) => {
     if (a.visibility === 'all') return true;
     if (user.role === 'admin') return true;
     if (a.visibility === 'admin') return false;
-    if (!membership) return false;
-    if (a.allowedPlans.length === 0) return true;
-    return a.allowedPlans.some((ap) => {
-      const apLower = ap.toLowerCase();
-      return planName.toLowerCase().includes(apLower) || apLower.includes(planName.toLowerCase());
-    });
+    if (a.allowedPlans.length === 0) return !!membership;
+    if (entitlements.length === 0) return false;
+    return matchesAllowed(a.allowedPlans, entitlements);
   });
 
   res.json(filtered);

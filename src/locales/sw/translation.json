@@ -392,42 +392,41 @@
       }
     },
     "team": {
-      "eyebrow": "Walimu wetu",
-      "titleBefore": "Walimu ambao",
-      "titleEm": "wanashika",
-      "titleAfter": "wewe.",
-      "sub": "Wenye ujuzi, waliothibitishwa, na wanaojali sana. Kila mtaalamu ana asili ya kipekee katika uponyaji, anatomi, umakini, na kupumua.",
+      "eyebrow": "Uongozi wetu",
+      "titleBefore": "Wanaotuongoza kwa",
+      "titleEm": "maono",
+      "titleAfter": "& hekima.",
+      "sub": "SOMA Wellness inaongozwa na mwanzilishi mwenye maono na mwalimu wa yoga mwenye uzoefu wa kimataifa — tukichanganya hekima asilia ya yoga na mbinu za kisasa zinazozingatia ushahidi.",
       "alt": "{{name}}, {{role}} katika SomaWellness",
-      "members": {
-        "amina": {
-          "name": "Amina Juma",
-          "role": "Mtaalamu Mkuu wa Ustawi",
-          "cred": "500hr E-RYT · Tiba ya Ustawi imethibitishwa",
-          "accent": "Tiba na Kupumua"
+      "leaders": {
+        "kapil": {
+          "name": "Dr. Kapil Dev Kesari, PhD",
+          "role": "Mkurugenzi Mtendaji & Mwalimu Mkuu wa Yoga",
+          "cred": "PhD · Miaka 15+ · Elimu ya Yoga, Utafiti & Tiba",
+          "accent": "Uongozi · Sayansi ya Yoga",
+          "bio": [
+            "Dr. Kapil Dev Kesari ni mwalimu wa yoga mwenye uzoefu wa kimataifa, mtafiti, mwandishi na kiongozi wa ustawi na uzoefu wa zaidi ya miaka 15 katika kufundisha yoga, elimu ya yoga na ustawi kamili.",
+            "Amechangiwa pakubwa katika kukuza na kufundisha yoga nchini Kenya, akiunganisha hekima asilia ya yoga na mbinu za vitendo zinazozingatia ushahidi kwa afya ya mwili, akili na hisia — ikiwemo tiba ya yoga, kutafakari, kudhibiti msongo, ustawi wa mtindo wa maisha, ustawi wa mashirika na elimu ya kitaalamu ya yoga.",
+            "Kama Mwalimu Mkuu wa SOMA Wellness, anaongoza maono ya kitaaluma na ustawi huku akiongoza binafsi programu za yoga, vipindi maalum na miradi ya ustawi. Falsafa yake ni rahisi: yoga isibaki kwenye mkeka tu; iwe njia ya vitendo ya kujenga miili yenye afya, akili tulivu na maisha yenye ufahamu."
+          ],
+          "highlights": ["Tiba ya Yoga & Kutafakari", "Mafunzo ya Walimu & Utafiti", "Ustawi wa Mashirika & Mtindo wa Maisha"]
         },
-        "daniel": {
-          "name": "Daniel Ochieng",
-          "role": "Mwalimu wa Mwili na Anatomi",
-          "cred": "500hr RYT · Sayansi ya Michezo",
-          "accent": "Mwili na Anatomi"
-        },
-        "zawadi": {
-          "name": "Zawadi Mwangi",
-          "role": "Mwongozo wa Kutafakari na Falsafa",
-          "cred": "300hr RYT · Ujuzi wa mindfulness",
-          "accent": "Kutafakari na Ufahamu"
-        },
-        "leah": {
-          "name": "Leah Njeri",
-          "role": "Mtaalamu wa Uzazi na Tiba",
-          "cred": "85hr Uzazi · RYT 500",
-          "accent": "Uzazi na Tiba"
+        "rebecca": {
+          "name": "Rebecca Miano, EGH",
+          "role": "Mwanzilishi & Mkurugenzi",
+          "cred": "EGH · Aliyekuwa CEO KenGen · Waziri wa Baraza",
+          "accent": "Mwanzilishi · Maono",
+          "bio": [
+            "Rebecca Miano, EGH, ni wakili mashuhuri wa Kenya, mtumishi wa umma na kiongozi wa biashara na uzoefu wa zaidi ya miongo mitatu ya uongozi wa kisheria, ushirika na utendaji, ikiwemo kama Mkurugenzi Mtendaji wa KenGen.",
+            "Mpenda yoga aliyejitolea, anathamini yoga na ustawi kamili kama msingi wa uwiano, ustahimilivu na uongozi wa kufikiria. Kama Mwanzilishi & Mkurugenzi wa SOMA Wellness, maono yake ni kuunda nafasi inayoaminika ambapo ustawi unakuwa sehemu ya maisha ya kila siku — kusaidia watu wenye afya, jamii imara na maisha yenye uwiano."
+          ],
+          "highlights": ["Maono & Uongozi", "Uongozi wa Kufikiria", "Ustawi wa Jamii"]
         }
       },
       "footer": {
-        "yogaAlliance": "Imethibitishwa na Wataalamu",
-        "years": "Uzoefu wa miaka 18+",
-        "medical": "Inapendekezwa na daktari"
+        "yogaAlliance": "Mazoezi yanayozingatia ushahidi",
+        "years": "Uongozi wa yoga wa miaka 15+",
+        "medical": "Hekima asilia · Sayansi ya kisasa"
       }
     },
     "pricing": {

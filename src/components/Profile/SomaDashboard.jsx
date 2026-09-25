@@ -65,9 +65,10 @@ export default function SomaDashboard() {
           transition={{ duration: 0.6, ease: EASE }}
           style={{
             position: "relative", overflow: "hidden", borderRadius: 22,
-            background: "linear-gradient(120deg, #0e241b 0%, #1a4d35 60%, #2E7D5B 100%)",
+            background: "radial-gradient(90% 90% at 85% 10%, rgba(244,180,0,0.18) 0%, transparent 55%), radial-gradient(70% 80% at 10% 100%, rgba(129,178,154,0.22) 0%, transparent 60%), linear-gradient(120deg, #0c2018 0%, #17452f 55%, #2E7D5B 100%)",
             color: "#fff", padding: "clamp(26px, 4vw, 40px)",
-            boxShadow: "0 24px 60px rgba(12,31,23,0.25)",
+            boxShadow: "0 24px 60px rgba(12,31,23,0.35), inset 0 1px 0 rgba(255,255,255,0.14)",
+            border: "1px solid rgba(255,255,255,0.10)",
           }}
         >
           <div aria-hidden="true" style={{
@@ -82,12 +83,12 @@ export default function SomaDashboard() {
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#b8d4c8", marginBottom: 10 }}>
               {membership ? "Member since" : "Welcome"} · SomaWellness
             </p>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(26px, 3.4vw, 36px)", fontWeight: 400, marginBottom: 8 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(26px, 3.4vw, 36px)", fontWeight: 400, marginBottom: 8, color: "#fff", textShadow: "0 2px 18px rgba(0,0,0,0.35)" }}>
               {membership
                 ? <>{membership.tier || membership.planType || "Membership"}</>
-                : <>Begin your <em style={{ color: "#cfe3d7" }}>practice</em></>}
+                : <>Begin your <em style={{ fontStyle: "italic", color: "#FFD54F" }}>practice</em></>}
             </h2>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", marginBottom: 20 }}>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", marginBottom: 20 }}>
               {membership
                 ? `${membership.termMonths || membership.planMonths} months · ${formatKES(membership.price)} · ${membership.status}${membership.isFounding ? " · Founding" : ""}`
                 : "Join a plan to unlock classes, passes and member rates."}
