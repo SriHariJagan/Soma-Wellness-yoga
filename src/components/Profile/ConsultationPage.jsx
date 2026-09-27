@@ -96,7 +96,7 @@ function PremiumConsultationCard({ consultation, onCancel, busy }) {
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15, color: C.dark, ...row, gap: 8 }}>
-              {consultation.doctor || "SomaWellness Team"}
+              {consultation.doctor || "Soma Wellness Team"}
               <span style={{
                 fontSize: 10.5, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
                 background: `${statusColor}1A`, color: statusColor,

@@ -6,7 +6,7 @@ const SettingsSchema = new mongoose.Schema(
   {
     key:                { type: String, default: 'global', unique: true },
     announcementBanner: { type: String, default: '' },
-    studioName:         { type: String, default: 'SomaWellness' },
+    studioName:         { type: String, default: 'Soma Wellness' },
     supportEmail:       { type: String, default: 'hello@somawellness.co.ke' },
     supportPhone:       { type: String, default: '+254 700 000 000' },
 

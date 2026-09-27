@@ -113,7 +113,7 @@ const BlogDetail = () => {
       if (!found && alive) {
         const s = JOURNAL_POSTS.find((p) => p.id === id);
         if (s) {
-          found = { ...s, cats: [s.category], paras: s.content, author: "SomaWellness" };
+          found = { ...s, cats: [s.category], paras: s.content, author: "Soma Wellness" };
           setPost(found);
         } else {
           setNotFound(true);
@@ -212,7 +212,7 @@ const BlogDetail = () => {
           {post.excerpt && <p className={styles.heroEx}>{post.excerpt}</p>}
           <div className={styles.byline}>
             <span className={styles.avatar} style={{ borderColor: theme.accent }}>{initials}</span>
-            <span className={styles.byName}>{post.author || "SomaWellness"}</span>
+            <span className={styles.byName}>{post.author || "Soma Wellness"}</span>
             <span className={styles.byDot}>·</span>
             <button type="button" onClick={share} className={styles.shareBtn}>
               {copied ? "Link copied ✓" : "Share ↗"}

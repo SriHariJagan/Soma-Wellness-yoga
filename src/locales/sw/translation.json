@@ -173,7 +173,7 @@
     "showPassword": "Onyesha nenosiri",
     "hidePassword": "Ficha nenosiri",
     "loginHeading": "Karibu tena",
-    "loginSub": "Ingia kwenye akaunti yako ya SomaWellness",
+    "loginSub": "Ingia kwenye akaunti yako ya Soma Wellness",
     "orEmail": "au endelea na barua pepe",
     "rememberMe": "Kumbuka mimi",
     "dontHave": "Huna akaunti?",
@@ -318,7 +318,7 @@
     "joined": "Umejiunga!",
     "join": "Jiunge",
     "privacyNote": "Tunaheshimu faragha yako. Jiuzulu wakati wowote.",
-    "copyright": "© {{year}} SomaWellness. Haki zote zimehifadhiwa.",
+    "copyright": "© {{year}} Soma Wellness. Haki zote zimehifadhiwa.",
     "madeWith": "Imetengenezwa kwa upendo Nairobi",
     "nairobiKenya": "Nairobi, Kenya",
     "privacy": "Sera ya Faragha",
@@ -397,7 +397,7 @@
       "titleEm": "maono",
       "titleAfter": "& hekima.",
       "sub": "SOMA Wellness inaongozwa na mwanzilishi mwenye maono na mwalimu wa yoga mwenye uzoefu wa kimataifa — tukichanganya hekima asilia ya yoga na mbinu za kisasa zinazozingatia ushahidi.",
-      "alt": "{{name}}, {{role}} katika SomaWellness",
+      "alt": "{{name}}, {{role}} katika Soma Wellness",
       "leaders": {
         "kapil": {
           "name": "Dr. Kapil Dev Kesari, PhD",
@@ -513,7 +513,7 @@
       "eyebrow": "Uko tayari kuanza?",
       "titleLine1": "Mwili wako uko tayari.",
       "titleEm": "Tuanze.",
-      "copy": "Iwe unaanza safari yako ya ustawi au unaendeleza mazoezi ya maisha, SomaWellness ina mahali pako. Spring Valley, Nairobi.",
+      "copy": "Iwe unaanza safari yako ya ustawi au unaendeleza mazoezi ya maisha, Soma Wellness ina mahali pako. Spring Valley, Nairobi.",
       "primary": "Weka Nafasi ya Darasa la Uchunguzi",
       "secondary": "Vinjari Mikataba",
       "note": "Hakuna mkataba. Ghairi wakati wowote."
@@ -576,14 +576,14 @@
       }
     },
     "intro": {
-      "eyebrow": "Karibu SomaWellness",
+      "eyebrow": "Karibu Soma Wellness",
       "titleLine1": "Njia yenye fahamu",
       "titleLine2": "zaidi ya",
       "titleLine3": "kuishi",
       "titleLine4": "vyema.",
-      "lead": "SomaWellness ni chapa ya kimataifa ya ustawi wa hali ya juu — inayounganisha mwendo wa umakini, uponyaji, kupumua, masaji, na maisha ya fahamu.",
+      "lead": "Soma Wellness ni chapa ya kimataifa ya ustawi wa hali ya juu — inayounganisha mwendo wa umakini, uponyaji, kupumua, masaji, na maisha ya fahamu.",
       "body": "Sisi si gym. Sisi si mtindo. Sisi ni mahali ambapo uponaji unatokea polepole, kwa usalama, na kwa uangalifu mkubwa.",
-      "alt": "Studio ya SomaWellness — mwanga wa joto, sakafu ya mbao, mimea",
+      "alt": "Studio ya Soma Wellness — mwanga wa joto, sakafu ya mbao, mimea",
       "captionLabel": "Spring Valley, Nairobi",
       "captionText": "Nyumba yetu — nafasi tulivu, ya joto iliyoundwa kwa mazoezi na uponaji.",
       "microTitle": "Imejengwa kwa uangalifu",
@@ -733,7 +733,7 @@
   },
   "yttc": {
     "eyebrow": "Kujifunza na Ushirika",
-    "title": "Chuo cha SomaWellness na Ustawi wa Mashirika",
+    "title": "Chuo cha Soma Wellness na Ustawi wa Mashirika",
     "subtitle": "Mafunzo ya wataalamu na ustawi mahali pa kazi. Mtaala unaotambulika kimataifa, Spring Valley, Nairobi.",
     "instalments": "Lipa kwa awamu",
     "whyAcademy": "Kwa nini Chuo cha Soma",
@@ -824,7 +824,7 @@
   "contact": {
     "eyebrow": "Wasiliana nasi",
     "title": "Tutembelee Spring Valley",
-    "subtitle": "Tungependa kukukaribisha SomaWellness. Ingia, piga simu, au tume ujumbe.",
+    "subtitle": "Tungependa kukukaribisha Soma Wellness. Ingia, piga simu, au tume ujumbe.",
     "visitStudio": "Tembelea Studio Yetu",
     "getDirections": "Pata Mwelekeo",
     "callUs": "Piga Simu",
@@ -849,7 +849,7 @@
     "messageLabel": "Ujumbe",
     "messagePlaceholder": "Tunawezaje kukusaidia?",
     "send": "Tuma Ujumbe",
-    "mapTitle": "Eneo la SomaWellness",
+    "mapTitle": "Eneo la Soma Wellness",
     "faqTitle": "Maswali ya Mawasiliano"
   },
   "hero": {
@@ -857,9 +857,9 @@
     "eyebrow": "Ustawi wa Kimataifa wa Hali ya Juu",
     "titleA": "USTAWI,",
     "titleB": "ULIJENGEA UPYA.",
-    "subtitle": "SomaWellness inaunganisha mwendo, uponyaji, umakini na ustawi kamili — uzoefu wenye maana kwa watu binafsi, mashirika na jamii duniani kote.",
+    "subtitle": "Soma Wellness inaunganisha mwendo, uponyaji, umakini na ustawi kamili — uzoefu wenye maana kwa watu binafsi, mashirika na jamii duniani kote.",
     "primaryCta": "Vinjari Uzoefu Wetu",
-    "secondaryCta": "Gundua SomaWellness",
+    "secondaryCta": "Gundua Soma Wellness",
     "yogaTherapy": "Ustawi wa Kimataifa wa Hali ya Juu",
     "explorePrograms": "Vinjari Uzoefu Wetu",
     "rebalance": "Panga upya"
@@ -867,8 +867,8 @@
   "about": {
     "eyebrow": "Hadithi yetu",
     "title": "Njia yenye fahamu zaidi ya kuishi vyema.",
-    "subtitle": "SomaWellness ni chapa ya kimataifa ya ustawi wa hali ya juu — ambapo mwendo wa umakini, uponyaji, kupumua, masaji na matendo ya ustawi viko pamoja chini ya falsafa moja.",
-    "ourStory": "Gundua SomaWellness",
+    "subtitle": "Soma Wellness ni chapa ya kimataifa ya ustawi wa hali ya juu — ambapo mwendo wa umakini, uponyaji, kupumua, masaji na matendo ya ustawi viko pamoja chini ya falsafa moja.",
+    "ourStory": "Gundua Soma Wellness",
     "faqTitle": "Maswali ya Kuhusu Sisi"
   },
   "errors": {
@@ -886,7 +886,7 @@
     "selectLanguage": "Chagua Lugha"
   },
   "dashboard": {
-    "soma": "SomaWellness",
+    "soma": "Soma Wellness",
     "profile": "Wasifu",
     "myCart": "Kikapu Changu",
     "orderHistory": "Historia ya Maagizo",
@@ -929,7 +929,7 @@
     "title": "Maswali yanayoulizwa mara kwa mara",
     "subtitle": "Kila kitu unachohitaji kujua kuhusu darasa, mikataba, kuweka nafasi, na ustawi katika Soma.",
     "aboutThisFaq": "Kuhusu maswali haya",
-    "aboutDesc": "Tumejibu maswali ya kawaida zaidi kuhusu SomaWellness. Ukipata kile unachotafuta, wasiliana nasi na tuko tayari kusaidia.",
+    "aboutDesc": "Tumejibu maswali ya kawaida zaidi kuhusu Soma Wellness. Ukipata kile unachotafuta, wasiliana nasi na tuko tayari kusaidia.",
     "stillHave": "Bado una maswali?",
     "stillDesc": "Tuko hapa kukusaidia. Tufikie na tutawasiliana nawe ndani ya saa 24.",
     "replyOneDay": "Tunajibu ndani ya siku moja ya kazi",
@@ -1005,7 +1005,7 @@
     "studioType": "Kituo cha Ustawi Kilichounganishwa"
   },
   "userNav": {
-    "brand": "SomaWellness",
+    "brand": "Soma Wellness",
     "home": "Nyumbani",
     "about": "Kuhusu",
     "classes": "Darasa",
@@ -1142,7 +1142,7 @@
   "orderTracking": {
     "title": "Fuatilia Agizo Lako",
     "subtitle": "Weka nambari ya agizo na barua pepe iliyotumika kulipia ili kuona masasisho ya usafirishaji.",
-    "storeName": "Duka la SomaWellness",
+    "storeName": "Duka la Soma Wellness",
     "orderNumber": "Nambari ya agizo *",
     "orderPlaceholder": "mf. ORD-123456",
     "emailLabel": "Barua pepe iliyotumika kulipia *",
@@ -1213,7 +1213,7 @@
     "backToStore": "← Rudi kwenye duka la vitabu",
     "successTitle": "Uchunguzi umepokelewa!",
     "successRef": "Nambari yako ya marejeo ni {{ref}}.",
-    "successMsg": "Timu yetu itawasiliana nawe ndani ya siku 2 za kazi. Asante kwa maslahi yako katika SomaWellness.",
+    "successMsg": "Timu yetu itawasiliana nawe ndani ya siku 2 za kazi. Asante kwa maslahi yako katika Soma Wellness.",
     "submitAnother": "Wasilisha uchunguzi mwingine"
   },
   "adminSidebar": {
@@ -1222,8 +1222,8 @@
     "communications": "Mawasiliano",
     "growthContent": "Ukuaji na Maudhui",
     "bookStore": "Duka la Vitabu",
-    "brand": "SomaWellness",
-    "brandSub": "Studio ya SomaWellness",
+    "brand": "Soma Wellness",
+    "brandSub": "Studio ya Soma Wellness",
     "expand": "Panua",
     "collapse": "Kata",
     "quickCreate": "Unda Haraka",

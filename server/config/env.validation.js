@@ -16,7 +16,7 @@ const envSchema = z.object({
     .transform((v) => parseInt(v, 10))
     .pipe(z.number().int().min(1).max(65535))
     .default('5000'),
-  APP_NAME: z.string().default('SomaWellness'),
+  APP_NAME: z.string().default('Soma Wellness'),
 
   // ── Database ──
   MONGO_URI: z
@@ -76,7 +76,7 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   FROM_EMAIL: z.string().optional(),
-  FROM_NAME: z.string().default('SomaWellness'),
+  FROM_NAME: z.string().default('Soma Wellness'),
   REPLY_TO: z.string().optional(),
 
   // ── Admin Email ── (comma-separated allowed)

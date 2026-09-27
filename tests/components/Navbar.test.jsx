@@ -26,7 +26,7 @@ describe('Navbar', () => {
 
   it('renders logo with accessible name', () => {
     renderNavbar();
-    expect(screen.getByLabelText(/SomaWellness — Home/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Soma Wellness — Home/i)).toBeInTheDocument();
   });
 
   it('renders nav links', async () => {

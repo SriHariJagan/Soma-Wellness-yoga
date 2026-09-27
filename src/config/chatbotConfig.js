@@ -58,16 +58,16 @@ export const QUICK_ACTIONS = [
   { id: 'courses', label: 'Explore Courses', icon: 'book', view: CHAT_VIEW.COURSES },
   { id: 'programs', label: 'Explore Programs', icon: 'sparkles', view: CHAT_VIEW.PROGRAMS },
   { id: 'packages', label: 'Packages & Pricing', icon: 'wallet', view: CHAT_VIEW.PACKAGES },
-  { id: 'about', label: 'About SomaWellness', icon: 'leaf', view: CHAT_VIEW.ABOUT },
+  { id: 'about', label: 'About Soma Wellness', icon: 'leaf', view: CHAT_VIEW.ABOUT },
   { id: 'enquiry', label: 'Make an Enquiry', icon: 'mail', view: CHAT_VIEW.ENQUIRY },
   { id: 'whatsapp', label: 'Chat on WhatsApp', icon: 'whatsapp', view: 'WHATSAPP' },
 ];
 
 // About content — concise, mirrors site copy, not duplicative
 export const ABOUT_COPY = {
-  title: 'SomaWellness',
+  title: 'Soma Wellness',
   intro:
-    'SomaWellness is a premium international wellness brand — bringing together mindful movement, restoration, breathwork, massage and conscious living.',
+    'Soma Wellness is a premium international wellness brand — bringing together mindful movement, restoration, breathwork, massage and conscious living.',
   points: [
     'Rebalance · Renew · Restore · Reconnect — body, breath and mind as one.',
     'Group sessions, one-to-one programs, pregnancy & senior programmes, and signature rituals like Stillness & The Acacia.',
@@ -83,7 +83,7 @@ export const ABOUT_COPY = {
 // WhatsApp message builders
 export function buildGenericWaMessage() {
   return [
-    'Hi SomaWellness \u{1F44B}',
+    'Hi Soma Wellness \u{1F44B}',
     '',
     "I visited your website and I'm interested in learning more about your wellness programs.",
     '',
@@ -94,7 +94,7 @@ export function buildGenericWaMessage() {
 export function buildCourseWaMessage(courseName) {
   const name = courseName || 'your courses';
   return [
-    'Hi SomaWellness \u{1F44B}',
+    'Hi Soma Wellness \u{1F44B}',
     '',
     `I visited your website and I'm interested in your ${name}.`,
     '',
@@ -105,7 +105,7 @@ export function buildCourseWaMessage(courseName) {
 export function buildProgramWaMessage(programName) {
   const name = programName || 'your programs';
   return [
-    'Hi SomaWellness \u{1F44B}',
+    'Hi Soma Wellness \u{1F44B}',
     '',
     `I visited your website and I'm interested in your ${name}.`,
     '',
@@ -116,7 +116,7 @@ export function buildProgramWaMessage(programName) {
 export function buildPackageWaMessage(packageName) {
   const name = packageName || 'wellness packages';
   return [
-    'Hi SomaWellness \u{1F44B}',
+    'Hi Soma Wellness \u{1F44B}',
     '',
     `I visited your website and I'm interested in the ${name} package.`,
     '',
@@ -128,7 +128,7 @@ export function buildEnquiryWaMessage({ name, interestedItem, interestedType }) 
   const item = interestedItem ? ` about ${interestedItem}` : '';
   const type = interestedType && interestedType !== 'general' ? ` (${interestedType})` : '';
   return [
-    `Hi SomaWellness \u{1F44B} — this is ${name || 'a visitor'} from your website.`,
+    `Hi Soma Wellness \u{1F44B} — this is ${name || 'a visitor'} from your website.`,
     '',
     `I submitted an enquiry${item}${type} and would love to continue on WhatsApp.`,
     '',

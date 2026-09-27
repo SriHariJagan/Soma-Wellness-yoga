@@ -126,7 +126,7 @@ export default function ReceptionDashboard({ onLogout = () => {} }) {
             <span className={s.sbLogoIcon}><LuFlower2 size={20} /></span>
             {!collapsed && (
               <div className={s.sbLogoText}>
-                <span className={s.sbLogoTitle}>SomaWellness</span>
+                <span className={s.sbLogoTitle}>Soma Wellness</span>
                 <span className={s.sbLogoSub}>Reception</span>
               </div>
             )}

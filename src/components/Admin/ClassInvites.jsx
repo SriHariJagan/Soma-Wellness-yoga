@@ -1396,7 +1396,7 @@ function CreateView({
             <div style={{ height: 10 }} />
             {form.platform === 'Offline' ? (
               <>
-                <FloatingInput label="Venue / Location" icon={<LuMapPin size={15} />} value={form.location} onChange={e => update({ location: e.target.value })} helperText="e.g. SomaWellness Studio, 48 Shanzu Road, Spring Valley" />
+                <FloatingInput label="Venue / Location" icon={<LuMapPin size={15} />} value={form.location} onChange={e => update({ location: e.target.value })} helperText="e.g. Soma Wellness Studio, 48 Shanzu Road, Spring Valley" />
                 <div style={{ height: 8 }} />
                 <button
                   type="button"

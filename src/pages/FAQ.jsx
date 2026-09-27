@@ -17,18 +17,18 @@ const categoriesKeys = [
 ];
 
 const catMap = {
-  // A. About SomaWellness (1-5)
-  "What is SomaWellness?": "about",
+  // A. About Soma Wellness (1-5)
+  "What is Soma Wellness?": "about",
   "Where are you located?": "about",
-  "What experiences are available at SomaWellness?": "about",
-  "Is SomaWellness only for experienced practitioners?": "about",
-  "What makes SomaWellness different from a regular gym, studio or spa?": "about",
+  "What experiences are available at Soma Wellness?": "about",
+  "Is Soma Wellness only for experienced practitioners?": "about",
+  "What makes Soma Wellness different from a regular gym, studio or spa?": "about",
   // B. Private & Personalized Care (6-11)
   "Do I need yoga experience to join?": "therapy",
   "What is Yoga Therapy?": "therapy",
   "What is the difference between Yoga and Yoga Therapy?": "therapy",
   "Do I need a therapy assessment before starting Yoga Therapy?": "therapy",
-  "Can people with medical conditions join SomaWellness?": "therapy",
+  "Can people with medical conditions join Soma Wellness?": "therapy",
   "Is Private Yoga available?": "therapy",
   // C. Mindfulness, Life Stages & Restorative Therapies (12-17)
   "Do you offer mindfulness and breathing sessions?": "programs",

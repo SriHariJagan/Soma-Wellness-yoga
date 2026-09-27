@@ -120,7 +120,7 @@ export default function YTTCPage({ student }) {
           <h1>200-Hour Yoga Teacher Training Course</h1>
           <p>
             Welcome {student?.name || "Student"}, begin your journey to become a
-            confident and certified yoga teacher with SomaWellness.
+            confident and certified yoga teacher with Soma Wellness.
           </p>
 
           {loading ? (
@@ -283,13 +283,13 @@ export default function YTTCPage({ student }) {
           <p>
             After successful completion of the course, required attendance,
             practice, assignments, and assessment, students will receive
-              certification from SomaWellness.
+              certification from Soma Wellness.
           </p>
 
           <div className={styles.certBox}>
             <i className="ti ti-certificate" aria-hidden="true" />
             <div>
-               <strong>SomaWellness Certification</strong>
+               <strong>Soma Wellness Certification</strong>
               <span>For sincere practitioners and future guides</span>
             </div>
           </div>

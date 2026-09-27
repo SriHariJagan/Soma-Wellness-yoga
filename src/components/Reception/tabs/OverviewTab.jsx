@@ -134,7 +134,7 @@ export default function OverviewTab({ overview, activityLog, overviewError, onNa
           <h2 className={s.receptionWelcomeTitle}>
             Welcome back, <span style={{ color: '#FFD54F' }}>{(user?.name || 'there').split(' ')[0]}</span>
           </h2>
-          <p className={s.receptionWelcomeSub}>Here's what's happening at SomaWellness today.</p>
+          <p className={s.receptionWelcomeSub}>Here's what's happening at Soma Wellness today.</p>
         </div>
           <div className={s.receptionWelcomeRight}>
             <div className={s.receptionWelcomeTime}>

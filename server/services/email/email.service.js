@@ -23,7 +23,7 @@ function getAdminEmails() {
 }
 
 function getFrom() {
-  const name = process.env.FROM_NAME || 'SomaWellness';
+  const name = process.env.FROM_NAME || 'Soma Wellness';
   const email = process.env.FROM_EMAIL || process.env.SMTP_USER || 'hello@somawellness.co.ke';
   return { name, email };
 }

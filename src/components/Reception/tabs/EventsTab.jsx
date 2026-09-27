@@ -194,7 +194,7 @@ export default function EventsTab() {
                 <div className={s.recProfileAvatar}><LuCalendarDays size={22} /></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className={s.recProfileName}>{detail.title}</div>
-                  <div className={s.recProfileSub}>{detail.location || 'SomaWellness Studio'}</div>
+                  <div className={s.recProfileSub}>{detail.location || 'Soma Wellness Studio'}</div>
                   <div className={s.recProfileTags}>{eventBadge(detail)}</div>
                 </div>
               </div>

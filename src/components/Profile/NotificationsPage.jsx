@@ -283,7 +283,7 @@ export default function NotificationsPage({ student, reload }) {
                               {n.priority?.charAt(0).toUpperCase() + n.priority?.slice(1) || "Normal"}
                             </span>
                             <span style={{ fontSize: 10, color: "var(--color-text-muted)" }}>
-                              {n.sender || "SomaWellness"}
+                              {n.sender || "Soma Wellness"}
                             </span>
                           </div>
 

@@ -1,6 +1,6 @@
 // ============================================================
 // templates/engine/components.js
-// SomaWellness Premium Glassy Email Components
+// Soma Wellness Premium Glassy Email Components
 // Reusable table-based HTML components for email clients.
 // ============================================================
 import { BRAND, DARK, FONT, RADIUS } from './tokens.js';

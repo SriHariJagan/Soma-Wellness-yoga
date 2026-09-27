@@ -12,7 +12,7 @@ vi.mock('react-i18next', () => ({
 describe('Footer', () => {
   it('renders logo with alt', () => {
     render(<MemoryRouter><Footer /></MemoryRouter>);
-    expect(screen.getAllByAltText('SomaWellness').length).toBeGreaterThan(0);
+    expect(screen.getAllByAltText('Soma Wellness').length).toBeGreaterThan(0);
   });
 
   it('renders explore links to all main pages', () => {
@@ -59,7 +59,7 @@ describe('Footer', () => {
     const wm = document.querySelector('.footer-watermark');
     expect(wm).not.toBeNull();
     expect(wm).toHaveAttribute('aria-hidden', 'true');
-    expect(wm.textContent).toBe('SomaWellness');
+    expect(wm.textContent).toBe('Soma Wellness');
   });
 
   it('has landmark footer role', () => {

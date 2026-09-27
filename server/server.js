@@ -1,5 +1,5 @@
 // ============================================================
-// server.js — SomaWellness API entrypoint
+// server.js — Soma Wellness API entrypoint
 // ============================================================
 
 import dns from "node:dns";
@@ -209,7 +209,7 @@ app.use("/api", globalLimiter);
 // ── Routes ──
 app.get("/", (req, res) =>
   res.json({
-    status: "SomaWellness API is running ✅",
+    status: "Soma Wellness API is running ✅",
     time: new Date().toISOString(),
   }),
 );

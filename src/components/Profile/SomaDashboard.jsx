@@ -9,7 +9,7 @@ import {
 } from "./widgets/DashboardWidgets";
 
 const STUDIO = {
-  name: "SomaWellness",
+  name: "Soma Wellness",
   tagline: "Wellness, thoughtfully experienced — movement, restoration and mindfulness under one roof.",
   address: "48 Shanzu Road, Spring Valley, Nairobi",
   phone: "+254 702 080 070",
@@ -52,7 +52,7 @@ export default function SomaDashboard() {
     <Stagger>
       <Item>
         <PageHeader
-          title="Your SomaWellness"
+          title="Your Soma Wellness"
           sub="Your membership, bookings and studio — all in one place."
         />
       </Item>
@@ -81,7 +81,7 @@ export default function SomaDashboard() {
           }} />
           <div style={{ position: "relative" }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#b8d4c8", marginBottom: 10 }}>
-              {membership ? "Member since" : "Welcome"} · SomaWellness
+              {membership ? "Member since" : "Welcome"} · Soma Wellness
             </p>
             <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(26px, 3.4vw, 36px)", fontWeight: 400, marginBottom: 8, color: "#fff", textShadow: "0 2px 18px rgba(0,0,0,0.35)" }}>
               {membership

@@ -167,7 +167,7 @@ export default function AvailableServicesPage() {
     <>
       <PageHeader
         title="All Services"
-        sub="Everything bookable at SomaWellness — grouped so you can compare at a glance."
+        sub="Everything bookable at Soma Wellness — grouped so you can compare at a glance."
       />
 
       {msg.text && (

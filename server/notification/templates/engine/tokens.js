@@ -1,10 +1,10 @@
 // ============================================================
 // templates/engine/tokens.js
-// SomaWellness Premium Glassy Design Tokens
+// Soma Wellness Premium Glassy Design Tokens
 // Single source of truth for brand colours, fonts, and spacing.
 // ============================================================
 
-export const STUDIO_NAME = 'SomaWellness';
+export const STUDIO_NAME = 'Soma Wellness';
 export const STUDIO_TAGLINE = 'Premium International Wellness';
 
 export const BRAND = {

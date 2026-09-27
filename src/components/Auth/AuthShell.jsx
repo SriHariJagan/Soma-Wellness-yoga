@@ -43,7 +43,7 @@ export default function AuthShell({ children }) {
         <div className={styles.inner}>
           {/* top row */}
           <div className={styles.topRow}>
-            <Link to="/" className={styles.logoLink} aria-label="SomaWellness — home">
+            <Link to="/" className={styles.logoLink} aria-label="Soma Wellness — home">
               <SomaLogo size={46} variant="light" />
             </Link>
             <span className={styles.topMeta}>Spring Valley · Nairobi</span>

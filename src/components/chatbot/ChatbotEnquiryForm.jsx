@@ -201,7 +201,7 @@ const ChatbotEnquiryForm = ({
       </div>
 
       <p className="soma-cb-form-footnote">
-        By submitting, you agree to be contacted by SomaWellness about your enquiry.
+        By submitting, you agree to be contacted by Soma Wellness about your enquiry.
       </p>
     </form>
   );

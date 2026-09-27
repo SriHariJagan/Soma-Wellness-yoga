@@ -34,7 +34,7 @@ const WHY_US = [
   { title: "Yoga Alliance Certification", desc: "Graduate with a globally recognised 200-hour certificate." },
   { title: "Flexible Learning", desc: "Online or in-person, recorded classes, one-year access." },
   { title: "Community & Support", desc: "Small cohorts, personal attention, lifelong connections." },
-  { title: "Direct Mentorship", desc: "Monthly one-to-one Q&A with senior SomaWellness teachers." },
+  { title: "Direct Mentorship", desc: "Monthly one-to-one Q&A with senior Soma Wellness teachers." },
   { title: "Practice for Life", desc: "Leave with a home practice, teaching toolkit and clear next steps." },
 ];
 
@@ -300,7 +300,7 @@ const Courses = () => {
       {/* Why us */}
       <section id="why" className={styles.section}>
         <div className={styles.container}>
-          <SectionHead eyebrow="SomaWellness" title="Why" titleEm="choose us" desc="Authentic tradition, modern teaching, personal mentorship." />
+          <SectionHead eyebrow="Soma Wellness" title="Why" titleEm="choose us" desc="Authentic tradition, modern teaching, personal mentorship." />
           <div className={styles.grid}>
             {WHY_US.map((w, i) => (
               <motion.article
@@ -347,8 +347,8 @@ const Courses = () => {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "EducationalOccupationalProgram",
-            name: "200 Hour Yoga Teacher Training Course — SomaWellness",
-            provider: { "@type": "Organization", name: "SomaWellness" },
+            name: "200 Hour Yoga Teacher Training Course — Soma Wellness",
+            provider: { "@type": "Organization", name: "Soma Wellness" },
             educationalCredentialAwarded: "Yoga Alliance 200 Hour Certification",
             timeToComplete: "P200H",
             occupationalCategory: "Yoga Teacher",

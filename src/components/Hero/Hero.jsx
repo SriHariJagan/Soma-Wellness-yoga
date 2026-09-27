@@ -340,7 +340,7 @@ const Hero = () => {
             >
               <motion.img
                 src="/images/backgrounds/immersive-spa-calm.webp"
-                alt="Premium spa massage therapy in warm calm light at SomaWellness"
+                alt="Premium spa massage therapy in warm calm light at Soma Wellness"
                 width="1200"
                 height="1400"
                 fetchPriority="high"
@@ -411,7 +411,7 @@ const Hero = () => {
                   <path id="somaSealCircle" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0" fill="none" />
                 </defs>
                 <text>
-                  <textPath href="#somaSealCircle">SomaWellness · Premium Wellness ·</textPath>
+                  <textPath href="#somaSealCircle">Soma Wellness · Premium Wellness ·</textPath>
                 </text>
               </svg>
               <span className={styles.sealCenter}>✦</span>
@@ -453,7 +453,7 @@ const Hero = () => {
               <span className={styles.marqueeDot}>•</span>
               <span>Spring Valley, Nairobi · Open mornings & evenings</span>
               <span className={styles.marqueeDot}>•</span>
-              <span>SOMAWELLNESS — Wellness, thoughtfully experienced</span>
+              <span>SOMA WELLNESS — Wellness, thoughtfully experienced</span>
               <span className={styles.marqueeDot}>•</span>
             </div>
           ))}

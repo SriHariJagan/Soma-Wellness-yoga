@@ -269,8 +269,8 @@ export const verifyOtp = asyncHandler(async (req, res) => {
             dashboardUrl: `${process.env.FRONTEND_URL || 'https://somawellness.co.ke'}/dashboard`,
             password: tempPassword,
           },
-          subject: 'Your SomaWellness account is ready — temporary password inside',
-          message: `Hello ${safeName},<br><br>Your SomaWellness account has been created so you can complete your purchase.<br><strong>Email:</strong> ${finalEmail}<br><strong>Temporary password:</strong> ${tempPassword}<br><br>${expiryNote}`,
+          subject: 'Your Soma Wellness account is ready — temporary password inside',
+          message: `Hello ${safeName},<br><br>Your Soma Wellness account has been created so you can complete your purchase.<br><strong>Email:</strong> ${finalEmail}<br><strong>Temporary password:</strong> ${tempPassword}<br><br>${expiryNote}`,
           priority: 'normal',
         })
         .catch((e) => logger.warn(MODULE, 'Credentials email after OTP creation failed', { error: e.message }));

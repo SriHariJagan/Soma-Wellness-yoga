@@ -115,7 +115,7 @@ const Navbar = ({ user, onLogout }) => {
       <header className={`${styles.root} ${scrolled ? styles.scrolled : ""} ${solidNav ? styles.solid : ""}`}>
         <nav className={styles.navbar}>
           <div className={styles.navInner}>
-            <Link className={styles.logo} to="/" aria-label="SomaWellness — Home">
+            <Link className={styles.logo} to="/" aria-label="Soma Wellness — Home">
               <SomaLogo size={68} variant={isHome && !scrolled && !solidNav ? "dark" : "dark"} withText={false} />
             </Link>
 

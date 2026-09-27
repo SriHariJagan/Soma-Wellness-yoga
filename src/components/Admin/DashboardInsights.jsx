@@ -39,7 +39,7 @@ export default function DashboardInsights({ data = {}, totalLeads = 0, totalBatc
 
   return (
     <div>
-      <PageHeader title="Dashboard" subtitle="Today at SomaWellness">
+      <PageHeader title="Dashboard" subtitle="Today at Soma Wellness">
         <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={refresh}>
           <LuRefreshCw size={14} /> Refresh
         </button>

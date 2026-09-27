@@ -1,6 +1,6 @@
 // ============================================================
 // templates/engine/layout.js
-// SomaWellness Premium Glassy Email Layout
+// Soma Wellness Premium Glassy Email Layout
 // Base email layout wrapping every template.
 // ============================================================
 import { BRAND, DARK, FONT, STUDIO_NAME, STUDIO_TAGLINE, RADIUS, SPACING } from './tokens.js';

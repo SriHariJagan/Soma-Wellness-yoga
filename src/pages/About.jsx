@@ -57,7 +57,7 @@ const About = () => {
             <div className="about-img-wrapper">
               <img
                 src="/images/about/studio-story.webp"
-                alt="SomaWellness studio interior"
+                alt="Soma Wellness studio interior"
                 loading="lazy"
               />
               <div className="about-img-overlay" />
@@ -79,7 +79,7 @@ const About = () => {
               <em>home</em> for body, breath and mind.
             </h2>
             <p className="about-body">
-              SomaWellness is a premium international wellness brand — where mindful
+              Soma Wellness is a premium international wellness brand — where mindful
               movement, restoration, breathwork, massage and conscious rituals sit together
               under one holistic philosophy. We bring movement, breath, mindfulness, restoration,
               education and lifestyle together so you can cultivate a healthier relationship

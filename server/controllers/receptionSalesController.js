@@ -218,7 +218,7 @@ export const recordPurchase = asyncHandler(async (req, res) => {
       invoiceDate: now.toLocaleDateString('en-KE'),
       invoiceNumber: payment.invoiceNo || String(payment._id),
     },
-    subject: `Your SomaWellness purchase: ${name}`,
+    subject: `Your Soma Wellness purchase: ${name}`,
     message: `Hello ${student.name},<br><br>Your purchase of <strong>${name}</strong> (KES ${price.toLocaleString('en-KE')}, paid via ${paymentMethod}) is confirmed and active.`,
     priority: 'high',
   }).catch((err) => logger.error(MODULE, 'Sale invoice notification failed', {

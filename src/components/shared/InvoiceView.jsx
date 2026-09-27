@@ -44,7 +44,7 @@ export default function InvoiceView({ order, onClose }) {
 
   const { payment, items = [], student, coupon, couponCode, couponDiscount } = order;
   const studio = {
-    name: "SomaWellness",
+    name: "Soma Wellness",
     address: "Spring Valley, Nairobi, Kenya",
     email: "somawellnesslimited@gmail.com",
     phone: "+254 702 080 070",

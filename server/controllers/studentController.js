@@ -1221,7 +1221,7 @@ export const inviteReferral = asyncHandler(async (req, res) => {
       senderName: req.user.name || 'A friend',
       referralLink,
     },
-    subject: `${req.user.name} invites you to SomaWellness!`,
+    subject: `${req.user.name} invites you to Soma Wellness!`,
     title: 'You\'re Invited!',
     priority: 'normal',
   }).catch((err) => logger.error(MODULE, 'Referral email failed', { email, error: err.message }));
@@ -1229,10 +1229,10 @@ export const inviteReferral = asyncHandler(async (req, res) => {
   // Send referral invite email via new email service
   emailService.sendMail(
     email,
-    `${req.user.name} invites you to SomaWellness!`,
+    `${req.user.name} invites you to Soma Wellness!`,
     `<h2 style="color:#2D1406;">You're Invited!</h2>
      <p>Hi ${name || 'there'},</p>
-     <p>Your friend <strong>${req.user.name}</strong> invites you to join <strong>SomaWellness</strong>.</p>
+     <p>Your friend <strong>${req.user.name}</strong> invites you to join <strong>Soma Wellness</strong>.</p>
      <p>Start your wellness journey with holistic wellness and mindfulness.</p>
      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:16px 0;">
        <tr>
@@ -1247,8 +1247,8 @@ export const inviteReferral = asyncHandler(async (req, res) => {
          </td>
        </tr>
      </table>
-     <p style="color:#7C6A58;font-size:12px;">— SomaWellness Team</p>`,
-    `You're Invited!\n\nHi ${name || 'there'},\n\nYour friend ${req.user.name} invites you to join SomaWellness.\n\nStart your wellness journey with holistic wellness and mindfulness.\n\nAccept: ${referralLink}\n\n— SomaWellness Team`,
+     <p style="color:#7C6A58;font-size:12px;">— Soma Wellness Team</p>`,
+    `You're Invited!\n\nHi ${name || 'there'},\n\nYour friend ${req.user.name} invites you to join Soma Wellness.\n\nStart your wellness journey with holistic wellness and mindfulness.\n\nAccept: ${referralLink}\n\n— Soma Wellness Team`,
   ).catch((err) => logger.error(MODULE, 'Referral invite email failed', { email, error: err.message }));
 
   res.json({ success: true, msg: 'Invitation recorded', stats: { invited: ref.invited.length, joined: ref.joined.length, earned: ref.earned } });

@@ -80,7 +80,7 @@ const Contact = () => {
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "HealthAndBeautyBusiness",
-          name: "SomaWellness",
+          name: "Soma Wellness",
           image: "https://somawellness.co.ke/images/soma/og-image.webp",
           url: "https://somawellness.co.ke",
           telephone: "+254702080070",
@@ -167,7 +167,7 @@ const Contact = () => {
             <div className="contact-map-head">
               <span style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}><FaMapMarkerAlt /></span>
               <div>
-                <h3>SomaWellness Studio</h3>
+                <h3>Soma Wellness Studio</h3>
                 <p>{STUDIO.address} · {t("footer.hours")}</p>
                 <a href={mapsLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, color: "var(--soma-primary)", letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 4, display: "inline-block" }}>{t("contact.getDirections")} →</a>
               </div>

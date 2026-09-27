@@ -7,7 +7,7 @@ export default function LogoutModal({ onCancel, onConfirm }) {
     <ConfirmSheet
       icon={<LuLogOut size={20} />}
       tone="warn"
-      title="Sign out of SomaWellness?"
+      title="Sign out of Soma Wellness?"
       message="You will be returned to the login screen. Any unsaved changes will be lost."
       confirmLabel="Yes, sign out"
       onConfirm={onConfirm}

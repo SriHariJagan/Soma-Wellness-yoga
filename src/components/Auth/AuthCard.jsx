@@ -216,7 +216,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
             >
               <div className={styles.cardHead}>
-                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI</span>
+                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI</span>
                 <h1 className={styles.cardTitle}>{t("auth.loginHeading")}</h1>
                 <p className={styles.cardSub}>{t("auth.loginSub")}</p>
               </div>
@@ -259,7 +259,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
             >
               <div className={styles.cardHead}>
-                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI</span>
+                <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI</span>
                 <h1 className={styles.cardTitle}>{t("auth.createAccount")}</h1>
                 <p className={styles.cardSub}>{t("auth.loginSub")}</p>
               </div>
@@ -300,7 +300,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               {!fpSent ? (
                 <>
                   <div className={styles.cardHead}>
-                    <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMAWELLNESS · NAIROBI</span>
+                    <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI</span>
                     <h1 className={styles.cardTitle}>{t("auth.forgotTitle")}</h1>
                     <p className={styles.cardSub}>{t("auth.forgotSubtitle")}</p>
                   </div>

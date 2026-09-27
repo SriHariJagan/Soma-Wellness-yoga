@@ -42,7 +42,7 @@ const Footer = () => {
       </div>
 
       {/* Giant brand watermark — MetaDev-style shimmer in Soma theme */}
-      <div className="footer-watermark" aria-hidden="true">SomaWellness</div>
+      <div className="footer-watermark" aria-hidden="true">Soma Wellness</div>
 
       <div className="footer-container">
         <motion.div
@@ -54,7 +54,7 @@ const Footer = () => {
         >
           <motion.div className="footer-about" variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } } }}>
             <motion.div className="footer-logo-wrap" initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: EASE }}>
-              <img src="/images/soma/logo.png" alt="SomaWellness" className="footer-logo-img" />
+              <img src="/images/soma/logo.png" alt="Soma Wellness" className="footer-logo-img" />
             </motion.div>
             <p className="footer-tagline" dangerouslySetInnerHTML={{ __html: t("footer.tagline") }} />
             <p>{t("footer.description")}</p>

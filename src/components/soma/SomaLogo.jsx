@@ -6,7 +6,7 @@ const SomaLogo = ({ variant = "dark", size = 40, withText = true, stacked = fals
     <span style={{ display: "inline-flex", alignItems: "center", gap: withText ? 12 : 0, flexDirection: stacked ? "column" : "row", textAlign: stacked ? "center" : "left" }}>
       <img
         src="/images/soma/logo.png"
-        alt="SomaWellness"
+        alt="Soma Wellness"
         width={size}
         height={size}
         style={{ flexShrink: 0, objectFit: "contain" }}
