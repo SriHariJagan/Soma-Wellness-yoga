@@ -8,6 +8,8 @@ import { PAGE_FAQS } from "../config/siteContent";
 import { EASE, usePrefersReducedMotion } from "../lib/motion";
 import CheckoutGate from "../components/checkout/CheckoutGate.jsx";
 import { addToCart, showToast, notifyCartUpdate, getAuthHeaders, isAuthenticated } from "../utils/payment";
+import { priceDisplay } from "../lib/pricing.js";
+import { formatKES } from "../lib/currency.js";
 import styles from "./Memberships.module.css";
 
 const API = import.meta.env.VITE_API_URL || "";
@@ -207,9 +209,11 @@ const Memberships = () => {
             <p className={styles.planDesc}>{circle.tagline}</p>
 
             <div className={styles.heroPriceRow}>
-              <span className={styles.heroPrice}>{fmt(circle.price)}</span>
-              <span className={styles.priceCur}>KES / Year</span>
-              <span className={styles.perMonth}>Just KES 100 Per Day</span>
+              <span className={styles.heroPrice}>{formatKES(priceDisplay(circle.price, { durationMonths: circle.durationMonths }).displayDailyPrice)}</span>
+              <span className={styles.priceCur}>KES / Day</span>
+              <span className={styles.perMonth}>
+                {formatKES(priceDisplay(circle.price, { durationMonths: circle.durationMonths }).displayMonthlyPrice)}/month · Billed annually at {formatKES(circle.price)}
+              </span>
             </div>
 
             <div className={styles.heroStats}>
@@ -346,8 +350,8 @@ const Memberships = () => {
           >
             <div className={styles.bottomCtaOrbs} aria-hidden="true" />
             <div className={styles.bottomCtaEyebrow}>Your year of wellness awaits</div>
-            <div className={styles.bottomCtaPrice}>KES {fmt(circle.price)} <span>/ Year</span></div>
-            <div className={styles.bottomCtaPer}>Just KES 100 Per Day · 5% member saving included</div>
+            <div className={styles.bottomCtaPrice}>{formatKES(priceDisplay(circle.price, { durationMonths: circle.durationMonths }).displayMonthlyPrice)} <span>/ Month</span></div>
+            <div className={styles.bottomCtaPer}>Billed annually at {formatKES(circle.price)} · 5% member saving included</div>
             <div className={styles.cardActions} style={{ maxWidth: 420, margin: "14px auto 0" }}>
               {cta()}
             </div>

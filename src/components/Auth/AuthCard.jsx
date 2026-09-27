@@ -6,6 +6,10 @@ import { useTranslation } from "react-i18next";
 import AuthShell from "./AuthShell.jsx";
 import SocialButtons from "./SocialButtons.jsx";
 import PhoneInput from "../common/PhoneInput.jsx";
+import CountrySelect from "../common/CountrySelect.jsx";
+import RegistrationVideo from "./RegistrationVideo.jsx";
+import { REGISTRATION_VIDEO } from "../../config/registrationVideo.js";
+import { DEFAULT_COUNTRY_CODE, countryNameFor } from "../../data/countries.js";
 import { validatePhone, normalizePhone } from "../../lib/phone.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
@@ -63,6 +67,7 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
@@ -144,7 +149,10 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, phone: cleanPhone, ref }),
+        body: JSON.stringify({
+          name, email, password, phone: cleanPhone, ref,
+          country: countryNameFor(countryCode), countryCode,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -270,7 +278,11 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               <form onSubmit={handleRegister} className={styles.form}>
                 <Field id="reg-name" label={t("auth.name")} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("contact.namePlaceholder")} icon={<UserIcon />} autoComplete="name" />
                 <Field id="reg-email" label={t("auth.email")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" icon={<MailIcon />} autoComplete="email" />
+                {REGISTRATION_VIDEO.enabled && REGISTRATION_VIDEO.showInRegister && (
+                  <RegistrationVideo config={REGISTRATION_VIDEO} compact />
+                )}
                 <PhoneInput value={phone} onChange={setPhone} label={t("auth.phone")} id="reg-phone" />
+                <CountrySelect value={countryCode} onChange={setCountryCode} id="reg-country" />
                 <div className={styles.row}>
                   <Field id="reg-pw" label={t("auth.password")} type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" icon={<LockIcon />} autoComplete="new-password" extra={pwExtra} />
                   <Field id="reg-pw2" label={t("auth.confirmPassword")} type={showPw2 ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" icon={<LockIcon />} autoComplete="new-password" extra={pw2Extra} />

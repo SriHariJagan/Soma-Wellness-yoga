@@ -44,7 +44,7 @@ const OrderSchema = new mongoose.Schema(
       city:        { type: String, default: '' },
       state:       { type: String, default: '', index: true },
       pincode:     { type: String, default: '' },
-      country:     { type: String, default: 'India' },
+      country:     { type: String, default: 'Kenya' },
     },
 
     shippingCharge: { type: Number, default: 0, min: 0 },

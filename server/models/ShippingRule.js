@@ -24,7 +24,7 @@ const ShippingRuleSchema = new mongoose.Schema(
     status:      { type: String, enum: ['active', 'inactive'], default: 'active', index: true },
 
     // Matching scope. '*' means "any".
-    country:     { type: String, default: 'India', trim: true, maxlength: 100 },
+    country:     { type: String, default: 'Kenya', trim: true, maxlength: 100 },
     states:      { type: [String], default: [] },
     allowedPincodes: { type: [String], default: [] },
     blockedPincodes: { type: [String], default: [] },

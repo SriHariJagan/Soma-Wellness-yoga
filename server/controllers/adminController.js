@@ -154,7 +154,7 @@ export const getStudentById = asyncHandler(async (req, res) => {
 });
 
 export const createStudent = asyncHandler(async (req, res) => {
-  let { name, email, password, phone, city, style, level, planMonths, role, membership, planType, planName, planId, price } = req.body;
+  let { name, email, password, phone, city, country, countryCode, style, level, planMonths, role, membership, planType, planName, planId, price } = req.body;
   if (!name || !email) throw ApiError.badRequest('Name and email are required');
   if (await User.findOne({ email: email.toLowerCase().trim() })) throw ApiError.conflict('Email already registered');
   // Kenya phone: fixed 9 digits after +254, normalize
@@ -200,7 +200,7 @@ export const createStudent = asyncHandler(async (req, res) => {
 
   const student = await User.create({
     name, email: email.toLowerCase().trim(), password: hashed,
-    phone: phone || '', city: city || '', style: style || 'Hatha', level: level || 'Beginner',
+    phone: phone || '', city: city || '', country: country || '', countryCode: String(countryCode || '').toUpperCase(), style: style || 'Hatha', level: level || 'Beginner',
     planMonths: resolvedPlanMonths || 0, role: requestedRole, status: 'active',
   });
   await ensureReferral(student);
@@ -296,7 +296,7 @@ export const createStudent = asyncHandler(async (req, res) => {
 });
 
 export const updateStudent = asyncHandler(async (req, res) => {
-  const allowed = ['name', 'email', 'phone', 'city', 'style', 'level', 'planMonths', 'status', 'bio', 'notes', 'gender', 'dateOfBirth', 'emergencyContact'];
+  const allowed = ['name', 'email', 'phone', 'city', 'country', 'countryCode', 'style', 'level', 'planMonths', 'status', 'bio', 'notes', 'gender', 'dateOfBirth', 'emergencyContact'];
   const updates = {};
   for (const f of allowed) if (req.body[f] !== undefined) updates[f] = req.body[f];
   if (updates.phone !== undefined) {
@@ -311,6 +311,16 @@ export const updateStudent = asyncHandler(async (req, res) => {
     const owner = await User.findOne({ email: updates.email.toLowerCase().trim() });
     if (owner && owner._id.toString() !== req.params.id) throw ApiError.conflict('Email already in use');
     updates.email = updates.email.toLowerCase().trim();
+  }
+  if (updates.countryCode !== undefined) {
+    const { isValidCountryCode } = await import('../shared/constants/countries.js');
+    const code = String(updates.countryCode || '').trim().toUpperCase();
+    if (code && !isValidCountryCode(code)) throw ApiError.badRequest('Invalid country selection');
+    updates.countryCode = code;
+    if (code && !updates.country) {
+      const { countryNameFor } = await import('../shared/constants/countries.js');
+      updates.country = countryNameFor(code);
+    }
   }
   const student = await User.findByIdAndUpdate(req.params.id, { $set: updates }, { returnDocument: 'after', runValidators: true });
   if (!student) throw ApiError.notFound('Student not found');

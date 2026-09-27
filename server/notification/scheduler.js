@@ -19,6 +19,8 @@ const CHECK_JOBS = [
   { name: 'workshop-reminder-check', handler: checks.checkWorkshopReminders },
   { name: 'event-reminder-check',    handler: checks.checkEventReminders },
   { name: 'membership-expiry-check', handler: checks.checkMembershipExpiry },
+  { name: 'payment-reminder-check',  handler: checks.checkPaymentReminders },
+  { name: 'membership-expired-check', handler: checks.checkExpiredMemberships },
   { name: 'birthday-check',          handler: checks.checkBirthdays },
 ];
 

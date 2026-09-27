@@ -61,6 +61,13 @@ export const PERMISSION_GROUPS = {
       { key: 'attendance.edit', label: 'Edit Attendance' },
     ],
   },
+  communications: {
+    label: 'Communications',
+    permissions: [
+      { key: 'communications.bulk', label: 'Send Bulk Email' },
+      { key: 'communications.gallery', label: 'Manage Gallery' },
+    ],
+  },
 };
 
 // Flat list of all valid permission keys

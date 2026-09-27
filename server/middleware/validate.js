@@ -1,5 +1,16 @@
 import { z } from 'zod';
 import { validatePhone, normalizePhone } from '../utils/phone.js';
+import { isValidCountryCode } from '../shared/constants/countries.js';
+
+// ── Country of residency (ISO 3166-1 alpha-2, e.g. KE). Independent of phone prefix.
+// withDefault=true fills '' when absent (safe for creates); updates must omit
+// the key entirely so existing residency is never wiped by unrelated edits.
+function countryCodeSchema(required = false, withDefault = false) {
+  const base = z.string().trim().toUpperCase().max(2);
+  const checked = base.refine((v) => !v || isValidCountryCode(v), { message: 'Invalid country selection' });
+  if (required) return checked.refine((v) => !!v, { message: 'Country of residency is required' });
+  return withDefault ? checked.optional().default('') : checked.optional();
+}
 
 export function validate(schema) {
   return (req, res, next) => {
@@ -40,6 +51,8 @@ export const schemas = {
     password: z.string().min(8, 'Password must be at least 8 characters').max(128).optional(),
     phone: kenyaPhoneOptional(),
     city: z.string().max(100).optional().default(''),
+    country: z.string().max(100).optional().default(''),
+    countryCode: countryCodeSchema(false, true),
     style: z.string().optional().default('Hatha'),
     level: z.string().optional().default('Beginner'),
     ref: z.string().optional(),
@@ -67,6 +80,8 @@ export const schemas = {
     name: z.string().min(1).max(100).trim().optional(),
     phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
     city: z.string().max(100).optional(),
+    country: z.string().max(100).optional(),
+    countryCode: countryCodeSchema(false),
     style: z.string().optional(),
     level: z.string().optional(),
     bio: z.string().max(500).optional(),
@@ -83,7 +98,7 @@ export const schemas = {
     courseName: z.string().min(1, 'Course name is required').max(200).trim(),
     coursePrice: z.union([z.number(), z.string().min(1, 'Course price is required').max(50)]),
     courseTime: z.string().max(100).optional().default(''),
-    paymentMethod: z.string().max(50).optional().default('UPI'),
+    paymentMethod: z.string().max(50).optional().default('M-PESA'),
     transactionId: z.string().max(200).optional().default(''),
     message: z.string().max(2000).optional().default(''),
     status: z.string().optional(),

@@ -39,6 +39,8 @@ function issueTokensAndRedirect(res, user) {
     status: user.status,
     avatar: user.avatar || "",
     phone: user.phone || "",
+    country: user.country || "",
+    countryCode: user.countryCode || "",
   }))}`;
 
   res.redirect(redirectUrl);

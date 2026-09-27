@@ -95,15 +95,19 @@
 .footer-container {
   position: relative;
   z-index: 1;
-  max-width: 1440px;
+  max-width: var(--container-xl);
   margin: 0 auto;
-  padding: 64px clamp(20px, 4vw, 40px) 36px;
+  padding: 64px clamp(20px, 4vw, 48px) 36px;
+  min-width: 0;
 }
 .footer-grid {
   display: grid;
   grid-template-columns: 1.6fr 0.9fr 1.2fr 1.3fr;
   gap: 44px;
   align-items: start;
+}
+.footer-grid > * {
+  min-width: 0;
 }
 
 /* Brand */
@@ -217,6 +221,11 @@
   line-height: 1.6;
   color: var(--soma-warm-gray);
   align-items: flex-start;
+  min-width: 0;
+}
+.footer-contact-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .footer-contact-icon {
   width: 20px; height: 20px;
@@ -264,9 +273,10 @@
   font-size: 11px;
   opacity: 0.52;
 }
-.footer-form { display: flex; gap: 8px; }
+.footer-form { display: flex; gap: 8px; min-width: 0; }
 .footer-form input {
   flex: 1;
+  min-width: 0;
   padding: 13px 16px;
   background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.75) 100%);
   border: 1px solid rgba(46,125,91,0.15);
@@ -333,7 +343,7 @@
   margin-top: 44px;
 }
 .footer-bottom-inner {
-  max-width: 1440px;
+  max-width: var(--container-xl);
   margin: 0 auto;
   padding: 20px clamp(20px, 4vw, 40px);
   display: flex;

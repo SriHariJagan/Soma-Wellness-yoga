@@ -5,7 +5,7 @@ import {
   LuLayoutDashboard, LuUsers, LuFilter, LuRadioTower, LuGraduationCap,
   LuReceipt, LuCalendarClock, LuFolderLock, LuMegaphone, LuTicketPercent, LuCalendar,
   LuSparkles, LuClock, LuGift, LuMail, LuCalendarCheck,
-  LuCalendarDays, LuActivity, LuTruck, LuUserCog, LuPackage,
+  LuCalendarDays, LuActivity, LuTruck, LuUserCog, LuPackage, LuSend, LuImage,
 } from 'react-icons/lu';
 
 // Layout Shell Components
@@ -33,6 +33,8 @@ const ClassInvites = lazy(() => import('./ClassInvites'));
 const AttendanceManagement = lazy(() => import('./AttendanceManagement'));
 const BlogManagement = lazy(() => import('./BlogManagement'));
 const EmailHealth = lazy(() => import('./EmailHealth'));
+const BulkEmailManager = lazy(() => import('./BulkEmailManager'));
+const GalleryManager = lazy(() => import('./GalleryManager'));
 const ReceptionStaffManagement = lazy(() => import('./ReceptionStaffManagement'));
 const OfferingsManagement = lazy(() => import('./OfferingsManagement'));
 
@@ -140,6 +142,8 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
     { id: 'free-trials',      label: 'Free Trial',           icon: <LuGift /> },
     { id: 'blog-mgmt',        label: 'Blog Management',      icon: <LuSparkles /> },
     { id: 'email-health',     label: 'Email Health',         icon: <LuActivity /> },
+    { id: 'bulk-email',       label: 'Bulk Email',           icon: <LuSend /> },
+    { id: 'gallery-mgmt',     label: 'Gallery',              icon: <LuImage /> },
   ];
 
   const visibleNavItems = isManager
@@ -290,6 +294,8 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
         {activeTab === 'free-trials' && <Suspense fallback={<TabFallback />}><FreeTrialManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'blog-mgmt' && <Suspense fallback={<TabFallback />}><BlogManagement onChanged={loadAll} /></Suspense>}
         {activeTab === 'email-health' && <Suspense fallback={<TabFallback />}><EmailHealth /></Suspense>}
+        {activeTab === 'bulk-email' && <Suspense fallback={<TabFallback />}><BulkEmailManager /></Suspense>}
+        {activeTab === 'gallery-mgmt' && <Suspense fallback={<TabFallback />}><GalleryManager /></Suspense>}
         </main>
       </div>
 

@@ -50,6 +50,10 @@ const SettingsSchema = new mongoose.Schema(
         soma200Count: { type: Number, default: 3 },
         soma200Interval: { type: String, default: 'monthly' },
       },
+      // Registration video override (frontend falls back to its config file).
+      registrationVideo: { type: mongoose.Schema.Types.Mixed, default: null },
+      // Membership popup config (frequency cap days, upcoming limit).
+      popupConfig: { type: mongoose.Schema.Types.Mixed, default: null },
     },
   },
   { timestamps: true }

@@ -134,7 +134,7 @@ app.use(
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
+        imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:5173"],
         connectSrc: ["'self'", "https://sandbox.safaricom.co.ke", "https://api.safaricom.co.ke"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
@@ -167,6 +167,11 @@ app.use("/uploads", (req, res, next) => {
         ? "public, max-age=31536000, immutable"
         : "public, max-age=604800"
     );
+    // Allow cross-origin embedding (frontend runs on a different
+    // origin in dev: :5173 vs API :5000). Without this, Helmet's
+    // COEP require-corp makes browsers block images with
+    // ERR_BLOCKED_BY_RESPONSE.NotSameOrigin despite HTTP 200.
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     express.static(UPLOADS_PATH)(req, res, next);
   } else {
     res
@@ -238,6 +243,10 @@ app.use("/api/soma", somaRoutes);
 app.use("/api/mpesa", mpesaRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+import bulkEmailRoutes from "./routes/bulkEmail.js";
+app.use("/api/bulk-email", bulkEmailRoutes);
+import galleryRoutes from "./routes/gallery.js";
+app.use("/api", galleryRoutes);
 
 // ── Unified Offering Catalog ──
 import offeringRoutes from "./routes/offerings.js";
@@ -512,6 +521,13 @@ connectDB(process.env.MONGO_URI)
 
     notificationWorker.start();
 
+    // Weekly bulk-email evaluator (BullMQ when Redis is up, interval fallback otherwise).
+    import("./services/bulkEmailScheduler.js").then((mod) => {
+      mod.startBulkEmailScheduler().catch((err) => {
+        logger.error(MODULE, "Failed to start bulk-email scheduler", { error: err.message });
+      });
+    }).catch(() => {});
+
     // Start payment expiry checker for MPESA and other initiated payments
     import("./services/paymentExpiryService.js").then((mod) => mod.default.start()).catch(() => {});
 
@@ -564,6 +580,10 @@ async function shutdown(signal) {
 
   // 2. Stop reminder scheduler (BullMQ repeatable jobs + worker).
   await notificationScheduler.stop();
+  try {
+    const { stopBulkEmailScheduler } = await import("./services/bulkEmailScheduler.js");
+    await stopBulkEmailScheduler();
+  } catch { /* ignore */ }
 
   // 3. Drain legacy polling worker.
   await notificationWorker.stop();

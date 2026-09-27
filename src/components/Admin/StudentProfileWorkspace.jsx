@@ -447,7 +447,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
       });
       flash('Payment recorded successfully');
       setShowPaymentForm(false);
-      setPaymentForm({ amount: '', label: '', method: 'UPI', status: 'paid' });
+      setPaymentForm({ amount: '', label: '', method: 'M-PESA', status: 'paid' });
       loadAll();
     } catch (err) {
       flash(err.message || 'Failed to record payment', 'error');
@@ -460,6 +460,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
     setEditForm({
       name: sDetail.name || '', email: sDetail.email || '',
       phone: sDetail.phone || '', city: sDetail.city || '',
+      country: sDetail.country || '', countryCode: sDetail.countryCode || '',
       style: sDetail.style || '', level: sDetail.level || '',
       gender: sDetail.gender || '', dateOfBirth: sDetail.dateOfBirth ? sDetail.dateOfBirth.slice(0, 10) : '',
       emergencyContact: sDetail.emergencyContact || '',
@@ -533,6 +534,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
               <FormInput label="Gender" value={editForm.gender} onChange={e => setEditForm({ ...editForm, gender: e.target.value })} />
               <FormInput label="Date of Birth" type="date" value={editForm.dateOfBirth} onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
               <FormInput label="City" value={editForm.city} onChange={e => setEditForm({ ...editForm, city: e.target.value })} />
+              <FormInput label="Country of residency" value={editForm.countryCode ? `${editForm.country || ''} (${editForm.countryCode})` : (editForm.country || '')} onChange={e => setEditForm({ ...editForm, country: e.target.value, countryCode: e.target.value })} />
               <FormInput label="Yoga Style" value={editForm.style} onChange={e => setEditForm({ ...editForm, style: e.target.value })} />
               <FormInput label="Level" value={editForm.level} onChange={e => setEditForm({ ...editForm, level: e.target.value })} />
             </div>
@@ -560,6 +562,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
             <InfoRow icon={<LuCalendar size={14} />} label="Joined" value={sDetail.createdAt ? new Date(sDetail.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'} />
             <InfoRow icon={<LuActivity size={14} />} label="Status" value={sDetail.status || 'active'} />
             <InfoRow icon={<LuMapPin size={14} />} label="City" value={sDetail.city || '—'} />
+            <InfoRow icon={<LuMapPin size={14} />} label="Country of residency" value={sDetail.countryCode ? `${sDetail.country || ''} (${sDetail.countryCode})`.trim() : (sDetail.country || '—')} />
           </div>
         </SectionCard>
 

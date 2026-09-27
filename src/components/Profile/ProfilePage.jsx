@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import p from "./ProfilePage.module.css";
 import { Stagger, Item, Panel, PrimaryButton, GhostButton, Pill } from "./widgets/DashboardWidgets";
 import { updateStudentProfile, getMyEnrollments } from "../api/StudentServices";
+import CountrySelect from "../common/CountrySelect.jsx";
+import { countryNameFor } from "../../data/countries.js";
 
 const ENROLLMENT_META = {
   membership: { icon: "ti-shield-check", tone: "orange", label: "Plan" },
@@ -48,6 +51,7 @@ function EnrollmentCard({ item, status, expiry, ...rest }) {
 }
 
 export default function ProfilePage({ student, onUpdateSuccess }) {
+  const { t } = useTranslation();
   const pData = student ?? {};
   const enrollmentProgress = pData.enrollmentProgress || {};
   const memProg = enrollmentProgress.membership;
@@ -65,6 +69,8 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
     email: pData.email ?? "",
     phone: pData.phone ?? "",
     city:  pData.city  ?? "",
+    country: pData.country ?? "",
+    countryCode: pData.countryCode ?? "",
     style: pData.style ?? "",
     level: pData.level ?? "",
   });
@@ -76,6 +82,8 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
         email: student.email ?? "",
         phone: student.phone ?? "",
         city:  student.city  ?? "",
+        country: student.country ?? "",
+        countryCode: student.countryCode ?? "",
         style: student.style ?? "",
         level: student.level ?? "",
       });
@@ -104,6 +112,8 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
       email: pData.email ?? "",
       phone: pData.phone ?? "",
       city:  pData.city  ?? "",
+      country: pData.country ?? "",
+      countryCode: pData.countryCode ?? "",
       style: pData.style ?? "",
       level: pData.level ?? "",
     });
@@ -115,7 +125,11 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
     setIsSubmitting(true);
     setErrorMessage("");
     try {
-      const savedData = await updateStudentProfile(formData);
+      const payload = { ...formData };
+      if (payload.countryCode && !payload.country) {
+        payload.country = countryNameFor(payload.countryCode);
+      }
+      const savedData = await updateStudentProfile(payload);
       setErrorMessage("");
       if (typeof onUpdateSuccess === "function") onUpdateSuccess(savedData);
       setIsEditing(false);
@@ -132,9 +146,11 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
     { icon: "ti-mail",      label: "Email", name: "email", type: "email" },
     { icon: "ti-phone",     label: "Phone", name: "phone", type: "tel"   },
     { icon: "ti-map-pin",   label: "City",  name: "city",  type: "text"  },
+    { icon: "ti-flag",      label: t("auth.countryOfResidency", "Country of residency"), name: "countryCode", type: "country"  },
     { icon: "ti-yoga",      label: "Style", name: "style", type: "text"  },
     { icon: "ti-chart-bar", label: "Level", name: "level", type: "text"  },
   ];
+  const missingCountry = !pData.countryCode;
 
   const studentName = pData.name || pData.email?.split("@")[0] || "User";
   const initials = studentName.split(" ").map((x) => x[0]).join("").slice(0, 2).toUpperCase();
@@ -244,6 +260,13 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
         )}
       </Panel>
 
+      {missingCountry && !isEditing && (
+        <motion.div className={p.errorNote} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} role="status">
+          <i className="ti ti-flag" aria-hidden="true" />
+          {t("auth.completeCountry", "Please complete your profile by adding your country of residency.")}
+        </motion.div>
+      )}
+
       {/* ── Personal details ── */}
       <Panel title="Personal details" icon="ti-id-badge-2">
         <div className={p.fieldGrid}>
@@ -253,6 +276,13 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
               <div className={p.fieldBody}>
                 <span className={p.fieldLabel}>{label}</span>
                 {isEditing ? (
+                  type === "country" ? (
+                    <CountrySelect
+                      value={formData.countryCode}
+                      onChange={(code) => setFormData((prev) => ({ ...prev, countryCode: code, country: countryNameFor(code) }))}
+                      id="profile-country"
+                    />
+                  ) : (
                   <input
                     type={type}
                     name={name}
@@ -263,8 +293,13 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
                     maxLength={50}
                     autoComplete="off"
                   />
+                  )
                 ) : (
-                  <span className={p.fieldValue}>{formData[name] || "—"}</span>
+                  <span className={p.fieldValue}>
+                    {name === "countryCode"
+                      ? (formData.countryCode ? `${formData.country || countryNameFor(formData.countryCode)} (${formData.countryCode})` : "—")
+                      : (formData[name] || "—")}
+                  </span>
                 )}
               </div>
               {name === "email" && isEditing && (

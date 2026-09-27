@@ -14,12 +14,18 @@ const NotificationScheduleSchema = new mongoose.Schema(
       event:   { type: String, default: '' },
       cron:    { type: String, default: '' },
       delayMs: { type: Number, default: 0 },
+      // Weekly bulk-email scheduling (Africa/Nairobi default).
+      // dayOfWeek: 1=Monday … 7=Sunday. time: "HH:MM" 24h.
+      dayOfWeek: { type: Number, min: 1, max: 7, default: null },
+      time:      { type: String, default: '' },
+      timezone:  { type: String, default: 'Africa/Nairobi' },
     },
 
     audience: {
       allUsers:           { type: Boolean, default: false },
       roles:              { type: [String], default: [] },
       planTypes:          { type: [String], default: [] },
+      countries:          { type: [String], default: [] }, // ISO codes, e.g. ['KE']
       userQuery:          { type: Object, default: null },
       excludeRecentHours: { type: Number, default: 0 },
     },

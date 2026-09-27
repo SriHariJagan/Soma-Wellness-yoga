@@ -339,8 +339,8 @@ const Hero = () => {
               transition={spring.gentle}
             >
               <motion.img
-                src="/images/backgrounds/immersive-spa-calm.webp"
-                alt="Premium spa massage therapy in warm calm light at Soma Wellness"
+                src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1200&auto=format&fit=crop"
+                alt="Peaceful morning meditation practice at Soma Wellness"
                 width="1200"
                 height="1400"
                 fetchPriority="high"

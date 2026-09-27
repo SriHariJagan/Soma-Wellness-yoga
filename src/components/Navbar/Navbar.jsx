@@ -18,7 +18,8 @@ const navLinksConfig = [
   { key: "navigation.courses", path: "/courses", num: "05" },
   { key: "navigation.blogs", path: "/blogs", num: "06" },
   { key: "navigation.events", path: "/events", num: "07" },
-  { key: "navigation.contact", path: "/contact", num: "08" },
+  { key: "navigation.gallery", path: "/gallery", num: "08" },
+  { key: "navigation.contact", path: "/contact", num: "09" },
 ];
 
 const socialIcon = { facebook: <FaFacebookF />, instagram: <FaInstagram />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
@@ -101,7 +102,7 @@ const Navbar = ({ user, onLogout }) => {
     navigate("/login", { replace: true });
   };
 
-  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/contact", "/login", "/newuser", "/payment", "/services", "/memberships", "/spa-rituals", "/courses", "/blogs", "/founding"];
+  const solidNavPages = ["/about", "/classes", "/private", "/life-stages", "/restore", "/yttc", "/faq", "/events", "/gallery", "/contact", "/login", "/newuser", "/payment", "/services", "/memberships", "/spa-rituals", "/courses", "/blogs", "/founding"];
   const isHome = location.pathname === "/";
   const solidNav = solidNavPages.includes(location.pathname);
   const dashboardPath = user?.role === "admin" || user?.role === "manager" ? "/yogaadmin" : user?.role === "reception" ? "/reception" : "/studentdashboard";

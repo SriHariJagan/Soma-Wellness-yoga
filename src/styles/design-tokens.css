@@ -13,6 +13,8 @@
   --soma-sage-light: #b8d4c8;
   --soma-gold: #F4B400;
   --soma-gold-hover: #d99f00;
+  --soma-brass: #B98A1F; /* refined muted-gold accent for premium details */
+  --soma-brass-soft: rgba(185, 138, 31, 0.12);
   --soma-orange: #FF7A00;
   --soma-ivory: #FFF7E6;
   --soma-cream: #FBF7ED;
@@ -614,6 +616,31 @@ h1 em, h2 em, h3 em, h4 em, h5 em, h6 em,
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Premium refinement pass ───────────────────────────
+   Restrained luxury: calm surfaces, hairline borders, soft single
+   shadows. New components should prefer .card--premium over
+   heavy glass effects. Brand hues unchanged (logo = truth). */
+.card--premium {
+  background: #fff;
+  border: 1px solid var(--soma-line-strong);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.card--premium:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(46, 125, 91, 0.22);
+}
+.divider--brass {
+  width: 56px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--soma-brass), var(--soma-gold));
+  margin: 0 auto;
+}
+.accent--brass { color: var(--soma-brass); }
 
 /* ── Responsive helpers ── */
 @media (max-width: 768px) {

@@ -18,7 +18,8 @@ export default function Sidebar({
     { label: t('adminSidebar.coreOps'), range: [0, 5] },
     { label: t('adminSidebar.studioManagement'), range: [5, 10] },
     { label: t('adminSidebar.communications'), range: [10, 17] },
-    { label: t('adminSidebar.growthContent'), range: [17, 20] },
+    { label: t('adminSidebar.growthContent'), range: [17, 21] },
+    { label: t('adminSidebar.outreachMedia'), range: [21, 23] },
   ];
 
   return (

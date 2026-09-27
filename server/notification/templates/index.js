@@ -32,6 +32,8 @@ import referralInvite from './referral-invite.js';
 import leadConfirmation from './lead-confirmation.js';
 import refund from './refund.js';
 import classEnrollment from './class-enrollment.js';
+import paymentReminder from './payment-reminder.js';
+import membershipExpired from './membership-expired.js';
 
 const templates = new Map();
 const builtins = {
@@ -52,6 +54,8 @@ const builtins = {
   'referral-invite':          referralInvite,
   'lead-confirmation':        leadConfirmation,
   'refund':                   refund,
+  'payment-reminder':         paymentReminder,
+  'membership-expired':       membershipExpired,
 };
 
 for (const [key, fn] of Object.entries(builtins)) {

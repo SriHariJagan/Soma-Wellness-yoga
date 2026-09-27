@@ -8,6 +8,9 @@ import {
   isWithinFreeWindow,
   surchargeForSlot,
   HEALTH_REQUIRED_TYPES,
+  priceDisplay,
+  displayDaily,
+  displayMonthly,
 } from '../../../src/lib/pricing.js';
 
 describe('pricing constants', () => {
@@ -121,5 +124,42 @@ describe('HEALTH_REQUIRED_TYPES', () => {
     expect(HEALTH_REQUIRED_TYPES.has('signature_STILLNESS')).toBe(true);
     expect(HEALTH_REQUIRED_TYPES.has('life_stage_mama')).toBe(true);
     expect(HEALTH_REQUIRED_TYPES.has('group_yoga')).toBe(false);
+  });
+});
+
+describe('display-vs-payable pricing (marketing display must never equal charge)', () => {
+  it('derives daily/monthly from authoritative payable (Circle 36500)', () => {
+    const d = priceDisplay(36500, { durationMonths: 12 });
+    expect(d.payablePrice).toBe(36500);
+    expect(d.displayDailyPrice).toBe(100); // 36500/365
+    expect(d.displayMonthlyPrice).toBe(3042); // round(36500/12)
+    expect(d.billingLabel).toBe('Billed annually');
+  });
+
+  it('display values differ from payable', () => {
+    const d = priceDisplay(36500);
+    expect(d.displayDailyPrice).not.toBe(d.payablePrice);
+    expect(d.displayMonthlyPrice).not.toBe(d.payablePrice);
+  });
+
+  it('payable is preserved exactly (checkout/M-Pesa must use it)', () => {
+    // Simulates the contract: checkout.amount === payablePrice, never display values.
+    const d = priceDisplay(36500);
+    const checkoutAmount = d.payablePrice;
+    const mpesaAmount = d.payablePrice;
+    expect(checkoutAmount).toBe(36500);
+    expect(mpesaAmount).toBe(36500);
+    expect(checkoutAmount).not.toBe(d.displayDailyPrice);
+    expect(checkoutAmount).not.toBe(d.displayMonthlyPrice);
+  });
+
+  it('handles zero/odd inputs without NaN', () => {
+    expect(displayDaily(0)).toBe(0);
+    expect(displayMonthly(0)).toBe(0);
+    expect(priceDisplay(0).payablePrice).toBe(0);
+  });
+
+  it('non-12-month billing label reflects period', () => {
+    expect(priceDisplay(32000, { durationMonths: 3 }).billingLabel).toBe('Billed every 3 months');
   });
 });

@@ -28,6 +28,10 @@ const UserSchema = new mongoose.Schema(
     phoneVerified:   { type: Boolean, default: false },
     emailVerified:   { type: Boolean, default: false },
     city:            { type: String, default: '' },
+    // ── Country of residency (ISO 3166-1 alpha-2). Independent from phone
+    // country prefix. Empty for historical/OAuth accounts until completed.
+    country:         { type: String, default: '' },
+    countryCode:     { type: String, default: '', uppercase: true, trim: true, index: true },
     style:           { type: String, default: 'Hatha' },
     level:           { type: String, default: 'Beginner' },
     avatar:          { type: String, default: '' },

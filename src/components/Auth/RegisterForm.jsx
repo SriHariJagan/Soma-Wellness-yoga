@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import styles from "./LoginForm.module.css";
 import { useTranslation } from "react-i18next";
+import CountrySelect from "../common/CountrySelect.jsx";
+import { DEFAULT_COUNTRY_CODE, countryNameFor } from "../../data/countries.js";
 
 const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,7 +31,7 @@ const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, ref }),
+        body: JSON.stringify({ name, email, password, ref, country: countryNameFor(countryCode), countryCode }),
       });
       const data = await res.json();
 
@@ -83,6 +86,8 @@ const RegisterForm = ({ onRegisterSuccess, onToggleToLogin, redirectTo }) => {
               <input type="email" placeholder={t("auth.email")} value={email} onChange={(e) => setEmail(e.target.value)} required className={styles.input} aria-label={t("auth.email")} />
             </div>
           </div>
+
+          <CountrySelect value={countryCode} onChange={setCountryCode} id="reg-country-legacy" />
 
           <div className={styles.row}>
             <div className={styles.inputGroup}>

@@ -102,7 +102,7 @@ function ruleMatchesAddress(rule, { pincode, state, country }) {
  *            shippingAmount: number, deliveryMinDays: number, deliveryMaxDays: number,
  *            shippingType: string, freeShippingThreshold: number }}
  */
-export async function checkAvailability({ pincode, state, country = 'India' }) {
+export async function checkAvailability({ pincode, state, country = 'Kenya' }) {
   if (!pincode || !/^\d{6}$/.test(pincode.trim())) {
     return { available: false, reason: 'Enter a valid 6-digit PIN code' };
   }

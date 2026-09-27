@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import './checkout.css';
+import { REGISTRATION_VIDEO } from '../../config/registrationVideo.js';
+
+const RegistrationVideo = lazy(() => import('../Auth/RegistrationVideo.jsx'));
 
 export default function PaymentPreviewModal({ intent, onClose, onContinue }) {
   if (!intent) return null;
@@ -28,6 +31,9 @@ export default function PaymentPreviewModal({ intent, onClose, onContinue }) {
             <span className="checkout-price">{typeof price === 'number' ? `KES ${price.toLocaleString()}` : price}</span>
             {period && <span className="checkout-period">{period}</span>}
           </div>
+          <p className="checkout-card-desc" style={{ marginTop: 4, fontSize: 12, opacity: 0.75 }}>
+            Total payable now. Any daily/monthly figures shown on marketing pages are display-only estimates.
+          </p>
           <ul className="checkout-features">
             <li><span className="dot" /> VAT included</li>
             <li><span className="dot" /> Secure payment via M-Pesa</li>
@@ -39,6 +45,14 @@ export default function PaymentPreviewModal({ intent, onClose, onContinue }) {
           <span className="checkout-notice-icon">🔒</span>
           <span>We’ll verify your email or phone with a one-time code before payment.</span>
         </div>
+
+        {REGISTRATION_VIDEO.enabled && REGISTRATION_VIDEO.showInCheckoutPreview && (
+          <div style={{ marginBottom: 12 }}>
+            <Suspense fallback={null}>
+              <RegistrationVideo config={REGISTRATION_VIDEO} compact />
+            </Suspense>
+          </div>
+        )}
 
         <div className="checkout-actions">
           <button className="checkout-btn checkout-btn-ghost" onClick={onClose}>Cancel</button>

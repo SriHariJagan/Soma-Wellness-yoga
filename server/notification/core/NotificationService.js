@@ -8,7 +8,7 @@ import User from '../../models/User.js';
 import { PRIORITY_LEVELS, NOTIFICATION_TYPES, NOTIFICATION_STATUSES, NOTIFICATION_CHANNELS } from '../../shared/constants/index.js';
 import RetryStrategy from './RetryStrategy.js';
 import logger from '../logger.js';
-import { enqueueDelivery } from '../queue/notificationQueue.js';
+import { enqueueDelivery, sendDirect } from '../queue/notificationQueue.js';
 
 const MODULE = 'NotificationService';
 const ALWAYS_ALLOWED = new Set(['inApp']);
@@ -33,6 +33,9 @@ export class NotificationService {
       type: overrideType,
       link: overrideLink,
       _existingNotificationId,
+      // direct: deliver immediately via SMTP/channel instead of BullMQ.
+      // Used by bulk email when Redis is unhealthy (workers stalled).
+      direct: forceDirect,
     } = options;
 
     if (!requestedChannels.length) return null;
@@ -127,6 +130,28 @@ export class NotificationService {
       });
 
       if (isImmediate || delay > 0) {
+        // Direct mode bypasses BullMQ entirely (Redis down/flaky) and
+        // sends through the channel now, so "sent" really means sent.
+        if (forceDirect && isImmediate && log.channel !== 'inApp') {
+          try {
+            const directResult = await sendDirect(log);
+            enqueueResults.push({
+              channel,
+              success: true,
+              logId: String(log._id),
+              direct: true,
+              providerMessageId: directResult?.providerMessageId,
+            });
+            logger.info(MODULE, 'Direct delivery succeeded', {
+              logId: String(log._id),
+              channel,
+              providerMessageId: directResult?.providerMessageId,
+            });
+          } catch (err) {
+            enqueueResults.push({ channel, success: false, logId: String(log._id), direct: true, error: err.message });
+            // sendDirect already marked the log failed; nothing more to do.
+          }
+        } else {
         try {
           await enqueueDelivery(log, {
             priority,
@@ -149,6 +174,7 @@ export class NotificationService {
               failedAt: new Date(),
             },
           }).catch(() => {});
+        }
         }
       }
     }

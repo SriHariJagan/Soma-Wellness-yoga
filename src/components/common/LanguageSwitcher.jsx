@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 const LANGS = [
-  { code: "en", flag: "🇬🇧", labelEn: "English", labelNative: "English" },
-  { code: "sw", flag: "🇹🇿", labelEn: "Kiswahili", labelNative: "Kiswahili" },
+  { code: "en", short: "en", flag: "🇰🇪", labelEn: "English", labelNative: "English" },
+  { code: "sw", short: "ke", flag: "🇰🇪", labelEn: "Kiswahili", labelNative: "Kiswahili" },
 ];
 
 export default function LanguageSwitcher({ variant = "navbar", compact = false }) {
@@ -44,22 +44,22 @@ export default function LanguageSwitcher({ variant = "navbar", compact = false }
             color: "var(--soma-forest)", lineHeight: 1, transition: "all 0.2s ease"
           }}
         >
-          <span aria-hidden="true" style={{ fontSize: 14 }}>{currentLang.flag}</span> {currentLang.labelNative} <span style={{ opacity: 0.5, fontSize: 10 }}>▾</span>
+          <span style={{ opacity: 0.5, fontSize: 10 }}>▾</span> {currentLang.labelNative}
         </button>
         {open && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "#fff", border: "1px solid var(--soma-line-light)", borderRadius: 12, overflow: "hidden", boxShadow: "0 12px 32px rgba(24,61,45,0.12)", minWidth: 160, zIndex: 50 }}>
+          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "#fff", border: "1px solid var(--soma-line-light)", borderRadius: 12, overflow: "hidden", boxShadow: "0 12px 32px rgba(24,61,45,0.12)", width: "max-content", minWidth: "100%", zIndex: 50 }}>
             {LANGS.map((l) => (
               <button
                 key={l.code}
                 onClick={() => change(l.code)}
                 style={{
-                  display: "flex", width: "100%", alignItems: "center", gap: 8,
+                  display: "flex", width: "100%", alignItems: "center", gap: 8, whiteSpace: "nowrap",
                   padding: "10px 12px", fontSize: 12, fontWeight: current === l.code ? 800 : 500,
                   background: current === l.code ? "var(--soma-ivory)" : "#fff",
                   color: "var(--soma-forest)", border: "none", cursor: "pointer", textAlign: "left"
                 }}
               >
-                <span aria-hidden="true">{l.flag}</span> {l.labelNative} <span style={{ marginLeft: "auto", opacity: 0.6, fontSize: 10 }}>{l.code.toUpperCase()}</span>
+                {l.labelNative}
               </button>
             ))}
           </div>
@@ -89,7 +89,7 @@ export default function LanguageSwitcher({ variant = "navbar", compact = false }
                 border: "none", cursor: "pointer", transition: "all 0.2s ease"
               }}
             >
-              <span aria-hidden="true">{l.flag}</span> {l.labelNative}
+              {l.labelNative}
             </button>
           );
         })}

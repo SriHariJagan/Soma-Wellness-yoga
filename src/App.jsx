@@ -28,6 +28,7 @@ const Blogs = lazy(() => import('./pages/Blogs'));
 const BlogDetail = lazy(() => import('./pages/BlogDetail'));
 const YTTC = lazy(() => import('./pages/YTTC'));
 const Events = lazy(() => import('./pages/Events'));
+const Gallery = lazy(() => import('./pages/Gallery'));
 const Contact = lazy(() => import('./pages/Contact'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 const Private = lazy(() => import('./pages/Private'));
@@ -169,6 +170,7 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
             <Route path="/founding" element={<FoundingMembers />} />
             <Route path="/faq"     element={<FAQ />} />
             <Route path="/events"  element={<Events />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
             {/* Legacy books routes — redirect to home */}
             <Route path="/books" element={<Navigate to="/" replace />} />

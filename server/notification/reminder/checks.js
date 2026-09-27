@@ -3,6 +3,7 @@ import Workshop from '../../models/Workshop.js';
 import Event from '../../models/Event.js';
 import Membership from '../../models/Membership.js';
 import User from '../../models/User.js';
+import Payment from '../../payment/models/Payment.js';
 import ReminderLog from '../../models/ReminderLog.js';
 import notificationService from '../core/NotificationService.js';
 import logger from '../logger.js';
@@ -320,8 +321,125 @@ export async function checkBirthdays(now) {
   return { sent, skipped };
 }
 
-export async function catchUpTimeWindowed(now, catchUpSince) {
-  let totalSent = 0;
+// ── Payment due / overdue reminders ─────────────────────────
+// Configurable via env (defaults below). Uses ReminderLog idempotency
+// so a pending payment is reminded once for "due" and once for "overdue".
+// Channels: inApp + email (existing infrastructure only).
+export async function checkPaymentReminders(now) {
+  const dueAfterMs = Number(process.env.PAYMENT_REMINDER_AFTER_MINUTES || 60) * 60 * 1000;
+  const overdueAfterMs = Number(process.env.PAYMENT_OVERDUE_AFTER_HOURS || 24) * ONE_HOUR_MS;
+  const maxAgeMs = 7 * ONE_DAY_MS;
+  const frontend = process.env.FRONTEND_URL || 'https://somawellness.co.ke';
+
+  const pendings = await Payment.find({
+    paymentStatus: { $in: ['initiated', 'pending'] },
+    initiatedAt: { $lte: new Date(now.getTime() - dueAfterMs), $gte: new Date(now.getTime() - maxAgeMs) },
+  }).select('_id user label amount currency initiatedAt paymentStatus').lean();
+
+  if (!pendings.length) return { sent: 0, skipped: 0 };
+
+  const userIds = [...new Set(pendings.map((pmt) => pmt.user?.toString()).filter(Boolean))];
+  const users = await User.find({ _id: { $in: userIds } }, 'name email').lean();
+  const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+
+  let sent = 0;
+  let skipped = 0;
+
+  for (const pmt of pendings) {
+    const uid = pmt.user?.toString();
+    if (!uid) { skipped++; continue; }
+    const ageMs = now.getTime() - new Date(pmt.initiatedAt || now).getTime();
+    const overdue = ageMs >= overdueAfterMs;
+    const type = overdue ? 'payment-overdue' : 'payment-due';
+    const dateKey = new Date(pmt.initiatedAt || now).toISOString().slice(0, 10);
+
+    const result = await claimAndSend(type, pmt._id, uid, dateKey, async () => {
+      const user = userMap.get(uid);
+      if (!user) throw new Error('User not found');
+      const amountKes = `KES ${Number((pmt.amount || 0) / 100).toLocaleString('en-KE')}`;
+      await notificationService.send(uid, {
+        template: 'payment-reminder',
+        channels: ['inApp', 'email'],
+        data: {
+          label: pmt.label || 'Soma Wellness purchase',
+          amount: amountKes,
+          status: overdue ? 'overdue' : 'due',
+          payLink: `${frontend}/studentdashboard?tab=cart`,
+          name: user.name || 'Student',
+        },
+        priority: overdue ? 'high' : 'normal',
+      });
+    });
+
+    if (result.sent) sent++;
+    else skipped++;
+  }
+
+  logger.debug(MODULE, 'Payment reminders done', { sent, skipped, status: 'complete' });
+  return { sent, skipped };
+}
+
+// ── Post-expiry win-back (1 day + 7 days after expiry) ──────────
+export async function checkExpiredMemberships(now) {
+  const days = String(process.env.EXPIRED_REMINDER_DAYS || '1,7')
+    .split(',').map((s) => Number(s.trim())).filter((n) => Number.isFinite(n) && n > 0);
+  const timezone = getTimezone();
+  const todayStart = getTodayStartInTimezone(now, timezone);
+  const frontend = process.env.FRONTEND_URL || 'https://somawellness.co.ke';
+
+  let sent = 0;
+  let skipped = 0;
+
+  for (const d of days) {
+    const target = new Date(todayStart.getTime() - d * ONE_DAY_MS);
+    const dayStart = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), target.getUTCDate()));
+    const dayEnd = new Date(dayStart.getTime() + ONE_DAY_MS);
+
+    const memberships = await Membership.find({
+      status: { $in: ['expired'] },
+      expiryDate: { $gte: dayStart, $lt: dayEnd },
+    }).lean();
+
+    if (!memberships.length) continue;
+
+    const allUserIds = [...new Set(memberships.map((m) => m.user?.toString()).filter(Boolean))];
+    const users = await User.find({ _id: { $in: allUserIds } }, 'name email').lean();
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+
+    for (const membership of memberships) {
+      const uid = membership.user?.toString();
+      if (!uid) continue;
+      const y = dayStart.getUTCFullYear();
+      const m = String(dayStart.getUTCMonth() + 1).padStart(2, '0');
+      const dd = String(dayStart.getUTCDate()).padStart(2, '0');
+      const dateKey = `${y}-${m}-${dd}`;
+
+      const result = await claimAndSend(`membership-expired-${d}d`, membership._id, uid, dateKey, async () => {
+        const user = userMap.get(uid);
+        if (!user) throw new Error('User not found');
+        await notificationService.send(uid, {
+          template: 'membership-expired',
+          channels: ['inApp', 'email'],
+          data: {
+            planName: membership.planType || 'Membership',
+            expiryDate: membership.expiryDate.toLocaleDateString('en-KE'),
+            renewLink: `${frontend}/memberships`,
+            name: user.name || 'Student',
+          },
+          priority: 'high',
+        });
+      });
+
+      if (result.sent) sent++;
+      else skipped++;
+    }
+  }
+
+  logger.debug(MODULE, 'Expired membership check done', { sent, skipped, status: 'complete' });
+  return { sent, skipped };
+}
+
+export async function catchUpTimeWindowed(now, catchUpSince) {  let totalSent = 0;
   let totalSkipped = 0;
 
   const endWindow = new Date(now.getTime() + ONE_HOUR_MS);

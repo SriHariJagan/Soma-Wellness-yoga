@@ -33,6 +33,7 @@ export const SOMA_NAV = [
   { label: "Courses", path: "/courses" },
   { label: "Blogs", path: "/blogs" },
   { label: "Events", path: "/events" },
+  { label: "Gallery", path: "/gallery" },
   { label: "Contact", path: "/contact" },
 ];
 

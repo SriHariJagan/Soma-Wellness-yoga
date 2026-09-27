@@ -23,6 +23,40 @@ export function resolveMembershipPrice(tierKey, termMonths = 1, { foundingEligib
 
 export function formatPrice(v) { return formatKES(v); }
 
+// ── Display-vs-payable pricing ─────────────────────────────────
+// DISPLAY prices are marketing derivations (daily/monthly equivalents).
+// PAYABLE price is the real transaction amount and must be passed to
+// cart/checkout/M-Pesa unchanged. Never send display values to payment.
+export const DAYS_PER_YEAR = 365;
+export const MONTHS_PER_YEAR = 12;
+
+export function displayDaily(payablePrice) {
+  return Math.round(Number(payablePrice || 0) / DAYS_PER_YEAR);
+}
+
+export function displayMonthly(payablePrice) {
+  return Math.round(Number(payablePrice || 0) / MONTHS_PER_YEAR);
+}
+
+export function priceDisplay(payablePrice, { durationMonths = 12 } = {}) {
+  const payable = Math.round(Number(payablePrice || 0));
+  return {
+    payablePrice: payable,
+    displayDailyPrice: displayDaily(payable),
+    displayMonthlyPrice: displayMonthly(payable),
+    billingLabel: durationMonths === 12 ? 'Billed annually' : `Billed every ${durationMonths} months`,
+    billingPeriodMonths: durationMonths,
+  };
+}
+
+export function formatDisplayDaily(payablePrice) {
+  return `${formatKES(displayDaily(payablePrice))}/day`;
+}
+
+export function formatDisplayMonthly(payablePrice) {
+  return `${formatKES(displayMonthly(payablePrice))}/month`;
+}
+
 // Surcharge helper
 export function isWithinFreeWindow(date) {
   const eatMs = new Date(date).getTime() + 3 * 3600000;

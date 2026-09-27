@@ -9,6 +9,8 @@ const API_DOMAIN = import.meta.env.VITE_API_URL || "";
 const ADMIN_URL = `${API_DOMAIN}/api/admin`;
 const STAFF_URL = `${API_DOMAIN}/api/staff`;
 const ROOT_URL = `${API_DOMAIN}/api`;
+const BULK_URL = `${API_DOMAIN}/api/bulk-email`;
+const GALLERY_ADMIN_URL = `${API_DOMAIN}/api/admin/gallery`;
 
 // Paths a center manager may call — routed to /api/staff automatically
 // when the signed-in user has the manager role. Everything else stays
@@ -652,7 +654,47 @@ export const receptionApi = {
 };
 
 // ── System Health & Email Monitoring ──────────────────────────
-export const getEmailHealth = () =>
-  request('/email-health', { base: `${API_DOMAIN}/api/admin/system` });
+export const getEmailHealth = (params = {}) => {
+  const q = new URLSearchParams();
+  if (params.page) q.set('page', params.page);
+  if (params.limit) q.set('limit', params.limit);
+  const qs = q.toString();
+  return request(`/email-health${qs ? `?${qs}` : ''}`, { base: `${API_DOMAIN}/api/admin/system` });
+};
+
+// ── Weekly Bulk Email (RBAC: admin/manager or communications.bulk) ──
+export const bulkEmailApi = {
+  list: () => request('/schedules', { base: BULK_URL }),
+  create: (payload) => request('/schedules', { method: 'POST', body: payload, base: BULK_URL }),
+  update: (id, payload) => request(`/schedules/${id}`, { method: 'PUT', body: payload, base: BULK_URL }),
+  remove: (id) => request(`/schedules/${id}`, { method: 'DELETE', base: BULK_URL }),
+  preview: (id) => request(`/schedules/${id}/preview`, { base: BULK_URL }),
+  testSend: (id, emails) => request(`/schedules/${id}/test`, { method: 'POST', body: { emails }, base: BULK_URL }),
+  runNow: (id) => request(`/schedules/${id}/run`, { method: 'POST', base: BULK_URL }),
+  runs: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.scheduleId) q.set('scheduleId', params.scheduleId);
+    if (params.page) q.set('page', params.page);
+    const qs = q.toString();
+    return request(`/runs${qs ? `?${qs}` : ''}`, { base: BULK_URL });
+  },
+};
+
+// ── Gallery (RBAC: admin/manager or communications.gallery) ──
+export const galleryAdminApi = {
+  list: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.category) q.set('category', params.category);
+    if (params.active !== undefined && params.active !== '') q.set('active', params.active);
+    if (params.page) q.set('page', params.page);
+    if (params.limit) q.set('limit', params.limit);
+    const qs = q.toString();
+    return request(`${qs ? `?${qs}` : ''}`, { base: GALLERY_ADMIN_URL });
+  },
+  create: (payload) => request('', { method: 'POST', body: payload, base: GALLERY_ADMIN_URL }),
+  update: (id, payload) => request(`/${id}`, { method: 'PUT', body: payload, base: GALLERY_ADMIN_URL }),
+  remove: (id) => request(`/${id}`, { method: 'DELETE', base: GALLERY_ADMIN_URL }),
+  reorder: (orders) => request('/reorder', { method: 'PATCH', body: { orders }, base: GALLERY_ADMIN_URL }),
+};
 export const testSmtp = () =>
   request('/email-health/test-smtp', { method: 'POST', base: `${API_DOMAIN}/api/admin/system` });

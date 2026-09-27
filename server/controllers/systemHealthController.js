@@ -25,15 +25,27 @@ export async function getEmailHealth(req, res) {
   let queueData = { waiting: 0, active: 0, completed: 0, failed: 0 };
   let queueAvailable = false;
   try {
-    const queue = getNotificationQueue();
-    const [waiting, active, completed, failed] = await Promise.all([
-      queue.getWaitingCount(),
-      queue.getActiveCount(),
-      queue.getCompletedCount(),
-      queue.getFailedCount(),
+    // Never let broken Redis hang this endpoint: queue stats are
+    // best-effort with a hard timeout, then reported as unavailable.
+    const countsP = Promise.all([
+      getNotificationQueue().getWaitingCount(),
+      getNotificationQueue().getActiveCount(),
+      getNotificationQueue().getCompletedCount(),
+      getNotificationQueue().getFailedCount(),
     ]);
-    queueData = { waiting, active, completed, failed };
-    queueAvailable = true;
+    // Swallow late rejections if the timeout wins the race below.
+    countsP.catch(() => {});
+    let timer;
+    const timeoutP = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('queue stats timeout')), 4000);
+    });
+    try {
+      const [waiting, active, completed, failed] = await Promise.race([countsP, timeoutP]);
+      queueData = { waiting, active, completed, failed };
+      queueAvailable = true;
+    } finally {
+      clearTimeout(timer);
+    }
   } catch (err) {
     logger.warn(MODULE, 'BullMQ queue not available', { error: err.message });
   }
@@ -51,10 +63,19 @@ export async function getEmailHealth(req, res) {
   }
 
   let recent = [];
+  let recentPage = Math.max(1, Number(req.query.page) || 1);
+  // 50 per page default; hard cap 100 to protect the endpoint.
+  const recentLimit = Math.min(Math.max(1, Number(req.query.limit) || 50), 100);
+  let recentTotal = 0;
+  let recentPages = 1;
   try {
+    recentTotal = await Notification.countDocuments();
+    recentPages = Math.max(1, Math.ceil(recentTotal / recentLimit));
+    if (recentPage > recentPages) recentPage = recentPages;
     recent = await Notification.find()
       .sort({ createdAt: -1 })
-      .limit(20)
+      .skip((recentPage - 1) * recentLimit)
+      .limit(recentLimit)
       .select('email type status createdAt title')
       .lean();
     recent = recent.map((n) => ({
@@ -73,7 +94,7 @@ export async function getEmailHealth(req, res) {
   res.json({
     database,
     smtp: { status: smtpStatus.verified ? 'verified' : smtpStatus.configured ? 'unverified' : 'unconfigured', note: smtpNote },
-    notifications: { ...notifStats, recent },
+    notifications: { ...notifStats, recent, page: recentPage, pages: recentPages, total: recentTotal, limit: recentLimit },
     queue: queueAvailable ? queueData : { waiting: 0, active: 0, completed: 0, failed: 0, unavailable: true },
     timestamp: new Date().toISOString(),
   });
