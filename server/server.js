@@ -153,6 +153,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const FRONTEND_DIST = path.join(__dirname, "../dist");
+
 
 // Static serving for blog images only — all other uploads require auth.
 const UPLOADS_PATH = path.join(__dirname, "uploads");
@@ -179,6 +181,8 @@ app.use("/uploads", (req, res, next) => {
       .json({ error: "Direct file access denied. Use the download API." });
   }
 });
+
+app.use(express.static(FRONTEND_DIST));
 
 // ── Webhook route (must be before JSON parser — needs raw body for HMAC) ──
 app.use(
@@ -212,7 +216,8 @@ const globalLimiter = rateLimit({
 app.use("/api", globalLimiter);
 
 // ── Routes ──
-app.get("/", (req, res) =>
+// ── API status ──
+app.get("/api/status", (req, res) =>
   res.json({
     status: "Soma Wellness API is running ✅",
     time: new Date().toISOString(),
@@ -266,6 +271,15 @@ app.use("/admin/queues", requireAuth, requireAdmin, getDashboardRouter());
 if (process.env.NODE_ENV === "development") {
   app.use("/api/dev", devRoutes);
 }
+
+// ── React SPA fallback ──
+app.get("/{*splat}", (req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    return next();
+  }
+
+  res.sendFile(path.join(FRONTEND_DIST, "index.html"));
+});
 
 // ── Error handling (must be last) ──
 app.use(notFound);
