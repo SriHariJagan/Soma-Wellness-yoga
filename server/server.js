@@ -100,7 +100,7 @@ app.use(compression({ threshold: 1024, level: 6 }));
 
 // ── CORS ──
 const BASE_ORIGINS =
-  "https://somawellness.co.ke,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app";
+  "https://somawellness.co.ke,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app,http://82.25.109.251/";
 
 const allowedOrigins = [
   ...new Set(
@@ -126,6 +126,20 @@ app.use(
   }),
 );
 
+// ── HTTPS-only hardening (opt-in) ──────────────────────────────
+// The site is currently tested over plain HTTP on a raw IP
+// (http://<vps-ip>). Two Helmet defaults are unsafe there:
+//   • CSP `upgrade-insecure-requests` rewrites same-origin
+//     /assets/* URLs to https://<ip> → ERR_CERT_COMMON_NAME_INVALID
+//     (no valid certificate exists for the bare IP).
+//   • HSTS pins the browser to https://<ip> before the production
+//     domain has valid HTTPS.
+// Re-enable both together once the real HTTPS domain is live by
+// setting NODE_ENV=production and ENABLE_HSTS=true.
+const ENABLE_HTTPS_HARDENING =
+  process.env.NODE_ENV === "production" &&
+  process.env.ENABLE_HSTS === "true";
+
 // Security headers with strict CSP — M-Pesa only (Razorpay removed)
 app.use(
   helmet({
@@ -133,19 +147,22 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:5173"],
         connectSrc: ["'self'", "https://sandbox.safaricom.co.ke", "https://api.safaricom.co.ke"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
+        upgradeInsecureRequests: ENABLE_HTTPS_HARDENING ? [] : null,
       },
     },
-    hsts: {
-      maxAge: 31536000,
-      includeSubDomains: true,
-      preload: true,
-    },
+    hsts: ENABLE_HTTPS_HARDENING
+      ? {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: true,
+        }
+      : false,
   }),
 );
 
