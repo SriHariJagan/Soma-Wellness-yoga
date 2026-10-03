@@ -98,9 +98,18 @@ app.set("trust proxy", 1);
 // ── Response compression (gzip/br for JSON + static assets) ──
 app.use(compression({ threshold: 1024, level: 6 }));
 
-// ── CORS ──
+// ── CORS (API-only) ────────────────────────────────────────────
+// CORS validation applies ONLY to /api routes, where cross-origin
+// access actually matters (cookies/JWT, M-Pesa, admin APIs).
+// Frontend static files (/, /assets/*, /images/*, /uploads/*,
+// /favicon.svg, …) are same-origin resources served BEFORE the CORS
+// middleware below, so they never enter the CORS rejection path.
+// (Browsers send an `Origin` header even for same-origin module
+// scripts/stylesheets because Vite emits them with the
+// `crossorigin` attribute — that Origin must never be able to turn
+// a static asset into an HTTP 500.)
 const BASE_ORIGINS =
-  "https://somawellness.co.ke,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app,http://82.25.109.251/";
+  "https://somawellness.co.ke,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app,http://82.25.109.251";
 
 const allowedOrigins = [
   ...new Set(
@@ -113,18 +122,18 @@ const allowedOrigins = [
 const isLocalhost = (origin) =>
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
-app.use(
-  cors({
-    origin(origin, cb) {
-      if (!origin) return cb(null, true);
-      if (allowedOrigins.includes(origin) || isLocalhost(origin))
-        return cb(null, true);
-      return cb(new Error("Blocked by CORS policy"), false);
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
-  }),
-);
+// NOTE: no trailing slash on origins — the `Origin` request header
+// never contains a path, so "http://host/" would never match.
+const corsOptions = {
+  origin(origin, cb) {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin) || isLocalhost(origin))
+      return cb(null, true);
+    return cb(new Error("Blocked by CORS policy"), false);
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true,
+};
 
 // ── HTTPS-only hardening (opt-in) ──────────────────────────────
 // The site is currently tested over plain HTTP on a raw IP
@@ -200,6 +209,11 @@ app.use("/uploads", (req, res, next) => {
 });
 
 app.use(express.static(FRONTEND_DIST));
+
+// ── API CORS (after statics, before API parsers/routes) ─────────
+// Static requests already responded above and never reach this.
+// Only /api/* requests undergo Origin validation.
+app.use("/api", cors(corsOptions));
 
 // ── Webhook route (must be before JSON parser — needs raw body for HMAC) ──
 app.use(
