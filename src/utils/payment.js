@@ -1,6 +1,7 @@
 // ============================================================
-// utils/payment.js — Unified payment helpers for the frontend
-// M-Pesa only payment utilities
+// utils/payment.js — Shared frontend helpers (auth, cart, user).
+// Online payments go through Pesapal (see api/PesapalServices.js).
+// Amounts are display-only here; the backend is authoritative.
 // ============================================================
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -50,42 +51,6 @@ export function parsePrice(price) {
 /** Format a number as KES currency */
 export function formatKES(amount) {
   return `KES ${Number(amount).toLocaleString()}`;
-}
-
-/**
- * Initiate an MPESA STK Push.
- * @param {Object} opts
- * @param {string} opts.phone — Phone number
- * @param {number} opts.amount — Amount in KES
- * @param {string} opts.accountRef — Account reference
- * @param {string} opts.description — Description
- * @returns {Object} { success, paymentId, checkoutRequestId, message }
- */
-export async function initiateMpesaPayment({ phone, amount, accountRef, description }) {
-  const res = await fetch(`${API_URL}/api/mpesa/stkpush`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ phone, amount, accountRef, description }),
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || 'M-PESA payment failed.');
-  }
-  return data;
-}
-
-/**
- * Query MPESA transaction status.
- * @param {string} checkoutRequestId
- * @returns {Object} Daraja response
- */
-export async function queryMpesaStatus(checkoutRequestId) {
-  const res = await fetch(`${API_URL}/api/mpesa/query`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ checkoutRequestId }),
-  });
-  return res.json();
 }
 
 /**

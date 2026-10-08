@@ -142,13 +142,13 @@ describe('display-vs-payable pricing (marketing display must never equal charge)
     expect(d.displayMonthlyPrice).not.toBe(d.payablePrice);
   });
 
-  it('payable is preserved exactly (checkout/M-Pesa must use it)', () => {
+  it('payable is preserved exactly (checkout/Pesapal must use it)', () => {
     // Simulates the contract: checkout.amount === payablePrice, never display values.
     const d = priceDisplay(36500);
     const checkoutAmount = d.payablePrice;
-    const mpesaAmount = d.payablePrice;
+    const providerAmount = d.payablePrice;
     expect(checkoutAmount).toBe(36500);
-    expect(mpesaAmount).toBe(36500);
+    expect(providerAmount).toBe(36500);
     expect(checkoutAmount).not.toBe(d.displayDailyPrice);
     expect(checkoutAmount).not.toBe(d.displayMonthlyPrice);
   });

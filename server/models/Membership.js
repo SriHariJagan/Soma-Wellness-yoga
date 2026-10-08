@@ -118,7 +118,8 @@ MembershipSchema.index(
   { unique: true, partialFilterExpression: { status: 'active' } },
 );
 MembershipSchema.virtual('remainingPauseDays').get(function () {
-  return Math.max(0, this.pauseDaysAllowed - this.pauseDaysUsed);
+  // Legacy docs may predate these fields — coerce to 0 instead of NaN.
+  return Math.max(0, (this.pauseDaysAllowed || 0) - (this.pauseDaysUsed || 0));
 });
 
 MembershipSchema.virtual('isPaused').get(function () {

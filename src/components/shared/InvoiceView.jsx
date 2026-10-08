@@ -4,7 +4,7 @@ const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—";
 const fmtTime = (d) =>
   d ? new Date(d).toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" }) : "—";
-const fmtPrice = (n) => `\u20B9${Number(n || 0).toLocaleString("en-KE")}`;
+const fmtPrice = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
 
 const TYPE_LABELS = {
   plan: "Membership",

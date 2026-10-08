@@ -50,7 +50,6 @@ const sharedData = {
   orderId: 'ORD-001',
   mpesaReceipt: 'QHK7B3A4RT',
   failureReason: 'Insufficient funds',
-  otp: '847291',
   expiryMinutes: 10,
   studentName: 'Srihari',
   registrationDate: new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }),
@@ -74,7 +73,6 @@ function sendMpesa() {
 const templates = [
   { name: 'Welcome',                   fn: () => emailService.sendWelcome({ ...sharedData, email: TO }) },
   { name: 'Reset Password',            fn: () => emailService.sendResetPassword({ ...sharedData, email: TO }) },
-  { name: 'OTP',                       fn: () => emailService.sendOTP({ ...sharedData, email: TO }) },
   { name: 'Payment Success',           fn: () => emailService.sendPaymentSuccess({ ...sharedData, email: TO }) },
   { name: 'Payment Failed',            fn: () => emailService.sendPaymentFailed({ ...sharedData, email: TO }) },
   { name: 'M-Pesa Payment Success',    fn: sendMpesa },

@@ -82,7 +82,6 @@ export const NOTIFICATION_CHANNELS = [
   "email",
   "inApp",
   "sms",
-  "whatsapp",
   "push",
 ];
 

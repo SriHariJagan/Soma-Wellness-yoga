@@ -14,7 +14,6 @@ const SettingsSchema = new mongoose.Schema(
     integrations: {
       paymentGateway: { type: Boolean, default: true },
       zoom:           { type: Boolean, default: true },
-      whatsapp:       { type: Boolean, default: true },
       emailSmtp:      { type: Boolean, default: true },
     },
 

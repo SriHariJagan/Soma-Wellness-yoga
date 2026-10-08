@@ -12,7 +12,7 @@ Demo Keys for Sandbox Testing: https://developer.pesapal.com/api3-demo-keys.txt
 
 You can also use our online forms below to register your IPN URLs.
 
- - Sandbox/Demo IPN Registration Form
+- Sandbox/Demo IPN Registration Form
 
 - Production/Live IPN Registration Form
 

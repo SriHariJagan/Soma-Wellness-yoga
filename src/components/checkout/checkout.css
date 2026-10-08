@@ -61,9 +61,6 @@
 .checkout-intent-mini{ background:#FFF7E6; border:1px solid rgba(244,180,0,.2); border-radius:10px; padding:8px 10px; display:flex; flex-direction:column; gap:2px; }
 .mini-label{ font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#9C8E7C; }
 .mini-value{ font-size:12px; font-weight:600; color:#183D2D; }
-.checkout-otp-row{ display:flex; gap:8px; justify-content:center; }
-.checkout-otp-input{ width:40px; height:44px; text-align:center; font-size:18px; font-weight:700; border-radius:10px; border:1px solid #E7D7BE; background:#fff; outline:none; }
-.checkout-otp-input:focus{ border-color:#2E7D5B; box-shadow:0 0 0 3px rgba(46,125,91,.12); }
 .checkout-dev{ font-size:11px; background:#FFFBEB; border:1px dashed #F59E0B; padding:6px 8px; border-radius:8px; color:#92400E; text-align:center; }
 .checkout-link{ background:none; border:none; color:#2E7D5B; font-size:12px; font-weight:600; cursor:pointer; text-decoration:underline; margin-top:4px; }
 .checkout-link:disabled{ opacity:.5; cursor:not-allowed; text-decoration:none; }

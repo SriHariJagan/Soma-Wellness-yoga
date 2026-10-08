@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./AvailableServicesPage.module.css";
 import {
   Stagger, Item, PageHeader, Pill, PrimaryButton, EmptyState,
@@ -18,6 +19,7 @@ const CATEGORY_DESC = {
 const fmtPrice = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
 
 function ServiceRow({ svc, busy, enrolled, onEnroll }) {
+  const navigate = useNavigate();
   const priceLabel =
     svc.pricingModel === "contact"
       ? "Price on request"
@@ -69,8 +71,9 @@ function ServiceRow({ svc, busy, enrolled, onEnroll }) {
         ) : (
 <CheckoutGate
               intent={{ name: svc.name, price: svc.price ? fmtPrice(svc.price) : "Free", sub: svc.category, type: "service", itemType: "service", itemId: svc._id }}
-              onProceed={() => {
-                // Both new and existing users redirect to cart for purchase
+              onProceed={async () => {
+                // Add to cart first (may throw if already in cart), then open the cart.
+                await onEnroll(svc._id);
                 navigate("/studentdashboard?tab=cart");
               }}
             >
@@ -85,6 +88,7 @@ function ServiceRow({ svc, busy, enrolled, onEnroll }) {
 }
 
 export default function AvailableServicesPage() {
+  const navigate = useNavigate();
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

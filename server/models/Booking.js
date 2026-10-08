@@ -15,7 +15,7 @@ const BookingSchema = new mongoose.Schema(
     courseTime:  { type: String, default: '' },
 
     // Payment
-    paymentMethod: { type: String, enum: BOOKING_PAYMENT_METHODS, default: 'M-PESA' },
+    paymentMethod: { type: String, enum: BOOKING_PAYMENT_METHODS, default: 'Pesapal' },
     transactionId: { type: String, default: '' },
     status:        { type: String, enum: BOOKING_STATUSES, default: 'Pending' },
 

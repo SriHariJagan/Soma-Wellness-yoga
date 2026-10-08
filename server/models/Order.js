@@ -31,7 +31,6 @@ const OrderSchema = new mongoose.Schema(
       fullName:  { type: String, default: '' },
       mobile:    { type: String, default: '' },
       email:     { type: String, default: '' },
-      whatsapp:  { type: String, default: '' },
     },
 
     // Delivery address snapshot.

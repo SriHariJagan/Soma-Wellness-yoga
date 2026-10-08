@@ -1,8 +1,17 @@
+// ============================================================
+// Payment/PaymentPage.jsx — Pesapal redirect checkout.
+// - Details step collects contact info.
+// - serviceId/offeringId intents: server-priced Pesapal redirect.
+// - ID-less intents (class/founding enquiry): saved as a Pending
+//   booking; no online charge is taken without a resolvable price.
+// - Success is NEVER decided here: /payment/return polls the backend.
+// ============================================================
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import MpesaCheckout from './MpesaCheckout';
-import { parsePrice, isLoggedIn } from '../../utils/payment';
+import PesapalCheckout from './PesapalCheckout';
+import { formatKES } from '../../utils/money.js';
+import { isLoggedIn } from '../../utils/payment';
 import CheckoutGate from '../checkout/CheckoutGate.jsx';
 import './PaymentPage.css';
 import PhoneInput from '../common/PhoneInput.jsx';
@@ -10,21 +19,55 @@ import { validatePhone, normalizePhone } from '../../lib/phone.js';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+function intentItems(course) {
+  if (course?.serviceId) {
+    return [{ itemType: 'service', itemId: course.serviceId, quantity: 1 }];
+  }
+  if (course?.offeringId) {
+    return [{ itemType: 'offering', itemId: course.offeringId, quantity: 1 }];
+  }
+  return null;
+}
+
 export default function PaymentPage() {
   const { t } = useTranslation();
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const course = state || { name: '', price: '', time: '' };
-  const amount = parsePrice(course.price);
-  const payable = amount > 0;
+  // Restore a gated purchase intent after sign-in redirect (the router
+  // state is lost across the login round-trip; the intent survives in
+  // storage with a 30-minute TTL). Only our own booking/service/offering
+  // intents are honoured here.
+  const restored = (() => {
+    if (state?.name) return null;
+    try {
+      const raw = sessionStorage.getItem('soma_pending_checkout') || localStorage.getItem('soma_pending_checkout');
+      if (!raw) return null;
+      const intent = JSON.parse(raw);
+      if (!intent || typeof intent !== 'object') return null;
+      if (!['booking', 'service', 'offering'].includes(intent.type)) return null;
+      if (!intent.name) return null;
+      return {
+        name: intent.name,
+        price: intent.price || '',
+        time: intent.sub || intent.time || '',
+        serviceId: intent.type === 'service' ? (intent.itemId || intent.serviceId) : undefined,
+        offeringId: intent.type === 'offering' ? (intent.itemId || intent.offeringId) : undefined,
+      };
+    } catch { return null; }
+  })();
+
+  const course = state?.name ? state : (restored || { name: '', price: '', time: '' });
+  const items = intentItems(course);
+  // Only intents backed by a server-resolvable item can be charged online.
+  const payable = !!items;
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: '', email: '', phone: '', city: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [showMpesa, setShowMpesa] = useState(false);
+  const [showPay, setShowPay] = useState(false);
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
@@ -36,7 +79,7 @@ export default function PaymentPage() {
         ...form,
         phone: form.phone ? normalizePhone(form.phone) : '',
         courseName: course.name,
-        coursePrice: course.price,
+        coursePrice: typeof course.amount === 'number' ? course.amount : course.price,
         courseTime: course.time,
         paymentMethod,
         transactionId,
@@ -48,7 +91,8 @@ export default function PaymentPage() {
     return data;
   };
 
-  const doPay = async (paymentResult) => {
+  // ID-less intents: record a Pending enquiry (no charge taken here).
+  const submitEnquiry = async () => {
     setError('');
     if (!form.name || !form.email || !form.phone) {
       setError(t('payment.nameEmailRequired'));
@@ -59,9 +103,9 @@ export default function PaymentPage() {
     setLoading(true);
     try {
       await saveBooking({
-        paymentMethod: 'M-PESA',
-        transactionId: paymentResult?.mpesaReceiptNumber || paymentResult?.checkoutRequestId || '',
-        status: 'Confirmed',
+        paymentMethod: 'Pesapal',
+        transactionId: '',
+        status: 'Pending',
       });
       setSuccess(true);
     } catch (err) {
@@ -71,7 +115,22 @@ export default function PaymentPage() {
     }
   };
 
-  /* ── Success ── */
+  // ID-backed intents: record a Pending booking, then redirect to Pesapal.
+  // Capture + confirmation happen server-side (see /payment/return).
+  const recordPendingBooking = async () => {
+    try {
+      await saveBooking({
+        paymentMethod: 'Pesapal',
+        transactionId: '',
+        status: 'Pending',
+      });
+    } catch (err) {
+      // Booking record is best-effort; payment intent is authoritative.
+      console.warn('Pending booking record failed:', err.message);
+    }
+  };
+
+  /* ── Success (enquiry recorded) ── */
   if (success) {
     const isStudent = JSON.parse(localStorage.getItem('user') || '{}')?.role === 'student';
     const dashboardPath = isStudent ? '/studentdashboard' : '/yogaadmin';
@@ -84,6 +143,7 @@ export default function PaymentPage() {
           <p className="pay-success-sub">
             {payable ? t('payment.bookingConfirmed', { course: course.name }) : t('payment.bookingReceivedMsg', { course: course.name })}
           </p>
+          {!payable && <p className="pay-success-sub">{t('payment.teamContact', { phone: form.phone })}</p>}
           {course.founding && (
             <div style={{ background:'rgba(24,61,45,0.06)', border:'1px solid rgba(46,125,91,0.15)', borderRadius:12, padding:'12px 16px', margin:'12px 0', fontSize:13, color:'var(--soma-forest)', fontWeight:600, textAlign:'center' }}>
               ◈ Your founding rate of <strong>{course.price}</strong> is locked for {course.time}
@@ -182,8 +242,8 @@ export default function PaymentPage() {
         {/* ═══════════ STEP 2: Pay ═══════════ */}
         {step === 2 && (
           <div className="pay-step-content">
-            <h2 className="pay-step-title">Pay with M-PESA</h2>
-            <p className="pay-step-sub">Complete your booking payment via M-PESA</p>
+            <h2 className="pay-step-title">{t('payment.payWithPesapal')}</h2>
+            <p className="pay-step-sub">{t('payment.pesapalRedirectNote')}</p>
 
             <div className="pay-review">
               <div className="pay-review-row">
@@ -206,25 +266,20 @@ export default function PaymentPage() {
             </div>
 
             {payable ? (
-              showMpesa ? (
-                <MpesaCheckout
-                  amount={amount}
-                  accountRef={course.name}
-                  description={`Booking: ${course.name}`}
-                  onSuccess={(result) => doPay(result)}
-                  onError={(err) => { setLoading(false); setError(err.message || t('payment.paymentFailed')); }}
-                />
-              ) : isLoggedIn() ? (
-                <MpesaCheckout
-                  amount={amount}
-                  accountRef={course.name}
-                  description={`Booking: ${course.name}`}
-                  onSuccess={(result) => doPay(result)}
+              showPay || isLoggedIn() ? (
+                <PesapalCheckout
+                  items={items}
+                  label={`Booking: ${course.name}`}
+                  description={`Booking: ${course.name} (${course.time || ''})`.slice(0, 100)}
+                  customer={{ email: form.email, phone: normalizePhone(form.phone), firstName: form.name.split(' ')[0], lastName: form.name.split(' ').slice(1).join(' ') }}
+                  amount={typeof course.amount === 'number' ? course.amount : undefined}
+                  buttonLabel={`${t('payment.payNow')} — ${typeof course.amount === 'number' ? formatKES(course.amount) : (course.price || '')}`}
+                  onInitiated={() => recordPendingBooking()}
                   onError={(err) => { setLoading(false); setError(err.message || t('payment.paymentFailed')); }}
                 />
               ) : (
-                <CheckoutGate intent={{ name: course.name, price: course.price, sub: course.time, type: 'booking' }} onProceed={() => {
-                  setShowMpesa(true);
+                <CheckoutGate intent={{ name: course.name, price: course.price, sub: course.time, time: course.time, type: course.serviceId ? 'service' : (course.offeringId ? 'offering' : 'booking'), itemId: course.serviceId || course.offeringId, serviceId: course.serviceId, offeringId: course.offeringId }} onProceed={() => {
+                  setShowPay(true);
                 }}>
                   <button className="pay-btn pay-btn-full" disabled={loading}>
                     {loading ? t('payment.processing') : t('payment.payAmount', { amount: course.price?.split('/')[0]?.trim() || '' })}
@@ -232,7 +287,7 @@ export default function PaymentPage() {
                 </CheckoutGate>
               )
             ) : (
-              <button className="pay-btn pay-btn-full" onClick={doPay} disabled={loading}>
+              <button className="pay-btn pay-btn-full" onClick={submitEnquiry} disabled={loading}>
                 {loading ? t('payment.processing') : t('payment.sendEnquiryConfirm')}
               </button>
             )}

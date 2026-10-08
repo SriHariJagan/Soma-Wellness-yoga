@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useAuth, savePendingIntent, clearPendingIntent } from '../../context/AuthContext.jsx';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { savePendingIntent, clearPendingIntent } from '../../context/AuthContext.jsx';
 import { isLoggedIn } from '../../utils/payment.js';
 import PaymentPreviewModal from './PaymentPreviewModal.jsx';
-import OtpVerificationModal from './OtpVerificationModal.jsx';
 
 function isAuthenticated() {
   try {
@@ -14,16 +14,19 @@ function isAuthenticated() {
 /**
  * CheckoutGate
  * Wraps any purchase button. If already authenticated, calls onProceed immediately.
- * Otherwise shows Preview -> OTP flow, auto-creates/logins, then calls onProceed.
+ * Otherwise shows a payment preview, then sends the guest to sign in
+ * (existing password / registration flow) with a redirect back. After
+ * sign-in the shopper re-triggers the purchase while authenticated.
  *
  * Props:
  *  intent: { name, price, sub, time, type, itemType, itemId, amount, ... }
- *  onProceed: (authData) => void | Promise<void>  — what to do after auth (e.g. addToCart, navigate to payment)
+ *  onProceed: (authData) => void | Promise<void>  — what to do once authed
  *  children: trigger element (button). We clone and attach onClick.
  */
 export default function CheckoutGate({ intent, onProceed, children }) {
-  const { login } = useAuth();
-  const [step, setStep] = useState(null); // null | 'preview' | 'otp'
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [step, setStep] = useState(null); // null | 'preview'
   const [pendingIntent, setPendingIntent] = useState(null);
 
   const handleTrigger = useCallback((e) => {
@@ -39,23 +42,11 @@ export default function CheckoutGate({ intent, onProceed, children }) {
     setStep('preview');
   }, [intent, onProceed]);
 
-  const handleContinueFromPreview = useCallback(() => {
-    setStep('otp');
-  }, []);
-
-  const handleVerified = useCallback((data) => {
-    // data: { token, user, isNew }
-    if (data?.token && data?.user) login(data.token, data.user);
-    // dispatch storage event for other hooks
-    window.dispatchEvent(new CustomEvent('auth-login', { detail: data }));
-    window.dispatchEvent(new Event('storage'));
+  const handleContinueToSignIn = useCallback(() => {
+    const back = location.pathname + location.search;
     setStep(null);
-    clearPendingIntent();
-    // slight delay to let login propagate
-    setTimeout(() => {
-      onProceed?.({ ...data, isNewUser: data.isNew });
-    }, 100);
-  }, [login, onProceed]);
+    navigate(`/login?redirectTo=${encodeURIComponent(back)}`);
+  }, [navigate, location]);
 
   const handleClose = useCallback(() => {
     setStep(null);
@@ -64,18 +55,9 @@ export default function CheckoutGate({ intent, onProceed, children }) {
   // Clone child to attach our handler while preserving its props
   let trigger = children;
   if (React.isValidElement(children)) {
-    const childOnClick = children.props.onClick;
     trigger = React.cloneElement(children, {
-      onClick: (e) => {
-        // if child had onClick that expects to run only when authed, we bypass it
-        // CheckoutGate is the gate — so we ignore child's onClick and use handleTrigger
-        // but we still call child's onClick if already authenticated and child wants it
-        if (isAuthenticated() && childOnClick) {
-          // let gate decide
-          handleTrigger(e);
-        } else {
-          handleTrigger(e);
-        }
+      onClick: () => {
+        handleTrigger();
       },
     });
   } else {
@@ -88,10 +70,7 @@ export default function CheckoutGate({ intent, onProceed, children }) {
       {createPortal(
         <>
           {step === 'preview' && (
-            <PaymentPreviewModal intent={pendingIntent} onClose={handleClose} onContinue={handleContinueFromPreview} />
-          )}
-          {step === 'otp' && (
-            <OtpVerificationModal intent={pendingIntent} onClose={handleClose} onVerified={handleVerified} />
+            <PaymentPreviewModal intent={pendingIntent} onClose={handleClose} onContinue={handleContinueToSignIn} />
           )}
         </>,
         document.body
@@ -101,11 +80,12 @@ export default function CheckoutGate({ intent, onProceed, children }) {
 }
 
 /**
- * Hook version for imperative use (e.g. inside handleEnroll functions)
+ * Hook version for imperative use (e.g. inside handleEnroll functions).
+ * Unauthenticated callers are sent to sign in with a redirect back.
  */
 export function useCheckoutGate() {
-  const { login } = useAuth();
-  const [state, setState] = useState({ step: null, intent: null, onProceed: null });
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const requireAuth = useCallback((intent, onProceed) => {
     if (isAuthenticated()) {
@@ -113,43 +93,15 @@ export function useCheckoutGate() {
       return;
     }
     savePendingIntent(intent);
-    setState({ step: 'preview', intent, onProceed });
-  }, []);
+    const back = location.pathname + location.search;
+    navigate(`/login?redirectTo=${encodeURIComponent(back)}`);
+  }, [navigate, location]);
 
   const close = useCallback(() => {
-    setState({ step: null, intent: null, onProceed: null });
+    clearPendingIntent();
   }, []);
 
-  const handleVerified = useCallback((data) => {
-    if (data?.token && data?.user) {
-      // User is already authenticated
-      window.dispatchEvent(new CustomEvent('auth-login', { detail: data }));
-      window.dispatchEvent(new Event('storage'));
-      const cb = state.onProceed;
-      setState({ step: null, intent: null, onProceed: null });
-      clearPendingIntent();
-      setTimeout(() => cb?.(data), 100);
-    } else {
-      // New user - verify OTP
-      window.dispatchEvent(new CustomEvent('auth-login', { detail: data }));
-      window.dispatchEvent(new Event('storage'));
-      const cb = state.onProceed;
-      setState({ step: 'preview', intent, onProceed: { isNewUser: true } });
-      clearPendingIntent();
-    }
-  }, [login, state.onProceed]);
-
-  const GateModals = createPortal(
-    <>
-      {state.step === 'preview' && (
-        <PaymentPreviewModal intent={state.intent} onClose={close} onContinue={() => setState((s) => ({ ...s, step: 'otp' }))} />
-      )}
-      {state.step === 'otp' && (
-        <OtpVerificationModal intent={state.intent} onClose={close} onVerified={handleVerified} />
-      )}
-    </>,
-    document.body
-  );
+  const GateModals = null;
 
   return { requireAuth, GateModals, close };
 }

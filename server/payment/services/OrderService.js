@@ -230,24 +230,24 @@ export class OrderService {
     return resolvedItems.reduce((sum, item) => sum + item.totalPrice, 0);
   }
 
-  // M-Pesa only — create a pending order without external gateway call.
-  // Daraja STK Push is initiated separately via /api/mpesa/stkpush and
-  // reconciled via callback. This just creates a local pending record.
+  // Provider-neutral local order reference. Pesapal SubmitOrder is
+  // performed by PesapalProvider with the merchant_reference below —
+  // this just mints OUR internal reference (no external call).
   async createRazorpayOrder(amount, receipt) {
-    logger.info(MODULE, 'Creating M-Pesa pending order (Razorpay removed)', { receipt, amount });
+    logger.info(MODULE, 'Creating provider-neutral pending order reference', { receipt, amount });
     return {
-      id: `order_mpesa_${receipt}`,
+      id: `order_pesapal_${receipt}`,
       amount,
       currency: 'KES',
       receipt,
       status: 'created',
-      gateway: 'mpesa',
+      gateway: 'pesapal',
       _mock: false,
     };
   }
 
   // Preferred alias for new code
-  async createMpesaOrder(amount, receipt) {
+  async createPesapalOrderReference(amount, receipt) {
     return this.createRazorpayOrder(amount, receipt);
   }
 }

@@ -519,7 +519,7 @@ The same pricing data exists in up to 4 places:
 `
 User clicks "Add to Cart" / "Pay Now"
     -> CheckoutGate (auth check)
-        -> If unauthenticated: OTP verification -> auto-create account
+        -> If unauthenticated: sign-in redirect -> account required (OTP retired)
         -> addToCart() or direct payment
     -> Cart: POST /api/student/cart/add
     -> Checkout: POST /api/student/cart/checkout

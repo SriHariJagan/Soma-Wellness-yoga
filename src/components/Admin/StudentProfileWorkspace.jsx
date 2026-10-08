@@ -296,7 +296,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
 
   /* Payment modal */
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [paymentForm, setPaymentForm] = useState({ amount: '', label: '', method: 'UPI', status: 'paid' });
+  const [paymentForm, setPaymentForm] = useState({ amount: '', label: '', method: 'Pesapal', status: 'paid' });
 
   /* Premium Renew & Switch modals */
   const [showRenewModal, setShowRenewModal] = useState(false);
@@ -447,7 +447,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
       });
       flash('Payment recorded successfully');
       setShowPaymentForm(false);
-      setPaymentForm({ amount: '', label: '', method: 'M-PESA', status: 'paid' });
+      setPaymentForm({ amount: '', label: '', method: 'Pesapal', status: 'paid' });
       loadAll();
     } catch (err) {
       flash(err.message || 'Failed to record payment', 'error');

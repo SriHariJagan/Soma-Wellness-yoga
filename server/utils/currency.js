@@ -15,7 +15,7 @@ export function formatKESWithDecimals(amount) {
   return formatKES(amount, { decimals: 2 });
 }
 
-// Also export paise conversion helpers (Razorpay expects smallest unit)
+// Minor-unit conversion helpers (providers expect smallest unit)
 export function toMinorUnits(kes) {
   return Math.round(Number(kes) * 100);
 }

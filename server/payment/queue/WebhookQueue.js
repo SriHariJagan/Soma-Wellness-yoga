@@ -1,10 +1,18 @@
 import { Queue, Worker } from 'bullmq';
 import { getRedisConnection } from '../../notification/queue/connection.js';
 import { WebhookEventRepository } from '../repository/WebhookEventRepository.js';
-import { WebhookService } from '../services/WebhookService.js';
 import logger from '../../notification/logger.js';
 
 const MODULE = 'WebhookQueue';
+const MAX_RETRY_ATTEMPTS = 5;
+
+function isRetryable(error) {
+  if (!error) return false;
+  if (error.code === 'PROVIDER_PENDING') return true;
+  if (error.name === 'MongooseError' || error.name === 'MongoNetworkError') return true;
+  if (error.message?.includes('ETIMEOUT') || error.message?.includes('ECONNREFUSED')) return true;
+  return false;
+}
 
 const RETRY_QUEUE = 'webhook-retry';
 const DLQ_NAME = 'webhook-dlq';
@@ -91,7 +99,6 @@ export async function enqueueWebhookDLQ(entry) {
 async function processRetryJob(job) {
   const { webhookEventId } = job.data;
   const webhookEventRepo = new WebhookEventRepository();
-  const webhookService = new WebhookService();
 
   const webhookEvent = await webhookEventRepo.findByEventId(webhookEventId);
   if (!webhookEvent) {
@@ -107,16 +114,25 @@ async function processRetryJob(job) {
   await webhookEventRepo.updateStatus(webhookEvent._id, 'processing');
 
   try {
+    // Pesapal IPN retries: re-run server-to-server verification + capture.
+    // handleIpn is itself idempotent (atomic pending→captured guard).
+    const { PaymentService } = await import('../PaymentService.js');
+    const svc = new PaymentService();
     const payload = typeof webhookEvent.payload === 'string'
       ? JSON.parse(webhookEvent.payload)
       : webhookEvent.payload;
+    const trackingId = payload?.trackingId || payload?.OrderTrackingId || null;
+    const merchantReference = payload?.merchantReference || payload?.OrderMerchantReference || null;
 
-    const result = await webhookService.processEvent(
-      webhookEvent.event,
-      payload,
-      webhookEvent.rawBody,
-      webhookEvent.signature,
-    );
+    if (webhookEvent.event === 'pesapal.ipn' || String(webhookEventId).startsWith('pesapal:')) {
+      await svc.handleIpn({ trackingId, merchantReference });
+    } else {
+      // Legacy (non-Pesapal) events are no longer processed — gateway removed.
+      logger.warn(MODULE, 'Skipping legacy non-Pesapal webhook event', {
+        webhookEventId,
+        event: webhookEvent.event,
+      });
+    }
 
     await webhookEventRepo.updateStatus(webhookEvent._id, 'processed', {
       processedAt: new Date(),
@@ -125,12 +141,11 @@ async function processRetryJob(job) {
     logger.info(MODULE, 'Webhook retry succeeded', {
       webhookEventId,
       event: webhookEvent.event,
-      action: result.action || 'handled',
     });
   } catch (err) {
     const attempts = webhookEvent.attempts + 1;
 
-    if (webhookService.shouldRetry(attempts) && webhookService.isRetryable(err)) {
+    if (attempts < MAX_RETRY_ATTEMPTS && isRetryable(err)) {
       await webhookEventRepo.markFailed(webhookEvent._id, err.message);
       throw err;
     }

@@ -18,7 +18,7 @@ export default function PaymentPreviewModal({ intent, onClose, onContinue }) {
         <div className="checkout-header">
           <div className="checkout-eyebrow">Secure checkout</div>
           <h2 className="checkout-title">Payment preview</h2>
-          <p className="checkout-sub">Review your selection before verification.</p>
+          <p className="checkout-sub">Review your selection before signing in.</p>
         </div>
 
         <div className="checkout-card">
@@ -36,14 +36,14 @@ export default function PaymentPreviewModal({ intent, onClose, onContinue }) {
           </p>
           <ul className="checkout-features">
             <li><span className="dot" /> VAT included</li>
-            <li><span className="dot" /> Secure payment via M-Pesa</li>
+            <li><span className="dot" /> Secure payment powered by Pesapal</li>
             <li><span className="dot" /> Instant confirmation after verification</li>
           </ul>
         </div>
 
         <div className="checkout-notice">
           <span className="checkout-notice-icon">🔒</span>
-          <span>We’ll verify your email or phone with a one-time code before payment.</span>
+          <span>Sign in to continue securely. New here? You can create an account on the next step.</span>
         </div>
 
         {REGISTRATION_VIDEO.enabled && REGISTRATION_VIDEO.showInCheckoutPreview && (
@@ -56,7 +56,7 @@ export default function PaymentPreviewModal({ intent, onClose, onContinue }) {
 
         <div className="checkout-actions">
           <button className="checkout-btn checkout-btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="checkout-btn checkout-btn-primary" onClick={onContinue}>Continue to verify →</button>
+          <button className="checkout-btn checkout-btn-primary" onClick={onContinue}>Sign in to continue →</button>
         </div>
       </div>
     </div>

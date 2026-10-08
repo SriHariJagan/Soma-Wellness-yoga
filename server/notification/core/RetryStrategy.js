@@ -21,7 +21,6 @@ const NON_RETRYABLE_CODES = new Set([
 const BUILTIN_POLICIES = {
   inApp:    { maxAttempts: 1 },
   email:    { maxAttempts: 5 },
-  whatsapp: { maxAttempts: 3 },
   sms:      { maxAttempts: 3 },
   push:     { maxAttempts: 2 },
 };

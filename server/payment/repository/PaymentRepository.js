@@ -25,17 +25,33 @@ export class PaymentRepository {
     return Payment.findByRazorpayOrderId(razorpayOrderId);
   }
 
-  async findByRazorpayPaymentId(razorpayPaymentId) {
-    return Payment.findByRazorpayPaymentId(razorpayPaymentId);
-  }
-
-  /** Find a payment by its MPESA CheckoutRequestID stored in auditTrail */
-  async findByMpesaCheckoutRequestId(checkoutRequestId) {
-    return Payment.findOne({ "auditTrail.checkoutRequestId": checkoutRequestId });
-  }
-
   async findByIdempotencyKey(key) {
     return Payment.findByIdempotencyKey(key);
+  }
+
+  async findByMerchantReference(ref) {
+    if (typeof ref !== 'string' || !ref) return null;
+    return Payment.findOne({ merchant_reference: ref });
+  }
+
+  async findByProviderOrderId(providerOrderId) {
+    if (typeof providerOrderId !== 'string' || !providerOrderId) return null;
+    return Payment.findOne({ provider_order_id: providerOrderId });
+  }
+
+  async findByProviderTransactionId(providerTransactionId) {
+    if (typeof providerTransactionId !== 'string' || !providerTransactionId) return null;
+    return Payment.findOne({ provider_transaction_id: providerTransactionId });
+  }
+
+  async findByCheckoutId(checkoutId) {
+    if (typeof checkoutId !== 'string' || !checkoutId) return null;
+    return Payment.findOne({
+      $or: [
+        { provider_checkout_id: checkoutId },
+        { provider_order_id: checkoutId },
+      ],
+    });
   }
 
   async updatePaymentStatus(id, newStatus, currentStatus) {
@@ -122,39 +138,79 @@ export class PaymentRepository {
     return Payment.countDocuments(filter);
   }
 
-  async findBySignature(razorpaySignature) {
-    // NoSQL injection guard: ensure we only query with strings
-    if (typeof razorpaySignature !== 'string' || !razorpaySignature) return null;
-    return Payment.findOne({ razorpaySignature: String(razorpaySignature), paymentStatus: 'captured' }).lean();
-  }
-
-  async findByPaymentIdCaptured(razorpayPaymentId) {
-    // NoSQL injection guard: ensure we only query with strings
-    if (typeof razorpayPaymentId !== 'string' || !razorpayPaymentId) return null;
-    return Payment.findOne({ razorpayPaymentId: String(razorpayPaymentId), paymentStatus: 'captured' }).lean();
-  }
-
-  async updateAfterCapture(id, razorpayPaymentId, razorpaySignature, gatewayResponse, session) {
-    return Payment.findOneAndUpdate(
+  /**
+   * Canonical atomic capture for Pesapal (and any provider).
+   * Guard: only pending → captured. Enforces provider_transaction_id
+   * uniqueness at the application layer (unique index is the backstop).
+   */
+  async capturePending(id, { providerTransactionId, providerStatus, callbackData, providerRaw, auditAction = 'capture', auditMetadata = {} }, session) {
+    if (providerTransactionId) {
+      const dup = await Payment.findOne({
+        provider_transaction_id: String(providerTransactionId),
+        paymentStatus: 'captured',
+      }).lean();
+      if (dup && String(dup._id) !== String(id)) {
+        const err = new Error('Provider transaction already captured on another payment');
+        err.code = 'DUPLICATE_PROVIDER_TRANSACTION';
+        throw err;
+      }
+    }
+    const set = {
+      paymentStatus: 'captured',
+      capturedAt: new Date(),
+    };
+    if (providerTransactionId) set.provider_transaction_id = String(providerTransactionId);
+    if (providerStatus) set.provider_status = String(providerStatus);
+    if (callbackData) set.callback_data = callbackData;
+    if (providerRaw) set.provider_raw = providerRaw;
+    const options = { new: true };
+    if (session) options.session = session;
+    const updated = await Payment.findOneAndUpdate(
       { _id: id, paymentStatus: 'pending' },
       {
-        $set: {
-          paymentStatus: 'captured',
-          capturedAt: new Date(),
-          razorpayPaymentId,
-          razorpaySignature,
-        },
+        $set: set,
         $push: {
-          attempts: {
-            action: 'capture',
-            gatewayResponse,
-            timestamp: new Date(),
-          },
+          attempts: { action: 'capture', gatewayResponse: providerRaw || callbackData || {}, timestamp: new Date() },
+          auditTrail: { action: auditAction, from: 'pending', to: 'captured', timestamp: new Date(), metadata: auditMetadata },
         },
         $inc: { lockVersion: 1 },
       },
-      { new: true, session },
+      options,
     );
+    return updated;
+  }
+
+  async markFailed(id, fromStatuses, { failureReason, providerStatus, callbackData, auditAction = 'mark_failed' }, session) {
+    const filter = { _id: id };
+    if (fromStatuses) filter.paymentStatus = Array.isArray(fromStatuses) ? { $in: fromStatuses } : fromStatuses;
+    const set = { paymentStatus: 'failed', failedAt: new Date() };
+    if (failureReason) set.failure_reason = String(failureReason).slice(0, 500);
+    if (providerStatus) set.provider_status = String(providerStatus);
+    if (callbackData) set.callback_data = callbackData;
+    const options = { new: true };
+    if (session) options.session = session;
+    return Payment.findOneAndUpdate(
+      filter,
+      {
+        $set: set,
+        $push: { auditTrail: { action: auditAction, to: 'failed', timestamp: new Date(), reason: failureReason } },
+        $inc: { lockVersion: 1 },
+      },
+      options,
+    );
+  }
+
+  async saveProviderOrderDetails(id, { providerOrderId, checkoutId, merchantReference, redirectUrl, providerRaw }, session) {
+    const set = {};
+    if (providerOrderId) {
+      set.provider_order_id = String(providerOrderId);
+      set.provider_checkout_id = String(checkoutId || providerOrderId);
+    }
+    if (merchantReference) set.merchant_reference = String(merchantReference);
+    if (providerRaw) set.provider_raw = providerRaw;
+    const options = { new: true };
+    if (session) options.session = session;
+    return Payment.findByIdAndUpdate(id, { $set: set }, options);
   }
 
   async addRefundEntry(id, refundData, session) {
@@ -175,9 +231,19 @@ export class PaymentRepository {
     );
   }
 
-  async markRefundProcessed(id, razorpayRefundId) {
+  async markRefundProcessed(id, refundId) {
     return Payment.findOneAndUpdate(
-      { _id: id, 'refunds.razorpayRefundId': razorpayRefundId },
+      {
+        $and: [
+          { _id: id },
+          {
+            $or: [
+              { 'refunds.razorpayRefundId': refundId },
+              { 'refunds.provider_refund_id': refundId },
+            ],
+          },
+        ],
+      },
       {
         $set: {
           'refunds.$.status': 'processed',
@@ -205,14 +271,18 @@ export class PaymentRepository {
 
   async createManualPayment({ user, label, amount, description, items, adminId, receiptUrl, gateway = 'manual' }) {
     const now = new Date();
+    const { generateMerchantReference } = await import('../../utils/merchantReference.js');
     const payment = await Payment.create({
       user,
       label,
       description: description || '',
       items: items || [],
       amount: Math.round(amount),
-      currency: gateway === 'mpesa' ? 'KES' : 'KES',
+      currency: 'KES',
       gateway,
+      payment_provider: gateway === 'manual' || gateway === 'offline' ? gateway : 'manual',
+      payment_method: gateway === 'manual' || gateway === 'offline' ? gateway : 'manual',
+      merchant_reference: generateMerchantReference('PAY'),
       source: adminId ? 'admin' : 'student',
       paymentStatus: adminId ? 'captured' : 'initiated',
       capturedAt: adminId ? now : undefined,
@@ -239,6 +309,7 @@ export class PaymentRepository {
 
   async createFreePayment({ user, label, description, items, idempotencyKey }) {
     const now = new Date();
+    const { generateMerchantReference } = await import('../../utils/merchantReference.js');
     const payment = await Payment.create({
       user,
       label,
@@ -247,6 +318,9 @@ export class PaymentRepository {
       amount: 0,
       currency: 'KES',
       gateway: 'offline',
+      payment_provider: 'offline',
+      payment_method: 'free',
+      merchant_reference: generateMerchantReference('PAY'),
       source: 'student',
       paymentStatus: 'captured',
       capturedAt: now,
@@ -270,35 +344,10 @@ export class PaymentRepository {
     return payment;
   }
 
-  /** Mark an MPESA payment as successful with receipt details */
-  async markMpesaPaymentSuccess(id, { mpesaReceiptNumber, transactionDate, phoneNumber, amount }) {
-    return Payment.findOneAndUpdate(
-      { _id: id },
-      {
-        $set: {
-          paymentStatus: 'captured',
-          capturedAt: new Date(),
-          mpesaReceiptNumber,
-          mpesaTransactionDate: transactionDate,
-          mpesaPhoneNumber: phoneNumber,
-        },
-        $push: {
-          auditTrail: {
-            action: 'mpesa_stk_success',
-            mpesaReceiptNumber,
-            timestamp: new Date(),
-          },
-        },
-        $inc: { lockVersion: 1 },
-      },
-      { new: true },
-    );
-  }
-
-  /** Expire payments stuck in 'initiated' status beyond the cutoff time */
-  async expireStalePayments(cutoffDate) {
+  /** Expire stale payments beyond the cutoff time (status-guarded by caller) */
+  async expireStalePayments(cutoffDate, statuses = ['initiated']) {
     return Payment.updateMany(
-      { paymentStatus: 'initiated', createdAt: { $lt: cutoffDate } },
+      { paymentStatus: { $in: statuses }, createdAt: { $lt: cutoffDate } },
       {
         $set: {
           paymentStatus: 'expired',
@@ -308,6 +357,37 @@ export class PaymentRepository {
           auditTrail: {
             action: 'auto_expired',
             reason: 'Payment not completed within expiry window',
+            timestamp: new Date(),
+          },
+        },
+      },
+    );
+  }
+
+  /**
+   * Expire initiated intents that were never submitted to the provider.
+   * Guarded: only `initiated` WITHOUT a provider checkout id.
+   */
+  async expireUnsubmittedIntents(cutoffDate) {
+    return Payment.updateMany(
+      {
+        paymentStatus: 'initiated',
+        createdAt: { $lt: cutoffDate },
+        $or: [
+          { provider_checkout_id: { $in: [null, ''] } },
+          { provider_checkout_id: { $exists: false } },
+        ],
+      },
+      {
+        $set: {
+          paymentStatus: 'expired',
+          expiredAt: new Date(),
+          failure_reason: 'Payment intent expired before provider submission',
+        },
+        $push: {
+          auditTrail: {
+            action: 'auto_expired',
+            reason: 'Intent never submitted to provider',
             timestamp: new Date(),
           },
         },

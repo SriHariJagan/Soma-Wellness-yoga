@@ -588,8 +588,8 @@ export const checkout = asyncHandler(async (req, res) => {
   const now = new Date();
 
   if (total > 0) {
-    /* ── PAID FLOW: Create M-Pesa pending payment (no activation yet) ──
-       Razorpay removed — now uses M-Pesa only. Order is pending until M-Pesa STK callback confirms. */
+    /* ── PAID FLOW: Create Pesapal payment intent (no activation yet) ──
+       Order stays pending until Pesapal IPN/return verification captures. */
     // Convert cart itemTypes to payment service itemTypes
     const paymentItems = items.map((item) => ({
       itemType: item.itemType === 'plan' ? 'membership' : item.itemType,
@@ -621,41 +621,21 @@ export const checkout = asyncHandler(async (req, res) => {
 
     // Use idempotency plugin to prevent duplicate checkout
     const initiateCheckout = async () => {
-      // Create M-Pesa pending order with the cart-calculated total (includes coupon discounts)
-      const receipt = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      const mpesaOrder = await orderService.createMpesaOrder(Math.round(total * 100), receipt);
-
-      // Create Payment in pending status — NOT paid yet. Fulfillment happens after M-Pesa callback.
-      const payment = await paymentRepo.create({
+      const { PaymentService } = await import('../payment/PaymentService.js');
+      const paymentService = new PaymentService();
+      // Server-authoritative intent (cart totals already computed server-side
+      // above from DB prices). No client amount is trusted.
+      const payment = await paymentService.createIntent({
         user: userId,
-        label: `Order ${items.map((i) => i.name).join(', ')}`,
-        description: `Cart checkout – ${items.length} item(s), coupon: ${couponCode || 'none'}`,
         items: paymentItems,
         amount: Math.round(total * 100),
         currency: 'KES',
-        gateway: 'mpesa',
-        mpesaOrderId: mpesaOrder.id,
-        razorpayOrderId: mpesaOrder.id,
-        paymentStatus: 'pending',
-        pendingAt: now,
+        label: `Order ${items.map((i) => i.name).join(', ')}`,
+        description: `Cart checkout – ${items.length} item(s), coupon: ${couponCode || 'none'}`,
         idempotencyKey: idempotencyKey || undefined,
-        initiatedAt: now,
-        auditTrail: [{
-          action: 'checkout_initiate',
-          from: 'initiated',
-          to: 'pending',
-          by: userId,
-          timestamp: now,
-        }],
-        attempts: [{
-          attempt: 1,
-          action: 'checkout',
-          gatewayResponse: { mpesaOrderId: mpesaOrder.id, amount: mpesaOrder.amount },
-          timestamp: now,
-        }],
       });
 
-      // Create pending Order — completed only after PaymentService.verify()
+      // Create pending Order — completed only after Pesapal verification
       const order = await Order.create({
         student: userId,
         subtotal,
@@ -666,7 +646,7 @@ export const checkout = asyncHandler(async (req, res) => {
         couponCode,
         couponDiscount,
         status: 'pending',
-        paymentMethod: 'M-Pesa',
+        paymentMethod: 'Pesapal',
         transactionId: idempotencyKey || payment._id.toString(),
         payment: payment._id,
         itemCount: items.length,
@@ -710,7 +690,14 @@ export const checkout = asyncHandler(async (req, res) => {
       // Coupon accounting intentionally happens at capture time
       // (see finalizePurchase) — abandoned checkouts must not burn uses.
 
-      return { payment, order, mpesaOrder };
+      // Submit to Pesapal → pending + redirect URL (server-to-server).
+      const providerResult = await paymentService.createProviderOrder({
+        paymentId: payment._id,
+        user: userId,
+        customer: {},
+      });
+
+      return { payment: providerResult.payment, order, providerResult };
     };
 
     let result;
@@ -720,20 +707,20 @@ export const checkout = asyncHandler(async (req, res) => {
       result = await initiateCheckout();
     }
 
-    const { payment, order, mpesaOrder } = result;
+    const { payment, order, providerResult } = result;
 
     // Notify that order is pending payment
     try {
       await notify(userId, {
         title: 'Order initiated',
-        message: `Your order <strong>#${order.orderNumber}</strong> of KES ${total.toLocaleString('en-KE')} has been initiated. Complete the M-Pesa payment to activate your items.`,
+        message: `Your order <strong>#${order.orderNumber}</strong> of KES ${total.toLocaleString('en-KE')} has been initiated. Complete payment via Pesapal to activate your items.`,
         type: 'general',
       });
     } catch {}
 
     res.status(201).json({
       success: true,
-      msg: 'Checkout initiated. Complete M-Pesa payment to activate items.',
+      msg: 'Checkout initiated. Complete payment via Pesapal to activate items.',
       order: {
         _id: order._id,
         orderNumber: order.orderNumber,
@@ -745,15 +732,20 @@ export const checkout = asyncHandler(async (req, res) => {
         _id: payment._id,
         amount: payment.amount,
         status: payment.paymentStatus,
-        method: payment.gateway,
+        method: payment.payment_provider || payment.gateway,
+        merchantReference: payment.merchant_reference,
+        orderTrackingId: payment.provider_checkout_id || payment.provider_order_id || null,
       },
-      mpesa: {
-        order_id: mpesaOrder.id,
-        amount: mpesaOrder.amount,
-        currency: mpesaOrder.currency,
+      pesapal: {
+        merchantReference: providerResult.merchantReference,
+        orderTrackingId: providerResult.orderTrackingId,
+        redirectUrl: providerResult.redirectUrl,
+        amount: payment.amount,
+        currency: payment.currency,
       },
-      // Keep razorpay key for backward compat (null now)
-      razorpay: null,
+      redirectUrl: providerResult.redirectUrl,
+      merchantReference: providerResult.merchantReference,
+      orderTrackingId: providerResult.orderTrackingId,
       requiresPayment: true,
     });
   } else {

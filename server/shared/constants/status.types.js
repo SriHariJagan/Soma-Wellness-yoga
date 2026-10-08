@@ -38,8 +38,9 @@ export const LEAD_STAGES = ['New', 'Follow up', 'Converted', 'Cold']  ;
 export const BOOKING_STATUSES = ['Pending', 'Confirmed', 'Cancelled']  ;
 
 // ── Payment Methods (Booking) ────────────────────────────────
-// NOTE: 'UPI' retained for historical records; Kenya default is 'M-PESA'.
-export const BOOKING_PAYMENT_METHODS = ['M-PESA', 'UPI', 'Bank Transfer', 'Cash', 'Card', 'Manual']  ;
+// NOTE: 'M-PESA'/'UPI' retained for historical records; default for new
+// online payments is 'Pesapal'.
+export const BOOKING_PAYMENT_METHODS = ['Pesapal', 'M-PESA', 'UPI', 'Bank Transfer', 'Cash', 'Card', 'Manual']  ;
 
 // ── Attendance Entity Types (same as Entity Types) ───────────
 export { ENTITY_TYPES as ATTENDANCE_ENTITY_TYPES } from './course.types.js';

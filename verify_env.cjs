@@ -22,7 +22,7 @@ if (fs.existsSync(envPath)) {
     ['NODE_ENV', /development|production|test/, 'NODE_ENV set'],
     ['PORT', /^\d+$/, 'PORT set'],
     ['VITE_API_URL', /http/, 'VITE_API_URL set'],
-    ['MPESA_ENV', /sandbox|production/, 'MPESA_ENV set'],
+    ['PESAPAL_ENV', /sandbox|production/, 'PESAPAL_ENV set'],
     ['REDIS_URL', /redis:/, 'REDIS_URL set'],
   ];
   
@@ -57,17 +57,17 @@ for (const f of serverFiles) {
   }
 }
 
-// Check M-Pesa config
-console.log('\n4. Checking M-Pesa configuration...');
+// Check Pesapal config
+console.log('\n4. Checking Pesapal configuration...');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf-8');
-  const mpesaChecks = [
-    ['MPESA_ENV', 'sandbox', 'MPESA_ENV is sandbox'],
-    ['MPESA_SHORTCODE', /174379/, 'MPESA_SHORTCODE is 174379'],
-    ['MPESA_CALLBACK_URL', /mpesa\/callback/, 'MPESA_CALLBACK_URL configured'],
+  const pesapalChecks = [
+    ['PESAPAL_ENV', 'sandbox', 'PESAPAL_ENV is sandbox'],
+    ['PESAPAL_CONSUMER_KEY', /PESAPAL_CONSUMER_KEY=.+/, 'PESAPAL_CONSUMER_KEY configured'],
+    ['PESAPAL_IPN_ID', /PESAPAL_IPN_ID=.+/, 'PESAPAL_IPN_ID configured'],
   ];
-  
-  for (const [key, pattern, desc] of mpesaChecks) {
+
+  for (const [key, pattern, desc] of pesapalChecks) {
     if (envContent.includes(key) && envContent.match(pattern)) {
       console.log(`   ✓ ${desc}`);
     } else {

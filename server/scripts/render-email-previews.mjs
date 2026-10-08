@@ -13,7 +13,6 @@ const outDir = path.join(__dirname, '..', 'email-previews');
 import mpesaTemplate from '../services/email/templates/mpesaPaymentSuccess.js';
 import welcomeTemplate from '../services/email/templates/welcome.js';
 import resetPasswordTemplate from '../services/email/templates/resetPassword.js';
-import otpTemplate from '../services/email/templates/otp.js';
 import paymentSuccessTemplate from '../services/email/templates/paymentSuccess.js';
 import paymentFailedTemplate from '../services/email/templates/paymentFailed.js';
 import invoiceTemplate from '../services/email/templates/invoice.js';
@@ -45,7 +44,6 @@ const shared = {
   orderId: 'ORD-001',
   mpesaReceipt: 'QHK7B3A4RT',
   failureReason: 'Insufficient funds',
-  otp: '847291',
   expiryMinutes: 10,
   studentName: 'Srihari',
   registrationDate: new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }),
@@ -64,7 +62,6 @@ const shared = {
 const templates = [
   { file: '01-welcome.html',             html: welcomeTemplate(shared).html },
   { file: '02-reset-password.html',      html: resetPasswordTemplate(shared).html },
-  { file: '03-otp.html',                 html: otpTemplate(shared).html },
   { file: '04-payment-success.html',     html: paymentSuccessTemplate(shared).html },
   { file: '05-payment-failed.html',      html: paymentFailedTemplate(shared).html },
   { file: '06-mpesa-success.html',       html: mpesaTemplate(shared).html },

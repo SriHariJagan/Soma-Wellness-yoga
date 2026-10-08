@@ -15,7 +15,6 @@ export default {
     '!server/node_modules/**',
     '!server/notification/queue/dashboard.js',
     '!server/notification/templates/**',
-    '!server/config/razorpay.js',
   ],
   coverageThreshold: {
     global: {

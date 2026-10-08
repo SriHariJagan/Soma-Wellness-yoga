@@ -18,7 +18,6 @@ import logger from "./notification/logger.js";
 const MODULE = "Server";
 
 import authRoutes from "./routes/auth.js";
-import otpRoutes from "./routes/otp.js";
 import studentRoutes from "./routes/student.js";
 import studentsAdminRoutes from "./routes/students.js";
 import adminRoutes from "./routes/admin.js";
@@ -60,8 +59,7 @@ import * as monCtrl from "./controllers/monitoringController.js";
 import monitoringRoutes from "./routes/monitoring.js";
 import blogRoutes from "./routes/blogs.js";
 import somaRoutes from "./routes/soma.js";
-import mpesaRoutes from "./routes/mpesaRoutes.js";
-import whatsappRoutes from "./routes/whatsappRoutes.js";
+import pesapalRoutes from "./routes/pesapalRoutes.js";
 import chatbotRoutes from "./routes/chatbot.js";
 import receptionRoutes from "./routes/reception.js";
 
@@ -100,7 +98,7 @@ app.use(compression({ threshold: 1024, level: 6 }));
 
 // ── CORS (API-only) ────────────────────────────────────────────
 // CORS validation applies ONLY to /api routes, where cross-origin
-// access actually matters (cookies/JWT, M-Pesa, admin APIs).
+// access actually matters (cookies/JWT, Pesapal return/IPN, admin APIs).
 // Frontend static files (/, /assets/*, /images/*, /uploads/*,
 // /favicon.svg, …) are same-origin resources served BEFORE the CORS
 // middleware below, so they never enter the CORS rejection path.
@@ -149,7 +147,9 @@ const ENABLE_HTTPS_HARDENING =
   process.env.NODE_ENV === "production" &&
   process.env.ENABLE_HSTS === "true";
 
-// Security headers with strict CSP — M-Pesa only (Razorpay removed)
+// Security headers with strict CSP — Pesapal is a full-page redirect
+// (frontend never calls Pesapal APIs directly), so no provider
+// origins are needed in connectSrc.
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -158,7 +158,7 @@ app.use(
         scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:5173"],
-        connectSrc: ["'self'", "https://sandbox.safaricom.co.ke", "https://api.safaricom.co.ke"],
+        connectSrc: ["'self'"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
@@ -215,7 +215,9 @@ app.use(express.static(FRONTEND_DIST));
 // Only /api/* requests undergo Origin validation.
 app.use("/api", cors(corsOptions));
 
-// ── Webhook route (must be before JSON parser — needs raw body for HMAC) ──
+// ── Legacy webhook route (Razorpay removed — returns 410; kept mounted
+//    so stale provider retries fail visibly). Pesapal IPN is JSON-based
+//    (no HMAC) at /api/pesapal/ipn below. ──
 app.use(
   "/api/payment/webhook",
   express.raw({ type: "application/json", limit: "1mb" }),
@@ -263,7 +265,6 @@ app.get("/api/health/scheduler", requireAuth, requireAdmin, asyncHandler(monCtrl
 
 app.use("/api", paymentRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/auth/otp", otpRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/students", studentsAdminRoutes);
 app.use("/api/admin", adminRoutes);
@@ -276,8 +277,7 @@ app.use("/api/leads", leadRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/soma", somaRoutes);
-app.use("/api/mpesa", mpesaRoutes);
-app.use("/api/whatsapp", whatsappRoutes);
+app.use("/api/pesapal", pesapalRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 import bulkEmailRoutes from "./routes/bulkEmail.js";
 app.use("/api/bulk-email", bulkEmailRoutes);
@@ -491,13 +491,6 @@ connectDB(process.env.MONGO_URI)
 
     registerChannel("email", new EmailChannel());
 
-    // Register WhatsApp channel (gracefully degrades if not configured)
-    import("./notification/channels/whatsapp.js").then((mod) => {
-      const WhatsAppChannel = mod.default || mod.WhatsAppChannel;
-      registerChannel("whatsapp", new WhatsAppChannel());
-      logger.info(MODULE, "Registered channel: whatsapp");
-    }).catch(() => {});
-
     registerChannel("inApp", {
       send: async () => ({
         success: true,
@@ -573,7 +566,7 @@ connectDB(process.env.MONGO_URI)
       });
     }).catch(() => {});
 
-    // Start payment expiry checker for MPESA and other initiated payments
+    // Start provider-aware payment expiry + Pesapal reconciliation
     import("./services/paymentExpiryService.js").then((mod) => mod.default.start()).catch(() => {});
 
     await seedDefaultPlans().catch(() => {});

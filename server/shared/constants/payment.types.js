@@ -2,7 +2,19 @@
 export const PAYMENT_STATUSES = ['initiated', 'pending', 'captured', 'failed', 'expired', 'refunding', 'refunded']  ;
 
 // ── Payment Gateway Types ────────────────────────────────────
-export const PAYMENT_GATEWAYS = ['mpesa', 'offline', 'manual']  ;
+// Canonical providers for NEW payments: pesapal | manual | offline.
+// 'mpesa' + 'razorpay' retained ONLY so historical records remain
+// readable — no new payment may be created with them.
+export const PAYMENT_GATEWAYS = ['pesapal', 'mpesa', 'razorpay', 'offline', 'manual']  ;
+
+// ── Provider-neutral payment providers (canonical) ─────────────
+export const PAYMENT_PROVIDERS = ['pesapal', 'mpesa', 'razorpay', 'legacy', 'manual', 'offline']  ;
+
+// ── Payment Methods (customer-facing) ──────────────────────────
+export const PAYMENT_METHODS = ['pesapal', 'manual', 'offline', 'free']  ;
+
+// ── Pesapal provider statuses (normalized from GetTransactionStatus) ──
+export const PESAPAL_STATUSES = ['completed', 'failed', 'pending', 'invalid', 'reversed']  ;
 
 // ── Payment Sources ──────────────────────────────────────────
 export const PAYMENT_SOURCES = ['student', 'admin', 'webhook', 'system']  ;

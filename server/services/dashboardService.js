@@ -90,22 +90,25 @@ export async function buildStudentDashboard(userId) {
     userServices,
     trial,
   ] = await Promise.all([
-    Membership.findOne({ user: uid }).sort({ createdAt: -1 }),
-    Attendance.find({ user: uid }).sort({ date: 1 }),
-    Payment.find({ user: uid }).sort({ createdAt: -1 }),
-    ClassSession.find({ date: { $gte: now }, status: 'upcoming' }).sort({ date: 1 }).limit(20),
-    ClassSession.find({ status: 'completed', recordingUrl: { $ne: '' } }).sort({ date: -1 }).limit(20),
-    Workshop.find({}).sort({ date: 1 }),
-    Download.find({ visibility: { $in: ['all', 'plan'] } }).sort({ createdAt: -1 }),
-    Consultation.find({ user: uid }).sort({ date: -1 }),
+    // Lean + projected: dashboard maps a fixed field set, so full Mongoose
+    // docs (with attempts/audit/history arrays) are pure overhead here.
+    // Virtuals are preserved via lean({ virtuals: true }) where used below.
+    Membership.findOne({ user: uid }).sort({ createdAt: -1 }).lean({ virtuals: true }),
+    Attendance.find({ user: uid }).select('date status').sort({ date: 1 }).lean(),
+    Payment.find({ user: uid }).select('label amount invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt').sort({ createdAt: -1 }).lean(),
+    ClassSession.find({ date: { $gte: now }, status: 'upcoming' }).select('name mode time date zoomUrl enrolledUsers status').sort({ date: 1 }).limit(20).lean(),
+    ClassSession.find({ status: 'completed', recordingUrl: { $ne: '' } }).select('name date recordingUrl').sort({ date: -1 }).limit(20).lean(),
+    Workshop.find({}).select('name date startTime endTime duration price description instructor zoomLink image capacity registrations isPaid allowedPlans status').sort({ date: 1 }).lean(),
+    Download.find({ visibility: { $in: ['all', 'plan'] } }).select('type name size url').sort({ createdAt: -1 }).lean(),
+    Consultation.find({ user: uid }).select('status date timeSlot duration doctor topic price paymentStatus meetingLink assignedGuru adminNotes').sort({ date: -1 }).lean(),
     NotificationRecipient.find({ student: uid, deleted: false })
       .populate('notification')
       .sort({ createdAt: -1 })
       .limit(50)
       .lean(),
-    Referral.findOne({ user: uid }),
-    UserService.find({ user: uid }).sort({ createdAt: -1 }),
-    FreeTrial.findOne({ user: uid }).sort({ createdAt: -1 }),
+    Referral.findOne({ user: uid }).lean(),
+    UserService.find({ user: uid }).select('service offering serviceName category mode status totalSessions usedSessions sessionsProgressPct expiryDate').sort({ createdAt: -1 }).lean({ virtuals: true }),
+    FreeTrial.findOne({ user: uid }).sort({ createdAt: -1 }).lean({ virtuals: true }),
   ]);
 
   // ── Attendance ──
@@ -298,6 +301,8 @@ export async function buildStudentDashboard(userId) {
     role: user.role,
     phone: user.phone || '',
     city: user.city || '',
+    country: user.country || '',
+    countryCode: user.countryCode || '',
     style: user.style || '',
     level: user.level || '',
     avatar: user.avatar || '',
@@ -332,7 +337,27 @@ export async function buildStudentDashboard(userId) {
     // collections
     attendanceRecords,
     attendanceMonth,
-    payments: payments.map((p) => ({ label: p.label, amount: p.amount, status: p.status, receiptUrl: p.receiptUrl })),
+    payments: payments.map((p) => {
+      // Canonical customer-facing status. Payment docs carry paymentStatus;
+      // fall back to a legacy `status` field if present on older records.
+      const raw = p.paymentStatus || p.status || 'pending';
+      const status = raw === 'captured' || raw === 'paid' ? 'paid'
+        : raw === 'failed' || raw === 'expired' ? 'failed'
+        : raw === 'refunded' ? 'refunded'
+        : raw === 'refunding' ? 'refunding'
+        : 'pending';
+      return {
+        _id: p._id,
+        label: p.label,
+        amount: p.amount, // minor units (KES cents)
+        status,
+        paymentStatus: p.paymentStatus || raw,
+        invoiceNo: p.invoiceNo || '',
+        merchantReference: p.merchant_reference || '',
+        receiptUrl: p.receiptUrl || '',
+        createdAt: p.createdAt,
+      };
+    }),
     classes: { upcoming, recordings },
     workshops: { registered, available },
     consultations: { upcoming: consUpcoming, past: consPast },

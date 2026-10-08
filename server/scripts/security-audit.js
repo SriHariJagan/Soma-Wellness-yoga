@@ -154,7 +154,7 @@ function detectHardcodedPaymentStatusWrite(filePath, rel, lines) {
     'payment/repository/PaymentRepository.js',
     'payment/services/FulfillmentService.js',
     'payment/PaymentService.js',
-    'payment/services/WebhookService.js',
+    'payment/services/ReconciliationService.js',
   ])) return;
 
   for (let i = 0; i < lines.length; i++) {
@@ -193,7 +193,7 @@ function detectHardcodedPaymentStatusWrite(filePath, rel, lines) {
 function detectDirectPaymentUpdate(filePath, rel, lines) {
   if (isExemptFile(rel, [
     'payment/repository/PaymentRepository.js',
-    'payment/services/WebhookService.js',
+    'payment/services/ReconciliationService.js',
     'payment/PaymentService.js',
   ])) return;
 
@@ -209,7 +209,7 @@ function detectDirectPaymentUpdate(filePath, rel, lines) {
       rel, i + 1, m[0],
       line.trim(),
       'Direct Payment updates bypass atomicStatusTransition() concurrency-safe state machine.',
-      'Use PaymentRepository.atomicStatusTransition() or updateAfterCapture().'
+      'Use PaymentRepository.atomicStatusTransition() or capturePending().'
     );
   }
 }
@@ -287,7 +287,7 @@ function detectRouteBypass(filePath, rel, lines) {
         rel, i + 1, line.trim(),
         line.trim(),
         'Payment/membership/service routes must delegate through PaymentService to enforce the activation chain.',
-        `Ensure ${importInfo.name}Controller.${handlerName} delegates to PaymentService.initiate() or initiateFree().`
+        `Ensure ${importInfo.name}Controller.${handlerName} delegates to PaymentService.initiate()/initiateIntent()/createIntent() or initiateFree().`
       );
     }
   }
@@ -299,7 +299,7 @@ function detectSaveAfterStatus(filePath, rel, lines) {
     'payment/repository/PaymentRepository.js',
     'payment/services/FulfillmentService.js',
     'payment/PaymentService.js',
-    'payment/services/WebhookService.js',
+    'payment/services/ReconciliationService.js',
     'services/serviceService.js',
     'seed.js',
   ])) return;

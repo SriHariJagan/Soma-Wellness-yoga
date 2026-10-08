@@ -3,6 +3,7 @@ import {
   PAYMENT_ITEM_TYPES,
   PAYMENT_STATUSES,
   PAYMENT_GATEWAYS,
+  PAYMENT_PROVIDERS,
   PAYMENT_SOURCES,
   PAYMENT_FULFILLMENT_STATUSES,
   REFUND_STATUSES,
@@ -24,9 +25,13 @@ const PaymentItemSchema = new mongoose.Schema({
 
 const RefundSchema = new mongoose.Schema({
   razorpayRefundId: { type: String, sparse: true },
+  provider_refund_id: { type: String, sparse: true },
+  confirmation_code: { type: String, default: '' },
   amount: { type: Number, required: true },
   reason: { type: String, default: '' },
   status: { type: String, enum: REFUND_STATUSES, default: 'pending' },
+  manual: { type: Boolean, default: false },
+  idempotencyKey: { type: String, sparse: true },
   initiatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   initiatedAt: { type: Date, default: Date.now },
   completedAt: { type: Date },
@@ -71,8 +76,23 @@ const PaymentSchema = new mongoose.Schema({
   tax: { type: Number, default: 0, min: 0 },
   discount: { type: Number, default: 0, min: 0 },
 
-  gateway: { type: String, enum: PAYMENT_GATEWAYS, default: 'razorpay' },
+  gateway: { type: String, enum: PAYMENT_GATEWAYS, default: 'pesapal' },
   source: { type: String, enum: PAYMENT_SOURCES, default: 'student' },
+
+  // ── Provider-neutral fields (canonical for Pesapal; backfilled for history) ──
+  payment_provider: { type: String, enum: PAYMENT_PROVIDERS, default: 'pesapal', index: true },
+  payment_method: { type: String, default: 'pesapal' },
+  merchant_reference: { type: String, sparse: true, unique: true, index: true },
+  provider_order_id: { type: String, sparse: true, unique: true },
+  provider_transaction_id: { type: String, sparse: true, unique: true },
+  provider_checkout_id: { type: String, sparse: true, index: true },
+  provider_status: { type: String, default: '' },
+  failure_reason: { type: String, default: '' },
+  callback_data: { type: mongoose.Schema.Types.Mixed, default: {} },
+  provider_raw: { type: mongoose.Schema.Types.Mixed, default: {} },
+
+  // Legacy provider fields — retained for historical reads only.
+  // New code must use merchant_reference / provider_* fields above.
   razorpayOrderId: { type: String, sparse: true, unique: true },
   razorpayPaymentId: { type: String },
   razorpaySignature: { type: String },
@@ -119,6 +139,11 @@ const PaymentSchema = new mongoose.Schema({
 
 PaymentSchema.index({ user: 1, paymentStatus: 1 });
 PaymentSchema.index({ razorpayPaymentId: 1 }, { sparse: true });
+PaymentSchema.index({ provider_order_id: 1 }, { sparse: true, unique: true });
+PaymentSchema.index({ provider_transaction_id: 1 }, { sparse: true, unique: true });
+PaymentSchema.index({ merchant_reference: 1 }, { sparse: true, unique: true });
+PaymentSchema.index({ provider_checkout_id: 1 }, { sparse: true });
+PaymentSchema.index({ payment_provider: 1, paymentStatus: 1 });
 PaymentSchema.index({ 'items.itemType': 1, 'items.itemId': 1 });
 PaymentSchema.index({ paymentStatus: 1, createdAt: 1 });
 PaymentSchema.index({ isDeleted: 1, paymentStatus: 1 });
@@ -181,6 +206,31 @@ PaymentSchema.methods = {
 PaymentSchema.statics = {
   async findByRazorpayOrderId(razorpayOrderId) {
     return this.findOne({ razorpayOrderId });
+  },
+
+  async findByMerchantReference(merchantReference) {
+    if (typeof merchantReference !== 'string' || !merchantReference) return null;
+    return this.findOne({ merchant_reference: merchantReference });
+  },
+
+  async findByProviderOrderId(providerOrderId) {
+    if (typeof providerOrderId !== 'string' || !providerOrderId) return null;
+    return this.findOne({ provider_order_id: providerOrderId });
+  },
+
+  async findByProviderTransactionId(providerTransactionId) {
+    if (typeof providerTransactionId !== 'string' || !providerTransactionId) return null;
+    return this.findOne({ provider_transaction_id: providerTransactionId });
+  },
+
+  async findByCheckoutId(checkoutId) {
+    if (typeof checkoutId !== 'string' || !checkoutId) return null;
+    return this.findOne({
+      $or: [
+        { provider_checkout_id: checkoutId },
+        { provider_order_id: checkoutId },
+      ],
+    });
   },
 
   async findByRazorpayPaymentId(razorpayPaymentId) {

@@ -26,7 +26,7 @@ export function formatPrice(v) { return formatKES(v); }
 // ── Display-vs-payable pricing ─────────────────────────────────
 // DISPLAY prices are marketing derivations (daily/monthly equivalents).
 // PAYABLE price is the real transaction amount and must be passed to
-// cart/checkout/M-Pesa unchanged. Never send display values to payment.
+// cart/checkout/Pesapal unchanged. Never send display values to payment.
 export const DAYS_PER_YEAR = 365;
 export const MONTHS_PER_YEAR = 12;
 

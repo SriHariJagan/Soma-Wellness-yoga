@@ -297,7 +297,7 @@ const Memberships = () => {
         >
           {[
             { n: "01", t: "Become a member", d: "One tap starts your secure checkout." },
-            { n: "02", t: "Pay securely", d: "M-Pesa payment, verified instantly." },
+            { n: "02", t: "Pay securely", d: "Pesapal payment, verified instantly." },
             { n: "03", t: "Enjoy a full year", d: "Savings, reads and privileges begin." },
           ].map((s, i) => (
             <div key={s.n} className={styles.step}>

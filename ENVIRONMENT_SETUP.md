@@ -26,7 +26,7 @@ server/
 - Node.js 18+
 - MongoDB (local or Atlas)
 - Redis (local via Docker or cloud)
-- ngrok (for M-Pesa callback testing)
+- ngrok (for Pesapal IPN testing)
 
 ### Step 1: Copy Environment Template
 
@@ -43,9 +43,11 @@ MONGO_URI=mongodb://127.0.0.1:27017/soma_wellness
 JWT_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))">
 JWT_REFRESH_SECRET=<generate same way>
 REDIS_URL=redis://127.0.0.1:6379
-MPESA_CONSUMER_KEY=<your sandbox key>
-MPESA_CONSUMER_SECRET=<your sandbox secret>
-MPESA_PASSKEY=<your sandbox passkey>
+PESAPAL_ENV=sandbox
+PESAPAL_CONSUMER_KEY=<your sandbox consumer key>
+PESAPAL_CONSUMER_SECRET=<your sandbox consumer secret>
+PESAPAL_IPN_ID=<registered sandbox IPN id>
+PESAPAL_CALLBACK_URL=http://localhost:5173/payment/return
 ```
 
 ### Step 3: Start Redis
@@ -68,16 +70,17 @@ mongod --dbpath /path/to/data
 # Or use MongoDB Atlas (set MONGO_URI in .env)
 ```
 
-### Step 5: Start ngrok (for M-Pesa callbacks)
+### Step 5: Start ngrok (for Pesapal IPN)
 
 ```bash
 ngrok http 5000
 ```
 
-Copy the HTTPS URL (e.g., `https://abc123.ngrok-free.app`) and update `.env`:
+Register the HTTPS URL as your Pesapal sandbox IPN (dashboard form or
+`POST /api/URLSetup/RegisterIPN`), then update `.env`:
 
 ```env
-MPESA_CALLBACK_URL=https://abc123.ngrok-free.app/api/mpesa/callback
+PESAPAL_IPN_ID=<ipn id returned by Pesapal>
 ```
 
 ### Step 6: Start Backend
@@ -100,16 +103,16 @@ npm run dev
 http://localhost:5173
 ```
 
-### Step 9: Test M-Pesa Payment
+### Step 9: Test Pesapal Payment (sandbox)
 
 1. Add items to cart
 2. Proceed to checkout
-3. Enter a Kenyan M-Pesa sandbox test number (e.g., `254708374149`)
-4. Trigger STK Push
-5. Complete sandbox payment on phone
-6. Verify callback reaches your ngrok tunnel
+3. Click Pay — you are redirected to the Pesapal sandbox checkout
+4. Complete the sandbox test payment (test card `4005519200000004`, exp `12/2026`, CVV `123`)
+5. Pesapal redirects back to `/payment/return` and triggers your IPN URL
+6. Verify the IPN reaches your server (directly or via ngrok tunnel)
 7. Check MongoDB for payment status = `captured`
-8. Verify order status = `completed`
+8. Verify order status = `completed` and invoice `INV-*` exists
 
 ---
 
@@ -128,8 +131,9 @@ JWT_SECRET=<production secret>
 JWT_REFRESH_SECRET=<production secret>
 FRONTEND_URL=https://somawellness.in
 CORS_ORIGINS=https://somawellness.in,https://www.somawellness.in
-MPESA_CALLBACK_URL=https://soma-wellness-yoga.onrender.com/api/mpesa/callback
-MPESA_ENV=sandbox  ← Keep sandbox until explicitly ready for production
+PESAPAL_ENV=sandbox  ← Keep sandbox until explicitly ready for production
+PESAPAL_IPN_ID=<production IPN id>
+PESAPAL_CALLBACK_URL=https://somawellness.in/payment/return
 ```
 
 ### Vercel (Frontend)
@@ -169,36 +173,44 @@ VITE_API_URL=https://soma-wellness-yoga.onrender.com
 | `JWT_REFRESH_SECRET` | `<generated>` | `<production>` | **Yes** |
 | `FRONTEND_URL` | `http://localhost:5173` | `https://somawellness.in` | No |
 | `CORS_ORIGINS` | `http://localhost:5173,http://localhost:5174` | `https://somawellness.in,...` | No |
-| `MPESA_ENV` | `sandbox` | `sandbox` | No |
-| `MPESA_CONSUMER_KEY` | `<sandbox key>` | `<sandbox key>` | **Yes** |
-| `MPESA_CONSUMER_SECRET` | `<sandbox secret>` | `<sandbox secret>` | **Yes** |
-| `MPESA_SHORTCODE` | `174379` | `174379` | No |
-| `MPESA_PASSKEY` | `<sandbox passkey>` | `<sandbox passkey>` | **Yes** |
-| `MPESA_CALLBACK_URL` | `https://ngrok-url/api/mpesa/callback` | `https://soma-wellness-yoga.onrender.com/api/mpesa/callback` | No |
-| `MPESA_INITIATOR_NAME` | `soma` | `soma` | No |
-| `MPESA_SECURITY_CREDENTIAL` | `<sandbox credential>` | `<sandbox credential>` | **Yes** |
+| `PESAPAL_ENV` | `sandbox` | `sandbox` → `production` at cutover | No |
+| `PESAPAL_API_URL` | _(default sandbox)_ | _(default production)_ | No |
+| `PESAPAL_CONSUMER_KEY` | `<sandbox key>` | `<production key>` | **Yes** |
+| `PESAPAL_CONSUMER_SECRET` | `<sandbox secret>` | `<production secret>` | **Yes** |
+| `PESAPAL_IPN_ID` | `<sandbox IPN id>` | `<production IPN id>` | No |
+| `PESAPAL_NOTIFICATION_ID` | _(alias for IPN id)_ | _(alias for IPN id)_ | No |
+| `PESAPAL_CALLBACK_URL` | `http://localhost:5173/payment/return` | `https://somawellness.in/payment/return` | No |
 | `SMTP_HOST` | `smtp.gmail.com` | `smtp.gmail.com` | No |
 | `SMTP_USER` | `<email>` | `<email>` | **Yes** |
 | `SMTP_PASS` | `<app password>` | `<app password>` | **Yes** |
+
+### Removed gateways (historical records only — no runtime config)
+
+| Variable | Status |
+|----------|--------|
+| `MPESA_*` | Removed (M-Pesa Daraja retired) |
+| `RAZORPAY_*` | Removed (Razorpay retired) |
+| `WHATSAPP_*` (Cloud API) / `OTP_*` / `AT_*` | Removed (WhatsApp Cloud API + OTP retired; password + email-reset auth retained) |
+| `WHATSAPP_DISPLAY_PHONE` / `WHATSAPP_NUMBER` / `VITE_WHATSAPP_*` | Contact number for wa.me chat links (optional; falls back to site default) |
 
 ### Optional / Disabled
 
 | Variable | Purpose | Required |
 |----------|---------|----------|
-| `RAZORPAY_KEY_ID` | Disabled (Razorpay removed) | No |
-| `RAZORPAY_KEY_SECRET` | Disabled | No |
-| `RAZORPAY_WEBHOOK_SECRET` | Disabled | No |
+| `PESAPAL_BRANCH` | Multi-branch accreditation label | No |
+| `PESAPAL_TIMEOUT_MS` | Provider HTTP timeout (default 30000) | No |
+| `PAYMENT_EXPIRY_MINUTES` | Intent expiry window (default 30) | No |
+| `PAYMENT_RECONCILE_INTERVAL_MS` | Reconciliation cadence (default 300000) | No |
 | `GOOGLE_CLIENT_ID` | OAuth (leave empty to disable) | No |
 | `GOOGLE_CLIENT_SECRET` | OAuth | No |
 | `FACEBOOK_APP_ID` | OAuth | No |
 | `FACEBOOK_APP_SECRET` | OAuth | No |
-| `WHATSAPP_DEV_MODE` | WhatsApp bypass | No |
 
 ---
 
-## M-Pesa Callback Configuration
+## Pesapal IPN Configuration
 
-M-Pesa cannot reach `http://localhost:5000`. For local development, you need a public HTTPS tunnel.
+Pesapal cannot reach `http://localhost:5000`. For local development, you need a public HTTPS tunnel so the sandbox can deliver IPN calls.
 
 ### Using ngrok
 
@@ -210,21 +222,18 @@ node server/server.js
 ngrok http 5000
 ```
 
-Copy the HTTPS URL and update `.env`:
+Register the HTTPS URL as a Pesapal sandbox IPN (dashboard IPN form or
+`POST https://cybqa.pesapal.com/pesapalv3/api/URLSetup/RegisterIPN`) and
+store the returned `ipn_id` as `PESAPAL_IPN_ID` in `.env`.
 
-```env
-MPESA_CALLBACK_URL=https://YOUR-NGROK-DOMAIN.ngrok-free.app/api/mpesa/callback
-```
-
-### Verify Callback Reachability
+### Verify IPN Reachability
 
 ```bash
-curl -X POST https://YOUR-NGROK-DOMAIN.ngrok-free.app/api/mpesa/callback \
-  -H "Content-Type: application/json" \
-  -d '{"test": true}'
+curl "https://YOUR-NGROK-DOMAIN.ngrok-free.app/api/pesapal/ipn?OrderTrackingId=test&OrderMerchantReference=test&OrderNotificationType=IPNCHANGE"
 ```
 
-Expected: `{"ResultCode":0,"ResultDesc":"Accepted"}`
+Expected: HTTP 200 with an `orderNotificationType` JSON body. (Unknown
+tracking ids are acknowledged without state changes.)
 
 ---
 
@@ -232,10 +241,10 @@ Expected: `{"ResultCode":0,"ResultDesc":"Accepted"}`
 
 ### "Payment timed out"
 
-1. Verify `MPESA_CALLBACK_URL` is publicly reachable (use ngrok)
-2. Check ngrok terminal for incoming callbacks
-3. Check server logs for STK callback processing
-4. Verify `MPESA_SECURITY_CREDENTIAL` is set (required for query fallback)
+1. Verify the Pesapal IPN URL is publicly reachable (use ngrok for local dev)
+2. Check ngrok terminal for incoming IPN calls
+3. Check server logs for IPN processing (`PesapalCtrl`)
+4. Use `POST /api/admin/payments/reconcile` to re-check a stuck `pending` payment
 
 ### Redis "Command timed out"
 
@@ -264,4 +273,4 @@ Expected: `{"ResultCode":0,"ResultDesc":"Accepted"}`
 - `.env.example` is the ONLY tracked env file (contains placeholders only)
 - Rotate all secrets if they were ever committed to git history
 - Use Render/Vercel dashboard for production secrets (not files)
-- M-Pesa stays in `sandbox` mode until explicitly switched to production
+- Pesapal stays in `sandbox` mode (`PESAPAL_ENV=sandbox`) until explicitly switched to production

@@ -89,7 +89,6 @@ export const getOverview = asyncHandler(async (req, res) => {
   const systemHealth = [
     { label: 'Payment Gateway API', status: i.paymentGateway ? 'Operational' : 'Down', ok: i.paymentGateway },
     { label: 'Zoom Streaming Bridge', status: i.zoom ? 'Live' : 'Offline', ok: i.zoom },
-    { label: 'WhatsApp Business API', status: i.whatsapp ? 'Connected' : 'Disconnected', ok: i.whatsapp },
     { label: 'Email SMTP Node', status: i.emailSmtp ? 'Operational' : 'Degraded', ok: i.emailSmtp },
   ];
 
@@ -438,7 +437,7 @@ export const getCircleMembers = asyncHandler(async (req, res) => {
     Membership.countDocuments(q),
     Membership.find(q)
       .populate('user', 'name email phone')
-      .populate('invoice', 'paymentStatus mpesaReceiptNumber razorpayPaymentId mpesaOrderId razorpayOrderId amount invoiceNo')
+      .populate('invoice', 'paymentStatus provider_transaction_id merchant_reference provider_order_id provider_checkout_id razorpayPaymentId razorpayOrderId amount invoiceNo payment_provider')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Math.max(1, Math.min(200, Number(limit))))
@@ -469,9 +468,11 @@ export const getCircleMembers = asyncHandler(async (req, res) => {
       paymentStatus: m.invoice?.paymentStatus || 'unknown',
       membershipStatus: m.computedStatus || m.status,
       transactionRef:
-        m.invoice?.mpesaReceiptNumber ||
+        m.invoice?.provider_transaction_id ||
+        m.invoice?.merchant_reference ||
+        m.invoice?.provider_checkout_id ||
+        m.invoice?.provider_order_id ||
         m.invoice?.razorpayPaymentId ||
-        m.invoice?.mpesaOrderId ||
         m.invoice?.razorpayOrderId ||
         String(m.invoice?._id || m.invoice || ''),
       invoiceNo: m.invoice?.invoiceNo || '',

@@ -20,7 +20,7 @@ const EMPTY_SERVICE = {
   slug: '', featured: false, visibility: 'public', timeSlots: '',
 };
 const EMPTY_INSTRUCTOR = { name: '', email: '', phone: '', bio: '', specialties: '' };
-const EMPTY_ASSIGNMENT = { studentId: '', serviceId: '', price: '', paymentStatus: 'paid', method: 'UPI' };
+const EMPTY_ASSIGNMENT = { studentId: '', serviceId: '', price: '', paymentStatus: 'paid', method: 'Pesapal' };
 
 export default function ServicesManagement({ onChanged } = {}) {
   const [activeTab, setActiveTab] = useState('catalog');
@@ -615,10 +615,11 @@ export default function ServicesManagement({ onChanged } = {}) {
                 <option value="failed">Failed</option>
               </select>
               <select value={assignmentForm.method} onChange={e => setAssignmentForm({ ...assignmentForm, method: e.target.value })}>
-                <option value="UPI">UPI</option>
+                <option value="Pesapal">Pesapal</option>
                 <option value="Bank Transfer">Bank Transfer</option>
                 <option value="Cash">Cash</option>
                 <option value="Card">Card</option>
+                <option value="Manual">Manual</option>
               </select>
             </div>
             <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={saving}>

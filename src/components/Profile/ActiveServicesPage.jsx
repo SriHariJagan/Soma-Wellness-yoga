@@ -94,7 +94,7 @@ function ActiveSummaryCard({ item }) {
           {item.price > 0 && (
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}><i className="ti ti-cash" aria-hidden="true" />Price</span>
-              <span className={styles.metaValue}>&#8377;{item.price}</span>
+              <span className={styles.metaValue}>KES {item.price}</span>
             </div>
           )}
         </div>
@@ -188,7 +188,7 @@ function ArchivedCard({ item }) {
           {item.price > 0 && (
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}><i className="ti ti-cash" aria-hidden="true" />Price</span>
-              <span className={styles.metaValue}>&#8377;{item.price}</span>
+              <span className={styles.metaValue}>KES {item.price}</span>
             </div>
           )}
         </div>
@@ -261,7 +261,19 @@ export default function ActiveServicesPage({ onNavigate }) {
     setBusy(`renew-${id}`);
     setMsg("");
     try {
-      await renewService(id);
+      const res = await renewService(id);
+      if (res.requiresPayment && res.redirectUrl) {
+        try {
+          sessionStorage.setItem('pesapal_intent', JSON.stringify({
+            merchantReference: res.merchantReference || res.pesapal?.merchantReference,
+            orderTrackingId: res.orderTrackingId || res.pesapal?.orderTrackingId,
+            paymentId: res.payment?._id,
+            at: Date.now(),
+          }));
+        } catch { /* storage unavailable — redirect still works */ }
+        window.location.href = res.redirectUrl;
+        return;
+      }
       await load();
       setMsg("Service renewed successfully.");
     } catch (err) {

@@ -54,7 +54,7 @@ export async function fetchChatbotConfig() {
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'test') {
       return { whatsappNumber: WHATSAPP_NUMBER, whatsappDisplay: WHATSAPP_NUMBER };
     }
-  } catch {}
+  } catch { /* non-browser environment — continue to fetch */ }
   try {
     const cfg = await jget('/api/chatbot/config');
     if (cfg?.whatsappNumber) {

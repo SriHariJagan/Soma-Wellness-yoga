@@ -35,10 +35,19 @@ const envSchema = z.object({
   JWT_REFRESH_TTL: z.string().default('30d'),
   JWT_REFRESH_SECRET: z.string().optional(),
 
-  // ── Razorpay (optional — disabled) ──
-  RAZORPAY_KEY_ID: z.string().optional(),
-  RAZORPAY_KEY_SECRET: z.string().optional(),
-  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+  // ── Payments (Pesapal — sole online gateway) ──
+  PAYMENT_PROVIDER: z.enum(['pesapal', 'dual']).optional().default('pesapal'),
+  PESAPAL_ENV: z.enum(['sandbox', 'production', 'live', 'prod']).optional().default('sandbox'),
+  PESAPAL_API_URL: z.string().optional(),
+  PESAPAL_CONSUMER_KEY: z.string().optional(),
+  PESAPAL_CONSUMER_SECRET: z.string().optional(),
+  PESAPAL_IPN_ID: z.string().optional(),
+  PESAPAL_NOTIFICATION_ID: z.string().optional(),
+  PESAPAL_CALLBACK_URL: z.string().optional(),
+  PESAPAL_BRANCH: z.string().optional(),
+  PESAPAL_TIMEOUT_MS: z.string().optional().default('30000'),
+  PAYMENT_EXPIRY_MINUTES: z.string().optional().default('30'),
+  PAYMENT_RECONCILE_INTERVAL_MS: z.string().optional().default('300000'),
 
   // ── Redis ──
   REDIS_URL: z
@@ -151,35 +160,14 @@ const envSchema = z.object({
     .enum(['error', 'warn', 'info', 'debug'])
     .default('info'),
 
-  // ── OTP ──
-  OTP_LENGTH: z.string().optional().default('6'),
-  OTP_TTL_MINUTES: z.string().optional().default('10'),
-  OTP_MAX_ATTEMPTS: z.string().optional().default('5'),
-  OTP_RESEND_COOLDOWN_SECONDS: z.string().optional().default('60'),
-  AT_USERNAME: z.string().optional(),
-  AT_API_KEY: z.string().optional(),
-  TWILIO_ACCOUNT_SID: z.string().optional(),
-  TWILIO_AUTH_TOKEN: z.string().optional(),
-  TWILIO_VERIFY_SERVICE_SID: z.string().optional(),
-
-  // ── MPESA (Safaricom Daraja) — all optional, gateway degrades gracefully if missing ──
-  MPESA_ENV: z.enum(['sandbox', 'production']).optional().default('sandbox'),
-  MPESA_CONSUMER_KEY: z.string().optional(),
-  MPESA_CONSUMER_SECRET: z.string().optional(),
-  MPESA_SHORTCODE: z.string().optional(),
-  MPESA_PASSKEY: z.string().optional(),
-  MPESA_CALLBACK_URL: z.string().optional(),
-  MPESA_INITIATOR_NAME: z.string().optional().default('soma'),
-  MPESA_SECURITY_CREDENTIAL: z.string().optional(),
-
-  // ── WhatsApp Business API (Meta Cloud API) — all optional ──
-  WHATSAPP_DEV_MODE: z.enum(['true', 'false']).optional().default('true'),
-  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
-  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
-  WHATSAPP_BUSINESS_ACCOUNT_ID: z.string().optional(),
+  // ── OTP removed (password + email-reset auth retained) ──
+  // ── WhatsApp Cloud API removed (wa.me contact links retained) ──
+  // Contact number for wa.me chat links (optional; falls back to site default).
   WHATSAPP_DISPLAY_PHONE: z.string().optional(),
-  WHATSAPP_VERIFY_TOKEN: z.string().optional(),
-  WHATSAPP_API_VERSION: z.string().optional().default('v19.0'),
+  WHATSAPP_NUMBER: z.string().optional(),
+
+  // ── Legacy gateways removed (M-Pesa Daraja + Razorpay) ──
+  // Historical payment records remain in MongoDB; no runtime config remains.
 });
 
 export function validateEnv() {

@@ -1,6 +1,6 @@
 // ============================================================
 // controllers/chatbotController.js — SOMA Wellness Chatbot
-// Handles chatbot enquiries + public config (WhatsApp number)
+// Handles chatbot enquiries + public config (WhatsApp contact number)
 // ============================================================
 /* global process */
 import asyncHandler from '../utils/asyncHandler.js';
@@ -81,7 +81,7 @@ export const createChatbotEnquiry = asyncHandler(async (req, res) => {
     createdAt: { $gte: oneHourAgo },
   });
   if (recentCount >= 5) {
-    throw new ApiError(429, 'Too many enquiries. Please try again later or contact us on WhatsApp.');
+    throw new ApiError(429, 'Too many enquiries. Please try again later or contact us by email.');
   }
 
   const enquiry = await ChatbotEnquiry.create({

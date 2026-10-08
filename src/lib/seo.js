@@ -76,7 +76,8 @@ const ROUTE_META = {
   "/newuser": { title: "Begin Your Wellness Journey — Join Soma Wellness", description: "Create your Soma Wellness account." },
   "/forgot-password": { title: "Reset Password — Soma Wellness", description: "Reset your password." },
   "/reset-password": { title: "Set New Password — Soma Wellness", description: "Set a new password." },
-  "/payment": { title: "Secure Payment — Soma Wellness", description: "Secure payment via card & M-Pesa." },
+  "/payment": { title: "Secure Payment — Soma Wellness", description: "Secure payment powered by Pesapal." },
+  "/payment/return": { title: "Payment Status — Soma Wellness", description: "Your Pesapal payment status." },
 };
 
 const PATH_TO_SEO_KEY = {

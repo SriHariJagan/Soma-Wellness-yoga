@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from "react";
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./StudentDashboard.module.css";
@@ -103,6 +103,9 @@ export default function StudentDashboard({ onLogout }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeMembership, setActiveMembership] = useState(null);
   const [toast, setToast] = useState(null);
+  // StrictMode double-mounts effects in dev — never fetch the heavy
+  // dashboard payload twice for a single visit.
+  const didInitLoad = useRef(false);
 
   const navigate = useNavigate();
 
@@ -112,6 +115,8 @@ export default function StudentDashboard({ onLogout }) {
   }, []);
 
   useEffect(() => {
+    if (didInitLoad.current) return;
+    didInitLoad.current = true;
     loadProfile();
   }, [navigate]);
 

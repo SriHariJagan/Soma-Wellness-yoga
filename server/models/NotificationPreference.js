@@ -25,7 +25,6 @@ const NotificationPreferenceSchema = new mongoose.Schema(
     contact: {
       email:    { type: String, default: '' },
       phone:    { type: String, default: '' },
-      whatsapp: { type: String, default: '' },
     },
   },
   { timestamps: true }

@@ -1,74 +1,19 @@
-import crypto from 'crypto';
-import razorpay from '../../config/razorpay.js';
-import {
-  PaymentVerificationError,
-  PaymentNotFoundError,
-} from '../errors/PaymentErrors.js';
+// ============================================================
+// services/VerificationService.js — Provider-neutral verification.
+// Rule: a payment is captured ONLY after server-to-server status
+// fetch + amount + currency + merchant-reference equality.
+// Never trusts frontend, redirect params, or IPN alone.
+// ============================================================
+import { PaymentVerificationError } from '../errors/PaymentErrors.js';
 import { PaymentStateMachine } from '../state/PaymentStateMachine.js';
+import { amountsEqual } from '../../utils/money.js';
 import logger from '../../notification/logger.js';
 
 const MODULE = 'VerificationService';
 
 export class VerificationService {
-  async verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature) {
-    const body = `${razorpayOrderId}|${razorpayPaymentId}`;
-    const expected = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body)
-      .digest('hex');
-
-    if (typeof razorpaySignature !== 'string' || expected.length !== razorpaySignature.length) {
-      logger.warn(MODULE, 'Signature mismatch', { razorpayOrderId, razorpayPaymentId });
-      throw new PaymentVerificationError('Payment signature verification failed');
-    }
-
-    try {
-      const match = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(razorpaySignature));
-      if (!match) throw new Error('mismatch');
-    } catch {
-      logger.warn(MODULE, 'Signature mismatch', { razorpayOrderId, razorpayPaymentId });
-      throw new PaymentVerificationError('Payment signature verification failed');
-    }
-
-    return true;
-  }
-
-  async fetchPaymentFromGateway(razorpayPaymentId) {
-    try {
-      const gatewayPayment = await razorpay.payments.fetch(razorpayPaymentId);
-      return gatewayPayment;
-    } catch (err) {
-      logger.error(MODULE, 'Failed to fetch payment from Razorpay', {
-        razorpayPaymentId,
-        error: err.message,
-      });
-      throw new PaymentVerificationError('Failed to verify payment with gateway');
-    }
-  }
-
-  verifyAmount(gatewayAmount, expectedAmount) {
-    if (Number(gatewayAmount) !== Number(expectedAmount)) {
-      logger.warn(MODULE, 'Amount mismatch', {
-        gatewayAmount,
-        expectedAmount,
-      });
-      throw new PaymentVerificationError(
-        `Amount mismatch: gateway returned ${gatewayAmount}, expected ${expectedAmount}`,
-      );
-    }
-    return true;
-  }
-
-  verifyCurrency(gatewayCurrency, expectedCurrency = 'KES') {
-    if (gatewayCurrency !== expectedCurrency) {
-      throw new PaymentVerificationError(
-        `Currency mismatch: expected ${expectedCurrency}, got ${gatewayCurrency}`,
-      );
-    }
-    return true;
-  }
-
   verifyOwnership(payment, userId) {
+    if (!userId) return true; // guest/server flows validate via reference instead
     if (String(payment.user) !== String(userId)) {
       logger.warn(MODULE, 'Payment does not belong to user', {
         paymentUserId: String(payment.user),
@@ -92,54 +37,77 @@ export class VerificationService {
     return true;
   }
 
-  async checkSignatureNotReused(razorpaySignature, repository) {
-    const existing = await repository.findBySignature(razorpaySignature);
-    if (existing) {
-      logger.warn(MODULE, 'Signature already used', { razorpaySignature });
-      throw new PaymentVerificationError('This payment signature has already been used');
+  verifyAmount(providerAmountMinor, expectedAmountMinor) {
+    if (providerAmountMinor == null) {
+      throw new PaymentVerificationError('Provider did not return an amount — refusing capture');
+    }
+    if (!amountsEqual(providerAmountMinor, expectedAmountMinor)) {
+      logger.warn(MODULE, 'Amount mismatch', { providerAmountMinor, expectedAmountMinor });
+      throw new PaymentVerificationError(
+        `Amount mismatch: provider reported ${providerAmountMinor}, expected ${expectedAmountMinor}`,
+      );
     }
     return true;
   }
 
-  async checkPaymentIdNotDuplicate(razorpayPaymentId, repository) {
-    const existing = await repository.findByPaymentIdCaptured(razorpayPaymentId);
-    if (existing) {
-      logger.warn(MODULE, 'Duplicate payment ID detected', { razorpayPaymentId });
-      throw new PaymentVerificationError('This payment has already been processed');
+  verifyCurrency(providerCurrency, expectedCurrency = 'KES') {
+    const got = String(providerCurrency || '').toUpperCase();
+    const want = String(expectedCurrency || 'KES').toUpperCase();
+    if (got !== want) {
+      throw new PaymentVerificationError(`Currency mismatch: expected ${want}, got ${providerCurrency}`);
     }
     return true;
   }
 
-  async verify({
-    razorpayOrderId,
-    razorpayPaymentId,
-    razorpaySignature,
-    userId,
-    payment,
-    repository,
-  }) {
-    await this.verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+  verifyMerchantReference(providerReference, expectedReference) {
+    if (!providerReference || !expectedReference) {
+      throw new PaymentVerificationError('Merchant reference missing — refusing capture');
+    }
+    if (String(providerReference) !== String(expectedReference)) {
+      logger.warn(MODULE, 'Merchant reference mismatch', { providerReference, expectedReference });
+      throw new PaymentVerificationError('Merchant reference mismatch');
+    }
+    return true;
+  }
 
-    await this.checkPaymentIdNotDuplicate(razorpayPaymentId, repository);
+  async checkTransactionIdNotDuplicate(providerTransactionId, repository, currentPaymentId) {
+    if (!providerTransactionId) return true;
+    const existing = await repository.findByProviderTransactionId(String(providerTransactionId));
+    if (existing && String(existing._id) !== String(currentPaymentId)) {
+      logger.warn(MODULE, 'Duplicate provider transaction detected', { providerTransactionId });
+      throw new PaymentVerificationError('This provider transaction has already been processed');
+    }
+    return true;
+  }
 
-    await this.checkSignatureNotReused(razorpaySignature, repository);
-
-    this.verifyOwnership(payment, userId);
-
+  /**
+   * Full server-to-server verification via a provider.
+   * @param {Object} args.payment — Payment doc
+   * @param {Object} args.provider — PaymentProvider instance
+   * @param {string} args.checkoutId — OrderTrackingId / provider order id
+   */
+  async verifyWithProvider({ payment, provider, checkoutId, repository }) {
     this.verifyPaymentStatus(payment);
-
-    const gatewayPayment = await this.fetchPaymentFromGateway(razorpayPaymentId);
-
-    this.verifyAmount(gatewayPayment.amount, payment.amount);
-
-    this.verifyCurrency(gatewayPayment.currency, payment.currency);
-
-    return {
-      gatewayPayment,
-      gatewayAmount: gatewayPayment.amount,
-      gatewayCurrency: gatewayPayment.currency,
-      gatewayStatus: gatewayPayment.status,
-    };
+    const status = await provider.getTransactionStatus(checkoutId);
+    const canonical = provider.mapStatus(status.statusDescription || status.status);
+    if (canonical !== 'captured') {
+      const err = new PaymentVerificationError(`Provider reports payment as "${status.statusDescription || status.status}"`);
+      err.providerStatus = status.status;
+      err.code = 'PROVIDER_NOT_COMPLETED';
+      throw err;
+    }
+    this.verifyAmount(status.amountMinor, payment.amount);
+    this.verifyCurrency(status.currency, payment.currency);
+    const expectedRef = payment.merchant_reference;
+    if (expectedRef) this.verifyMerchantReference(status.merchantReference, expectedRef);
+    if (repository) {
+      await this.checkTransactionIdNotDuplicate(
+        status.confirmationCode || status.merchantReference,
+        repository,
+        payment._id,
+      );
+    }
+    return status;
   }
 }
 

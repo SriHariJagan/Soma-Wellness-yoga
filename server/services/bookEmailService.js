@@ -43,7 +43,7 @@ function buildOrderData(order, items = []) {
       maxDays: est.maxDays || 0,
     },
     status: order.status,
-    paymentMethod: order.paymentMethod || 'Razorpay',
+    paymentMethod: order.paymentMethod || 'Pesapal',
   };
 }
 

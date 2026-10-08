@@ -171,7 +171,7 @@ export default function SomaDashboard() {
             {STUDIO.tagline}
           </p>
           <Row left="Visit" right={STUDIO.address} />
-          <Row left="Call / WhatsApp" right={<a href={`tel:${STUDIO.phoneHref}`} style={{ color: "var(--color-primary)", fontWeight: 700, textDecoration: "none" }}>{STUDIO.phone}</a>} />
+          <Row left="Call us" right={<a href={`tel:${STUDIO.phoneHref}`} style={{ color: "var(--color-primary)", fontWeight: 700, textDecoration: "none" }}>{STUDIO.phone}</a>} />
           <Row left="Email" right={<a href={`mailto:${STUDIO.email}`} style={{ color: "var(--color-primary)", fontWeight: 600, textDecoration: "none", wordBreak: "break-all" }}>{STUDIO.email}</a>} />
           <Row left="Open hours" right={STUDIO.hours} />
         </Panel>

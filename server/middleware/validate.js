@@ -98,7 +98,7 @@ export const schemas = {
     courseName: z.string().min(1, 'Course name is required').max(200).trim(),
     coursePrice: z.union([z.number(), z.string().min(1, 'Course price is required').max(50)]),
     courseTime: z.string().max(100).optional().default(''),
-    paymentMethod: z.string().max(50).optional().default('M-PESA'),
+    paymentMethod: z.string().max(50).optional().default('Pesapal'),
     transactionId: z.string().max(200).optional().default(''),
     message: z.string().max(2000).optional().default(''),
     status: z.string().optional(),
@@ -112,30 +112,7 @@ export const schemas = {
     notes: z.string().max(2000).optional().default(''),
   }).strip(),
 
-  // ── OTP ──────────────────────────────────────────────────────
-  otpSend: z.object({
-    email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
-    phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
-    identifier: z.string().max(255).trim().optional(),
-    channel: z.enum(['email', 'sms', 'mobile', 'phone']).optional(),
-    name: z.string().max(100).trim().optional(),
-  }).refine((d) => d.email || d.phone || d.identifier, { message: 'Provide email or phone' }).strip(),
-
-  otpVerify: z.object({
-    email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
-    phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
-    identifier: z.string().max(255).trim().optional(),
-    channel: z.enum(['email', 'sms', 'mobile', 'phone']).optional(),
-    otp: z.string().regex(/^\d{6}$/, 'OTP must be 6 digits'),
-    name: z.string().max(100).trim().optional(),
-    ref: z.string().max(50).trim().optional(),
-  }).refine((d) => d.email || d.phone || d.identifier, { message: 'Provide email or phone' }).strip(),
-
-  otpCheck: z.object({
-    email: z.string().email('Invalid email').max(255).trim().toLowerCase().optional(),
-    phone: z.string().max(20).trim().optional().refine((v) => !v || validatePhone(v) === null, (v) => ({ message: validatePhone(v) || 'Invalid phone' })).transform((v) => (v ? normalizePhone(v) : v)),
-    identifier: z.string().max(255).trim().optional(),
-  }).refine((d) => d.email || d.phone || d.identifier, { message: 'Provide email or phone' }).strip(),
+  // ── OTP schemas removed (password + email-reset auth retained) ──
 
   // ── Offering CRUD ────────────────────────────────────────────
   offeringCreate: z.object({
@@ -288,7 +265,42 @@ export const schemas = {
     { message: 'At least one field must be provided for update' }
   ).strip(),
 
-  // ── Payment ──────────────────────────────────────────────────
+  // ── Payment (Pesapal, provider-neutral) ───────────────────
+  // NOTE: frontend amount is NEVER accepted. Pricing is server-side.
+  pesapalInitiate: z.object({
+    items: z.array(z.object({
+      itemType: z.string().min(1),
+      itemId: z.string().optional(),
+      quantity: z.number().int().min(1).max(100).optional().default(1),
+    })).min(1, 'At least one item required').optional(),
+    paymentId: z.string().optional(),
+    label: z.string().max(200).optional(),
+    description: z.string().max(1000).optional(),
+    idempotencyKey: z.string().max(100).optional(),
+    customer: z.object({
+      email: z.string().email().max(255).optional(),
+      phone: z.string().max(20).optional(),
+      countryCode: z.string().max(2).optional(),
+      firstName: z.string().max(100).optional(),
+      lastName: z.string().max(100).optional(),
+      city: z.string().max(100).optional(),
+    }).optional(),
+    callbackUrl: z.string().url().max(500).optional(),
+    cancellationUrl: z.string().url().max(500).optional(),
+  }).refine(
+    (d) => (d.items && d.items.length > 0) || d.paymentId,
+    { message: 'Provide items or an existing paymentId' },
+  ).strip(),
+
+  pesapalStatus: z.object({
+    merchantReference: z.string().max(50).optional(),
+    orderTrackingId: z.string().max(100).optional(),
+  }).refine(
+    (d) => d.merchantReference || d.orderTrackingId,
+    { message: 'merchantReference or orderTrackingId is required' },
+  ).strip(),
+
+  // ── Legacy M-Pesa/Razorpay schemas (compat only — do not extend) ──
   mpesaCreateOrder: z.object({
     items: z.array(z.object({
       itemType: z.string().min(1),

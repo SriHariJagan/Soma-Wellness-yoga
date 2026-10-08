@@ -1,6 +1,7 @@
 // ============================================================
 // chatbotConfig.js — central config for SOMA chatbot
-// Falls back gracefully when env vars are not set.
+// WhatsApp contact number is configurable via env; falls back
+// gracefully when env vars are not set.
 // ============================================================
 
 // VITE_WHATSAPP_NUMBER should be digits only, e.g. 254700000000

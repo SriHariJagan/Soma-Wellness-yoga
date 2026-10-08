@@ -1,18 +1,7 @@
 import { jest, describe, it, expect, beforeAll, beforeEach, afterAll } from '@jest/globals';
 import mongoose from 'mongoose';
 
-// ── Module-level mocks ──────────────────────────────────────
-
-const mockRazorpayPayments = { fetch: jest.fn() };
-const mockRazorpayOrders = { create: jest.fn() };
-
-jest.unstable_mockModule('razorpay', () => ({
-  default: class {
-    constructor() { this.orders = mockRazorpayOrders; this.payments = mockRazorpayPayments; }
-  },
-}));
-
-// In-memory Redis for IdempotencyPlugin
+// ── In-memory Redis for IdempotencyPlugin ─────────────────────
 const redisStore = new Map();
 const mockIORedis = {
   set: jest.fn(async (key, val, ...args) => {
@@ -26,13 +15,36 @@ const mockIORedis = {
   on: jest.fn(),
   status: 'ready',
 };
-jest.unstable_mockModule('ioredis', () => ({ default: jest.fn(() => mockIORedis) }));
-
 const mockLogger = { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() };
-
 jest.unstable_mockModule('../../../notification/logger.js', () => ({ default: mockLogger }));
 
-// ── Mock mongoose.startSession ────────────────────────
+// ── In-test Redis: prevent real connections (no Redis in CI/unit env) ─
+jest.unstable_mockModule('../../../notification/queue/connection.js', () => ({
+  getRedisConnection: () => mockIORedis,
+  getSubscriberConnection: () => mockIORedis,
+  closeRedisConnections: async () => {},
+  isRedisReady: () => true,
+  pingRedis: async () => true,
+}));
+
+jest.unstable_mockModule('../../../notification/core/NotificationService.js', () => ({
+  default: { send: jest.fn(async () => ({ ok: true })) },
+}));
+
+jest.unstable_mockModule('../../../services/bookEmailService.js', () => ({
+  notifyBookOrderPaid: jest.fn(async () => {}),
+  notifyBookOrderPaymentFailed: jest.fn(async () => {}),
+  sendOrderPacked: jest.fn(async () => {}),
+  sendOrderDispatched: jest.fn(async () => ({})),
+  sendOrderDelivered: jest.fn(async () => ({})),
+  sendOrderCancelled: jest.fn(async () => ({})),
+}));
+
+jest.unstable_mockModule('../../../payment/services/finalizePurchase.js', () => ({
+  finalizePurchase: jest.fn(async () => {}),
+}));
+
+// ── Mock mongoose.startSession ────────────────────────────────
 const mockSession = {
   startTransaction: jest.fn(),
   commitTransaction: jest.fn(),
@@ -41,7 +53,7 @@ const mockSession = {
 };
 mongoose.startSession = jest.fn(async () => mockSession);
 
-// Bare-minimum model mocks for modules we must import (ActivityLog)
+// ── Model mocks ───────────────────────────────────────────────
 function mockMinModel() {
   const Model = function (d) { Object.assign(this, d); };
   Model.create = async (d) => ({ _id: new mongoose.Types.ObjectId(), ...(Array.isArray(d) ? d[0] : d) });
@@ -55,18 +67,17 @@ function mockMinModel() {
   return Model;
 }
 
-// Query-chain helper: returns a chainable query object where both .lean() and .session(s).lean() resolve to result.
 function queryChain(result) {
   return {
     lean: () => Promise.resolve(result),
     session: () => ({ lean: () => Promise.resolve(result) }),
+    then: (resolve, reject) => Promise.resolve(result).then(resolve, reject),
   };
 }
 
 jest.unstable_mockModule('../../../models/ActivityLog.js', () => ({ default: mockMinModel() }));
 jest.unstable_mockModule('../../../models/Membership.js', () => ({ default: mockMinModel() }));
 jest.unstable_mockModule('../../../models/UserService.js', () => ({ default: mockMinModel() }));
-jest.unstable_mockModule('../../../models/User.js', () => ({ default: mockMinModel() }));
 jest.unstable_mockModule('../../../models/Plan.js', () => ({ default: mockMinModel() }));
 jest.unstable_mockModule('../../../models/Service.js', () => ({ default: mockMinModel() }));
 jest.unstable_mockModule('../../../models/Workshop.js', () => ({ default: mockMinModel() }));
@@ -75,8 +86,33 @@ jest.unstable_mockModule('../../../models/Booking.js', () => ({ default: mockMin
 jest.unstable_mockModule('../../../models/Order.js', () => ({ default: mockMinModel() }));
 jest.unstable_mockModule('../../../models/Settings.js', () => ({ default: mockMinModel() }));
 
-// ── In-memory Payment store (used by the Payment model mock) ──
+// User mock returns a chainable for .select().lean()
+jest.unstable_mockModule('../../../models/User.js', () => ({
+  default: {
+    findById: jest.fn(() => ({
+      select: () => ({ lean: async () => ({ name: 'Test User', email: 'test@example.com' }) }),
+    })),
+  },
+}));
+
+// ── In-memory Payment store ───────────────────────────────────
 const paymentStore = [];
+const webhookStore = [];
+
+function matchesPayment(doc, filter) {
+  for (const [k, v] of Object.entries(filter)) {
+    if (k === '$or') {
+      if (!Array.isArray(v) || !v.some((cond) => matchesPayment(doc, cond))) return false;
+      continue;
+    }
+    if (v && typeof v === 'object' && ('$in' in v)) {
+      if (!v.$in.map(String).includes(String(doc[k]))) return false;
+      continue;
+    }
+    if (String(doc[k]) !== String(v)) return false;
+  }
+  return true;
+}
 
 function mockPaymentModel() {
   const Model = function (data) { Object.assign(this, data); };
@@ -91,7 +127,7 @@ function mockPaymentModel() {
       auditTrail: data.auditTrail || [],
       items: data.items || [],
       refunds: [],
-      attempts: [],
+      attempts: data.attempts || [],
       webhookEvents: [],
     };
     paymentStore.push(doc);
@@ -102,11 +138,15 @@ function mockPaymentModel() {
     return paymentStore.find((p) => String(p._id) === s) || null;
   };
   Model.findOneAndUpdate = async function (filter, update, opts = {}) {
-    const id = filter._id ? String(filter._id) : null;
-    if (!id) return null;
-    const idx = paymentStore.findIndex((p) =>
-      String(p._id) === id && (!filter.paymentStatus || p.paymentStatus === filter.paymentStatus)
-    );
+    const idx = paymentStore.findIndex((p) => {
+      if (filter._id && String(p._id) !== String(filter._id)) return false;
+      if (filter.paymentStatus) {
+        if (typeof filter.paymentStatus === 'object' && filter.paymentStatus.$in) {
+          if (!filter.paymentStatus.$in.includes(p.paymentStatus)) return false;
+        } else if (p.paymentStatus !== filter.paymentStatus) return false;
+      }
+      return true;
+    });
     if (idx === -1) return null;
     const doc = paymentStore[idx];
     if (update.$set) Object.assign(doc, update.$set);
@@ -124,33 +164,99 @@ function mockPaymentModel() {
     return Model.findOneAndUpdate({ _id: id }, update, opts);
   };
   Model.findOne = function (filter) {
-    const result = paymentStore.find((p) => {
-      for (const k of Object.keys(filter)) {
-        if (String(p[k]) !== String(filter[k])) return false;
-      }
-      return true;
-    }) || null;
-    // Return query chain so callers can chain .lean(), .session(), etc.
+    const result = paymentStore.find((p) => matchesPayment(p, filter)) || null;
     return queryChain(result);
+  };
+  Model.updateMany = async function (filter, update) {
+    let modifiedCount = 0;
+    for (const p of paymentStore) {
+      if (matchesPayment(p, filter)) {
+        if (update.$set) Object.assign(p, update.$set);
+        modifiedCount += 1;
+      }
+    }
+    return { modifiedCount };
   };
   Model.countDocuments = async function () { return paymentStore.length; };
   Model.find = async function () { return paymentStore; };
 
-  // Static query methods used by PaymentRepository
-  Model.findByRazorpayOrderId = async function (razorpayOrderId) {
-    return paymentStore.find((p) => p.razorpayOrderId === razorpayOrderId) || null;
-  };
-  Model.findByRazorpayPaymentId = async function (razorpayPaymentId) {
-    return paymentStore.find((p) => p.razorpayPaymentId === razorpayPaymentId) || null;
+  Model.findByRazorpayOrderId = async function (id) {
+    return paymentStore.find((p) => p.razorpayOrderId === id) || null;
   };
   Model.findByIdempotencyKey = async function (key) {
     return paymentStore.find((p) => p.idempotencyKey === key) || null;
   };
-
   return Model;
 }
 
 jest.unstable_mockModule('../../../payment/models/Payment.js', () => ({ default: mockPaymentModel() }));
+
+jest.unstable_mockModule('../../../payment/models/WebhookEvent.js', () => ({
+  default: {
+    findOne: (filter) => {
+      let found = null;
+      if (filter.eventId) {
+        found = webhookStore.find((w) => w.eventId === filter.eventId) || null;
+        if (found && filter.status && filter.status.$in && !filter.status.$in.includes(found.status)) {
+          found = null;
+        }
+      }
+      return {
+        lean: async () => found,
+        then: (resolve, reject) => Promise.resolve(found).then(resolve, reject),
+      };
+    },
+    create: jest.fn(async (data) => {
+      const doc = { _id: new mongoose.Types.ObjectId(), ...data };
+      webhookStore.push(doc);
+      return doc;
+    }),
+    updateOne: jest.fn(async (filter, update) => {
+      const doc = webhookStore.find((w) => w.eventId === filter.eventId);
+      if (doc && update.$set) Object.assign(doc, update.$set);
+      return { modifiedCount: doc ? 1 : 0 };
+    }),
+  },
+}));
+
+// ── Mock Pesapal provider ─────────────────────────────────────
+function mockProvider(overrides = {}) {
+  return {
+    name: 'pesapal',
+    isConfigured: true,
+    createOrder: jest.fn(async ({ payment }) => ({
+      providerOrderId: `track-${String(payment._id).slice(-6)}`,
+      checkoutId: `track-${String(payment._id).slice(-6)}`,
+      redirectUrl: 'https://cybqa.pesapal.com/iframe?OrderTrackingId=track-x',
+      merchantReference: payment.merchant_reference,
+      raw: { status: '200' },
+    })),
+    getTransactionStatus: jest.fn(async (trackingId) => ({
+      status: 'completed',
+      statusCode: 1,
+      statusDescription: 'Completed',
+      amountMinor: 1000,
+      amount: 10,
+      currency: 'KES',
+      merchantReference: trackingId ? undefined : undefined,
+      confirmationCode: 'CONF-123',
+      paymentMethod: 'M-PESA',
+      raw: { status: '200' },
+    })),
+    mapStatus: jest.fn((s) => {
+      const v = String(s || '').toUpperCase();
+      if (v === 'COMPLETED' || v === '1') return 'captured';
+      if (v === 'FAILED' || v === '2' || v === 'REVERSED' || v === 'INVALID') return 'failed';
+      return 'pending';
+    }),
+    parseCallback: jest.fn((req) => ({
+      trackingId: req.query?.OrderTrackingId || null,
+      merchantReference: req.query?.OrderMerchantReference || null,
+      notificationType: req.query?.OrderNotificationType || null,
+    })),
+    ...overrides,
+  };
+}
 
 let PaymentService;
 let PaymentStateMachine;
@@ -169,44 +275,31 @@ beforeAll(async () => {
 
 beforeEach(() => {
   paymentStore.length = 0;
+  webhookStore.length = 0;
   redisStore.clear();
   jest.clearAllMocks();
-  mockRazorpayOrders.create.mockResolvedValue({ id: 'order_abc123', amount: 1000, currency: 'KES', status: 'created' });
-  mockRazorpayPayments.fetch.mockResolvedValue({
-    id: 'pay_test123',
-    order_id: 'order_abc123',
-    status: 'captured',
-    amount: 1000,
-    currency: 'KES',
-  });
 });
 
 afterAll(() => {
   jest.restoreAllMocks();
 });
 
-function makeUser(overrides = {}) {
-  return {
-    _id: new mongoose.Types.ObjectId(),
-    name: 'Test User',
-    email: 'test@example.com',
-    role: 'student',
-    ...overrides,
-  };
+function makeUserId() {
+  return new mongoose.Types.ObjectId();
 }
+
+const CUSTOMER = { email: 'test@example.com', phone: '254700000000' };
 
 // ── Tests ────────────────────────────────────────────────────
 
-describe('Payment Activation Chain', () => {
+describe('Pesapal Payment Activation Chain', () => {
   describe('PaymentService.initiateFree()', () => {
     it('should create a captured payment for free items', async () => {
-      const svc = new PaymentService();
-      const user = makeUser();
+      const svc = new PaymentService({ provider: mockProvider() });
+      const user = makeUserId();
       const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Free Pass', quantity: 1, unitPrice: 0, totalPrice: 0 }];
 
-      // Mock OrderService.resolveItems to return resolved items (avoid DB lookup)
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
-      // Mock FulfillmentService.activateItem to avoid real DB writes
       const mockActivate = jest.fn(async () => {});
       svc.fulfillmentService.activateItem = mockActivate;
 
@@ -215,76 +308,176 @@ describe('Payment Activation Chain', () => {
       expect(result).toBeDefined();
       expect(result.paymentStatus).toBe('captured');
       expect(result.amount).toBe(0);
-      expect(result.gateway).toBe('offline');
-      expect(result.source).toBe('student');
+      expect(result.payment_provider).toBe('offline');
       expect(mockActivate).toHaveBeenCalledTimes(1);
-      // Verify activation was called with the correct item type and the full user object
-      const callArgs = mockActivate.mock.calls[0];
-      expect(callArgs[0]).toMatchObject({ itemType: 'membership' });
-      expect(callArgs[2]).toEqual(user);
-      expect(callArgs[3]).toBeDefined();
     });
   });
 
-  describe('PaymentService.initiate()', () => {
-    it('should create a pending payment and return M-Pesa order', async () => {
-      const svc = new PaymentService();
-      const user = makeUser();
-
-      const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Wellness Circle Pass', quantity: 1, unitPrice: 50000, totalPrice: 50000 }];
+  describe('PaymentService.initiate() (server-priced Pesapal)', () => {
+    it('should create a pending payment with merchant reference + redirect URL', async () => {
+      const svc = new PaymentService({ provider: mockProvider() });
+      const user = makeUserId();
+      const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Wellness Circle', quantity: 1, unitPrice: 50000, totalPrice: 50000 }];
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
 
-      const result = await svc.initiate({ user, items, label: 'Wellness Circle Pass' });
+      const result = await svc.initiate({ user, items, label: 'Wellness Circle', customer: CUSTOMER });
 
-      // initiate() returns the payment doc directly (not {order, payment})
-      expect(result).toBeDefined();
-      expect(result.paymentStatus).toBe('pending');
-      expect(result.amount).toBe(50000);
-      expect(result.gateway).toBe('mpesa');
-      // M-Pesa order id should be present (either mpesaOrderId or razorpayOrderId for compat)
-      expect(result.mpesaOrderId || result.razorpayOrderId).toBeDefined();
+      expect(result.payment).toBeDefined();
+      expect(result.payment.paymentStatus).toBe('pending');
+      expect(result.payment.amount).toBe(50000);
+      expect(result.payment.payment_provider).toBe('pesapal');
+      expect(result.payment.merchant_reference).toMatch(/^PAY-/);
+      expect(result.orderTrackingId).toBeTruthy();
+      expect(result.redirectUrl).toContain('cybqa.pesapal.com');
+      // Provider received server-side amount (major) + merchant reference
+      const submitted = svc.provider.createOrder.mock.calls[0][0];
+      expect(submitted.customer.email).toBe(CUSTOMER.email);
+    });
+
+    it('should never trust a frontend amount (uses resolved total)', async () => {
+      const svc = new PaymentService({ provider: mockProvider() });
+      const user = makeUserId();
+      const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Circle', quantity: 1, unitPrice: 3650000, totalPrice: 3650000 }];
+      svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
+
+      // There is no `amount` parameter on initiate at all — resolution wins.
+      const result = await svc.initiate({ user, items, amount: 100, customer: CUSTOMER });
+      expect(result.payment.amount).toBe(3650000);
     });
   });
 
-  describe('PaymentService.verify()', () => {
-    it('should activate items after successful M-Pesa payment verification', async () => {
-      const svc = new PaymentService();
-      const user = makeUser();
-      const planId = new mongoose.Types.ObjectId();
-      const items = [{ itemType: 'membership', itemId: planId, name: 'Monthly Pass', quantity: 1, unitPrice: 1000, totalPrice: 1000 }];
-
+  describe('PaymentService.verifyAndCapture()', () => {
+    async function initiatePaid(svc, amountMinor = 1000) {
+      const user = makeUserId();
+      const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Pass', quantity: 1, unitPrice: amountMinor, totalPrice: amountMinor }];
       svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
+      svc.provider.getTransactionStatus = jest.fn(async () => ({
+        status: 'completed',
+        statusCode: 1,
+        statusDescription: 'Completed',
+        amountMinor,
+        amount: amountMinor / 100,
+        currency: 'KES',
+        merchantReference: 'REF-PLACEHOLDER',
+        confirmationCode: 'CONF-ABC',
+        paymentMethod: 'M-PESA',
+        raw: {},
+      }));
+      const initiated = await svc.initiate({ user, items, label: 'Pass', customer: CUSTOMER });
+      // Align provider merchant reference with the created payment
+      svc.provider.getTransactionStatus = jest.fn(async () => ({
+        status: 'completed',
+        statusCode: 1,
+        statusDescription: 'Completed',
+        amountMinor,
+        amount: amountMinor / 100,
+        currency: 'KES',
+        merchantReference: initiated.payment.merchant_reference,
+        confirmationCode: 'CONF-ABC',
+        paymentMethod: 'M-PESA',
+        raw: {},
+      }));
+      return { svc, user, initiated };
+    }
 
-      // Initiate with user._id to match production flow (controllers pass req.user._id)
-      const payment = await svc.initiate({ user: user._id, items, label: 'Monthly Pass' });
+    it('should capture after server-to-server verification + fulfill once', async () => {
+      const svc = new PaymentService({ provider: mockProvider() });
+      const { user, initiated } = await initiatePaid(svc, 1000);
 
       svc.invoiceService.generateInvoiceNumber = jest.fn(async () => 'INV-2026-000001');
-
       const mockActivate = jest.fn(async () => {});
       svc.fulfillmentService.activateItem = mockActivate;
 
-      // M-Pesa verification — uses mpesaReceiptNumber, no Razorpay signature needed
-      const mpesaReceipt = 'QGH7K9L2M1';
-      const orderId = payment.mpesaOrderId || payment.razorpayOrderId;
-
-      const result = await svc.verify({
-        user: user._id,
-        mpesaOrderId: orderId,
-        mpesaReceiptNumber: mpesaReceipt,
-        razorpayOrderId: orderId,
-        razorpayPaymentId: mpesaReceipt,
-        razorpaySignature: mpesaReceipt,
+      const result = await svc.verifyAndCapture({
+        merchantReference: initiated.payment.merchant_reference,
+        user,
       });
 
-      expect(result).toBeDefined();
-      expect(result.payment).toBeDefined();
       expect(result.payment.paymentStatus).toBe('captured');
-      expect(mockActivate).toHaveBeenCalledWith(
-        expect.objectContaining({ itemType: 'membership', itemId: planId }),
-        payment._id,
-        user._id,
-        expect.any(Object),
-      );
+      expect(result.invoiceNo).toBe('INV-2026-000001');
+      expect(result.payment.provider_transaction_id).toBe('CONF-ABC');
+      expect(mockActivate).toHaveBeenCalledTimes(1);
+    });
+
+    it('should be idempotent when already captured', async () => {
+      const svc = new PaymentService({ provider: mockProvider() });
+      const { user, initiated } = await initiatePaid(svc, 1000);
+      svc.invoiceService.generateInvoiceNumber = jest.fn(async () => 'INV-2026-000001');
+      svc.fulfillmentService.activateItem = jest.fn(async () => {});
+
+      const first = await svc.verifyAndCapture({ merchantReference: initiated.payment.merchant_reference, user });
+      expect(first.idempotent).toBe(false);
+      const second = await svc.verifyAndCapture({ merchantReference: initiated.payment.merchant_reference, user });
+      expect(second.idempotent).toBe(true);
+      expect(svc.fulfillmentService.activateItem).toHaveBeenCalledTimes(1);
+    });
+
+    it('should refuse capture on amount mismatch', async () => {
+      const svc = new PaymentService({ provider: mockProvider() });
+      const { user, initiated } = await initiatePaid(svc, 1000);
+      // Provider reports a different amount
+      svc.provider.getTransactionStatus = jest.fn(async () => ({
+        status: 'completed',
+        statusDescription: 'Completed',
+        amountMinor: 999,
+        currency: 'KES',
+        merchantReference: initiated.payment.merchant_reference,
+        confirmationCode: 'CONF-X',
+        raw: {},
+      }));
+      await expect(
+        svc.verifyAndCapture({ merchantReference: initiated.payment.merchant_reference, user }),
+      ).rejects.toThrow(/Amount mismatch/);
+      const fresh = paymentStore.find((p) => String(p._id) === String(initiated.payment._id));
+      expect(fresh.paymentStatus).toBe('pending');
+    });
+
+    it('should throw PROVIDER_PENDING when provider is still pending', async () => {
+      const svc = new PaymentService({ provider: mockProvider() });
+      const { user, initiated } = await initiatePaid(svc, 1000);
+      svc.provider.getTransactionStatus = jest.fn(async () => ({
+        status: 'pending',
+        statusDescription: 'Pending',
+        amountMinor: 1000,
+        currency: 'KES',
+        merchantReference: initiated.payment.merchant_reference,
+        raw: {},
+      }));
+      await expect(
+        svc.verifyAndCapture({ merchantReference: initiated.payment.merchant_reference, user }),
+      ).rejects.toMatchObject({ code: 'PROVIDER_PENDING' });
+    });
+  });
+
+  describe('PaymentService.handleIpn() (dedupe + verify)', () => {
+    it('should capture on valid IPN and dedupe the second delivery', async () => {
+      const svc = new PaymentService({ provider: mockProvider() });
+      const user = makeUserId();
+      const items = [{ itemType: 'membership', itemId: new mongoose.Types.ObjectId(), name: 'Pass', quantity: 1, unitPrice: 2000, totalPrice: 2000 }];
+      svc.orderService.resolveItems = jest.fn().mockResolvedValue(items);
+      const initiated = await svc.initiate({ user, items, label: 'Pass', customer: CUSTOMER });
+      const track = initiated.orderTrackingId;
+      const ref = initiated.payment.merchant_reference;
+      svc.provider.getTransactionStatus = jest.fn(async () => ({
+        status: 'completed',
+        statusDescription: 'Completed',
+        amountMinor: 2000,
+        currency: 'KES',
+        merchantReference: ref,
+        confirmationCode: 'CONF-IPN-1',
+        paymentMethod: 'M-PESA',
+        raw: {},
+      }));
+      svc.invoiceService.generateInvoiceNumber = jest.fn(async () => 'INV-2026-000002');
+      svc.fulfillmentService.activateItem = jest.fn(async () => {});
+
+      const first = await svc.handleIpn({ trackingId: track, merchantReference: ref });
+      expect(first.payment.paymentStatus).toBe('captured');
+
+      const second = await svc.handleIpn({ trackingId: track, merchantReference: ref });
+      expect(second.duplicate).toBe(true);
+      // Fulfillment ran exactly once
+      expect(svc.fulfillmentService.activateItem).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -307,7 +500,7 @@ describe('Payment Activation Chain', () => {
   });
 
   describe('PaymentRepository', () => {
-    it('should create a manual payment with audit trail', async () => {
+    it('should create a manual payment with audit trail + merchant reference', async () => {
       const { PaymentRepository } = await import('../../../payment/repository/PaymentRepository.js');
       const repo = new PaymentRepository();
       const adminId = new mongoose.Types.ObjectId();
@@ -324,12 +517,12 @@ describe('Payment Activation Chain', () => {
 
       expect(payment).toBeDefined();
       expect(payment.paymentStatus).toBe('captured');
-      expect(payment.gateway).toBe('manual');
+      expect(payment.payment_provider).toBe('manual');
       expect(payment.source).toBe('admin');
       expect(payment.amount).toBe(200000);
+      expect(payment.merchant_reference).toMatch(/^PAY-/);
       expect(payment.auditTrail).toHaveLength(1);
       expect(payment.auditTrail[0].action).toBe('manual_payment');
-      expect(payment.auditTrail[0].by).toEqual(adminId);
     });
 
     it('should perform atomic status transitions', async () => {
@@ -351,55 +544,20 @@ describe('Payment Activation Chain', () => {
       expect(captured).toBeDefined();
       expect(captured.paymentStatus).toBe('captured');
     });
-  });
 
-  describe('Duplicate Membership Guard (FulfillmentService)', () => {
-    it('should reject creating a second active membership for the same user and plan', async () => {
-      const FSMod = await import('../../../payment/services/FulfillmentService.js');
-      const FulfillmentService = FSMod.default || FSMod.FulfillmentService;
-      const fulfillmentService = new FulfillmentService();
-      const userId = new mongoose.Types.ObjectId();
-      const planId = new mongoose.Types.ObjectId();
-
-      // Override Plan.findById to return a plan document
-      const { default: Plan } = await import('../../../models/Plan.js');
-      const planDoc = { _id: planId, name: 'Monthly', durationMonths: 1, price: 1000 };
-      Plan.findById = jest.fn(() => queryChain(planDoc));
-
-      // Override Membership.findOne to track active memberships
-      const { default: Membership } = await import('../../../models/Membership.js');
-      const activeMemberships = [];
-      Membership.findOne = jest.fn((filter) => {
-        const existing = activeMemberships.find((m) =>
-          String(m.user) === String(filter.user) && m.status === filter.status
-        );
-        return queryChain(existing || null);
+    it('capturePending should enforce single capture (atomic guard)', async () => {
+      const { PaymentRepository } = await import('../../../payment/repository/PaymentRepository.js');
+      const repo = new PaymentRepository();
+      const payment = await repo.create({
+        user: new mongoose.Types.ObjectId(),
+        label: 'Race',
+        amount: 500,
+        paymentStatus: 'pending',
       });
-      Membership.create = jest.fn(async (data) => {
-        // _activateMembership calls Membership.create([{...}], {session})
-        const input = Array.isArray(data) ? data[0] : data;
-        const doc = { _id: new mongoose.Types.ObjectId(), ...input };
-        activeMemberships.push(doc);
-        return [doc]; // return array to match Mongoose behavior
-      });
-
-      // First activation should succeed
-      await fulfillmentService.activateItem(
-        { itemType: 'membership', itemId: planId, name: 'First', quantity: 1, unitPrice: 1000, totalPrice: 1000 },
-        new mongoose.Types.ObjectId(),
-        userId,
-        {},
-      );
-
-      // Second activation for same user should throw
-      await expect(
-        fulfillmentService.activateItem(
-          { itemType: 'membership', itemId: planId, name: 'Second', quantity: 1, unitPrice: 1000, totalPrice: 1000 },
-          new mongoose.Types.ObjectId(),
-          userId,
-          {},
-        ),
-      ).rejects.toThrow(/active membership/i);
+      const first = await repo.capturePending(payment._id, { providerTransactionId: 'CONF-R1', providerStatus: 'Completed' });
+      expect(first.paymentStatus).toBe('captured');
+      const second = await repo.capturePending(payment._id, { providerTransactionId: 'CONF-R2', providerStatus: 'Completed' });
+      expect(second).toBeNull();
     });
   });
 

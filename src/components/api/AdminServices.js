@@ -127,6 +127,25 @@ export const getPayments = () => request("/payments");
 export const createPayment = (payload) => request("/payments", { method: "POST", body: payload });
 export const updatePaymentStatus = (id, status) => request(`/payments/${id}/status`, { method: "PATCH", body: { status } });
 
+// ── Pesapal payments (provider-neutral admin ops) ────────────
+const PAYMENTS_URL = `${API_DOMAIN}/api/admin/payments`;
+async function paymentsRequest(path, { method = "GET", body } = {}) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${PAYMENTS_URL}${path}`, {
+    method,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || data.error || "Request failed");
+  return data;
+}
+export const getPesapalPayment = (id) => paymentsRequest(`/${id}`);
+export const refundPesapalPayment = (id, payload) => paymentsRequest(`/${id}/refund`, { method: "POST", body: payload });
+export const confirmRefundSettled = (id, refundId) => paymentsRequest(`/${id}/refund/confirm`, { method: "POST", body: { refundId } });
+export const reconcilePayments = (payload) => paymentsRequest(`/reconcile`, { method: "POST", body: payload || {} });
+export const getReconcileReport = () => paymentsRequest(`/reconcile/report`);
+
 // ── Attendance ─────────────────────────────────────────────
 export const markAttendance = (payload) => request("/attendance", { method: "POST", body: payload });
 export const getStudentAttendance = (id) => request(`/attendance/${id}`);

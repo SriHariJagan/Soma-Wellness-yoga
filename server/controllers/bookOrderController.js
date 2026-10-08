@@ -7,10 +7,8 @@ import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
 import Book from '../models/Book.js';
 import Coupon from '../models/Coupon.js';
-import CouponUsage from '../models/CouponUsage.js';
 import ActivityLog from '../models/ActivityLog.js';
 import { PaymentRepository } from '../payment/repository/PaymentRepository.js';
-import { OrderService } from '../payment/services/OrderService.js';
 import { IdempotencyPlugin } from '../payment/plugins/IdempotencyPlugin.js';
 import shippingService from '../services/shippingService.js';
 import inventoryService from '../services/inventoryService.js';
@@ -43,13 +41,16 @@ function validateAddress(address) {
     city: String(address.city || '').trim(),
     state: String(address.state || '').trim(),
     pincode: String(address.pincode || '').trim(),
-    country: String(address.country || 'India').trim(),
+    country: String(address.country || 'Kenya').trim(),
   };
   if (!clean.fullName) throw ApiError.badRequest('Full name is required');
-  if (!/^[6-9]\d{9}$/.test(clean.phone.replace(/\s+/g, ''))) throw ApiError.badRequest('Enter a valid 10-digit mobile number');
+  // Kenya-compatible mobile validation: 7–15 digits after stripping
+  // spaces, dashes, parentheses and an optional leading +.
+  const digits = clean.phone.replace(/[^\d]/g, '');
+  if (digits.length < 7 || digits.length > 15) throw ApiError.badRequest('Enter a valid mobile number');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean.email)) throw ApiError.badRequest('Enter a valid email address');
   if (!clean.line1 || !clean.city || !clean.state) throw ApiError.badRequest('Complete address is required (line 1, city, state)');
-  if (!/^\d{6}$/.test(clean.pincode)) throw ApiError.badRequest('Enter a valid 6-digit PIN code');
+  if (!/^[A-Za-z0-9\- ]{3,10}$/.test(clean.pincode)) throw ApiError.badRequest('Enter a valid postal code');
   return clean;
 }
 
@@ -99,7 +100,7 @@ export const validateBookCart = asyncHandler(async (req, res) => {
 
 /* ── POST /api/student/books/checkout ──
    Creates a payment_pending book order: reserves inventory, creates
-   the Razorpay order + pending Payment, snapshots shipping details. */
+   the Pesapal payment intent + pending Payment, snapshots shipping details. */
 export const checkoutBooks = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const idempotencyKey = req.body?.idempotencyKey;
@@ -107,7 +108,6 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
   const now = new Date();
 
   const paymentRepo = new PaymentRepository();
-  const orderService = new OrderService();
   const idempotencyPlugin = new IdempotencyPlugin();
 
   if (idempotencyKey) {
@@ -194,8 +194,8 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
   }
 
   const initiateCheckout = async () => {
-    const receipt = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const mpesaOrder = await orderService.createMpesaOrder(Math.round(total * 100), receipt);
+    const { PaymentService } = await import('../payment/PaymentService.js');
+    const paymentService = new PaymentService();
 
     const paymentItems = lines.map((l) => ({
       itemType: 'book',
@@ -238,33 +238,15 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       });
     }
 
-    const payment = await paymentRepo.create({
+    // Server-authoritative intent (book totals computed server-side above).
+    const payment = await paymentService.createIntent({
       user: userId,
-      label: `Book order ${lines.map((l) => l.book.title).join(', ')}`,
-      description: `Book checkout – ${lines.length} title(s), ${bookItems.length} item(s), coupon: ${couponCode || 'none'}, pincode: ${address.pincode}`,
       items: paymentItems,
       amount: Math.round(total * 100),
       currency: 'KES',
-      gateway: 'mpesa',
-      mpesaOrderId: mpesaOrder.id,
-      razorpayOrderId: mpesaOrder.id,
-      paymentStatus: 'pending',
-      pendingAt: now,
+      label: `Book order ${lines.map((l) => l.book.title).join(', ')}`,
+      description: `Book checkout – ${lines.length} title(s), ${bookItems.length} item(s), coupon: ${couponCode || 'none'}, pincode: ${address.pincode}`,
       idempotencyKey: idempotencyKey || undefined,
-      initiatedAt: now,
-      auditTrail: [{
-        action: 'book_checkout_initiate',
-        from: 'initiated',
-        to: 'pending',
-        by: userId,
-        timestamp: now,
-      }],
-      attempts: [{
-        attempt: 1,
-        action: 'book_checkout',
-        gatewayResponse: { mpesaOrderId: mpesaOrder.id, amount: mpesaOrder.amount },
-        timestamp: now,
-      }],
     });
 
     const order = await Order.create({
@@ -281,7 +263,7 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       couponCode,
       couponDiscount,
       status: 'payment_pending',
-      paymentMethod: 'M-Pesa',
+      paymentMethod: 'Pesapal',
       transactionId: idempotencyKey || payment._id.toString(),
       payment: payment._id,
       itemCount: bookItems.length,
@@ -334,20 +316,26 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       metadata: { orderId: String(order._id), orderNumber: order.orderNumber },
     });
 
-    if (couponId) {
-      await Coupon.findByIdAndUpdate(couponId, { $inc: { usageCount: 1 } });
-      await CouponUsage.create({
-        coupon: couponId,
-        user: userId,
-        order: order._id,
-        discountAmount: couponDiscount,
-        usedAt: now,
-      });
-    }
+    // Coupon is consumed at capture (finalizePurchase inside the capture
+    // transaction) — abandoned checkouts must not burn uses.
 
     await CartItem.deleteMany({ cart: items[0].cart, itemType: 'book' });
 
-    return { payment, order, mpesaOrder };
+    // Submit to Pesapal → pending + redirect URL (server-to-server).
+    const providerResult = await paymentService.createProviderOrder({
+      paymentId: payment._id,
+      user: userId,
+      customer: {
+        email: address.email,
+        phone: address.phone.replace(/\s+/g, ''),
+        countryCode: 'KE',
+        firstName: String(address.fullName || '').split(' ')[0] || '',
+        lastName: String(address.fullName || '').split(' ').slice(1).join(' ') || '',
+        city: address.city || '',
+      },
+    });
+
+    return { payment: providerResult.payment, order, providerResult };
   };
 
   let result;
@@ -365,11 +353,11 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
     throw err;
   }
 
-  const { payment, order, mpesaOrder } = result;
+  const { payment, order, providerResult } = result;
 
   res.status(201).json({
     success: true,
-    msg: 'Book order initiated. Complete M-Pesa payment to confirm.',
+    msg: 'Book order initiated. Complete payment via Pesapal to confirm.',
     order: {
       _id: order._id,
       orderNumber: order.orderNumber,
@@ -381,13 +369,20 @@ export const checkoutBooks = asyncHandler(async (req, res) => {
       _id: payment._id,
       amount: payment.amount,
       status: payment.paymentStatus,
-      method: payment.gateway,
+      method: payment.payment_provider || payment.gateway,
+      merchantReference: payment.merchant_reference,
+      orderTrackingId: payment.provider_checkout_id || payment.provider_order_id || null,
     },
-    mpesa: {
-      order_id: mpesaOrder.id,
-      amount: mpesaOrder.amount,
-      currency: mpesaOrder.currency,
+    pesapal: {
+      merchantReference: providerResult.merchantReference,
+      orderTrackingId: providerResult.orderTrackingId,
+      redirectUrl: providerResult.redirectUrl,
+      amount: payment.amount,
+      currency: payment.currency,
     },
+    redirectUrl: providerResult.redirectUrl,
+    merchantReference: providerResult.merchantReference,
+    orderTrackingId: providerResult.orderTrackingId,
     shipping: {
       charge: shipping.shippingCharge,
       type: shipping.shippingType,

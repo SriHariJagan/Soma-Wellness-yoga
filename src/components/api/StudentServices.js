@@ -133,38 +133,35 @@ export const markAllNotificationsRead = () => api("/notifications/read-all", { m
 export const archiveNotification = (id) => api(`/notifications/${id}/archive`, { method: "PATCH" });
 export const deleteNotification = (id) => api(`/notifications/${id}`, { method: "DELETE" });
 
-// ── Payment Verification — M-Pesa only (Razorpay removed) ─────────
+// ── Payment Status — Pesapal (backend-verified canonical status) ────
 export const verifyPayment = (payload) => {
-  // Razorpay verify is deprecated — now routes to M-Pesa query for backward compat
   const API_DOMAIN = import.meta.env.VITE_API_URL || "";
   const token = localStorage.getItem("token");
-  // If payload contains M-Pesa fields, use mpesa query
-  if (payload.checkoutRequestId || payload.mpesaReceiptNumber) {
-    return fetch(`${API_DOMAIN}/api/mpesa/query`, {
-      method: "POST",
+  const merchantReference = payload.merchantReference || payload.merchant_reference || payload.ref || null;
+  // Legacy compat: old callers may still pass checkoutRequestId.
+  const orderTrackingId = payload.orderTrackingId || payload.OrderTrackingId || payload.checkoutRequestId || null;
+  if (merchantReference) {
+    return fetch(`${API_DOMAIN}/api/payments/${encodeURIComponent(merchantReference)}/status`, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ checkoutRequestId: payload.checkoutRequestId || payload.mpesaReceiptNumber }),
     }).then(async (res) => {
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || data.error || "M-Pesa verification failed");
+      if (!res.ok) throw new Error(data.message || data.error || "Payment status check failed");
       return data;
     });
   }
-  // Legacy Razorpay path — kept for backward compat, now returns mock success in dev
-  return fetch(`${API_DOMAIN}/api/verify-payment`, {
-    method: "POST",
+  const params = new URLSearchParams();
+  if (orderTrackingId) params.set("orderTrackingId", orderTrackingId);
+  return fetch(`${API_DOMAIN}/api/pesapal/status?${params.toString()}`, {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify(payload),
   }).then(async (res) => {
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || data.error || "Payment verification failed");
-    if (!data.success) throw new Error(data.message || data.error || "Payment verification failed");
+    if (!res.ok) throw new Error(data.message || data.error || "Payment status check failed");
     return data;
   });
 };

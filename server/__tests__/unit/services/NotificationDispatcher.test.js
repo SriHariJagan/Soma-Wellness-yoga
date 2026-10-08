@@ -158,10 +158,10 @@ describe('NotificationDispatcher', () => {
       const userId = new mongoose.Types.ObjectId();
       userStore.set(String(userId), { email: 'user@test.com' });
 
-      await dispatcher.dispatch({ recipients: userId, message: 'hello', channels: ['email', 'whatsapp'] });
+      await dispatcher.dispatch({ recipients: userId, message: 'hello', channels: ['email', 'sms'] });
 
       const channels = mockNotificationService.send.mock.calls[0][1].channels;
-      expect(channels).toEqual(['email', 'whatsapp']);
+      expect(channels).toEqual(['email', 'sms']);
     });
 
     it('should return null when no recipients provided', async () => {

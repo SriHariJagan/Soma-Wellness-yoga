@@ -42,6 +42,7 @@ const Profile = lazy(() => import('./components/Profile/Profile'));
 const StudentDashboard = lazy(() => import('./components/Profile/StudentDashboard'));
 const YogaAdmin = lazy(() => import('./components/Admin/YogaAdmin'));
 const PaymentPage = lazy(() => import('./components/Payment/PaymentPage'));
+const PaymentReturn = lazy(() => import('./components/Payment/PaymentReturn'));
 const FoundingMembers = lazy(() => import('./pages/FoundingMembers'));
 const SocialSuccess = lazy(() => import('./pages/SocialSuccess'));
 const ReceptionDashboard = lazy(() => import('./components/Reception/ReceptionDashboard'));
@@ -52,7 +53,7 @@ const App = () => {
   const { user, loading, login, logout } = useAuth();
   const [syncedUser, setSyncedUser] = useState(user);
 
-  // keep synced with context and also listen to OTP login events
+  // keep synced with context and also listen to auth login events
   useEffect(() => { setSyncedUser(user); }, [user]);
 
   useEffect(() => {
@@ -140,7 +141,7 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
   // Hide the public chrome (navbar, footer, etc.) only on the actual dashboard
   // routes — not merely because a student/admin is logged in. This lets logged-in
   // users still navigate the public site; the Navbar adapts to show their account.
-  const dashboardRoutes = ["/yogaadmin", "/studentdashboard", "/reception", "/login", "/forgot-password", "/payment"];
+  const dashboardRoutes = ["/yogaadmin", "/studentdashboard", "/reception", "/login", "/forgot-password", "/payment", "/payment/return"];
   const onDashboardRoute = dashboardRoutes.includes(location.pathname);
 
   return (
@@ -179,6 +180,7 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
             <Route path="/order-tracking" element={<Navigate to="/" replace />} />
             <Route path="/checkout" element={<Navigate to="/" replace />} />
             <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/payment/return" element={<PaymentReturn />} />
             <Route path="/newuser"          element={<NewUser />} />
             <Route path="/forgot-password"  element={<ForgotPassword />} />
             <Route path="/reset-password"   element={<ResetPassword />} />

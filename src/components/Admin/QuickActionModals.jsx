@@ -600,7 +600,7 @@ export function NewBatchModal({ onClose, onSuccess }) {
    ══════════════════════════════════════════════════════════ */
 export function RecordPaymentModal({ onClose, onSuccess }) {
   const [students, setStudents] = useState([]);
-  const [form, setForm] = useState({ studentId: '', amount: '', label: '', method: 'UPI' });
+  const [form, setForm] = useState({ studentId: '', amount: '', label: '', method: 'Pesapal' });
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', type: '' });
 
@@ -664,10 +664,11 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
           </FieldGroup>
           <FieldGroup icon={<LuWallet size={15} />} label="Method">
             <FocusSelect value={form.method} onChange={set('method')}>
-              <option value="UPI">UPI</option>
+              <option value="Pesapal">Pesapal</option>
               <option value="Bank Transfer">Bank Transfer</option>
               <option value="Cash">Cash</option>
               <option value="Card">Card</option>
+              <option value="Manual">Manual</option>
             </FocusSelect>
           </FieldGroup>
           <FieldGroup icon={<LuFileText size={15} />} label="Description" fullWidth>

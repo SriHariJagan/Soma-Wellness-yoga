@@ -4,6 +4,7 @@ import styles from "./ActivePlanPage.module.css";
 import w from "./widgets/DashboardWidgets.module.css";
 import { Stagger, Item, Panel, ProgressRing, Pill, PrimaryButton, GhostButton, PageHeader } from "./widgets/DashboardWidgets";
 import { getActiveMembership, getEnrollmentProgress, cancelMembership, pauseMembership, resumeMembership } from "../api/StudentServices.js";
+import InvoiceView from "../shared/InvoiceView.jsx";
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" }) : "—";
@@ -31,6 +32,7 @@ export default function ActivePlanPage({ reload }) {
   const [enrollmentData, setEnrollmentData] = useState(null);
   const [showPauseModal, setShowPauseModal] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
 
   useEffect(() => {
     Promise.all([getActiveMembership(), getEnrollmentProgress()])
@@ -158,6 +160,33 @@ export default function ActivePlanPage({ reload }) {
 
   const hasRemainingPauseDays = (membership.remainingPauseDays ?? 0) > 0;
 
+  // Legacy memberships may lack pause fields (or carry NaN) — coerce safely.
+  const pauseAllowed = Number.isFinite(membership.pauseDaysAllowed) ? membership.pauseDaysAllowed : 0;
+  const pauseRemaining = Number.isFinite(membership.remainingPauseDays) ? membership.remainingPauseDays : 0;
+
+  // Shape the membership payment for the shared invoice view (print/download).
+  const pay = membership.payment;
+  const invoiceOrder = pay ? (() => {
+    const major = (Number(pay.amount) || 0) / 100;
+    return {
+      orderNumber: pay.invoiceNo || pay.merchantReference || 'order',
+      items: [{ name: membership.planType || 'Membership', itemType: 'plan', price: major, finalPrice: major }],
+      student: undefined,
+      coupon: null,
+      couponCode: '',
+      couponDiscount: 0,
+      subtotal: major,
+      discount: 0,
+      tax: 0,
+      total: major,
+      transactionId: pay.transactionId || pay.merchantReference || '',
+      paymentMethod: 'Pesapal',
+      payment: { invoiceNo: pay.invoiceNo || '', status: pay.paymentStatus === 'captured' ? 'paid' : (pay.paymentStatus || '') },
+      status: 'completed',
+      createdAt: pay.createdAt,
+    };
+  })() : null;
+
   const dates = [
     { icon: "ti-calendar-plus", label: "Start date",     value: fmtDate(startDate), tone: "blue"  },
     { icon: "ti-calendar-off",  label: "Expiry date",    value: fmtDate(expiry),    tone: "amber" },
@@ -259,6 +288,15 @@ export default function ActivePlanPage({ reload }) {
         </div>
       )}
 
+      {/* ── Invoice Modal ── */}
+      {showInvoice && invoiceOrder && (
+        <div style={MODAL_OVERLAY} onClick={() => setShowInvoice(false)}>
+          <div style={{ ...MODAL_CARD, maxWidth: 760, maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <InvoiceView order={invoiceOrder} onClose={() => setShowInvoice(false)} />
+          </div>
+        </div>
+      )}
+
       <Stagger>
         <Item className={styles.overview}>
           <div className={styles.overviewDeco} aria-hidden="true" />
@@ -329,7 +367,7 @@ export default function ActivePlanPage({ reload }) {
             <span className={styles.dateIcon}><i className="ti ti-player-pause" aria-hidden="true" /></span>
             <div>
               <span className={styles.dateLabel}>Pause days</span>
-              <span className={styles.dateValue}>{membership.remainingPauseDays ?? 0} / {membership.pauseDaysAllowed} left</span>
+              <span className={styles.dateValue}>{pauseRemaining} / {pauseAllowed} left</span>
             </div>
           </div>
           {membership.isPaused && currentPauseDuration > 0 && (
@@ -364,6 +402,36 @@ export default function ActivePlanPage({ reload }) {
           )}
         </Item>
 
+        {membership.payment && (
+          <Item>
+            <Panel title="Payment & Invoice" icon="ti-receipt">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Amount paid</span>
+                  <strong>KES {((Number(membership.payment.amount) || 0) / 100).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Invoice</span>
+                  <strong>{membership.payment.invoiceNo || '—'}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Reference</span>
+                  <strong style={{ fontFamily: 'monospace', fontSize: 12 }}>{membership.payment.merchantReference || '—'}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Date</span>
+                  <strong>{membership.payment.createdAt ? new Date(membership.payment.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</strong>
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                  <PrimaryButton icon="ti-download" onClick={() => setShowInvoice(true)}>
+                    Download Invoice
+                  </PrimaryButton>
+                </div>
+              </div>
+            </Panel>
+          </Item>
+        )}
+
         <Panel title="" icon="">
           <div className={styles.barWrap}>
             <div className={styles.track}>
@@ -376,12 +444,12 @@ export default function ActivePlanPage({ reload }) {
             </div>
           </div>
 
-          <div className={`${styles.pauseBox} ${membership.pauseDaysAllowed === 0 ? styles.pauseRed : styles.pauseAmber}`}>
+          <div className={`${styles.pauseBox} ${pauseAllowed === 0 ? styles.pauseRed : styles.pauseAmber}`}>
             <i className="ti ti-info-circle" aria-hidden="true" style={{ flexShrink: 0 }} />
             <span>
-              {membership.pauseDaysAllowed === 0
+              {pauseAllowed === 0
                 ? "No pause option on this plan."
-                : `Your plan allows ${membership.pauseDaysAllowed} pause days. ${membership.remainingPauseDays > 0 ? `${membership.remainingPauseDays} days remaining.` : "All pause days used."}`}
+                : `Your plan allows ${pauseAllowed} pause days. ${pauseRemaining > 0 ? `${pauseRemaining} days remaining.` : "All pause days used."}`}
             </span>
           </div>
 
@@ -431,7 +499,7 @@ export default function ActivePlanPage({ reload }) {
                 {busy === "resume" ? "Resuming…" : "Resume Membership"}
               </PrimaryButton>
             )}
-            {isActive && !hasRemainingPauseDays && membership.pauseDaysAllowed > 0 && (
+            {isActive && !hasRemainingPauseDays && pauseAllowed > 0 && (
               <GhostButton icon="ti-player-pause" disabled>
                 No Pause Days Left
               </GhostButton>

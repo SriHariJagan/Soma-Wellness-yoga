@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { parsePrice, formatKES, getAuthHeaders, isLoggedIn, getCurrentUser, initiateMpesaPayment, queryMpesaStatus, addToCart, getCart, showToast, notifyCartUpdate } from '../../../src/utils/payment.js';
+import { parsePrice, formatKES, getAuthHeaders, isLoggedIn, getCurrentUser, addToCart, getCart, showToast, notifyCartUpdate } from '../../../src/utils/payment.js';
 
 // Mock fetch
 const mockFetch = vi.fn();
@@ -72,29 +72,6 @@ describe('getCurrentUser', () => {
   it('returns null on malformed JSON', () => {
     localStorage.setItem('user', '{bad');
     expect(getCurrentUser()).toBeNull();
-  });
-});
-
-describe('initiateMpesaPayment', () => {
-  it('POSTs to /api/mpesa/stkpush and returns data', async () => {
-    localStorage.setItem('token', 'tok');
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true, paymentId: 'p1' }) });
-    const res = await initiateMpesaPayment({ phone: '254700000000', amount: 5500, accountRef: 'ref', description: 'yoga' });
-    expect(res.success).toBe(true);
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/mpesa/stkpush'), expect.objectContaining({ method: 'POST' }));
-  });
-  it('throws on non-ok response', async () => {
-    mockFetch.mockResolvedValue({ ok: false, json: async () => ({ message: 'Failed' }) });
-    await expect(initiateMpesaPayment({ phone: '254', amount: 100, accountRef: 'r', description: 'd' })).rejects.toThrow('Failed');
-  });
-});
-
-describe('queryMpesaStatus', () => {
-  it('POSTs checkoutRequestId', async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ status: 'pending' }) });
-    const r = await queryMpesaStatus('chk123');
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/mpesa/query'), expect.objectContaining({ body: JSON.stringify({ checkoutRequestId: 'chk123' }) }));
-    expect(r.status).toBe('pending');
   });
 });
 

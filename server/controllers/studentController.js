@@ -151,7 +151,7 @@ export const getCircleStatus = asyncHandler(async (req, res) => {
 });
 
 // ── POST /api/student/membership/purchase ─────────────────────
-// Initiates an M-Pesa payment for the SOMA Wellness Circle.
+// Initiates a Pesapal payment for the SOMA Wellness Circle.
 // The membership is NOT activated here — activation happens only after
 // server-side payment verification, when FulfillmentService creates the
 // Membership record (start = payment date, expiry = +1 year).
@@ -181,11 +181,10 @@ export const purchaseMembership = asyncHandler(async (req, res) => {
     );
   }
 
-  // ── Initiate payment via PaymentService ──
-  // This creates a Razorpay order and stores a pending Payment document.
-  // The client receives the razorpay_order_id to complete checkout in the browser.
-  // Full membership activation happens when verify-payment succeeds.
-  const payment = await paymentService.initiate({
+  // ── Initiate payment via PaymentService (Pesapal) ──
+  // Server-priced intent + Pesapal SubmitOrder. The client receives a
+  // redirectUrl to complete checkout. Activation happens on verified capture.
+  const initiated = await paymentService.initiate({
     user: req.user._id,
     items: [
       {
@@ -199,36 +198,38 @@ export const purchaseMembership = asyncHandler(async (req, res) => {
     description: `Purchase of ${plan.name} – ${plan.durationMonths} month(s)`,
     idempotencyKey,
   });
+  const payment = initiated.payment;
 
   logger.info(MODULE, 'Membership purchase initiated', {
     userId: String(req.user._id),
     planId,
     planName: plan.name,
     paymentId: String(payment._id),
-    razorpayOrderId: payment.razorpayOrderId,
+    merchantReference: payment.merchant_reference,
   });
 
   res.status(201).json({
     success: true,
-    message: 'Payment initiated. Complete the M-Pesa payment to activate your SOMA Wellness Circle membership.',
+    message: 'Payment initiated. Complete payment via Pesapal to activate your SOMA Wellness Circle membership.',
     requiresPayment: true,
     payment: {
       _id: payment._id,
       amount: payment.amount,
       status: payment.paymentStatus,
-      gateway: payment.gateway,
+      gateway: payment.payment_provider || payment.gateway,
+      merchantReference: payment.merchant_reference,
+      orderTrackingId: payment.provider_checkout_id || payment.provider_order_id || null,
     },
-    mpesa: {
-      order_id: payment.mpesaOrderId || payment.razorpayOrderId,
+    pesapal: {
+      merchantReference: initiated.merchantReference,
+      orderTrackingId: initiated.orderTrackingId,
+      redirectUrl: initiated.redirectUrl,
       amount: payment.amount,
       currency: payment.currency,
     },
-    razorpay: {
-      order_id: payment.razorpayOrderId,
-      amount: payment.amount,
-      currency: payment.currency,
-      key: process.env.RAZORPAY_KEY_ID,
-    },
+    redirectUrl: initiated.redirectUrl,
+    merchantReference: initiated.merchantReference,
+    orderTrackingId: initiated.orderTrackingId,
     plan: {
       _id: plan._id,
       name: plan.name,
@@ -263,7 +264,9 @@ export const getActiveMembership = asyncHandler(async (req, res) => {
   const m = await Membership.findOne({
     user: req.user._id,
     status: { $in: ['active', 'paused'] },
-  }).sort({ createdAt: -1 }).populate('plan');
+  }).sort({ createdAt: -1 })
+    .populate('plan')
+    .populate('invoice', 'label amount currency invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt');
 
   if (!m) {
     // No membership at all — still return Circle context so the dashboard
@@ -301,9 +304,9 @@ export const getActiveMembership = asyncHandler(async (req, res) => {
     computedStatus: m.computedStatus,
     status: m.status,
     benefits: m.benefits,
-    pauseDaysAllowed: m.pauseDaysAllowed,
-    pauseDaysUsed: m.pauseDaysUsed,
-    remainingPauseDays: m.remainingPauseDays,
+    pauseDaysAllowed: m.pauseDaysAllowed ?? 0,
+    pauseDaysUsed: m.pauseDaysUsed ?? 0,
+    remainingPauseDays: Number.isFinite(m.remainingPauseDays) ? m.remainingPauseDays : 0,
     isPaused: m.isPaused,
     pauseStartedAt: m.pauseStartedAt,
     currentPauseDuration: m.currentPauseDuration,
@@ -316,6 +319,17 @@ export const getActiveMembership = asyncHandler(async (req, res) => {
     sessionHistory: (m.sessionHistory || []).slice(-20).reverse(),
     history: m.history,
     invoice: m.invoice,
+    payment: m.invoice && typeof m.invoice === 'object' ? {
+      _id: m.invoice._id,
+      label: m.invoice.label || '',
+      amount: m.invoice.amount || 0,
+      currency: m.invoice.currency || 'KES',
+      invoiceNo: m.invoice.invoiceNo || '',
+      merchantReference: m.invoice.merchant_reference || '',
+      transactionId: m.invoice.provider_transaction_id || '',
+      paymentStatus: m.invoice.paymentStatus || '',
+      createdAt: m.invoice.createdAt || null,
+    } : null,
     plan: m.plan ? {
       _id: m.plan._id,
       name: m.plan.name,
@@ -908,12 +922,12 @@ export const registerWorkshop = asyncHandler(async (req, res) => {
   });
   await wk.save();
 
-  let razorpayInfo = null;
+  let pesapalInfo = null;
   let paymentRecord = null;
 
   if (wk.price > 0) {
-    // ── Paid workshop: initiate Razorpay payment ──
-    const payment = await paymentService.initiate({
+    // ── Paid workshop: Pesapal payment (server-priced) ──
+    const initiated = await paymentService.initiate({
       user: req.user._id,
       items: [
         {
@@ -927,14 +941,16 @@ export const registerWorkshop = asyncHandler(async (req, res) => {
       description: `Registration for ${wk.name} on ${wk.date?.toLocaleDateString('en-KE')}`,
       idempotencyKey: req.body?.idempotencyKey,
     });
+    const payment = initiated.payment;
 
-    razorpayInfo = {
-      order_id: payment.razorpayOrderId,
+    pesapalInfo = {
+      merchantReference: initiated.merchantReference,
+      orderTrackingId: initiated.orderTrackingId,
+      redirectUrl: initiated.redirectUrl,
       amount: payment.amount,
       currency: payment.currency,
-      key: process.env.RAZORPAY_KEY_ID,
     };
-    paymentRecord = { _id: payment._id, amount: payment.amount, status: payment.paymentStatus };
+    paymentRecord = { _id: payment._id, amount: payment.amount, status: payment.paymentStatus, merchantReference: payment.merchant_reference };
   } else {
     // ── Free workshop: immediate fulfillment via PaymentService.initiateFree() ──
     // FulfillmentService._registerWorkshop will flip paid to true.
@@ -980,17 +996,17 @@ export const registerWorkshop = asyncHandler(async (req, res) => {
     workshopId: String(wk._id),
     workshopName: wk.name,
     paid: wk.price > 0,
-    paymentInitiated: !!razorpayInfo,
+    paymentInitiated: !!pesapalInfo,
   });
 
   res.json({
     success: true,
     msg: wk.price > 0
-      ? 'Spot reserved. Complete payment via Razorpay to confirm registration.'
+      ? 'Spot reserved. Complete payment via Pesapal to confirm registration.'
       : 'Registered successfully',
     registered: true,
     ...(paymentRecord ? { payment: paymentRecord } : {}),
-    ...(razorpayInfo ? { razorpay: razorpayInfo, requiresPayment: true } : { requiresPayment: false }),
+    ...(pesapalInfo ? { pesapal: pesapalInfo, redirectUrl: pesapalInfo.redirectUrl, requiresPayment: true } : { requiresPayment: false }),
   });
 });
 
@@ -1083,7 +1099,7 @@ export const bookConsultation = asyncHandler(async (req, res) => {
   if (existing) throw ApiError.conflict('This time slot is already booked. Please choose another.');
 
   let payment = null;
-  // Payment integration skipped for now — will be added with Razorpay later
+  // Consultations are paid via the unified Pesapal checkout (see /api/payments/initiate).
 
   const c = await Consultation.create({
     user: req.user._id,
@@ -1343,7 +1359,10 @@ export const getServiceCatalog = asyncHandler(async (req, res) => {
     { $group: { _id: '$service', count: { $sum: 1 } } },
   ]);
   const countMap = {};
-  for (const e of enrollmentCounts) countMap[e._id.toString()] = e.count;
+  for (const e of enrollmentCounts) {
+    if (!e._id) continue; // offering-linked records carry no legacy service id
+    countMap[e._id.toString()] = e.count;
+  }
 
   const userEnrollments = await UserService.find({ user: req.user._id })
     .select('service status serviceName');
@@ -1419,7 +1438,7 @@ export const enrollService = asyncHandler(async (req, res) => {
   if (existing) throw ApiError.badRequest('You already have an active enrollment for this service');
 
   if (service.price > 0) {
-    const payment = await paymentService.initiate({
+    const initiated = await paymentService.initiate({
       user: req.user._id,
       items: [{
         itemType: 'service',
@@ -1431,22 +1450,26 @@ export const enrollService = asyncHandler(async (req, res) => {
       description: `Enrollment in ${service.name}`,
       idempotencyKey,
     });
+    const payment = initiated.payment;
 
     res.status(201).json({
       success: true,
-      message: 'Payment initiated. Complete the Razorpay checkout to activate your service.',
+      message: 'Payment initiated. Complete payment via Pesapal to activate your service.',
       requiresPayment: true,
       payment: {
         _id: payment._id,
         amount: payment.amount,
         status: payment.paymentStatus,
+        merchantReference: payment.merchant_reference,
       },
-      razorpay: {
-        order_id: payment.razorpayOrderId,
+      pesapal: {
+        merchantReference: initiated.merchantReference,
+        orderTrackingId: initiated.orderTrackingId,
+        redirectUrl: initiated.redirectUrl,
         amount: payment.amount,
         currency: payment.currency,
-        key: process.env.RAZORPAY_KEY_ID,
       },
+      redirectUrl: initiated.redirectUrl,
       service: { _id: service._id, name: service.name, price: service.price },
     });
   } else {
@@ -1477,50 +1500,79 @@ export const renewService = asyncHandler(async (req, res) => {
   if (!us) throw ApiError.notFound('Service enrollment not found');
   if (String(us.user) !== String(req.user._id)) throw ApiError.forbidden('Not your enrollment');
 
-  const service = await Service.findById(us.service);
-  if (!service) throw ApiError.notFound('Service not found');
+  // Renewals can be linked to a legacy Service OR a catalog Offering
+  // (offering purchases store service:null + offering:<id>).
+  let itemType;
+  let itemId;
+  let displayName;
+  let unitPriceKes;
+  if (us.service) {
+    const service = await Service.findById(us.service);
+    if (!service) throw ApiError.notFound('Service not found');
+    itemType = 'service';
+    itemId = service._id;
+    displayName = service.name;
+    unitPriceKes = Number(service.price) || 0;
+  } else if (us.offering) {
+    const { default: Offering } = await import('../models/Offering.js');
+    const offering = await Offering.findById(us.offering).lean();
+    if (!offering) throw ApiError.notFound('Offering not found');
+    if (offering.status !== 'available' || offering.bookingEnabled === false) {
+      throw ApiError.badRequest(`${offering.name} is not currently available for renewal`);
+    }
+    itemType = 'offering';
+    itemId = offering._id;
+    displayName = offering.name;
+    unitPriceKes = Math.round(Number(offering.price) || 0);
+  } else {
+    throw ApiError.badRequest('This enrollment cannot be renewed online. Please contact support.');
+  }
 
-  if (service.price > 0) {
-    const payment = await paymentService.initiate({
+  if (unitPriceKes > 0) {
+    const initiated = await paymentService.initiate({
       user: req.user._id,
       items: [{
-        itemType: 'service',
-        itemId: service._id,
+        itemType,
+        itemId,
         quantity: 1,
-        metadata: { serviceName: service.name, price: service.price, renewal: true },
+        metadata: { serviceName: displayName, price: unitPriceKes, renewal: true },
       }],
-      label: `Service Renewal: ${service.name}`,
-      description: `Renewal of ${service.name}`,
+      label: `Service Renewal: ${displayName}`,
+      description: `Renewal of ${displayName}`,
       idempotencyKey: req.body?.idempotencyKey,
     });
+    const payment = initiated.payment;
 
     res.json({
       success: true,
-      message: 'Payment initiated. Complete Razorpay checkout to renew your service.',
+      message: 'Payment initiated. Complete payment via Pesapal to renew your service.',
       requiresPayment: true,
       payment: {
         _id: payment._id,
         amount: payment.amount,
         status: payment.paymentStatus,
+        merchantReference: payment.merchant_reference,
       },
-      razorpay: {
-        order_id: payment.razorpayOrderId,
+      pesapal: {
+        merchantReference: initiated.merchantReference,
+        orderTrackingId: initiated.orderTrackingId,
+        redirectUrl: initiated.redirectUrl,
         amount: payment.amount,
         currency: payment.currency,
-        key: process.env.RAZORPAY_KEY_ID,
       },
+      redirectUrl: initiated.redirectUrl,
     });
   } else {
     const payment = await paymentService.initiateFree({
       user: req.user._id,
       items: [{
-        itemType: 'service',
-        itemId: service._id,
+        itemType,
+        itemId,
         quantity: 1,
-        metadata: { serviceName: service.name, price: 0, renewal: true },
+        metadata: { serviceName: displayName, price: 0, renewal: true },
       }],
-      label: `Service Renewal: ${service.name}`,
-      description: `Free renewal of ${service.name}`,
+      label: `Service Renewal: ${displayName}`,
+      description: `Free renewal of ${displayName}`,
       idempotencyKey: req.body?.idempotencyKey,
     });
 

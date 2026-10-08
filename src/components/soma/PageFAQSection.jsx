@@ -28,7 +28,7 @@ export const SW_FAQ_MAP = {
   "Do I need to bring my own yoga mat or props?": { q: "Je, nahitaji kuleta mkeka wangu wa yoga?", a: "Hapana. Soma Wellness inatoa mikeka ya yoga, vitalu na vifaa vyote. Unakaribishwa kuleta mkeka wako kama unapendelea." },
   "How long is a typical session?": { q: "Kipindi cha kawaida huchukua muda gani?", a: "Muda unategemea uzoefu: vipindi vya kikundi ~dakika 60, vipindi binafsi ~dakika 60, umakini ~dakika 30–60. Muda halisi unathibitishwa wakati wa kuweka nafasi." },
   "How do I know which program is right for me?": { q: "Nitajuaje programu gani inanifaa?", a: "Mwambie timu yetu unachotafuta na tutakupendekezea kipindi au kifurushi kinachofaa." },
-  "How can I book a session?": { q: "Nawezaje kuweka nafasi ya kipindi?", a: "Vipindi vinaweza kuwekwa nafasi kupitia Simu / WhatsApp, Barua pepe, Tovuti, au Mapokezi ya Soma Wellness, Nairobi." },
+  "How can I book a session?": { q: "Nawezaje kuweka nafasi ya kipindi?", a: "Vipindi vinaweza kuwekwa nafasi kupitia Simu, Barua pepe, Tovuti, au Mapokezi ya Soma Wellness, Nairobi." },
   "Can I visit before becoming a member?": { q: "Je, naweza kutembelea kituo kabla ya kuchukua uanachama?", a: "Ndiyo. Wateja watarajiwa wanakaribishwa kujifunza kuhusu kituo chetu kabla ya kuchagua uanachama." },
 };
 

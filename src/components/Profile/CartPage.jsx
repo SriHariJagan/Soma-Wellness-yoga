@@ -6,8 +6,8 @@ import s from "./Dashboard.shared.module.css";
 import {
   getCart, removeFromCart, applyCouponToCart, removeCouponFromCart, checkoutCart, verifyPayment,
 } from "../api/StudentServices.js";
-import { initiateMpesaPayment, queryMpesaStatus, isLoggedIn } from "../../utils/payment.js";
-import MpesaCheckout from "../Payment/MpesaCheckout.jsx";
+import { isLoggedIn } from "../../utils/payment.js";
+import { formatKES } from "../../utils/money.js";
 import CheckoutGate from "../checkout/CheckoutGate.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
@@ -41,8 +41,8 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
   const [couponMsg, setCouponMsg] = useState({ text: "", type: "" });
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState(null);
-  const [mpesaCheckout, setMpesaCheckout] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState("mpesa");
+  const [pesapalCheckout, setPesapalCheckout] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("pesapal");
   const [toast, setToast] = useState(null);
 
   const showToast = useCallback((message, type = "success") => {
@@ -116,13 +116,23 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
         return;
       }
 
-      // For M-Pesa, show the M-Pesa checkout form
-      setMpesaCheckout(res);
+      // For Pesapal, the backend returns a redirect URL — show the pay step.
+      setPesapalCheckout(res);
       setCheckingOut(false);
     } catch (err) {
       const msg = err.message || "Checkout failed. Please try again.";
+      const lower = msg.toLowerCase();
+      // Misconfiguration (e.g. provider credentials/IPN missing server-side)
+      // is not transient — surface it clearly. In dev, append the backend's
+      // detail (variable names only, never secret values) to speed up diagnosis.
+      if (lower.includes("not configured") || lower.includes("not configur")) {
+        const detail = import.meta.env.DEV ? ` (${msg})` : "";
+        setCouponMsg({ text: t("payment.paymentNotConfigured") + detail, type: "error" });
+        setCheckingOut(false);
+        return;
+      }
       // Map gateway errors to user-friendly message (dev note logged, not shown to user)
-      const isGateway = msg.includes("502") || msg.toLowerCase().includes("gateway") || msg.toLowerCase().includes("razorpay") || err.status === 502;
+      const isGateway = msg.includes("502") || lower.includes("gateway") || lower.includes("pesapal") || err.status === 502;
       if (isGateway && import.meta.env.DEV) {
         console.warn("Payment gateway error (dev — will use mock on retry):", msg);
       }
@@ -134,9 +144,23 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
     }
   }
 
-  if (mpesaCheckout) {
-    const mpesaAmount = mpesaCheckout.order?.total || summary?.total || 0;
-    const orderRef = mpesaCheckout.order?.orderNumber || `order_${Date.now()}`;
+  if (pesapalCheckout) {
+    const payAmount = pesapalCheckout.order?.total || summary?.total || 0;
+    const orderRef = pesapalCheckout.merchantReference || pesapalCheckout.order?.orderNumber || `order_${Date.now()}`;
+    const redirectUrl = pesapalCheckout.redirectUrl;
+    const goToPesapal = () => {
+      if (redirectUrl) {
+        try {
+          sessionStorage.setItem('pesapal_intent', JSON.stringify({
+            merchantReference: pesapalCheckout.merchantReference,
+            orderTrackingId: pesapalCheckout.orderTrackingId,
+            paymentId: pesapalCheckout.payment?._id,
+            at: Date.now(),
+          }));
+        } catch {}
+        window.location.href = redirectUrl;
+      }
+    };
 
     return (
       <div>
@@ -164,10 +188,10 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
           )}
         </AnimatePresence>
 
-        <p className={s.pageTitle}>{t("payment.payWithMpesa")}</p>
+        <p className={s.pageTitle}>{t("payment.payWithPesapal")}</p>
 
         <div className={s.card} style={{ padding: 0, overflow: "hidden" }}>
-          {/* M-Pesa Header Banner */}
+          {/* Pesapal Header Banner */}
           <div style={{
             background: "linear-gradient(135deg, #183D2D 0%, #2E7D5B 60%, #3a9a73 100%)",
             padding: "24px 24px 20px",
@@ -194,7 +218,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                   Secure Payment
                 </p>
                 <p style={{ color: "#fff", fontSize: 16, margin: 0, fontWeight: 700 }}>
-                  M-PESA STK Push
+                  Pesapal Checkout
                 </p>
               </div>
             </div>
@@ -206,36 +230,42 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
                   Order #{orderRef}
                 </p>
                 <p style={{ color: "#fff", fontSize: 28, margin: 0, fontWeight: 800, letterSpacing: "-0.02em" }}>
-                  KES {mpesaAmount.toLocaleString()}
+                  {formatKES(payAmount)}
                 </p>
               </div>
               <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, margin: 0 }}>
-                {mpesaCheckout.items?.length || 0} item(s)
+                {pesapalCheckout.order?.itemCount || 0} item(s)
               </p>
             </div>
           </div>
 
-          {/* Payment Form */}
+          {/* Payment Action */}
           <div style={{ padding: "20px 24px 24px" }}>
-            <MpesaCheckout
-              amount={mpesaAmount}
-              accountRef={orderRef}
-              description={`Cart checkout – ${mpesaCheckout.items?.length || 0} item(s)`}
-              paymentId={mpesaCheckout.payment?._id}
-              orderId={mpesaCheckout.order?._id}
-              onSuccess={(result) => {
-                setMpesaCheckout(null);
-                setCheckoutResult(mpesaCheckout);
-                showToast("Payment successful!", "success");
-                if (reloadParent) setTimeout(reloadParent, 500);
+            <p style={{ fontSize: 12, color: "#6B5E4E", margin: "0 0 12px" }}>
+              {t("payment.pesapalRedirectNote")}
+            </p>
+            <button
+              onClick={goToPesapal}
+              disabled={!redirectUrl}
+              style={{
+                width: "100%", padding: "12px 0", borderRadius: 12,
+                fontSize: 13, fontWeight: 700, border: "none",
+                background: redirectUrl ? "linear-gradient(135deg, #F97316, #EA580C)" : "#F5F0EB",
+                color: redirectUrl ? "#fff" : "#9C8E7C",
+                cursor: redirectUrl ? "pointer" : "not-allowed",
+                fontFamily: "'Inter', sans-serif",
               }}
-              onError={(err) => {
-                showToast(err.message || "Payment failed. Please try again.", "error");
-              }}
-            />
+            >
+              {t("payment.payNow")} — {formatKES(payAmount)}
+            </button>
+            {!redirectUrl && (
+              <p style={{ fontSize: 12, color: "#B91C1C", marginTop: 8 }}>
+                {t("payment.paymentNotConfigured")}
+              </p>
+            )}
 
             <button
-              onClick={() => setMpesaCheckout(null)}
+              onClick={() => setPesapalCheckout(null)}
               style={{
                 width: "100%", marginTop: 16, padding: "12px 0", borderRadius: 12,
                 fontSize: 13, fontWeight: 600, border: "2px solid var(--color-border-light, #e8e2d8)",

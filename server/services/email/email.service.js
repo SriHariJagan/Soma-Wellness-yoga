@@ -9,7 +9,6 @@ import enquiryTemplate from './templates/enquiry.js';
 import enquiryAdminTemplate from './templates/enquiryAdmin.js';
 import paymentSuccessTemplate from './templates/paymentSuccess.js';
 import paymentFailedTemplate from './templates/paymentFailed.js';
-import otpTemplate from './templates/otp.js';
 import resetPasswordTemplate from './templates/resetPassword.js';
 import registrationTemplate from './templates/registration.js';
 import certificateTemplate from './templates/certificate.js';
@@ -81,11 +80,6 @@ async function sendPaymentSuccess(data) {
 
 async function sendPaymentFailed(data) {
   const { subject, text, html } = paymentFailedTemplate(data);
-  return sendMail(data.email, subject, html, text);
-}
-
-async function sendOTP(data) {
-  const { subject, text, html } = otpTemplate(data);
   return sendMail(data.email, subject, html, text);
 }
 
@@ -281,7 +275,6 @@ export default {
   sendEnquiryAdmin,
   sendPaymentSuccess,
   sendPaymentFailed,
-  sendOTP,
   sendResetPassword,
   sendWelcome,
   sendRegistration,

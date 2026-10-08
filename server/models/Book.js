@@ -3,8 +3,8 @@ import { BOOK_STATUSES } from '../shared/constants/index.js';
 
 // ─────────────────────────────────────────────────────────────
 // Book — Soma Wellness physical book catalogue.
-// Prices are stored in rupees (not paise) — the payment layer
-// converts to paise when creating Razorpay orders.
+// Prices are stored in KES major units — the payment layer
+// converts to minor units (cents) for provider payloads.
 // ─────────────────────────────────────────────────────────────
 const BookSchema = new mongoose.Schema(
   {
