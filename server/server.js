@@ -107,7 +107,7 @@ app.use(compression({ threshold: 1024, level: 6 }));
 // `crossorigin` attribute — that Origin must never be able to turn
 // a static asset into an HTTP 500.)
 const BASE_ORIGINS =
-  "https://somawellness.co.ke,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app,http://82.25.109.251";
+  "https://somawellness.co.ke,http://localhost:5173,http://localhost:5175,https://soma-wellness-website.onrender.com,https://soma-wellness-yoga.vercel.app,http://82.25.109.251,https://82.25.109.251";
 
 const allowedOrigins = [
   ...new Set(
@@ -125,8 +125,11 @@ const isLocalhost = (origin) =>
 const corsOptions = {
   origin(origin, cb) {
     if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin) || isLocalhost(origin))
+    const normalized = origin.trim().replace(/\/$/, "");
+    if (allowedOrigins.includes(normalized) || isLocalhost(normalized)) {
       return cb(null, true);
+    }
+    logger.warn("CORS", "Blocked by CORS policy", { origin: normalized });
     return cb(new Error("Blocked by CORS policy"), false);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -156,15 +159,24 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'"],
+        // index.html uses a static media="print" onload handler to load
+        // Google Fonts without render-blocking; allow attr handlers so the
+        // font stylesheet actually applies (no dynamic handlers exist).
+        scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:5173"],
         connectSrc: ["'self'"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        // Registration/intro video is hosted over HTTPS (configurable URL).
+        mediaSrc: ["'self'", "https:"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
         upgradeInsecureRequests: ENABLE_HTTPS_HARDENING ? [] : null,
       },
     },
+    // COOP same-origin is ignored with a console warning over plain HTTP;
+    // enable it only together with the HTTPS hardening above.
+    crossOriginOpenerPolicy: ENABLE_HTTPS_HARDENING ? undefined : false,
     hsts: ENABLE_HTTPS_HARDENING
       ? {
           maxAge: 31536000,
