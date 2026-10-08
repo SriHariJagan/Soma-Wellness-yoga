@@ -44,6 +44,61 @@ function getExpiryDate() {
   return new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
 }
 
+// Send a real SMS through Africa's Talking.
+// Sandbox accounts (AT_USERNAME=sandbox) hit the sandbox endpoint.
+// Throws on any provider rejection or network failure.
+async function sendSmsViaAT({ to, otp }) {
+  const username = process.env.AT_USERNAME;
+  const apiKey = process.env.AT_API_KEY;
+  const isSandbox = username === 'sandbox' || process.env.AT_ENV === 'sandbox';
+  const endpoint = isSandbox
+    ? 'https://api.sandbox.africastalking.com/version1/messaging'
+    : 'https://api.africastalking.com/version1/messaging';
+
+  const message = `Your Soma Wellness verification code is ${otp}. Valid for ${OTP_TTL_MINUTES} minutes. Do not share it.`;
+  const form = new URLSearchParams({ username, to, message });
+  if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
+
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 15000);
+  let res;
+  try {
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        apiKey,
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: form.toString(),
+      signal: ctrl.signal,
+    });
+  } catch (err) {
+    throw new Error(err.name === 'AbortError' ? 'SMS provider timed out' : `SMS provider unreachable: ${err.message}`);
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    // non-JSON error body
+  }
+  if (!res.ok) {
+    const detail = data?.SMSMessageData?.Message || (typeof data === 'string' ? data : JSON.stringify(data)) || res.statusText;
+    throw new Error(`SMS provider rejected request (${res.status}): ${detail}`);
+  }
+
+  const recipients = data?.SMSMessageData?.Recipients || [];
+  const ok = recipients.find((r) => r.status === 'Success');
+  if (!ok) {
+    const detail = recipients.map((r) => `${r.number}: ${r.status}`).join('; ') || data?.SMSMessageData?.Message || 'no recipient accepted';
+    throw new Error(`SMS not accepted: ${detail}`);
+  }
+  return { messageId: ok.messageId || '', cost: ok.cost || '' };
+}
+
 export async function sendOtp({ identifier, channel, name = 'there' }) {
   const norm = normalizeIdentifier(identifier, channel);
   if (!norm) throw new Error('Identifier required');
@@ -105,23 +160,34 @@ export async function sendOtp({ identifier, channel, name = 'there' }) {
       logger.info(MODULE, `[DEV] OTP for ${norm}: ${rawOtp} | expires in ${OTP_TTL_MINUTES}m`);
     }
   } else if (channel === 'sms') {
-    // SMS — try Africa's Talking / Twilio if configured, else fallback to dev log
-    const hasAT = process.env.AT_API_KEY && process.env.AT_USERNAME;
-    const hasTwilio = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN;
-    if (!hasAT && !hasTwilio) {
-      logger.warn(MODULE, 'SMS OTP requested but no provider configured — using dev fallback', { identifier: norm });
+    // SMS via Africa's Talking (the configured provider for this app).
+    // Without AT credentials no text can actually be sent, so fail
+    // honestly instead of pretending delivery succeeded.
+    const hasAT = !!(process.env.AT_API_KEY && process.env.AT_USERNAME);
+    if (!hasAT) {
+      logger.warn(MODULE, 'SMS OTP requested but no provider configured', { identifier: norm });
       if (process.env.NODE_ENV === 'development') {
+        logger.info(MODULE, `[DEV] SMS OTP for ${norm}: ${rawOtp} (no provider — dev fallback)`);
         delivered = true;
       } else {
-        // For production without SMS provider, we suggest using email instead
         const err = new Error('SMS OTP is not configured. Please use email verification.');
         err.code = 'SMS_NOT_CONFIGURED';
         throw err;
       }
     } else {
-      // TODO: wire AT/Twilio when keys provided — for now log and mark delivered
-      logger.info(MODULE, `[SMS] Would send OTP to ${norm}: ${rawOtp}`);
-      delivered = true;
+      try {
+        const smsResult = await sendSmsViaAT({ to: norm, otp: rawOtp });
+        delivered = true;
+        logger.info(MODULE, 'SMS OTP sent', { identifier: norm, messageId: smsResult.messageId });
+      } catch (err) {
+        logger.error(MODULE, 'SMS OTP send failed', { identifier: norm, error: err.message });
+        if (process.env.NODE_ENV === 'development') {
+          logger.warn(MODULE, `[DEV] SMS OTP for ${norm}: ${rawOtp} (provider failed — dev fallback)`);
+          delivered = true;
+        } else {
+          throw new Error('Failed to send SMS OTP. Please try again or use email verification.');
+        }
+      }
     }
   }
 
@@ -177,4 +243,4 @@ export async function consumeVerifiedOtp({ identifier, channel }) {
   await Otp.deleteOne({ identifier: norm, channel, verified: true });
 }
 
-export default { sendOtp, verifyOtp, consumeVerifiedOtp, normalizeIdentifier, hashOtp };
+export default { sendOtp, verifyOtp, consumeVerifiedOtp, normalizeIdentifier, hashOtp, sendSmsViaAT };

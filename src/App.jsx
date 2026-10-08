@@ -182,6 +182,7 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
             <Route path="/newuser"          element={<NewUser />} />
             <Route path="/forgot-password"  element={<ForgotPassword />} />
             <Route path="/reset-password"   element={<ResetPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile"          element={<Profile />} />
 
             {/* ── OAuth callback ── */}

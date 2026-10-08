@@ -311,10 +311,15 @@ export const verifyOtp = asyncHandler(async (req, res) => {
   // Issue tokens
   const { accessToken, refreshToken } = await issueTokens(user);
 
+  // Same cookie attributes as password login (authController): the
+  // frontend and API are cross-site in production, so SameSite=None +
+  // Secure is required or the browser never sends the cookie back to
+  // POST /api/auth/refresh. Locally use Lax so plain HTTP still works.
+  const isProd = process.env.NODE_ENV?.toLowerCase() === 'production';
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV?.toLowerCase() === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
   });

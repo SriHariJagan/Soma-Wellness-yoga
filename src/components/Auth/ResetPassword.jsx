@@ -18,8 +18,20 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!token) {
+      setMessage(t("auth.invalidResetLink", "Reset link is invalid or has expired. Please request a new one."));
+      setIsError(true);
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setMessage(t("validation.passwordMismatch"));
+      setIsError(true);
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setMessage(t("validation.passwordMin", "Password must be at least 8 characters."));
       setIsError(true);
       return;
     }
@@ -28,7 +40,7 @@ const ResetPassword = () => {
     const API_URL = import.meta.env.VITE_API_URL || '';
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/reset-password/${token}`, {
+      const res = await fetch(`${API_URL}/api/auth/reset-password/${encodeURIComponent(token)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ newPassword }),
@@ -84,10 +96,14 @@ const ResetPassword = () => {
             </div>
           </div>
 
-          <motion.button type="submit" className={styles.submitBtn} disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+          <motion.button type="submit" className={styles.submitBtn} disabled={loading || !token} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
             {loading ? t("common.loading") : t("auth.resetPassword")}
           </motion.button>
         </form>
+
+        {!token && (
+          <p className={styles.errorMsg}>{t("auth.invalidResetLink", "Reset link is invalid or has expired. Please request a new one.")}</p>
+        )}
 
         {message && (
           <p className={isError ? styles.errorMsg : styles.successMsg}>{message}</p>

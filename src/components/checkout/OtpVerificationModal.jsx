@@ -250,7 +250,7 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
           <div className="checkout-form">
             {channel === 'email' ? (
               <label className="checkout-label">Email address
-                <input className="checkout-input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} />
+                <input className="checkout-input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleContinue()} />
               </label>
             ) : (
               <PhoneInput value={phone} onChange={setPhone} label="Mobile number" required id="otp-phone" />
@@ -290,7 +290,7 @@ export default function OtpVerificationModal({ intent, onClose, onVerified }) {
           </div>
         ) : (
           <div className="checkout-form">
-            <p className="checkout-label">Enter the 6-digit code sent to <strong>{channel === 'email' ? email : phone}</strong></p>
+            <p className="checkout-label">Enter the 6-digit code sent to <strong>{channel === 'email' ? (detailEmail || email) : (detailPhone || phone)}</strong></p>
             <div className="checkout-otp-row" onPaste={handlePaste}>
               {otp.map((d, i) => (
                 <input

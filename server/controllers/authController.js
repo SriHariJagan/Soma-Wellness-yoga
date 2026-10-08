@@ -362,19 +362,24 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     user.resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
-    const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
+    // Resolve frontend base at request time so production env changes
+    // take effect without a server restart / stale module constant.
+    const frontendBase = (process.env.FRONTEND_URL || FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
+    const resetLink = `${frontendBase}/reset-password/${token}`;
     logger.info(MODULE, "forgotPassword: calling notificationService.send", {
       userId: String(user._id),
       userEmail: user.email,
       template: "password-reset",
-      channels: ["inApp", "email"],
-      resetLinkBase: `${FRONTEND_URL}/reset-password/`,
+      channels: ["inApp"],
+      resetLinkBase: `${frontendBase}/reset-password/`,
     });
 
+    // In-app notification (queued — the inApp channel resolves instantly
+    // and does not depend on SMTP/worker health for correctness).
     notificationService
       .send(user._id, {
         template: "password-reset",
-        channels: ["inApp", "email"],
+        channels: ["inApp"],
         data: {
           name: user.name,
           resetLink,
@@ -385,14 +390,14 @@ export const forgotPassword = asyncHandler(async (req, res) => {
       .then(() => {
         logger.info(
           MODULE,
-          "forgotPassword: notificationService.send resolved",
+          "forgotPassword: inApp notification enqueued",
           { userId: String(user._id) },
         );
       })
       .catch((err) => {
         logger.error(
           MODULE,
-          "forgotPassword: notificationService.send rejected",
+          "forgotPassword: inApp notification failed",
           {
             userId: String(user._id),
             error: err.message,
@@ -401,17 +406,35 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         );
       });
 
-    // Send password reset email directly via new email service
-    emailService.sendResetPassword({
-      email: user.email,
-      name: user.name,
-      resetLink,
-    }).catch((err) => {
-      logger.error(MODULE, "forgotPassword: emailService.sendResetPassword failed", {
+    // Password-reset email is critical — send it DIRECTLY via SMTP and
+    // await the result so failures are logged with the real cause
+    // (EAUTH, ECONNECTION, etc.) instead of vanishing in a fire-and-forget
+    // promise. The API still returns a generic success to avoid account
+    // enumeration.
+    try {
+      const emailResult = await emailService.sendResetPassword({
+        email: user.email,
+        name: user.name,
+        resetLink,
+      });
+      if (emailResult && emailResult.success) {
+        logger.info(MODULE, "forgotPassword: reset email sent", {
+          userId: String(user._id),
+          messageId: emailResult.messageId,
+        });
+      } else {
+        logger.error(MODULE, "forgotPassword: reset email failed", {
+          userId: String(user._id),
+          error: (emailResult && emailResult.error) || "unknown email failure",
+        });
+      }
+    } catch (err) {
+      logger.error(MODULE, "forgotPassword: emailService.sendResetPassword threw", {
         userId: String(user._id),
         error: err.message,
+        code: err.code,
       });
-    });
+    }
   } else {
     logger.warn(MODULE, "forgotPassword: no user found for email", { email });
   }
@@ -427,7 +450,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;
   if (!newPassword || newPassword.length < 8)
-    throw ApiError.badRequest("Password must be at least 6 characters");
+    throw ApiError.badRequest("Password must be at least 8 characters");
 
   let decoded;
   try {
