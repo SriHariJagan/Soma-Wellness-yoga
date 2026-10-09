@@ -330,9 +330,17 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
   const sDetail = detail?.student;
   const membership = detail?.membership || null;
   const payments = detail?.payments || [];
+  const servicesList = detail?.services || [];
   const attendance = detail?.attendanceRecords || [];
   const studentClasses = detail?.classSessions || [];
   const activityLogs = detail?.activityLogs || [];
+
+  // Header member badge: membership OR any active service enrollment counts.
+  // (Service-only buyers previously showed a misleading "Pending".)
+  const hasActiveService = servicesList.some((svc) => svc?.status === 'active');
+  const memberLabel = membership?.status === 'active' || (sDetail?.planMonths || 0) > 0
+    ? 'Active Member'
+    : hasActiveService ? 'Active' : 'Pending';
 
   /* ─── Computed values ────────────────────────────────── */
   const presentCount = attendance.filter(a => a.status === 'present' || a.status === 'zoom').length;
@@ -1123,8 +1131,8 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
                 <span style={{ fontSize: 13, color: C.text2 }}>
                   {sDetail.style || 'Yoga'} · {sDetail.level || 'Beginner'}
                 </span>
-                <Badge label={membership?.status === 'active' || sDetail.planMonths > 0 ? 'Active Member' : 'Pending'} />
-                <Badge label={sDetail.status || 'active'} />
+                <Badge label={memberLabel} />
+                {sDetail?.status && sDetail.status !== 'active' && <Badge label={sDetail.status} />}
               </div>
               <div style={{ fontSize: 12, color: C.text3, marginTop: 6 }}>
                 Joined {sDetail.createdAt ? new Date(sDetail.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'}

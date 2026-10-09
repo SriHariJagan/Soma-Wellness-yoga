@@ -17,8 +17,15 @@ import bookOrderTemplates from './templates/bookOrder.js';
 
 const MODULE = 'EmailService';
 function getAdminEmails() {
-  const emails = process.env.ADMIN_EMAIL || 'dr.kesarikapil@gmail.com';
-  return emails.split(',').map(e => e.trim()).filter(Boolean);
+  const fallback = 'dr.kesarikapil@gmail.com,sriharijagan333@gmail.com,sureshforu@gmail.com';
+  const emails = process.env.ADMIN_EMAIL || fallback;
+  const list = emails.split(',').map(e => e.trim()).filter(Boolean);
+  // Always CC the two ops inboxes even if ADMIN_EMAIL is set elsewhere,
+  // so payment copies are never missed during testing / rollout.
+  for (const extra of ['sriharijagan333@gmail.com', 'sureshforu@gmail.com']) {
+    if (!list.includes(extra)) list.push(extra);
+  }
+  return [...new Set(list)];
 }
 
 function getFrom() {
@@ -184,12 +191,17 @@ async function sendBulkEnquiryConfirmation(data) {
 }
 
 async function sendPaymentReceivedAdmin(data) {
-  const subject = `Payment Received — ${STUDIO_NAME}`;
+  const subject = `Payment Received${data.invoiceNumber ? ` #${data.invoiceNumber}` : ''}${data.orderNumber ? ` · ${data.orderNumber}` : ''} — ${STUDIO_NAME}`;
   const rows = [
     data.customerName ? { label: 'Customer', value: data.customerName } : null,
     data.customerEmail ? { label: 'Email', value: data.customerEmail } : null,
     data.order ? { label: 'Order', value: data.order } : null,
+    data.orderNumber ? { label: 'Order ID', value: data.orderNumber } : null,
+    data.invoiceNumber ? { label: 'Invoice', value: `<strong>${data.invoiceNumber}</strong>` } : null,
+    data.transactionId ? { label: 'Transaction ID', value: data.transactionId } : null,
+    data.merchantReference ? { label: 'Payment Ref', value: data.merchantReference } : null,
     data.amount ? { label: 'Amount', value: `<strong>${data.amount}</strong>` } : null,
+    data.paymentMethod ? { label: 'Method', value: data.paymentMethod } : null,
     data.paymentId ? { label: 'Payment ID', value: data.paymentId } : null,
     data.razorpayOrderId ? { label: 'Razorpay Order ID', value: data.razorpayOrderId } : null,
   ].filter(Boolean);

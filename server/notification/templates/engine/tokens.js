@@ -7,6 +7,18 @@
 export const STUDIO_NAME = 'Soma Wellness';
 export const STUDIO_TAGLINE = 'Premium International Wellness';
 
+// ── Brand logo (absolute URL required for email clients) ──
+// Served from the frontend public folder: public/images/soma/logo.png
+// Override with LOGO_URL env if a CDN is used. Exact display size per spec.
+const FRONTEND_BASE = (typeof process !== 'undefined' && process.env?.FRONTEND_URL
+  ? process.env.FRONTEND_URL
+  : 'https://somawellness.co.ke').replace(/\/$/, '');
+export const STUDIO_LOGO_URL = (typeof process !== 'undefined' && process.env?.LOGO_URL)
+  ? process.env.LOGO_URL
+  : `${FRONTEND_BASE}/images/soma/logo.png`;
+export const LOGO_WIDTH = 115;
+export const LOGO_HEIGHT = 95;
+
 export const BRAND = {
   primary:         '#C8956C',
   primaryHover:    '#B8854F',

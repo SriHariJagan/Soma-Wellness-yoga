@@ -164,6 +164,7 @@ export class FulfillmentService {
       instructor: service.instructor || undefined,
       instructors: service.instructors || [],
       status: 'active',
+      paymentStatus: 'paid',
       purchaseDate: now,
       activationDate: now,
       expiryDate,

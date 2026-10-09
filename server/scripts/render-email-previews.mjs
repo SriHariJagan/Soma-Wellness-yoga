@@ -37,6 +37,8 @@ const shared = {
   certificateUrl: `${FRONTEND}/certificates/cert-001`,
   certificateName: '200-Hour Wellness Teacher Training',
   invoiceNumber: 'INV-001',
+  orderNumber: 'ORD-2026-592402',
+  merchantReference: 'PAY-20261009-DAE95D8C',
   amount: 'KES 12,500',
   description: 'Monthly Membership — Premium',
   paymentDate: new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }),

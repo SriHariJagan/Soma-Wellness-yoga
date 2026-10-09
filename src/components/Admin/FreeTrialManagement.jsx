@@ -86,7 +86,9 @@ export default function FreeTrialManagement({ onChanged } = {}) {
   const loadTrials = useCallback(async (p = page) => {
     try {
       const data = await getFreeTrials({ page: p, limit: 20, search, status: statusFilter });
-      setTrials(data.trials || []);
+      // Belt-and-braces: never render orphan rows (deleted accounts show as
+      // "Unknown"). Backend already excludes them; this covers stale caches.
+      setTrials((data.trials || []).filter((t) => t.user));
       setTotalPages(data.totalPages || 1);
       setPage(p);
     } catch (err) {
@@ -641,6 +643,12 @@ export default function FreeTrialManagement({ onChanged } = {}) {
           {feedback.message && (
             <div className={`${s.bannerSuccess} ${feedback.type === 'error' ? s.bannerError : ''}`} style={{ marginBottom: 18 }}>
               {feedback.message}
+            </div>
+          )}
+
+          {!selectedTrial.user && (
+            <div className={s.bannerError} style={{ marginBottom: 18 }}>
+              This trial's student account was removed. Trial data is kept for records, but sessions and notifications can't be managed.
             </div>
           )}
 

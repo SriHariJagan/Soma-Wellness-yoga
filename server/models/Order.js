@@ -82,5 +82,10 @@ OrderSchema.pre('save', function () {
   }
 });
 
+// Production indexes: idempotency lookup + 15-min sweep + student history.
+OrderSchema.index({ student: 1, transactionId: 1 });
+OrderSchema.index({ kind: 1, status: 1, createdAt: 1 });
+OrderSchema.index({ payment: 1, status: 1 });
+
 const Order = mongoose.models.Order || mongoose.model('Order', OrderSchema);
 export default Order;

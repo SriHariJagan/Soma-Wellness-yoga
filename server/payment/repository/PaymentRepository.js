@@ -165,7 +165,10 @@ export class PaymentRepository {
     if (providerRaw) set.provider_raw = providerRaw;
     const options = { new: true };
     if (session) options.session = session;
-    const updated = await Payment.findOneAndUpdate(
+    // verifyAndCapture allows pending|initiated, so try pending first then
+    // initiated (never-submitted intents verified directly). Audit keeps
+    // the accurate `from` for each path.
+    let updated = await Payment.findOneAndUpdate(
       { _id: id, paymentStatus: 'pending' },
       {
         $set: set,
@@ -177,6 +180,20 @@ export class PaymentRepository {
       },
       options,
     );
+    if (!updated) {
+      updated = await Payment.findOneAndUpdate(
+        { _id: id, paymentStatus: 'initiated' },
+        {
+          $set: set,
+          $push: {
+            attempts: { action: 'capture', gatewayResponse: providerRaw || callbackData || {}, timestamp: new Date() },
+            auditTrail: { action: auditAction, from: 'initiated', to: 'captured', timestamp: new Date(), metadata: auditMetadata },
+          },
+          $inc: { lockVersion: 1 },
+        },
+        options,
+      );
+    }
     return updated;
   }
 

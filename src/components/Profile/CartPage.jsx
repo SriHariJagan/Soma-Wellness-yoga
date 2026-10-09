@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,6 +44,27 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
   const [pesapalCheckout, setPesapalCheckout] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("pesapal");
   const [toast, setToast] = useState(null);
+  // Stable idempotency key per cart session: retries reuse the SAME key so
+  // double-clicks/retries hit the backend idempotency guard instead of
+  // minting a second ORD-*. Reset on success or cart change.
+  const checkoutKeyRef = useRef(null);
+  const getCheckoutKey = () => {
+    if (!checkoutKeyRef.current) {
+      try {
+        const saved = sessionStorage.getItem("cart_checkout_key");
+        if (saved) checkoutKeyRef.current = saved;
+      } catch {}
+    }
+    if (!checkoutKeyRef.current) {
+      checkoutKeyRef.current = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      try { sessionStorage.setItem("cart_checkout_key", checkoutKeyRef.current); } catch {}
+    }
+    return checkoutKeyRef.current;
+  };
+  const resetCheckoutKey = () => {
+    checkoutKeyRef.current = null;
+    try { sessionStorage.removeItem("cart_checkout_key"); } catch {}
+  };
 
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type });
@@ -60,13 +81,20 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
     finally { setLoading(false); }
   }, []);
 
+  // New cart state (add/remove/coupon) invalidates the old checkout key.
+  const refreshCartAndKey = useCallback(async () => {
+    checkoutKeyRef.current = null;
+    try { sessionStorage.removeItem("cart_checkout_key"); } catch {}
+    await fetchCart();
+  }, [fetchCart]);
+
   useEffect(() => { fetchCart(); globalRefreshCart = fetchCart; return () => { globalRefreshCart = null; }; }, [fetchCart]);
 
   async function handleRemove(itemId) {
     setBusyId(itemId);
     try {
       const res = await removeFromCart(itemId);
-      await fetchCart();
+      await refreshCartAndKey();
       if (res.cartCount !== undefined) {
         const evt = new CustomEvent("cart-update", { detail: { count: res.cartCount } });
         window.dispatchEvent(evt);
@@ -81,7 +109,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
     try {
       const res = await applyCouponToCart(couponCode.trim());
       showToast(res.msg || "Coupon applied!", "success");
-      await fetchCart();
+      await refreshCartAndKey();
     } catch (err) {
       setCouponMsg({ text: err.message || "Failed to apply coupon", type: "error" });
     }
@@ -91,7 +119,7 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
     try {
       const res = await removeCouponFromCart();
       setCouponCode("");
-      await fetchCart();
+      await refreshCartAndKey();
       showToast("Coupon removed", "info");
     } catch (err) {
       setCouponMsg({ text: err.message || "Failed to remove coupon", type: "error" });
@@ -101,13 +129,15 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
   const summary = cartData?.summary;
 
   async function handleCheckout() {
+    if (checkingOut) return; // double-click guard: one click = one order
     setCheckingOut(true);
     setCouponMsg({ text: "", type: "" });
     try {
-      const idempotencyKey = `chk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const idempotencyKey = getCheckoutKey();
       const res = await checkoutCart(idempotencyKey);
 
       if (!res.requiresPayment) {
+        resetCheckoutKey();
         setCheckoutResult(res);
         window.dispatchEvent(new CustomEvent("cart-update", { detail: { count: 0 } }));
         showToast("Enrollment successful!", "success");

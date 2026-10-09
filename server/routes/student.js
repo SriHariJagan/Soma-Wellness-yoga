@@ -75,6 +75,7 @@ router.post('/cart/checkout', studentSensitiveLimiter, cartCtrl.checkout);
 import * as orderCtrl from '../controllers/orderController.js';
 router.get('/orders', orderCtrl.getStudentOrders);
 router.get('/orders/:id', orderCtrl.getStudentOrderDetail);
+router.delete('/orders/:id/cancel', studentSensitiveLimiter, orderCtrl.cancelStudentOrder);
 
 // Notifications
 import * as notif from '../controllers/notificationController.js';

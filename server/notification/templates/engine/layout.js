@@ -3,7 +3,7 @@
 // Soma Wellness Premium Glassy Email Layout
 // Base email layout wrapping every template.
 // ============================================================
-import { BRAND, DARK, FONT, STUDIO_NAME, STUDIO_TAGLINE, RADIUS, SPACING } from './tokens.js';
+import { BRAND, DARK, FONT, STUDIO_NAME, STUDIO_TAGLINE, STUDIO_LOGO_URL, LOGO_WIDTH, LOGO_HEIGHT, RADIUS, SPACING } from './tokens.js';
 import { darkModeStyles } from './components.js';
 
 /**
@@ -77,10 +77,11 @@ function header() {
   return `
 <table role="presentation" cellpadding="0" cellspacing="0" class="responsive" style="max-width:600px;width:100%;">
   <tr>
-    <td class="dm-header" align="center" style="background:linear-gradient(135deg, #1A0F0A 0%, #2D1B10 50%, #3D2518 100%);border-radius:${RADIUS.xl} ${RADIUS.xl} 0 0;padding:32px ${SPACING.md} 24px;">
-      <h1 class="dm-header-title" style="margin:0;font-family:${FONT.heading};font-size:26px;font-weight:700;color:#C8956C;letter-spacing:0.5px;">${STUDIO_NAME}</h1>
-      <div style="margin:8px auto 0;width:40px;height:2px;background:linear-gradient(90deg, transparent, #C8956C, transparent);"></div>
-      <p style="margin:10px 0 0;font-family:${FONT.body};font-size:11px;color:#8C7B6B;letter-spacing:2px;text-transform:uppercase;">${STUDIO_TAGLINE}</p>
+    <td class="dm-header" align="center" style="background:linear-gradient(135deg, #1A0F0A 0%, #2D1B10 50%, #3D2518 100%);border-radius:${RADIUS.xl} ${RADIUS.xl} 0 0;padding:28px ${SPACING.md} 22px;">
+      <img src="${STUDIO_LOGO_URL}" width="${LOGO_WIDTH}" height="${LOGO_HEIGHT}" alt="${STUDIO_NAME} logo" style="display:block;width:${LOGO_WIDTH}px;height:${LOGO_HEIGHT}px;max-width:${LOGO_WIDTH}px;object-fit:contain;border:0;outline:none;" />
+      <div style="margin:14px auto 0;width:56px;height:2px;background:linear-gradient(90deg, transparent, #C8956C, transparent);"></div>
+      <h1 class="dm-header-title" style="margin:12px 0 0;font-family:${FONT.heading};font-size:26px;font-weight:700;color:#C8956C;letter-spacing:0.5px;">${STUDIO_NAME}</h1>
+      <p style="margin:8px 0 0;font-family:${FONT.body};font-size:11px;color:#B9A693;letter-spacing:3px;text-transform:uppercase;">${STUDIO_TAGLINE}</p>
     </td>
   </tr>
 </table>`;

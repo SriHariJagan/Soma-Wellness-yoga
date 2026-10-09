@@ -43,6 +43,14 @@ export default function InvoiceView({ order, onClose }) {
   if (!order) return null;
 
   const { payment, items = [], student, coupon, couponCode, couponDiscount } = order;
+  // Canonical IDs — must match the emailed receipt:
+  // Order = ORD-* (shop order), Invoice = INV-*, Transaction = provider id,
+  // Payment Ref = PAY-* merchant reference (internal, shown only if different).
+  const providerTransactionId =
+    payment?.provider_transaction_id || payment?.providerTransactionId || "";
+  const displayTransactionId = providerTransactionId || order.transactionId || "—";
+  const merchantReference =
+    payment?.merchant_reference || payment?.merchantReference || "";
   const studio = {
     name: "Soma Wellness",
     address: "Spring Valley, Nairobi, Kenya",
@@ -96,7 +104,10 @@ export default function InvoiceView({ order, onClose }) {
         }}>
           <div><span style={{ color: "#9ca3af" }}>Order ID:</span> <strong style={{ color: "#374151" }}>{order.orderNumber}</strong></div>
           <div><span style={{ color: "#9ca3af" }}>Invoice:</span> <strong style={{ color: "#374151" }}>{payment?.invoiceNo || "—"}</strong></div>
-          <div><span style={{ color: "#9ca3af" }}>Transaction:</span> <strong style={{ color: "#374151", fontFamily: "monospace" }}>{order.transactionId || "—"}</strong></div>
+          <div><span style={{ color: "#9ca3af" }}>Transaction:</span> <strong style={{ color: "#374151", fontFamily: "monospace" }}>{displayTransactionId}</strong></div>
+          {merchantReference && merchantReference !== order.orderNumber && (
+            <div><span style={{ color: "#9ca3af" }}>Payment Ref:</span> <strong style={{ color: "#374151", fontFamily: "monospace" }}>{merchantReference}</strong></div>
+          )}
           <div><span style={{ color: "#9ca3af" }}>Payment:</span> <strong style={{ color: "#374151" }}>{order.paymentMethod || "Manual"}</strong></div>
         </div>
 

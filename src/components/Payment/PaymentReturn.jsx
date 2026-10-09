@@ -275,6 +275,7 @@ export default function PaymentReturn() {
           clearInterval(timer.current);
           setState('captured');
           try { sessionStorage.removeItem('pesapal_intent'); } catch { /* storage unavailable — ignore */ }
+          try { sessionStorage.removeItem('cart_checkout_key'); } catch { /* next purchase gets a fresh key */ }
         } else if (res.paymentStatus === 'failed' || res.paymentStatus === 'expired') {
           clearInterval(timer.current);
           setState('failed');

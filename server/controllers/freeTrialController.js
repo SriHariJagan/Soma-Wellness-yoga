@@ -231,10 +231,16 @@ export const getTrials = asyncHandler(async (req, res) => {
   const { status, search, page = 1, limit = 20 } = req.query;
   const query = {};
   if (status && status !== 'all') query.status = status;
+  // Never surface trials of deleted/removed accounts ("Unknown" rows).
+  // Intersect with live user ids (and with search matches when present).
+  const liveIds = await User.find({ isDeleted: { $ne: true } }).distinct('_id');
+  const liveSet = new Set(liveIds.map(String));
   if (search) {
     const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const users = await User.find({ $or: [{ name: { $regex: safeSearch, $options: 'i' } }, { email: { $regex: safeSearch, $options: 'i' } }] }).select('_id');
-    query.user = { $in: users.map((u) => u._id) };
+    query.user = { $in: users.map((u) => u._id).filter((id) => liveSet.has(String(id))) };
+  } else {
+    query.user = { $in: liveIds };
   }
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const [trials, total] = await Promise.all([

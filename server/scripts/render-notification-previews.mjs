@@ -49,6 +49,8 @@ const base = {
   membershipType: 'Premium Monthly',
   renewalDate: '1 October 2025',
   invoiceNumber: 'INV-001',
+  orderNumber: 'ORD-2026-592402',
+  transactionId: 'TXN-TEST-001',
   amount: 'KES 12,500',
   serviceName: '200-Hour Teacher Training',
   courseName: 'Yoga Teacher Training',

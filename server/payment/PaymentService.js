@@ -505,10 +505,52 @@ export class PaymentService {
       const invoiceNo = await this.invoiceService.generateInvoiceNumber(session);
       await this.repository.setInvoiceNo(payment._id, invoiceNo, session);
       const items = payment.items || [];
+      // Per-item isolation: money is already taken at the provider, so one
+      // failing item (duplicate membership, removed catalog entry) must not
+      // roll back the capture into a stuck pending. Failed items are marked
+      // partial with an admin-visible audit entry for manual follow-up.
+      const fulfillmentFailures = [];
       for (const item of items) {
-        await this.fulfillmentService.activateItem(item, payment._id, payment.user || user, session);
+        try {
+          await this.fulfillmentService.activateItem(item, payment._id, payment.user || user, session);
+        } catch (itemErr) {
+          fulfillmentFailures.push({
+            itemType: item?.itemType || 'unknown',
+            itemId: String(item?.itemId || ''),
+            error: String(itemErr.message || itemErr).slice(0, 300),
+          });
+          logger.error(MODULE, 'Fulfillment item failed — continuing capture', {
+            paymentId: String(payment._id),
+            itemType: item?.itemType,
+            itemId: String(item?.itemId || ''),
+            error: itemErr.message,
+          });
+        }
       }
-      await this.repository.setFulfillmentStatus(payment._id, 'completed', session);
+      const fulfillmentStatus = fulfillmentFailures.length === 0 ? 'completed' : 'partial';
+      // Fallback heal: if the cart Order exists but payment.items lost the
+      // order link (crash between Order.create and addOrderLink), the order
+      // would stay pending forever while payment is captured. Complete it.
+      try {
+        const { default: Order } = await import('../models/Order.js');
+        await Order.updateMany(
+          { payment: payment._id, status: 'pending', kind: 'general' },
+          { $set: { status: 'completed' } },
+          { session },
+        );
+      } catch (healErr) {
+        logger.error(MODULE, 'Order heal after capture failed', { error: healErr.message });
+      }
+      await this.repository.setFulfillmentStatus(payment._id, fulfillmentStatus, session);
+      if (fulfillmentFailures.length > 0) {
+        await this.repository.addAuditEntry(payment._id, {
+          action: 'fulfill_partial',
+          from: 'pending',
+          to: 'captured',
+          by: payment.user || user || null,
+          metadata: { invoiceNo, provider: PROVIDER, confirmationCode, failures: fulfillmentFailures },
+        }, session);
+      }
       // Post-capture bookkeeping: consume coupon (reserved until now) and
       // clear purchased items from cart. Runs inside the same transaction
       // so it can never happen without capture, nor twice.
@@ -637,6 +679,30 @@ export class PaymentService {
       const user = await User.findById(userId).select('name email').lean();
       const amountMajor = (payment.amount / 100).toFixed(2);
       const amountDisplay = `KES ${amountMajor}`;
+      const merchantReference = payment.merchant_reference || '';
+      const providerTransactionId = payment.provider_transaction_id || '';
+
+      // ── Resolve canonical shop Order (ORD-*) linked to this payment ──
+      // Single source of truth for the Order ID shown in mail + UI.
+      // Order.payment is set at fulfillment; payment.items holds
+      // { itemType: 'order', metadata: { orderNumber } } from cart checkout.
+      let orderNumber = '';
+      try {
+        const { default: Order } = await import('../models/Order.js');
+        const linked = await Order.findOne({ payment: payment._id })
+          .select('orderNumber transactionId')
+          .lean();
+        if (linked?.orderNumber) {
+          orderNumber = linked.orderNumber;
+        } else {
+          const orderItem = (payment.items || []).find(
+            (i) => i.itemType === 'order' && i.metadata?.orderNumber,
+          );
+          if (orderItem) orderNumber = orderItem.metadata.orderNumber;
+        }
+      } catch (lookupErr) {
+        logger.error(MODULE, 'Order lookup for notification failed', { error: lookupErr.message });
+      }
 
       const mod = await import('../notification/core/NotificationService.js');
       const ns = mod.default;
@@ -644,43 +710,87 @@ export class PaymentService {
       ns.send(userId, {
         channels: ['inApp'],
         data: {
-          merchantReference: payment.merchant_reference,
-          providerTransactionId: payment.provider_transaction_id || '',
+          merchantReference,
+          providerTransactionId,
+          orderNumber,
           amount: payment.amount,
           invoiceNo,
         },
         subject: 'Payment Successful',
-        message: `Payment of ${amountDisplay} was successful. Invoice: ${invoiceNo}`,
+        message: `Payment of ${amountDisplay} was successful. Order: ${orderNumber || merchantReference} Invoice: ${invoiceNo}`,
         priority: 'normal',
       }).catch((err) => logger.error(MODULE, 'In-app notification failed', { error: err.message }));
 
+      // ── User receipts: BOTH payment confirmation + formal tax invoice ──
+      // The invoice email is the legal receipt; the payment email is the
+      // at-a-glance confirmation. Both carry identical ORD-*/INV-* IDs.
       if (user?.email) {
-        emailService.sendInvoice({
+        const invoiceDate = new Date().toLocaleDateString('en-KE');
+        const paymentDate = new Date().toLocaleString('en-KE');
+        const invoicePayload = {
           email: user.email,
           name: user.name,
           invoiceNumber: invoiceNo,
+          orderNumber,
+          merchantReference,
+          transactionId: providerTransactionId,
           amount: amountDisplay,
           description: payment.label || 'Purchase',
-          invoiceDate: new Date().toLocaleDateString('en-KE'),
+          invoiceDate,
           paymentMethod: 'Pesapal',
-        }).catch((err) => logger.error(MODULE, 'Invoice email failed', { error: err.message }));
+        };
+        emailService.sendInvoice(invoicePayload)
+          .catch((err) => logger.error(MODULE, 'Invoice email failed', { error: err.message }));
 
         emailService.sendPaymentSuccess({
           email: user.email,
           name: user.name,
           amount: amountDisplay,
-          transactionId: payment.provider_transaction_id || payment.merchant_reference || '',
-          orderId: payment.merchant_reference || '',
+          transactionId: providerTransactionId || merchantReference,
+          // Canonical shop order id (ORD-*) — falls back to PAY-* only for
+          // legacy payments with no linked Order, to avoid empty field.
+          orderNumber: orderNumber || merchantReference,
+          orderId: orderNumber || merchantReference,
+          invoiceNumber: invoiceNo,
+          merchantReference,
           description: payment.label || 'Purchase',
-          paymentDate: new Date().toLocaleString('en-KE'),
+          paymentDate,
         }).catch((err) => logger.error(MODULE, 'Payment success email failed', { error: err.message }));
+
+        // ── Admin copies: same luxury invoice + payment summary ──
+        // Lets ops verify exactly what the customer received.
+        const adminCopy = { ...invoicePayload };
+        delete adminCopy.email;
+        import('../services/email/email.service.js').then((mod) => {
+          const svc = mod.default;
+          const getAdmins = () => {
+            try {
+              const raw = process.env.ADMIN_EMAIL
+                || 'dr.kesarikapil@gmail.com,sriharijagan333@gmail.com,sureshforu@gmail.com';
+              const list = raw.split(',').map((e) => e.trim()).filter(Boolean);
+              for (const extra of ['sriharijagan333@gmail.com', 'sureshforu@gmail.com']) {
+                if (!list.includes(extra)) list.push(extra);
+              }
+              return [...new Set(list)];
+            } catch { return ['sriharijagan333@gmail.com', 'sureshforu@gmail.com']; }
+          };
+          getAdmins().forEach((adminEmail) => {
+            svc.sendInvoice({ ...adminCopy, email: adminEmail })
+              .catch((err) => logger.error(MODULE, 'Admin invoice copy failed', { error: err.message, adminEmail }));
+          });
+        }).catch((err) => logger.error(MODULE, 'Admin invoice import failed', { error: err.message }));
       }
 
       emailService.sendPaymentReceivedAdmin({
         customerName: user?.name || 'Unknown',
         customerEmail: user?.email || '',
         order: payment.label || 'Purchase',
+        orderNumber,
+        invoiceNumber: invoiceNo,
+        transactionId: providerTransactionId,
+        merchantReference,
         amount: amountDisplay,
+        paymentMethod: 'Pesapal',
         paymentId: payment.provider_transaction_id || payment.merchant_reference || '',
         razorpayOrderId: payment.merchant_reference || '',
       }).catch((err) => logger.error(MODULE, 'Admin payment notification failed', { error: err.message }));

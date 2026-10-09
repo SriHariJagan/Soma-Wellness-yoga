@@ -83,7 +83,7 @@ const BTN_GHOST = {
 };
 
 /* ── Premium Drawer Shell ───────────────────────────────── */
-function QuickDrawer({ open, onClose, title, icon, subtitle, children }) {
+export function QuickDrawer({ open, onClose, title, icon, subtitle, children }) {
   const overlayRef = useRef(null);
 
   useEffect(() => {
@@ -168,7 +168,7 @@ function QuickDrawer({ open, onClose, title, icon, subtitle, children }) {
 }
 
 /* ── Reusable section card ──────────────────────────────── */
-function SectionCard({ icon, title, children, col = '1' }) {
+export function SectionCard({ icon, title, children, col = '1' }) {
   return (
     <div style={{ ...CARD, marginBottom: '18px' }}>
       <div style={{
@@ -194,7 +194,7 @@ function SectionCard({ icon, title, children, col = '1' }) {
 }
 
 /* ── Field wrapper (premium) ────────────────────────────── */
-function FieldGroup({ icon, label, required, children, fullWidth }) {
+export function FieldGroup({ icon, label, required, children, fullWidth }) {
   return (
     <div style={{
       ...FIELD,
@@ -281,7 +281,7 @@ function FocusTextarea(props) {
 }
 
 /* ── Footer action bar ──────────────────────────────────── */
-function DrawerFooter({ onCancel, onSubmit, saving, submitText, submitIcon, disabled }) {
+export function DrawerFooter({ onCancel, onSubmit, saving, submitText, submitIcon, disabled }) {
   return (
     <div style={{
       display: 'flex', justifyContent: 'flex-end', gap: '12px',

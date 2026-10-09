@@ -7,6 +7,8 @@ export default function invoice(notification) {
   const user = notification.user || {};
 
   const invoiceNumber  = data.invoiceNumber  || '';
+  const orderNumber    = data.orderNumber    || data.orderId || '';
+  const transactionId  = data.transactionId  || '';
   const amount         = data.amount         || '';
   const planName       = data.planName       || '';
   const paymentMethod  = data.paymentMethod  || '';
@@ -18,6 +20,8 @@ export default function invoice(notification) {
 
   const rows = [];
   if (invoiceNumber) rows.push({ label: 'Invoice', value: `<strong>#${escapeHtml(invoiceNumber)}</strong>` });
+  if (orderNumber) rows.push({ label: 'Order ID', value: escapeHtml(orderNumber) });
+  if (transactionId) rows.push({ label: 'Transaction ID', value: escapeHtml(transactionId) });
   if (planName) rows.push({ label: 'Plan', value: escapeHtml(planName) });
   if (invoiceDate) rows.push({ label: 'Date', value: escapeHtml(invoiceDate) });
   if (paymentMethod) rows.push({ label: 'Payment', value: escapeHtml(paymentMethod) });
@@ -38,6 +42,8 @@ export default function invoice(notification) {
     `Thank you for your payment, ${name}!`,
     '',
     ...(invoiceNumber ? [`Invoice: #${invoiceNumber}`] : []),
+    ...(orderNumber ? [`Order ID: ${orderNumber}`] : []),
+    ...(transactionId ? [`Transaction ID: ${transactionId}`] : []),
     ...(planName ? [`Plan: ${planName}`] : []),
     ...(invoiceDate ? [`Date: ${invoiceDate}`] : []),
     ...(paymentMethod ? [`Payment: ${paymentMethod}`] : []),

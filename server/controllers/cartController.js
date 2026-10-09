@@ -623,6 +623,25 @@ export const checkout = asyncHandler(async (req, res) => {
     const initiateCheckout = async () => {
       const { PaymentService } = await import('../payment/PaymentService.js');
       const paymentService = new PaymentService();
+      // Single-open-order rule: one click = one pending order. If this student
+      // already has an open pending general order, UPDATE it in place instead
+      // of minting a second ORD-*. Stale (>15 min) leftovers are dropped first
+      // so a fresh checkout never inherits an about-to-expire order.
+      let reusedOrder = await Order.findOne({
+        student: userId, kind: 'general', status: 'pending',
+      }).sort({ createdAt: -1 });
+      if (reusedOrder && Date.now() - new Date(reusedOrder.createdAt).getTime() > 15 * 60 * 1000) {
+        const stalePaymentId = reusedOrder.payment;
+        await OrderItem.deleteMany({ order: reusedOrder._id }).catch(() => {});
+        await Order.deleteOne({ _id: reusedOrder._id, status: 'pending' }).catch(() => {});
+        if (stalePaymentId) {
+          await paymentRepo.markFailed(stalePaymentId, ['initiated', 'pending'], {
+            failureReason: 'Superseded by fresh checkout',
+            auditAction: 'superseded_by_recheckout',
+          }).catch(() => {});
+        }
+        reusedOrder = null;
+      }
       // Server-authoritative intent (cart totals already computed server-side
       // above from DB prices). No client amount is trusted.
       const payment = await paymentService.createIntent({
@@ -635,22 +654,44 @@ export const checkout = asyncHandler(async (req, res) => {
         idempotencyKey: idempotencyKey || undefined,
       });
 
-      // Create pending Order — completed only after Pesapal verification
-      const order = await Order.create({
-        student: userId,
-        subtotal,
-        discount: totalDiscount,
-        tax: 0,
-        total,
-        coupon: couponId,
-        couponCode,
-        couponDiscount,
-        status: 'pending',
-        paymentMethod: 'Pesapal',
-        transactionId: idempotencyKey || payment._id.toString(),
-        payment: payment._id,
-        itemCount: items.length,
-      });
+      // Create pending Order — completed only after Pesapal verification.
+      // Reuse path updates the single open order; otherwise mint a new one.
+      let order;
+      let supersededPaymentId = null;
+      if (reusedOrder) {
+        supersededPaymentId = reusedOrder.payment ? String(reusedOrder.payment) : null;
+        reusedOrder.subtotal = subtotal;
+        reusedOrder.discount = totalDiscount;
+        reusedOrder.tax = 0;
+        reusedOrder.total = total;
+        reusedOrder.coupon = couponId;
+        reusedOrder.couponCode = couponCode;
+        reusedOrder.couponDiscount = couponDiscount;
+        reusedOrder.status = 'pending';
+        reusedOrder.paymentMethod = 'Pesapal';
+        if (idempotencyKey) reusedOrder.transactionId = idempotencyKey;
+        reusedOrder.payment = payment._id;
+        reusedOrder.itemCount = items.length;
+        await reusedOrder.save();
+        order = reusedOrder;
+        await OrderItem.deleteMany({ order: order._id });
+      } else {
+        order = await Order.create({
+          student: userId,
+          subtotal,
+          discount: totalDiscount,
+          tax: 0,
+          total,
+          coupon: couponId,
+          couponCode,
+          couponDiscount,
+          status: 'pending',
+          paymentMethod: 'Pesapal',
+          transactionId: idempotencyKey || payment._id.toString(),
+          payment: payment._id,
+          itemCount: items.length,
+        });
+      }
 
       // Record order items (no activation — stored for fulfillment after payment)
       for (const item of items) {
@@ -680,22 +721,44 @@ export const checkout = asyncHandler(async (req, res) => {
         metadata: { orderNumber: order.orderNumber },
       });
       await paymentRepo.addAuditEntry(payment._id, {
-        action: 'order_created',
+        action: reusedOrder ? 'order_reused' : 'order_created',
         from: 'pending',
         to: 'pending',
         by: userId,
-        metadata: { orderId: String(order._id), orderNumber: order.orderNumber },
+        metadata: { orderId: String(order._id), orderNumber: order.orderNumber, reused: !!reusedOrder },
       });
+      // The previous pending payment for this order is superseded — fail it
+      // so it never shows as an extra pending charge in admin views.
+      if (supersededPaymentId && String(supersededPaymentId) !== String(payment._id)) {
+        await paymentRepo.markFailed(supersededPaymentId, ['initiated', 'pending'], {
+          failureReason: 'Superseded by re-checkout on same order',
+          auditAction: 'superseded_by_recheckout',
+        }).catch(() => {});
+      }
 
       // Coupon accounting intentionally happens at capture time
       // (see finalizePurchase) — abandoned checkouts must not burn uses.
 
       // Submit to Pesapal → pending + redirect URL (server-to-server).
-      const providerResult = await paymentService.createProviderOrder({
-        paymentId: payment._id,
-        user: userId,
-        customer: {},
-      });
+      // Compensation: if the provider call fails, remove the just-created
+      // pending Order + items and fail the Payment so a retry with the same
+      // idempotencyKey creates exactly one live checkout (no orphan pile-up).
+      let providerResult;
+      try {
+        providerResult = await paymentService.createProviderOrder({
+          paymentId: payment._id,
+          user: userId,
+          customer: {},
+        });
+      } catch (providerErr) {
+        await OrderItem.deleteMany({ order: order._id }).catch(() => {});
+        await Order.deleteOne({ _id: order._id, status: 'pending' }).catch(() => {});
+        await paymentRepo.markFailed(payment._id, ['initiated', 'pending'], {
+          failureReason: `Provider submission failed: ${providerErr.message || 'unknown'}`.slice(0, 500),
+          auditAction: 'provider_submit_failed',
+        }).catch(() => {});
+        throw providerErr;
+      }
 
       return { payment: providerResult.payment, order, providerResult };
     };

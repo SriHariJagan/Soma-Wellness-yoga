@@ -82,16 +82,23 @@ export const listAllOrders = asyncHandler(async (req, res) => {
   if (search) {
     const esc = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(esc, 'i');
-    const matchingStudents = await User.find({
-      $or: [{ name: regex }, { email: regex }],
-    }).distinct('_id');
-    const matchingItems = await OrderItem.find({ name: regex }).distinct('order');
+    const [matchingStudents, matchingItems, matchingPayments] = await Promise.all([
+      User.find({ $or: [{ name: regex }, { email: regex }] }).distinct('_id'),
+      OrderItem.find({ name: regex }).distinct('order'),
+      // Invoice / payment-reference search: Payment lives in its own
+      // collection, so resolve matching payment ids first.
+      (await import('../payment/models/Payment.js')).default.find({
+        $or: [{ invoiceNo: regex }, { merchant_reference: regex }, { provider_transaction_id: regex }],
+      }).distinct('_id'),
+    ]);
     conditions.push({
       $or: [
         { orderNumber: regex },
         { couponCode: regex },
+        { transactionId: regex },
         { student: { $in: matchingStudents } },
         { _id: { $in: matchingItems } },
+        { payment: { $in: matchingPayments } },
       ],
     });
   }
@@ -121,6 +128,8 @@ export const listAllOrders = asyncHandler(async (req, res) => {
 
 /* ── GET /api/admin/orders/:id ── (enriched) */
 export const getOrderDetail = asyncHandler(async (req, res) => {
+  const { default: mongoose } = await import('mongoose');
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) throw ApiError.notFound('Order not found');
   const order = await Order.findById(req.params.id)
     .populate('student', 'name email phone')
     .populate('payment')
@@ -134,44 +143,50 @@ export const getOrderDetail = asyncHandler(async (req, res) => {
     coupon = await Coupon.findById(order.coupon).lean();
   }
 
-  const userId = order.student?._id || order.student;
+  const userId = order.student?._id || order.student || null;
 
-  const enrollments = [];
-  for (const item of items) {
-    switch (item.itemType) {
-      case 'plan': {
-        const membership = await Membership.findOne({ user: userId, plan: item.itemId })
-          .sort({ createdAt: -1 })
-          .lean();
-        enrollments.push({ itemType: item.itemType, name: item.name, status: membership?.status || 'unknown', expiryDate: membership?.expiryDate, _id: membership?._id });
-        break;
+  // Enrollment lookups are best-effort and parallel: a deleted catalog
+  // entry or a non-ObjectId itemId must never 500 the whole detail view
+  // or stall it serially. Each item falls back to `unknown`.
+  const validId = (v) => mongoose.Types.ObjectId.isValid(v);
+  const enrollments = await Promise.all(items.map(async (item) => {
+    try {
+      switch (item.itemType) {
+        case 'plan': {
+          const membership = validId(item.itemId) && userId
+            ? await Membership.findOne({ user: userId, plan: item.itemId }).sort({ createdAt: -1 }).lean()
+            : null;
+          return { itemType: item.itemType, name: item.name, status: membership?.status || 'unknown', expiryDate: membership?.expiryDate, _id: membership?._id };
+        }
+        case 'service': {
+          const us = validId(item.itemId) && userId
+            ? await UserService.findOne({ user: userId, service: item.itemId }).sort({ createdAt: -1 }).lean()
+            : null;
+          return { itemType: item.itemType, name: item.name, status: us?.status || 'unknown', expiryDate: us?.expiryDate, _id: us?._id };
+        }
+        case 'course': {
+          return { itemType: item.itemType, name: item.name, status: 'enrolled' };
+        }
+        case 'workshop': {
+          const workshop = validId(item.itemId)
+            ? await Workshop.findOne({ _id: item.itemId, 'registrations.user': userId }).lean()
+            : null;
+          const reg = workshop?.registrations?.find((r) => r.user?.toString() === userId?.toString());
+          return { itemType: item.itemType, name: item.name, status: reg ? 'registered' : 'unknown', _id: item.itemId };
+        }
+        case 'consultation': {
+          const consult = userId
+            ? await Consultation.findOne({ user: userId, _id: item._id }).lean()
+            : null;
+          return { itemType: item.itemType, name: item.name, status: consult?.status || 'unknown', _id: consult?._id };
+        }
+        default:
+          return { itemType: item.itemType, name: item.name, status: 'unknown' };
       }
-      case 'service': {
-        const us = await UserService.findOne({ user: userId, service: item.itemId })
-          .sort({ createdAt: -1 })
-          .lean();
-        enrollments.push({ itemType: item.itemType, name: item.name, status: us?.status || 'unknown', expiryDate: us?.expiryDate, _id: us?._id });
-        break;
-      }
-      case 'course': {
-        enrollments.push({ itemType: item.itemType, name: item.name, status: 'enrolled' });
-        break;
-      }
-      case 'workshop': {
-        const workshop = await Workshop.findOne({ _id: item.itemId, 'registrations.user': userId }).lean();
-        const reg = workshop?.registrations?.find((r) => r.user?.toString() === userId.toString());
-        enrollments.push({ itemType: item.itemType, name: item.name, status: reg ? 'registered' : 'unknown', _id: item.itemId });
-        break;
-      }
-      case 'consultation': {
-        const consult = await Consultation.findOne({ user: userId, _id: item._id }).lean();
-        enrollments.push({ itemType: item.itemType, name: item.name, status: consult?.status || 'unknown', _id: consult?._id });
-        break;
-      }
-      default:
-        enrollments.push({ itemType: item.itemType, name: item.name, status: 'unknown' });
+    } catch {
+      return { itemType: item.itemType, name: item.name, status: 'unknown' };
     }
-  }
+  }));
 
   const timeline = await ActivityLog.find({
     $or: [
@@ -180,16 +195,57 @@ export const getOrderDetail = asyncHandler(async (req, res) => {
       { action: { $in: [/checkout/i, /order/i, /payment/i, /notif/i] }, targetUser: userId },
     ],
   })
+    .select('action meta createdAt')
     .sort({ createdAt: -1 })
-    .limit(30)
+    .limit(15)
     .lean();
 
   res.json({ ...order, items, coupon, enrollments, timeline });
 });
 
+/* ── DELETE /api/student/orders/:id/cancel ──
+   Owner-scoped cancel of a still-pending checkout. Deletes the order +
+   items and fails the linked payment (unless already captured). Gives
+   students control instead of waiting for the 15-min sweeper. */
+export const cancelStudentOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, student: req.user._id });
+  if (!order) throw ApiError.notFound('Order not found');
+  if (order.status !== 'pending') {
+    throw ApiError.badRequest(`Only pending orders can be cancelled (current: ${order.status})`);
+  }
+  if (order.payment) {
+    const Payment = (await import('../payment/models/Payment.js')).default;
+    const pay = await Payment.findById(order.payment).select('paymentStatus').lean();
+    if (pay?.paymentStatus === 'captured') {
+      // Paid while the cancel raced verify — heal instead of deleting.
+      order.status = 'completed';
+      await order.save();
+      return res.json({ success: true, msg: 'Payment already completed — order confirmed.', orderNumber: order.orderNumber, status: order.status });
+    }
+    await Payment.updateOne(
+      { _id: order.payment, paymentStatus: { $ne: 'captured' } },
+      { $set: { paymentStatus: 'failed', failedAt: new Date(), failure_reason: 'Cancelled by student' } },
+    );
+  }
+  await OrderItem.deleteMany({ order: order._id });
+  const CouponUsage = (await import('../models/CouponUsage.js')).default;
+  await CouponUsage.deleteMany({ order: order._id }).catch(() => {});
+  await Order.deleteOne({ _id: order._id, status: 'pending' });
+  await ActivityLog.create({
+    action: 'order_cancelled_by_student',
+    performedBy: req.user._id,
+    targetUser: req.user._id,
+    meta: { orderId: order._id, orderNumber: order.orderNumber },
+  }).catch(() => {});
+  res.json({ success: true, msg: 'Pending order cancelled.', orderNumber: order.orderNumber });
+});
+
 /* ── POST /api/admin/orders/:id/resend-notification ── */
 export const resendOrderNotification = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id).populate('student', 'name email').lean();
+  const order = await Order.findById(req.params.id)
+    .populate('student', 'name email')
+    .populate('payment', 'invoiceNo merchant_reference provider_transaction_id')
+    .lean();
   if (!order) throw ApiError.notFound('Order not found');
   const items = await OrderItem.find({ order: order._id }).lean();
 

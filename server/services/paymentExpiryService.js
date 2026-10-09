@@ -22,6 +22,9 @@ class PaymentExpiryService {
   start(intervalMs = 5 * 60 * 1000, reconcileMs = RECONCILE_INTERVAL_FALLBACK) {
     if (this.intervalId) return;
     logger.info(MODULE, `Starting payment expiry checker (every ${intervalMs / 1000}s, expiry: ${EXPIRY_MINUTES}m)`);
+    // Immediate first pass on boot so stale pendings from before deploy
+    // clear without waiting a full interval. Never blocks startup.
+    this.check().catch(() => {});
     this.intervalId = setInterval(() => this.check(), intervalMs);
     // Reconciliation pass on a separate cadence (defaults to same 5 min).
     if (!this.reconcileId) {
@@ -52,6 +55,19 @@ class PaymentExpiryService {
       }
     } catch (err) {
       logger.error(MODULE, 'Payment expiry check failed', { error: err.message });
+    }
+    // Abandoned general checkouts: delete unpaid ORD-* pending >15 min,
+    // heal paid-but-pending to completed. Runs on the same 5-min cadence.
+    try {
+      const { sweepExpiredGeneralOrders } = await import('./generalOrderCleanupService.js');
+      const cleaned = await sweepExpiredGeneralOrders();
+      const deleted = cleaned.filter((r) => r.deleted).length;
+      const healed = cleaned.filter((r) => r.reason === 'paid_healed').length;
+      if (deleted > 0 || healed > 0) {
+        logger.info(MODULE, 'General order sweep finished', { deleted, healed, checked: cleaned.length });
+      }
+    } catch (err) {
+      logger.error(MODULE, 'General order sweep failed', { error: err.message });
     }
   }
 

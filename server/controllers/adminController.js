@@ -336,6 +336,16 @@ export const deleteStudent = asyncHandler(async (req, res) => {
   } catch (e) {
     logger.error(MODULE, 'Failed to deactivate membership on student delete', { error: e.message, studentId: req.params.id });
   }
+  // Cancel any active free trial too, so it never surfaces as an
+  // "Unknown" orphan row in trial management.
+  try {
+    await FreeTrial.updateMany(
+      { user: req.params.id, status: 'active' },
+      { $set: { status: 'cancelled' }, $push: { history: { action: 'cancelled', note: 'Student account deleted — trial cancelled', at: new Date() } } },
+    );
+  } catch (e) {
+    logger.error(MODULE, 'Failed to cancel trial on student delete', { error: e.message, studentId: req.params.id });
+  }
   await log(`Soft-deleted student: ${student.email}`, req, student._id);
   res.json({ success: true, msg: 'Student deactivated and archived' });
 });
