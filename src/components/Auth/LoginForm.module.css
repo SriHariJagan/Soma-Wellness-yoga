@@ -204,8 +204,20 @@
 .flipWrap { perspective: 1600px; overflow: visible; }
 .face { backface-visibility: hidden; transform-style: preserve-3d; }
 
+/* ── Register premium micro-trust note ─────────────────────── */
+.secureNote {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  margin: 2px 0 0;
+  font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--soma-warm-gray);
+}
+.secureNote span { font-size: 12px; }
+
 /* ── Fit-to-viewport compression (no scrolling) ─────────────── */
-.formCard { max-height: calc(100vh - 36px); }
+.formCard { max-height: calc(100vh - 36px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(46,125,91,0.35) transparent; }
+.formCard::-webkit-scrollbar { width: 5px; }
+.formCard::-webkit-scrollbar-thumb { background: rgba(46,125,91,0.28); border-radius: 9999px; }
+.formCard::-webkit-scrollbar-track { background: transparent; }
 @supports (height: 100dvh) { .formCard { max-height: calc(100dvh - 36px); } }
 
 @media (max-height: 840px) {

@@ -50,9 +50,10 @@ function EntityBadge({ entityType, entityLabel }) {
     trial: { bg: '#D97706', label: 'Trial' },
     workshop: { bg: '#2563EB', label: 'Workshop' },
     batch: { bg: '#0891B2', label: 'Batch' },
+    none: { bg: '#0EA5E9', label: 'Standalone' },
   };
   const t = toneMap[entityType] || { bg: '#7C6A58', label: '' };
-  const display = entityLabel || entityType || '';
+  const display = entityLabel || t.label || entityType || '';
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -139,18 +140,19 @@ export default function ClassesPage() {
   const completedCount = invites.filter(i => categorize(i) === 'completed').length;
 
   async function openDetail(inv) {
-    setModalLoading(true);
+    // Show list data instantly so the modal never appears empty —
+    // then silently enrich with the full detail response.
+    setSelected(inv);
+    setModalLoading(false);
     setModalOpen(true);
     try {
       const data = await getMyInviteDetail(inv._id);
-      setSelected(data);
+      setSelected((prev) => (prev && prev._id === data._id ? data : prev));
       if (inv.myStatus !== 'read' && inv.myStatus !== 'joined') {
         markInviteRead(inv._id).catch(() => {});
       }
     } catch {
-      setSelected(null);
-    } finally {
-      setModalLoading(false);
+      /* list data already shown — keep it */
     }
   }
 
@@ -329,10 +331,12 @@ export default function ClassesPage() {
         </AnimatePresence>
       </Stagger>
 
-      {/* Detail Modal */}
-      <AnimatePresence>
-        {modalOpen && createPortal(
+      {/* Detail Modal — portal sits OUTSIDE AnimatePresence: a portal as a
+          direct AnimatePresence child is dropped and the modal never mounts. */}
+      {modalOpen && createPortal(
+        <AnimatePresence>
           <motion.div
+            key="class-detail-modal"
             className={styles.modalOverlay}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -355,7 +359,7 @@ export default function ClassesPage() {
                 <i className="ti ti-x" />
               </button>
 
-              {modalLoading ? (
+              {modalLoading && !selected ? (
                 <div className={styles.modalLoading}>
                   <div className={styles.spinner} />
                   <p>Loading details…</p>
@@ -486,10 +490,10 @@ export default function ClassesPage() {
                 </div>
               )}
             </motion.div>
-          </motion.div>,
-          document.body
-        )}
-      </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }

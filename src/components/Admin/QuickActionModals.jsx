@@ -52,7 +52,7 @@ const INPUT = {
   color: '#2D1406',
   outline: 'none',
   transition: 'border-color 0.15s, box-shadow 0.15s',
-  fontFamily: 'var(--font-body, Manrope, sans-serif)',
+  fontFamily: 'var(--font-body, Inter, sans-serif)',
 };
 
 const BTN_PRIMARY = {
@@ -62,7 +62,7 @@ const BTN_PRIMARY = {
   border: 'none',
   background: 'linear-gradient(135deg, #2E7D5B, #81B29A)',
   color: '#fff',
-  fontFamily: 'var(--font-heading, Outfit, sans-serif)',
+  fontFamily: 'var(--font-heading, Cormorant Garamond, serif)',
   fontSize: '14px', fontWeight: 600,
   cursor: 'pointer',
   boxShadow: '0 6px 18px rgba(46,125,91,0.32), inset 0 1px 0 rgba(255,255,255,0.6)',
@@ -76,7 +76,7 @@ const BTN_GHOST = {
   border: '1.5px solid var(--color-border, rgba(45,20,6,0.08))',
   background: '#ffffff',
   color: '#7C6A58',
-  fontFamily: 'var(--font-heading, Outfit, sans-serif)',
+  fontFamily: 'var(--font-heading, Cormorant Garamond, serif)',
   fontSize: '14px', fontWeight: 600,
   cursor: 'pointer',
   transition: 'border-color 0.15s, color 0.15s, background 0.15s',
@@ -136,14 +136,14 @@ export function QuickDrawer({ open, onClose, title, icon, subtitle, children }) 
               <span style={ICON_BOX}>{icon}</span>
               <div style={{ flex: 1 }}>
                 <h2 style={{
-                  fontFamily: 'var(--font-heading, Outfit, sans-serif)',
+                  fontFamily: 'var(--font-heading, Cormorant Garamond, serif)',
                   fontSize: '17px', fontWeight: 700, margin: 0,
                   color: '#2D1406', letterSpacing: '-0.02em',
                 }}>{title}</h2>
                 {subtitle && (
                   <p style={{
                     fontSize: '13px', color: '#7C6A58', margin: '2px 0 0',
-                    fontFamily: 'var(--font-body, Manrope, sans-serif)',
+                    fontFamily: 'var(--font-body, Inter, sans-serif)',
                   }}>{subtitle}</p>
                 )}
               </div>
@@ -177,7 +177,7 @@ export function SectionCard({ icon, title, children, col = '1' }) {
       }}>
         <span style={ICON_BOX}>{icon}</span>
         <h3 style={{
-          fontFamily: 'var(--font-heading, Outfit, sans-serif)',
+          fontFamily: 'var(--font-heading, Cormorant Garamond, serif)',
           fontSize: '15px', fontWeight: 600, margin: 0,
           color: '#2D1406',
         }}>{title}</h3>
@@ -685,7 +685,7 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <span style={ICON_BOX}><LuReceipt size={18} /></span>
-              <h3 style={{ fontFamily: 'var(--font-heading, Outfit, sans-serif)', fontSize: '15px', fontWeight: 600, margin: 0, color: '#2D1406' }}>Invoice Preview</h3>
+              <h3 style={{ fontFamily: 'var(--font-heading, Cormorant Garamond, serif)', fontSize: '15px', fontWeight: 600, margin: 0, color: '#2D1406' }}>Invoice Preview</h3>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', fontSize: '14px' }}>
               {[
@@ -707,7 +707,7 @@ export function RecordPaymentModal({ onClose, onSuccess }) {
                 display: 'flex', justifyContent: 'space-between',
                 padding: '12px 0', marginTop: '4px',
                 borderTop: '2px solid rgba(46,125,91,0.2)',
-                fontFamily: 'var(--font-heading, Outfit, sans-serif)',
+                fontFamily: 'var(--font-heading, Cormorant Garamond, serif)',
                 fontSize: '16px', fontWeight: 700, color: '#2D1406',
               }}>
                 <span>Final Amount</span>

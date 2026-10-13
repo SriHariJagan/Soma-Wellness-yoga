@@ -38,13 +38,27 @@ describe('resolveMembershipPrice', () => {
 
   it('case-insensitive tier key', () => {
     expect(resolveMembershipPrice('jua', 1).baseMonthly).toBe(12000);
-    expect(resolveMembershipPrice('Uzima', 1).baseMonthly).toBe(28500);
+    // UZIMA monthly is 22500 (28500 is the *founding* UZIMA rate).
+    expect(resolveMembershipPrice('Uzima', 1).baseMonthly).toBe(TIER_MONTHLY.UZIMA);
+    expect(resolveMembershipPrice('Uzima', 1).baseMonthly).toBe(22500);
   });
 
   it('resolves all terms for AMANI', () => {
-    expect(resolveMembershipPrice('AMANI', 3).termTotal).toBe(49500);
-    expect(resolveMembershipPrice('AMANI', 6).termTotal).toBe(94000);
-    expect(resolveMembershipPrice('AMANI', 12).termTotal).toBe(166500);
+    // Explicit pay-ahead totals from server/config/somaCatalog.js
+    // PAY_AHEAD_PRICING.AMANI (mirrored in src/lib/pricing.js).
+    expect(resolveMembershipPrice('AMANI', 1).termTotal).toBe(16500);
+    expect(resolveMembershipPrice('AMANI', 3).termTotal).toBe(44550);
+    expect(resolveMembershipPrice('AMANI', 6).termTotal).toBe(75500);
+    expect(resolveMembershipPrice('AMANI', 12).termTotal).toBe(125500);
+  });
+
+  it('non-founding term totals equal the catalog pay-ahead table', () => {
+    // Guards against the frontend table drifting from the approved catalog.
+    for (const tier of Object.keys(TIER_MONTHLY)) {
+      for (const months of [1, 3, 6, 12]) {
+        expect(resolveMembershipPrice(tier, months).termTotal).toBe(PAY_AHEAD_PRICING[tier][months]);
+      }
+    }
   });
 
   it('founding price is discounted and uses formula for non-standard terms', () => {
@@ -56,8 +70,11 @@ describe('resolveMembershipPrice', () => {
     const f3 = resolveMembershipPrice('JUA', 3, { foundingEligible: true });
     expect(f3.termTotal).toBe(Math.round(10000*3*0.9));
 
+    // Founding base for UZIMA is 19000 (24000 was the retired rate).
     const f12 = resolveMembershipPrice('UZIMA', 12, { foundingEligible: true });
-    expect(f12.termTotal).toBe(Math.round(24000*12*0.75));
+    expect(f12.baseMonthly).toBe(FOUNDING_MONTHLY.UZIMA);
+    expect(f12.termTotal).toBe(Math.round(19000*12*0.75));
+    expect(f12.termTotal).toBe(171000);
   });
 
   it('throws for unknown tier', () => {

@@ -24,7 +24,7 @@ const SessionHistoryEntrySchema = new mongoose.Schema({
 
 const MembershipSchema = new mongoose.Schema(
   {
-    user:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    user:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     plan:       { type: mongoose.Schema.Types.ObjectId, ref: 'Plan' },
     invoice:    { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' },
     planType:   { type: String, default: 'Soma Wellness Circle' },
@@ -113,6 +113,15 @@ MembershipSchema.virtual('isActive').get(function () {
 });
 
 // DB-level guard: at most one active membership per user.
+// This is the ONLY declaration of the `user` index. The inline `index: true`
+// on the user path used to declare the same index a second time (non-unique),
+// which made it ambiguous which definition was authoritative and triggered a
+// Mongoose duplicate-index warning. The declaration below is strictly
+// stronger (unique + partial), so uniqueness is preserved.
+// NOTE: if the deployed collection still carries a non-unique `user_1` index,
+// creating this stricter index requires the approved migration described in
+// reports/PESAPAL_REMEDIATION_REPORT.md (DEF-004) — duplicate active
+// memberships must be resolved first.
 MembershipSchema.index(
   { user: 1 },
   { unique: true, partialFilterExpression: { status: 'active' } },

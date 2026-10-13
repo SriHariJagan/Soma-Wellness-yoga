@@ -136,7 +136,11 @@ const SomaTestimonials = () => {
                       className={`${styles.dot} ${idx === i ? styles.dotActive : ""}`}
                       onClick={() => setIdx(i)}
                       aria-label={t("home.testimonials.testimonialLabel", { current: i + 1, total: list.length })}
-                      aria-selected={idx === i}
+                      // aria-selected is only valid on roles such as
+                      // tab/option/row; on a plain <button> it is an invalid
+                      // attribute (WCAG axe rule aria-allowed-attr, critical).
+                      // aria-current is the correct "currently selected" state.
+                      aria-current={idx === i}
                     >
                       <motion.span
                         className={styles.dotFill}

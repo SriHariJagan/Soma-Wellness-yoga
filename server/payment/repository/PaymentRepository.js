@@ -224,10 +224,48 @@ export class PaymentRepository {
       set.provider_checkout_id = String(checkoutId || providerOrderId);
     }
     if (merchantReference) set.merchant_reference = String(merchantReference);
+    // Persisted so an idempotent replay can hand the shopper the SAME Pesapal
+    // redirect instead of minting a second order.
+    if (redirectUrl) set.redirect_url = String(redirectUrl);
     if (providerRaw) set.provider_raw = providerRaw;
     const options = { new: true };
     if (session) options.session = session;
     return Payment.findByIdAndUpdate(id, { $set: set }, options);
+  }
+
+  /**
+   * Atomically claim the right to submit a provider order for an `initiated`
+   * payment. Returns the claimed document, or null when another request
+   * already holds the claim (or the payment is no longer `initiated`).
+   *
+   * This is the mutex that stops two concurrent requests from both calling
+   * Pesapal SubmitOrder for one purchase. `staleMs` allows a crashed
+   * request's claim to be reclaimed rather than wedging the payment.
+   */
+  async claimProviderSubmission(id, staleMs = 60000) {
+    const staleBefore = new Date(Date.now() - (staleMs || 0));
+    return Payment.findOneAndUpdate(
+      {
+        _id: id,
+        paymentStatus: 'initiated',
+        $or: [
+          { providerSubmissionClaimedAt: null },
+          { providerSubmissionClaimedAt: { $exists: false } },
+          { providerSubmissionClaimedAt: { $lt: staleBefore } },
+        ],
+      },
+      { $set: { providerSubmissionClaimedAt: new Date() }, $inc: { lockVersion: 1 } },
+      { new: true },
+    );
+  }
+
+  /** Release a provider-submission claim so a retry can submit a new order. */
+  async releaseProviderSubmission(id) {
+    return Payment.findOneAndUpdate(
+      { _id: id },
+      { $set: { providerSubmissionClaimedAt: null } },
+      { new: true },
+    );
   }
 
   async addRefundEntry(id, refundData, session) {

@@ -19,10 +19,11 @@ export const CONTACT_INFO = {
 };
 
 export const SOCIAL_LINKS = [
-  { key: "instagram", label: "Instagram", href: "https://www.instagram.com/somawellness/" },
-  { key: "facebook", label: "Facebook", href: "https://www.facebook.com/somawellness" },
-  { key: "youtube", label: "YouTube", href: "https://www.youtube.com/c/KapilKesari" },
-  { key: "twitter", label: "Twitter/X", href: "https://twitter.com/SomaWellness" },
+  { key: "facebook", label: "Facebook", href: "https://www.facebook.com/profile.php?id=61593868380303" },
+  { key: "instagram", label: "Instagram", href: "https://www.instagram.com/somawellnessnairobi/" },
+  { key: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@somawellnessnbo?_r=1&_t=ZS-99HWPeMEtSy" },
+  { key: "youtube", label: "YouTube", href: "https://www.youtube.com/@SOMAWELLNESSNBO" },
+  { key: "twitter", label: "Twitter/X", href: "https://x.com/Somawellnessnbo" },
 ];
 
 export const SOMA_NAV = [

@@ -3,7 +3,7 @@ import { parsePrice, formatKES, getAuthHeaders, isLoggedIn, getCurrentUser, addT
 
 // Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 beforeEach(() => {
   localStorage.clear();
@@ -76,15 +76,29 @@ describe('getCurrentUser', () => {
 });
 
 describe('addToCart / getCart', () => {
-  it('addToCart succeeds with token', async () => {
+  // addToCart() guards on isAuthenticated(), which requires BOTH `token` and
+  // `user` in localStorage (src/utils/payment.js). Setting only `token` is not
+  // a valid authenticated session.
+  function signIn() {
     localStorage.setItem('token', 'tok');
+    localStorage.setItem('user', JSON.stringify({ id: 'u1', name: 'Amina' }));
+  }
+
+  it('addToCart succeeds with token', async () => {
+    signIn();
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ items: [] }) });
     const r = await addToCart('book', '507f1f77bcf86cd799439011');
     expect(r).toEqual({ items: [] });
   });
   it('addToCart throws on failure', async () => {
+    signIn();
     mockFetch.mockResolvedValue({ ok: false, json: async () => ({ message: 'Out of stock' }) });
     await expect(addToCart('book', 'id')).rejects.toThrow('Out of stock');
+  });
+  it('addToCart rejects an unauthenticated caller before any fetch', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ items: [] }) });
+    await expect(addToCart('book', 'id')).rejects.toThrow(/not authenticated/i);
+    expect(mockFetch).not.toHaveBeenCalled();
   });
   it('getCart fetches cart', async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ total: 1000 }) });

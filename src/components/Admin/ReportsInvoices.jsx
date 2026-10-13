@@ -613,7 +613,7 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
                 <div style={{ position: 'absolute', right: -60, top: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(200,149,108,0.35) 0%, transparent 70%)' }} />
                 <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, background: 'linear-gradient(90deg, #C8956C, #F97316, transparent)' }} />
                 <div style={{ fontSize: 10.5, letterSpacing: 3, textTransform: 'uppercase', color: '#C8956C', fontWeight: 800 }}>Total Collected</div>
-                <div style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 38, fontWeight: 700, lineHeight: 1.1, marginTop: 4 }}>{fmtPrice(selectedOrder.total)}</div>
+                <div style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 38, fontWeight: 700, lineHeight: 1.1, marginTop: 4 }}>{fmtPrice(selectedOrder.total)}</div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14, alignItems: 'center' }}>
                   {selectedOrder.payment?.invoiceNo && (
                     <span style={{ fontSize: 11.5, fontWeight: 800, color: '#F5EDE4', border: '1.5px solid rgba(200,149,108,0.6)', padding: '4px 12px', borderRadius: 999 }}>#{selectedOrder.payment.invoiceNo}</span>

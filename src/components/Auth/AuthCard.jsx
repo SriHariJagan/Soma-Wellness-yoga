@@ -7,8 +7,6 @@ import AuthShell from "./AuthShell.jsx";
 import SocialButtons from "./SocialButtons.jsx";
 import PhoneInput from "../common/PhoneInput.jsx";
 import CountrySelect from "../common/CountrySelect.jsx";
-import RegistrationVideo from "./RegistrationVideo.jsx";
-import { REGISTRATION_VIDEO } from "../../config/registrationVideo.js";
 import { DEFAULT_COUNTRY_CODE, countryNameFor } from "../../data/countries.js";
 import { validatePhone, normalizePhone } from "../../lib/phone.js";
 
@@ -269,18 +267,20 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
               <div className={styles.cardHead}>
                 <span className={styles.cardBadge}><span aria-hidden="true">✦</span> SOMA WELLNESS · NAIROBI</span>
                 <h1 className={styles.cardTitle}>{t("auth.createAccount")}</h1>
-                <p className={styles.cardSub}>{t("auth.loginSub")}</p>
+                <p className={styles.cardSub}>{t("auth.registerSub", "Join Soma Wellness — book classes, track your journey and grow with our Nairobi community.")}</p>
               </div>
 
               {error && <div className={`${styles.alert} ${styles.alertErr}`} role="alert"><span aria-hidden="true">⚠</span> {error}</div>}
               {okMsg && <div className={`${styles.alert} ${styles.alertOk}`} role="status"><span aria-hidden="true">✓</span> {okMsg}</div>}
 
+              <SocialButtons redirectTo={redirectTo} />
+              <div className={styles.dividerRow}>
+                <span className={styles.dividerLine} /><span className={styles.dividerText}>{t("auth.orEmail")}</span><span className={styles.dividerLine} />
+              </div>
+
               <form onSubmit={handleRegister} className={styles.form}>
                 <Field id="reg-name" label={t("auth.name")} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("contact.namePlaceholder")} icon={<UserIcon />} autoComplete="name" />
                 <Field id="reg-email" label={t("auth.email")} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" icon={<MailIcon />} autoComplete="email" />
-                {REGISTRATION_VIDEO.enabled && REGISTRATION_VIDEO.showInRegister && (
-                  <RegistrationVideo config={REGISTRATION_VIDEO} compact />
-                )}
                 <PhoneInput value={phone} onChange={setPhone} label={t("auth.phone")} id="reg-phone" />
                 <CountrySelect value={countryCode} onChange={setCountryCode} id="reg-country" />
                 <div className={styles.row}>
@@ -290,6 +290,9 @@ export default function AuthCard({ initialView = "login", redirectTo = "", onLog
                 <motion.button type="submit" className={styles.submitBtn} disabled={loading} whileTap={{ scale: 0.99 }}>
                   {loading ? t("common.loading") : `${t("auth.createAccount")} →`}
                 </motion.button>
+                <p className={styles.secureNote}>
+                  <span aria-hidden="true">🔒</span> {t("auth.secureNote", "Free to join · Secure & private · No card required")}
+                </p>
               </form>
 
               <p className={styles.toggleText}>

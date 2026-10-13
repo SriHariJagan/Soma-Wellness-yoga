@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { FaFacebookF, FaInstagram, FaYoutube, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaYoutube, FaTiktok, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import "./Footer.css";
@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { CONTACT_INFO, SOCIAL_LINKS } from "../../config/siteContent";
 
-const socialIcon = { instagram: <FaInstagram />, facebook: <FaFacebookF />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
+const socialIcon = { instagram: <FaInstagram />, facebook: <FaFacebookF />, tiktok: <FaTiktok />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
 const socials = SOCIAL_LINKS.map((s) => ({ ...s, icon: socialIcon[s.key] || <FaInstagram /> }));
 
 const Footer = () => {

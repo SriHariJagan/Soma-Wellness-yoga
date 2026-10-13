@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import Cart from '../models/Cart.js';
@@ -10,7 +9,6 @@ import CouponProduct from '../models/CouponProduct.js';
 import CouponUsage from '../models/CouponUsage.js';
 import { PaymentRepository } from '../payment/repository/PaymentRepository.js';
 import { PaymentService } from '../payment/PaymentService.js';
-import { OrderService } from '../payment/services/OrderService.js';
 import { IdempotencyPlugin } from '../payment/plugins/IdempotencyPlugin.js';
 import Membership from '../models/Membership.js';
 import UserService from '../models/UserService.js';
@@ -24,7 +22,6 @@ import User from '../models/User.js';
 import Settings from '../models/Settings.js';
 import Book from '../models/Book.js';
 import { notify } from '../services/notificationService.js';
-import { isSingleSessionService, SINGLE_SESSION_VALIDITY_DAYS } from '../utils/serviceHelpers.js';
 
 const DAY = 86400000;
 
@@ -208,7 +205,12 @@ export const addToCart = asyncHandler(async (req, res) => {
           }
         }
       }
-    } catch {}
+    } catch (priceErr) {
+      // Catalog pricing is best-effort enrichment for the cart summary. The
+      // authoritative total is recomputed server-side at checkout, so a lookup
+      // failure here must not break the cart page.
+      console.warn('[cart] price enrichment failed:', priceErr?.message);
+    }
   }
 
   const cart = await getOrCreateCart(req.user._id);
@@ -411,7 +413,6 @@ export const checkout = asyncHandler(async (req, res) => {
   const idempotencyKey = req.body?.idempotencyKey;
 
   const paymentRepo = new PaymentRepository();
-  const orderService = new OrderService();
   const idempotencyPlugin = new IdempotencyPlugin();
 
   /* Idempotency: if same key was used before, return existing order */
@@ -447,8 +448,6 @@ export const checkout = asyncHandler(async (req, res) => {
       couponCode = coupon.code;
     }
   }
-  const cartHasCoupon = !!appliedCouponPre;
-
   /* ── Validate all items are still purchasable + recompute Circle pricing ──
      Backend is authoritative: fresh DB prices win over stored CartItem values.
      Circle 5% applies only to eligible regular-priced services/offerings and
@@ -779,7 +778,11 @@ export const checkout = asyncHandler(async (req, res) => {
         message: `Your order <strong>#${order.orderNumber}</strong> of KES ${total.toLocaleString('en-KE')} has been initiated. Complete payment via Pesapal to activate your items.`,
         type: 'general',
       });
-    } catch {}
+    } catch (notifyErr) {
+      // The order is already created and persisted. A notification failure
+      // must not turn a successful checkout into a 500 for the shopper.
+      console.warn('[cart] order-initiated notification failed:', notifyErr?.message);
+    }
 
     res.status(201).json({
       success: true,
@@ -882,7 +885,11 @@ export const checkout = asyncHandler(async (req, res) => {
           message: `You have successfully enrolled in <strong>${item.name}</strong>.`,
           type: 'general',
         });
-      } catch {}
+      } catch (notifyErr) {
+        // Enrollment already succeeded; a per-item notification failure must
+        // not abort the loop or fail the request.
+        console.warn('[cart] enrollment notification failed:', notifyErr?.message);
+      }
     }
 
     res.status(201).json({

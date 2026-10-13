@@ -1,21 +1,23 @@
 import React from "react";
 
-const SomaLogo = ({ variant = "dark", size = 40, withText = true, stacked = false, showTagline = true, splitWordmark = false }) => {
+const SomaLogo = ({ variant = "dark", size = 40, width, height, withText = true, stacked = false, showTagline = true, splitWordmark = false }) => {
   const dark = variant !== "light";
+  const imgWidth = width ?? size;
+  const imgHeight = height ?? size;
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: withText ? 12 : 0, flexDirection: stacked ? "column" : "row", textAlign: stacked ? "center" : "left" }}>
       <img
         src="/images/soma/logo.png"
         alt="Soma Wellness"
-        width={size}
-        height={size}
-        style={{ flexShrink: 0, objectFit: "contain" }}
+        width={imgWidth}
+        height={imgHeight}
+        style={{ width: imgWidth, height: imgHeight, flexShrink: 0, objectFit: "contain" }}
       />
 
       {withText && stacked && (
         <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", lineHeight: 1.15, marginTop: 2 }}>
           <span style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 600,
             fontSize: 19,
             letterSpacing: "0.06em",
@@ -23,7 +25,7 @@ const SomaLogo = ({ variant = "dark", size = 40, withText = true, stacked = fals
             lineHeight: 1.1,
           }}>Soma</span>
           <span style={{
-            fontFamily: "'Manrope', system-ui, sans-serif",
+            fontFamily: "'Inter', system-ui, sans-serif",
             fontWeight: 600,
             fontSize: 11,
             letterSpacing: "0.32em",
@@ -38,7 +40,7 @@ const SomaLogo = ({ variant = "dark", size = 40, withText = true, stacked = fals
       {withText && !stacked && splitWordmark && (
         <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", lineHeight: 1.15 }}>
           <span style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 600,
             fontSize: size > 36 ? 22 : 19,
             letterSpacing: "0.06em",
@@ -46,7 +48,7 @@ const SomaLogo = ({ variant = "dark", size = 40, withText = true, stacked = fals
             lineHeight: 1.1,
           }}>Soma</span>
           <span style={{
-            fontFamily: "'Manrope', system-ui, sans-serif",
+            fontFamily: "'Inter', system-ui, sans-serif",
             fontWeight: 600,
             fontSize: 11,
             letterSpacing: "0.32em",
@@ -61,7 +63,7 @@ const SomaLogo = ({ variant = "dark", size = 40, withText = true, stacked = fals
       {withText && !stacked && !splitWordmark && (
         <span style={{ display: "inline-flex", flexDirection: "column", gap: 2, lineHeight: 1 }}>
           <span style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 600,
             fontSize: size > 36 ? 24 : 20,
             letterSpacing: "0.02em",
@@ -71,7 +73,7 @@ const SomaLogo = ({ variant = "dark", size = 40, withText = true, stacked = fals
           }}>Soma<span style={{ fontWeight: 400, fontStyle: "italic" }}>Wellness</span></span>
           {showTagline && (
             <span style={{
-              fontFamily: "'Manrope', system-ui, sans-serif",
+              fontFamily: "'Inter', system-ui, sans-serif",
               fontWeight: 600,
               fontSize: size > 36 ? 8 : 7,
               letterSpacing: "0.3em",

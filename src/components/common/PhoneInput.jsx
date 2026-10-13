@@ -116,7 +116,7 @@ export default function PhoneInput({
             color: '#2D1406',
             outline: 'none',
             background: 'transparent',
-            fontFamily: 'var(--font-body, Manrope, sans-serif)',
+            fontFamily: 'var(--font-body, Inter, sans-serif)',
           }}
         />
         <span style={{ paddingRight: 10, fontSize: 11, color: nationalNumber.length === maxLen ? '#16A34A' : '#9C8E7C', fontWeight: 600, whiteSpace: 'nowrap' }}>

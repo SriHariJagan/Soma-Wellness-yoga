@@ -65,10 +65,10 @@
 .eyebrowLine { width: 20px; height: 1px; background: var(--soma-primary); opacity: 0.42; display: inline-block; flex-shrink: 0; }
 .eyebrowDot { width: 5px; height: 5px; border-radius: 50%; background: linear-gradient(135deg, #F4B400 0%, #FFD54F 100%); box-shadow: 0 0 8px rgba(244,180,0,0.32); flex-shrink: 0; }
 
-.title { font-family: var(--font-display); font-size: clamp(32px, 4.4vw, 52px); font-weight: 300; line-height: 0.95; letter-spacing: -0.032em; color: var(--soma-forest); position: relative; display: inline-block; }
+.title { font-family: var(--font-display); font-size: clamp(36px, 4.8vw, 58px); font-weight: 500; line-height: 1.03; letter-spacing: -0.01em; color: var(--soma-forest); position: relative; display: inline-block; }
 .titleRow { display: inline-flex; align-items: baseline; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .titleWord { will-change: transform, filter; }
-.titleItalic { font-style: italic; font-weight: 400; color: var(--soma-primary); position: relative; }
+.titleItalic { font-style: italic; font-weight: 500; color: var(--soma-primary); position: relative; }
 .dot { color: var(--soma-sage); font-weight: 300; opacity: 0.55; margin: 0 2px; will-change: transform; }
 .titleUnderline {
   position: absolute;

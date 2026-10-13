@@ -28,6 +28,7 @@ const TYPE_META = {
   trial:    { icon: 'ti-gift',         color: '#EC4899', label: 'Free Trial' },
   batch:    { icon: 'ti-radio-tower',  color: '#0891B2', label: 'Batch' },
   yttc:     { icon: 'ti-certificate',  color: '#059669', label: 'YTTC' },
+  custom:   { icon: 'ti-calendar-star', color: '#0EA5E9', label: 'Standalone' },
 };
 
 export default function AttendanceManagement({ onChanged } = {}) {

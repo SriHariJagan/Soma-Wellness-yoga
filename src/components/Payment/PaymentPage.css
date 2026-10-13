@@ -70,7 +70,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
   font-size: 1rem;
   color: #183D2D;
   font-weight: 600;
@@ -178,7 +178,7 @@
 }
 
 .pay-step-title {
-  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
   font-size: 1.3rem;
   color: #183D2D;
   font-weight: 600;
@@ -313,7 +313,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: #183D2D;
-  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
 }
 
 .pay-summary-meta {
@@ -355,7 +355,7 @@
   color: #183D2D;
   font-weight: 700;
   font-size: 1.2rem;
-  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
 }
 
 /* ── Forms (Step 2) ── */
@@ -488,7 +488,7 @@
 }
 
 .pay-success h2 {
-  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
   font-size: 1.5rem;
   color: #183D2D;
   margin-bottom: 10px;

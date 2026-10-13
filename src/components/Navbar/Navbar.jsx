@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { getMembershipStatus } from "../api/StudentServices";
@@ -22,7 +22,7 @@ const navLinksConfig = [
   { key: "navigation.contact", path: "/contact", num: "09" },
 ];
 
-const socialIcon = { facebook: <FaFacebookF />, instagram: <FaInstagram />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
+const socialIcon = { facebook: <FaFacebookF />, instagram: <FaInstagram />, tiktok: <FaTiktok />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
 const socialLinks = SOCIAL_LINKS.map((s) => ({ ...s, icon: socialIcon[s.key] || <FaInstagram /> }));
 
 const sidebarVariants = {
@@ -117,7 +117,7 @@ const Navbar = ({ user, onLogout }) => {
         <nav className={styles.navbar}>
           <div className={styles.navInner}>
             <Link className={styles.logo} to="/" aria-label="Soma Wellness — Home">
-              <SomaLogo size={68} variant={isHome && !scrolled && !solidNav ? "dark" : "dark"} withText={false} />
+              <SomaLogo width={115} height={95} variant={isHome && !scrolled && !solidNav ? "dark" : "dark"} withText={false} />
             </Link>
 
             <div className={styles.navLinks}>

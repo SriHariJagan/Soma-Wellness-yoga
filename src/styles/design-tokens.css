@@ -61,15 +61,16 @@
   --color-error: #B42318;
   --color-warning: #F4B400;
 
-  /* ── Typography — PREMIUM EDITORIAL SYSTEM ──
-     Headings: Playfair Display (high-contrast luxury serif with true italics).
-     Body/UI/numbers: Manrope (geometric humanist sans).
-     Two families only. Base body = 16px. */
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-heading: 'Playfair Display', Georgia, serif;
-  --font-body: 'Manrope', system-ui, -apple-system, sans-serif;
-  --font-accent: 'Manrope', system-ui, sans-serif;
-  --font-num: 'Manrope', system-ui, sans-serif;
+  /* ── Typography — BOTANICAL EDITORIAL SYSTEM ──
+     Headings: Cormorant Garamond (elegant editorial serif with true italics).
+     Navigation, buttons, forms, labels, utility & numbers: Inter (clean sans).
+     Two families only. Base body = 16px. Cormorant Garamond renders small
+     and light, so display sizes run slightly larger with weight 500+. */
+  --font-display: 'Cormorant Garamond', 'Times New Roman', Georgia, serif;
+  --font-heading: 'Cormorant Garamond', 'Times New Roman', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-accent: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-num: 'Inter', system-ui, sans-serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -182,7 +183,7 @@
   --container-2xl: 1440px;
   --container-max: 1440px;
 
-  --header-height: 80px;
+  --header-height: 112px;
   --topbar-height: 0px;
 
   /* ── Z-Index ── */
@@ -241,10 +242,10 @@ ul, ol { list-style: none; }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: var(--leading-tight);
+  font-weight: 500;
+  line-height: 1.08;
   color: var(--soma-forest);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 /* ── Scrollbar ── */
@@ -323,10 +324,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .display-title {
   font-family: var(--font-display);
-  font-size: clamp(1.7rem, 3vw, 2.5rem);
-  font-weight: 400;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
   color: var(--soma-forest);
 }
 h1 em, h2 em, h3 em, h4 em, h5 em, h6 em,
@@ -334,7 +335,8 @@ h1 em, h2 em, h3 em, h4 em, h5 em, h6 em,
   font-style: normal;
 }
 .display-title em {
-  font-weight: 400;
+  font-weight: 500;
+  font-style: italic;
   color: var(--soma-primary);
 }
 .display-title--light { color: var(--soma-ivory); }

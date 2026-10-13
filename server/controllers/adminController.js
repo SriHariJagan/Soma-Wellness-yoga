@@ -1722,7 +1722,7 @@ export const getAttendanceOverview = asyncHandler(async (req, res) => {
 
 // Returns available enrollment categories dynamically from the database
 export const getAttendanceEnrollmentTypes = asyncHandler(async (req, res) => {
-  const [planCount, serviceCount, courseCount, workshopCount, trialCount, batchCount, yttcCount] = await Promise.all([
+  const [planCount, serviceCount, courseCount, workshopCount, trialCount, batchCount, yttcCount, standaloneCount] = await Promise.all([
     Plan.countDocuments({ active: true }),
     Service.countDocuments({ active: true }),
     Course.countDocuments({ active: true }),
@@ -1730,6 +1730,7 @@ export const getAttendanceEnrollmentTypes = asyncHandler(async (req, res) => {
     FreeTrial.countDocuments({ status: 'active' }),
     Batch.countDocuments({ status: 'Active' }),
     0, // YTTC placeholder — no model yet
+    ClassInvite.countDocuments({ entityType: 'none', status: { $ne: 'cancelled' } }),
   ]);
 
   const types = [];
@@ -1739,6 +1740,9 @@ export const getAttendanceEnrollmentTypes = asyncHandler(async (req, res) => {
   if (workshopCount > 0) types.push({ type: 'workshop', label: 'Workshops', icon: 'ti-award', count: workshopCount });
   if (trialCount > 0) types.push({ type: 'trial', label: 'Free Trial', icon: 'ti-gift', count: trialCount });
   if (batchCount > 0) types.push({ type: 'batch', label: 'Batches', icon: 'ti-radio-tower', count: batchCount });
+  // Standalone classes — invites sent to custom recipients (entityType 'none'),
+  // i.e. classes created without any membership / service / course linkage.
+  if (standaloneCount > 0) types.push({ type: 'custom', label: 'Standalone Classes', icon: 'ti-calendar-star', count: standaloneCount });
 
   res.json(types);
 });
@@ -1786,6 +1790,11 @@ export const getAttendanceEnrollmentItems = asyncHandler(async (req, res) => {
       items = await Batch.find({ status: 'Active' }).sort({ name: 1 });
       items = items.map(b => ({ _id: b._id, name: b.name, type: 'batch' }));
       break;
+    case 'custom':
+      // Standalone classes — single virtual bucket (invites with entityType 'none').
+      // The invites endpoint special-cases this type, so entityId is ignored.
+      items = [{ _id: '__standalone__', name: 'Standalone Classes', type: 'custom', isVirtual: true }];
+      break;
     default:
       break;
   }
@@ -1800,9 +1809,11 @@ export const getAttendanceClassInvites = asyncHandler(async (req, res) => {
 
   const now = new Date();
 
+  // Standalone classes: invites sent to custom recipients carry
+  // entityType 'none' + null entityId, so match the whole bucket.
+  const isStandalone = entityType === 'custom';
   const invites = await ClassInvite.find({
-    entityType,
-    entityId,
+    ...(isStandalone ? { entityType: 'none' } : { entityType, entityId }),
     status: { $ne: 'cancelled' },
     date: { $lte: now }, // Only past/completed sessions
   })

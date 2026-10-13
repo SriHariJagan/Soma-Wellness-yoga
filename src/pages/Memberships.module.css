@@ -215,7 +215,10 @@
 .servicesBtn:hover { background: linear-gradient(135deg, #F4B400 0%, #FFD54F 100%); }
 
 .finePrint {
-  margin: 18px 0 26px; font-size: 11px; color: var(--soma-warm-gray);
+  /* --soma-warm-gray (#6B7D74) on the ivory card gives only ~4.09:1, which
+     fails WCAG AA (4.5:1) for this 11px text (axe color-contrast, serious).
+     --soma-charcoal-soft measures ~8.5:1 on the same background. */
+  margin: 18px 0 26px; font-size: 11px; color: var(--soma-charcoal-soft);
   line-height: 1.6; text-align: center;
 }
 

@@ -609,7 +609,7 @@ function CollapsibleCard({ title, icon, defaultOpen = true, children, badge }) {
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           width: '100%', padding: '16px 18px', border: 'none', background: 'none',
-          cursor: 'pointer', fontFamily: "'Outfit', 'Inter', system-ui, sans-serif",
+          cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif",
           fontSize: 14.5, fontWeight: 700, color: C.text1, letterSpacing: '-0.02em',
           textAlign: 'left', gap: 10,
         }}
@@ -648,7 +648,7 @@ function StickyCard({ title, icon, children, accent }) {
       {title && (
         <div style={{ padding: '16px 18px 8px', display: 'flex', alignItems: 'center', gap: 9 }}>
           <span style={{ color: C.primary, display: 'grid', placeItems: 'center', fontSize: 16 }}>{icon}</span>
-          <span style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", fontSize: 14, fontWeight: 700, color: C.text1, letterSpacing: '-0.02em' }}>{title}</span>
+          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, fontWeight: 700, color: C.text1, letterSpacing: '-0.02em' }}>{title}</span>
         </div>
       )}
       <div style={{ padding: title ? '8px 18px 18px' : '18px' }}>
@@ -1333,7 +1333,7 @@ function CreateView({
               <LuChevronLeft size={14} /> Back to Invitations
             </button>
           </div>
-          <h2 style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", fontSize: 24, fontWeight: 800, color: C.text1, margin: 0, letterSpacing: '-0.03em' }}>
+          <h2 style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 24, fontWeight: 800, color: C.text1, margin: 0, letterSpacing: '-0.03em' }}>
             <LuMail size={20} style={{ marginRight: 10, color: C.primary, verticalAlign: 'middle' }} />
             New Class Invitation
           </h2>
@@ -1951,7 +1951,7 @@ function CreateView({
                 <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>Recipients</div>
                 <div style={{
                   fontSize: 24, fontWeight: 800, color: C.primary,
-                  fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", marginTop: 2,
+                  fontFamily: "'Inter', system-ui, sans-serif", marginTop: 2,
                 }}>
                   {getRecipientCount() || '—'}
                 </div>
@@ -1963,7 +1963,7 @@ function CreateView({
                 <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>Duration</div>
                 <div style={{
                   fontSize: 24, fontWeight: 800, color: C.text1,
-                  fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", marginTop: 2,
+                  fontFamily: "'Inter', system-ui, sans-serif", marginTop: 2,
                 }}>
                   {form.duration || '—'} <span style={{ fontSize: 12, fontWeight: 600, color: C.text3 }}>min</span>
                 </div>
@@ -2284,7 +2284,7 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
               <LuChevronLeft size={14} /> Back to Invitations
             </button>
           </div>
-          <h2 style={{ fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", fontSize: 22, fontWeight: 800, color: C.text1, margin: 0, letterSpacing: '-0.03em' }}>
+          <h2 style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 22, fontWeight: 800, color: C.text1, margin: 0, letterSpacing: '-0.03em' }}>
             {detail.title}
           </h2>
           <p style={{ fontSize: 13, color: C.text2, marginTop: 4 }}>
@@ -2475,7 +2475,7 @@ function DetailView({ inviteId, onBack, onRefresh, flash }) {
                   <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
                     {stat.label}
                   </div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: stat.color, fontFamily: "'Outfit', 'Inter', system-ui, sans-serif", marginTop: 2 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: stat.color, fontFamily: "'Inter', system-ui, sans-serif", marginTop: 2 }}>
                     {stat.value}
                   </div>
                 </div>

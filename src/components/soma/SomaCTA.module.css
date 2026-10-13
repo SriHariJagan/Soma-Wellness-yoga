@@ -63,9 +63,9 @@
 .title {
   position: relative; z-index: 2;
   margin-top: 14px;
-  font-family: var(--font-display); font-size: clamp(32px, 4.6vw, 50px); font-weight: 300; line-height: 0.90; letter-spacing: -0.034em; color: var(--soma-forest);
+  font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); font-weight: 500; line-height: 1.03; letter-spacing: -0.01em; color: var(--soma-forest);
 }
-.title em { font-style: italic; font-weight: 400; color: var(--soma-primary); }
+.title em { font-style: italic; font-weight: 500; color: var(--soma-primary); }
 .titleUnderline { position: absolute; left: 18%; right: 18%; bottom: 0.02em; height: 0.11em; background: linear-gradient(90deg, transparent 0%, rgba(244,180,0,0.28) 20%, rgba(244,180,0,0.14) 60%, transparent 100%); transform-origin: center; border-radius: 2px; pointer-events: none; }
 
 .copy {

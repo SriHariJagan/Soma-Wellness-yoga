@@ -44,7 +44,7 @@ export default function AuthShell({ children }) {
           {/* top row */}
           <div className={styles.topRow}>
             <Link to="/" className={styles.logoLink} aria-label="Soma Wellness — home">
-              <SomaLogo size={46} variant="light" />
+              <SomaLogo size={58} variant="light" />
             </Link>
             <span className={styles.topMeta}>Spring Valley · Nairobi</span>
           </div>
@@ -108,7 +108,7 @@ export default function AuthShell({ children }) {
       {/* ── Right: form (fits viewport, no scroll) ── */}
       <main className={styles.formSide}>
         <div className={styles.mobileLogo}>
-          <SomaLogo size={46} />
+          <SomaLogo size={54} />
         </div>
         {children}
       </main>

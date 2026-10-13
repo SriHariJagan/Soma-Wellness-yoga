@@ -26,4 +26,16 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // The server is Node, not a browser. Without this every `process`/`Buffer`
+    // reference in server/** was reported as `no-undef`, which is a
+    // configuration defect rather than a code defect. `globals.node`
+    // REPLACES the browser globals for these files (flat-config merge), so no
+    // rule is disabled and no error is suppressed.
+    files: ['server/**/*.js', '*.config.js', 'scripts/**/*.js', '*.cjs', '*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+      ecmaVersion: 2022,
+    },
+  },
 ])

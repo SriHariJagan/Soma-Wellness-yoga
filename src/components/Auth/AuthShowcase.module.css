@@ -59,11 +59,62 @@
 .inner > * { position: relative; z-index: 5; }
 
 /* top row */
-.topRow { display: flex; justify-content: space-between; align-items: center; }
-.logoLink { display: inline-flex; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35)); }
+.topRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+/* Premium glass badge — lifts the mark off the photo so it reads
+   clearly even over the dark veil, and gives a tactile hover. */
+.logoLink {
+  display: inline-flex; align-items: center;
+  padding: 9px 18px 9px 10px;
+  border-radius: 9999px;
+  text-decoration: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.07) 100%);
+  border: 1px solid rgba(255,255,255,0.28);
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35));
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+}
+.logoLink:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.10) 100%);
+  border-color: rgba(244,180,0,0.55);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.42),
+    0 0 0 1px rgba(244,180,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.logoLink:active { transform: translateY(0); }
+.logoLink:focus-visible {
+  outline: 2px solid #F4B400;
+  outline-offset: 3px;
+}
+/* Cream medallion behind the leaf mark — the PNG itself is dark,
+   so this is what makes it pop on the dark showcase. */
+.logoLink img {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #FFFDF4 0%, #FFF3D6 68%, #F5DF9E 100%);
+  padding: 3px;
+  border: 1px solid rgba(244,180,0,0.65);
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.35),
+    0 0 12px rgba(244,180,0,0.35);
+}
+/* Crisp wordmark over photo */
+.logoLink span { text-shadow: 0 1px 6px rgba(0,0,0,0.55), 0 4px 18px rgba(0,0,0,0.4); }
 .topMeta {
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: rgba(255,247,230,0.6);
+  color: rgba(255,247,230,0.85);
+  padding: 8px 13px;
+  border-radius: 9999px;
+  background: rgba(8,26,17,0.38);
+  border: 1px solid rgba(255,255,255,0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
 }
 
 /* middle */
@@ -176,6 +227,13 @@
     linear-gradient(180deg, #FBF7ED 0%, #FFF7E6 100%);
 }
 .mobileLogo { display: none; margin-bottom: 14px; }
+.mobileLogo > span {
+  padding: 8px 18px 8px 10px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,247,230,0.85) 100%);
+  border: 1px solid rgba(46,125,91,0.20);
+  box-shadow: 0 10px 26px rgba(24,61,45,0.14), inset 0 1px 0 rgba(255,255,255,0.9);
+}
 
 @media (max-width: 1020px) {
   .shell { grid-template-columns: 1fr; height: auto; min-height: 100vh; }

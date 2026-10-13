@@ -21,7 +21,7 @@ const ChatbotWidget = () => {
   });
 
   // Hide on dashboard / auth routes (same logic as BackToTop)
-  const hiddenRoutes = ['/yogaadmin', '/studentdashboard', '/login', '/forgot-password', '/payment', '/checkout'];
+  const hiddenRoutes = ['/yogaadmin', '/studentdashboard', '/login', '/newuser', '/forgot-password', '/payment', '/checkout'];
   const isHiddenRoute = hiddenRoutes.includes(location.pathname) || location.pathname.startsWith('/admin');
 
   // Prefetch WA config early (does not block render)

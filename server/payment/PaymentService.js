@@ -20,14 +20,34 @@ import emailService from '../services/email/email.service.js';
 import { notifyBookOrderPaid } from '../services/bookEmailService.js';
 import { finalizePurchase } from './services/finalizePurchase.js';
 import logger from '../notification/logger.js';
+import { ApiError } from '../utils/ApiError.js';
 import {
   PaymentInitiationError,
   PaymentVerificationError,
   PaymentNotFoundError,
+  IdempotencyError,
 } from './errors/PaymentErrors.js';
 
 const MODULE = 'PaymentService';
 const PROVIDER = 'pesapal';
+
+// Statuses after which an intent must never be replayed — the attempt is over
+// and a genuinely new purchase attempt needs a new idempotency key.
+export const TERMINAL_PAYMENT_STATUSES = new Set(['captured', 'failed', 'expired', 'refunded']);
+
+// Statuses whose intent can be handed back to the caller unchanged.
+const REUSABLE_PAYMENT_STATUSES = new Set(['initiated', 'pending']);
+
+// A claim older than this is treated as abandoned by a crashed request and may
+// be re-claimed, so a provider outage can never wedge a payment forever.
+const PROVIDER_SUBMISSION_CLAIM_STALE_MS = 60 * 1000;
+
+// How long a concurrent duplicate waits for the winning request to persist the
+// provider order before giving up. Bounded so a request never hangs.
+const PROVIDER_SUBMISSION_WAIT_ATTEMPTS = 40;
+const PROVIDER_SUBMISSION_WAIT_MS = 100;
+
+const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
 function sanitizeProviderRaw(raw) {
   if (!raw || typeof raw !== 'object') return raw || {};
@@ -37,6 +57,41 @@ function sanitizeProviderRaw(raw) {
   delete copy.consumer_key;
   delete copy.consumer_secret;
   return copy;
+}
+
+/** Mongo duplicate-key rejection — the unique idempotency index firing. */
+function isDuplicateKeyError(err) {
+  return !!err && (err.code === 11000 || err.code === 11001);
+}
+
+/**
+ * Canonical, order-independent fingerprint of a server-priced item set.
+ * Used to bind an idempotency key to ONE purchase so a replay for a
+ * different cart is rejected instead of silently charged the old amount.
+ */
+export function purchaseFingerprint(items) {
+  return (Array.isArray(items) ? items : [])
+    .map((i) => `${i?.itemType || ''}:${i?.itemId ?? ''}:${Number(i?.quantity ?? 1) || 1}`)
+    .sort()
+    .join('|');
+}
+
+/**
+ * DEF-005: legacy payments written before the `paymentStatus` enum can hold
+ * null. Derive the status ONLY from fields that history actually populated —
+ * never guess. Ordered most-specific first; `initiated` is the conservative
+ * default because it can only ever be promoted by the normal capture path.
+ */
+export function normalizePaymentStatus(payment) {
+  if (!payment) return null;
+  const status = payment.paymentStatus;
+  if (status) return status;
+  if (payment.refundedAt || payment.refunds?.some((r) => r?.status === 'processed')) return 'refunded';
+  if (payment.capturedAt || payment.invoiceNo) return 'captured';
+  if (payment.expiredAt) return 'expired';
+  if (payment.failedAt || payment.failure_reason) return 'failed';
+  if (payment.provider_checkout_id || payment.provider_order_id) return 'pending';
+  return 'initiated';
 }
 
 export class PaymentService {
@@ -120,21 +175,90 @@ export class PaymentService {
   }
 
   // ── Server-priced intent (no provider call yet) ──────────────
-  async _doInitiateIntent(user, items, label, description, idempotencyKey, customer = {}) {
+  /**
+   * Resolve the requested items to their authoritative server price.
+   * Shared by the create path and the replay path so both compare the same
+   * canonical purchase.
+   */
+  async _resolvePurchase({ user, items }) {
     let circleActive = false;
     try {
       if (user) {
         const { getActiveCircleMembership } = await import('../services/circleService.js');
         circleActive = (await getActiveCircleMembership(user)) != null;
       }
-    } catch {}
+    } catch {
+      // Circle membership is optional pricing context. A lookup failure must
+      // never abort the payment, so fall through with circleActive = false.
+    }
     const hasCouponDiscount = Array.isArray(items) && items.some((i) => i?.metadata?.couponId || i?.metadata?.couponCode);
     const resolvedItems = await this.orderService.resolveItems(items, {
       userId: user,
       circleActive,
       hasCouponDiscount,
     });
-    const totalAmount = this.orderService.calculateTotal(resolvedItems);
+    return { resolvedItems, amount: this.orderService.calculateTotal(resolvedItems) };
+  }
+
+  /**
+   * Decide whether an existing intent may be handed back for this request.
+   *
+   * Replay rules:
+   *   - owned by a different account -> 403 (idempotency is owner-scoped)
+   *   - previous attempt terminal    -> 409, caller must start a new attempt
+   *   - different canonical purchase -> 409, the key is bound to the purchase
+   *   - otherwise                    -> reuse the existing intent
+   */
+  async _reuseIntent(existing, { user, items, idempotencyKey }) {
+    const owner = existing.user ? String(existing.user) : null;
+    const requester = user ? String(user) : null;
+    if (owner && requester && owner !== requester) {
+      logger.warn(MODULE, 'Idempotency key replay by a different owner', {
+        paymentId: String(existing._id),
+        idempotencyKey,
+      });
+      throw ApiError.forbidden('This idempotency key belongs to a different account');
+    }
+
+    const status = normalizePaymentStatus(existing);
+    if (TERMINAL_PAYMENT_STATUSES.has(status)) {
+      const err = ApiError.conflict(
+        `This payment attempt already ended as "${status}" — start a new payment attempt`,
+      );
+      err.code = 'IDEMPOTENCY_KEY_RETIRED';
+      throw err;
+    }
+    if (!REUSABLE_PAYMENT_STATUSES.has(status)) {
+      const err = ApiError.conflict(`Payment is not reusable: current status is "${status}"`);
+      err.code = 'PAYMENT_NOT_REUSABLE';
+      throw err;
+    }
+
+    // A guest intent has no owner to compare against, so the canonical
+    // purchase is the only binding available for it.
+    const requested = await this._resolvePurchase({ user, items });
+    const samePurchase =
+      purchaseFingerprint(requested.resolvedItems) === purchaseFingerprint(existing.items || [])
+      && requested.amount === existing.amount
+      && String(requested.currency || 'KES').toUpperCase() === String(existing.currency || 'KES').toUpperCase();
+    if (!samePurchase) {
+      logger.warn(MODULE, 'Idempotency key reused for a different purchase', {
+        paymentId: String(existing._id),
+        idempotencyKey,
+      });
+      throw ApiError.conflict('Idempotency key was already used for a different purchase');
+    }
+
+    logger.info(MODULE, 'Idempotent intent – reusing existing payment', {
+      paymentId: String(existing._id),
+      idempotencyKey,
+      paymentStatus: status,
+    });
+    return existing;
+  }
+
+  async _doInitiateIntent(user, items, label, description, idempotencyKey) {
+    const { resolvedItems, amount: totalAmount } = await this._resolvePurchase({ user, items });
 
     if (totalAmount <= 0) {
       throw new PaymentInitiationError('Payment amount must be greater than zero');
@@ -181,21 +305,38 @@ export class PaymentService {
     return payment;
   }
 
-  async initiateIntent({ user, items, label, description, idempotencyKey, customer }) {
-    if (idempotencyKey) {
-      const existing = await this.repository.findByIdempotencyKey(idempotencyKey);
-      if (existing) {
-        logger.info(MODULE, 'Idempotent intent – returning existing payment', {
-          paymentId: String(existing._id),
-          idempotencyKey,
-        });
-        return existing;
-      }
-      return this.idempotency.executeWithIdempotency(idempotencyKey, 300, () =>
-        this._doInitiateIntent(user, items, label, description, idempotencyKey, customer),
-      );
+  /**
+   * Create (or replay) a server-priced intent.
+   *
+   * Concurrency contract: an `idempotencyKey` may produce AT MOST ONE payment
+   * document, enforced by the unique index on `Payment.idempotencyKey`. Two
+   * guards cover the race that index alone cannot:
+   *   1. the Redis lock in IdempotencyPlugin serialises the common case;
+   *   2. when the lock is contended (or Redis is down and the insert loses the
+   *      unique index race) the loser RE-READS and replays the winner's intent
+   *      instead of surfacing a 409/500 to the shopper.
+   */
+  async initiateIntent({ user, items, label, description, idempotencyKey }) {
+    if (!idempotencyKey) {
+      return this._doInitiateIntent(user, items, label, description, undefined);
     }
-    return this._doInitiateIntent(user, items, label, description, idempotencyKey, customer);
+
+    const existing = await this.repository.findByIdempotencyKey(idempotencyKey);
+    if (existing) {
+      return this._reuseIntent(existing, { user, items, idempotencyKey });
+    }
+
+    try {
+      return await this.idempotency.executeWithIdempotency(idempotencyKey, 300, () =>
+        this._doInitiateIntent(user, items, label, description, idempotencyKey),
+      );
+    } catch (err) {
+      if (err instanceof IdempotencyError || isDuplicateKeyError(err)) {
+        const raced = await this.repository.findByIdempotencyKey(idempotencyKey);
+        if (raced) return this._reuseIntent(raced, { user, items, idempotencyKey });
+      }
+      throw err;
+    }
   }
 
   /**
@@ -214,6 +355,27 @@ export class PaymentService {
     if (idempotencyKey) {
       const existing = await this.repository.findByIdempotencyKey(idempotencyKey);
       if (existing) {
+        // Owner-scoped: a cart/book key must never hand another account its
+        // pending intent, and must never replay onto a different amount.
+        const owner = existing.user ? String(existing.user) : null;
+        const requester = user ? String(user) : null;
+        if (owner && requester && owner !== requester) {
+          throw ApiError.forbidden('This idempotency key belongs to a different account');
+        }
+        if (
+          Math.round(existing.amount) !== Math.round(amount)
+          || String(existing.currency || 'KES').toUpperCase() !== String(currency || 'KES').toUpperCase()
+        ) {
+          throw ApiError.conflict('Idempotency key was already used for a different purchase');
+        }
+        const status = normalizePaymentStatus(existing);
+        if (TERMINAL_PAYMENT_STATUSES.has(status)) {
+          const err = ApiError.conflict(
+            `This payment attempt already ended as "${status}" — start a new payment attempt`,
+          );
+          err.code = 'IDEMPOTENCY_KEY_RETIRED';
+          throw err;
+        }
         logger.info(MODULE, 'Idempotent intent – returning existing payment', {
           paymentId: String(existing._id),
           idempotencyKey,
@@ -275,9 +437,43 @@ export class PaymentService {
             customer.lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
           }
         }
-      } catch {}
+      } catch (lookupErr) {
+        // Contact details are best-effort enrichment. The caller already has
+        // whatever the request supplied, so a user lookup failure must not
+        // abort the payment.
+        logger.warn(MODULE, 'Customer contact lookup failed', {
+          userId: String(userId),
+          error: lookupErr.message,
+        });
+      }
     }
     return customer;
+  }
+
+  /**
+   * Wait for a concurrent request that won the provider-submission claim to
+   * persist its order, then return that order instead of submitting a second
+   * one. Returns null if the winner failed/released, or we ran out of time.
+   */
+  async _awaitProviderSubmission(paymentId) {
+    for (let i = 0; i < PROVIDER_SUBMISSION_WAIT_ATTEMPTS; i += 1) {
+      const current = await this.repository.findById(paymentId);
+      if (!current) return null;
+      const status = normalizePaymentStatus(current);
+      if (status === 'pending' && current.provider_checkout_id) {
+        return {
+          payment: current,
+          redirectUrl: current.provider_raw?.redirect_url || null,
+          merchantReference: current.merchant_reference,
+          orderTrackingId: current.provider_checkout_id,
+          idempotent: true,
+        };
+      }
+      // Winner gave up (provider error released the claim) — caller may retry.
+      if (status !== 'initiated' || !current.providerSubmissionClaimedAt) return null;
+      await sleep(PROVIDER_SUBMISSION_WAIT_MS);
+    }
+    return null;
   }
 
   /**
@@ -303,24 +499,55 @@ export class PaymentService {
         idempotent: true,
       };
     }
-    if (payment.paymentStatus !== 'initiated') {
+    const currentStatus = normalizePaymentStatus(payment);
+    if (currentStatus !== 'initiated') {
       throw new PaymentVerificationError(
-        `Provider order cannot be created: current status is "${payment.paymentStatus}"`,
+        `Provider order cannot be created: current status is "${currentStatus}"`,
       );
     }
     const resolvedCustomer = await this._resolveCustomer(payment.user || user, customer);
     if (!resolvedCustomer.email && !resolvedCustomer.phone) {
       throw new PaymentInitiationError('Customer email or phone is required for Pesapal payment');
     }
+
+    // Claim the submission BEFORE calling the provider. Without this atomic
+    // claim, two concurrent requests for the same intent both observe
+    // "initiated" and both submit to Pesapal — the customer could then pay
+    // twice for a single purchase.
+    const claimed = await this.repository.claimProviderSubmission(
+      payment._id,
+      PROVIDER_SUBMISSION_CLAIM_STALE_MS,
+    );
+    if (!claimed) {
+      const concurrent = await this._awaitProviderSubmission(payment._id);
+      if (concurrent) {
+        logger.info(MODULE, 'Concurrent provider order won the race – reusing it', {
+          paymentId: String(payment._id),
+        });
+        return concurrent;
+      }
+      const err = ApiError.conflict('A provider order for this payment is already being created');
+      err.code = 'PROVIDER_SUBMISSION_IN_FLIGHT';
+      throw err;
+    }
+
     let submitted;
     try {
       submitted = await this.provider.createOrder({
-        payment,
+        payment: claimed,
         customer: resolvedCustomer,
         callback_url: callbackUrl,
         cancellation_url: cancellationUrl,
       });
     } catch (err) {
+      // Release the claim so a legitimate retry can submit a new provider
+      // order instead of being blocked forever by this failure.
+      await this.repository.releaseProviderSubmission(payment._id).catch((releaseErr) => {
+        logger.error(MODULE, 'Failed to release provider submission claim', {
+          paymentId: String(payment._id),
+          error: releaseErr.message,
+        });
+      });
       await this.repository.recordAttempt(payment._id, {
         attempt: (payment.attempts?.length || 0) + 1,
         action: 'provider_order_failed',
@@ -332,6 +559,7 @@ export class PaymentService {
       providerOrderId: submitted.providerOrderId,
       checkoutId: submitted.checkoutId,
       merchantReference: submitted.merchantReference || payment.merchant_reference,
+      redirectUrl: submitted.redirectUrl,
       providerRaw: sanitizeProviderRaw(submitted.raw),
     });
     const updated = await this.repository.atomicStatusTransition(
@@ -368,9 +596,9 @@ export class PaymentService {
    * Used by POST /api/payments/initiate. Frontend amount is NEVER trusted.
    */
   async initiate({ user, items, label, description, idempotencyKey, customer, callbackUrl, cancellationUrl }) {
-    const intent = await this.initiateIntent({ user, items, label, description, idempotencyKey, customer });
+    const intent = await this.initiateIntent({ user, items, label, description, idempotencyKey });
     // If intent already pending (idempotent replay), return existing provider context.
-    if (intent.paymentStatus === 'pending' && intent.provider_checkout_id) {
+    if (normalizePaymentStatus(intent) === 'pending' && intent.provider_checkout_id) {
       return {
         payment: intent,
         redirectUrl: intent.provider_raw?.redirect_url || null,
@@ -384,21 +612,38 @@ export class PaymentService {
     });
   }
 
-  /** Locate a payment by merchant reference, checkout id, or _id. */
+  /**
+   * Locate a payment by merchant reference, checkout id, or _id.
+   * DEF-005: legacy rows can hold a null `paymentStatus`. The status is
+   * normalized IN MEMORY only (no database write) so those payments stay
+   * readable and verifiable without a bulk migration.
+   */
   async _locatePayment({ merchantReference, checkoutId, paymentId }) {
+    let payment = null;
     if (merchantReference) {
       const p = await this.repository.findByMerchantReference(merchantReference);
-      if (p) return p;
+      if (p) payment = p;
     }
-    if (checkoutId) {
+    if (!payment && checkoutId) {
       const p = await this.repository.findByCheckoutId(checkoutId);
-      if (p) return p;
+      if (p) payment = p;
     }
-    if (paymentId) {
+    if (!payment && paymentId) {
       const p = await this.repository.findById(paymentId);
-      if (p) return p;
+      if (p) payment = p;
     }
-    throw new PaymentNotFoundError('No payment found for the given reference');
+    if (!payment) {
+      throw new PaymentNotFoundError('No payment found for the given reference');
+    }
+    if (!payment.paymentStatus) {
+      const derived = normalizePaymentStatus(payment);
+      logger.warn(MODULE, 'Legacy payment with null status – normalized on read', {
+        paymentId: String(payment._id),
+        derivedStatus: derived,
+      });
+      payment.paymentStatus = derived;
+    }
+    return payment;
   }
 
   /**

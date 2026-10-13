@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaFacebookF, FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import SomaPageHeader from "../components/soma/SomaPageHeader";
@@ -23,7 +23,7 @@ const mapsQuery = CONTACT_INFO.mapsQuery;
 const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed&z=16&hl=en`;
 const mapsLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsQuery)}`;
 
-const socialIcon = { instagram: <FaInstagram />, facebook: <FaFacebookF />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
+const socialIcon = { instagram: <FaInstagram />, facebook: <FaFacebookF />, tiktok: <FaTiktok />, youtube: <FaYoutube />, twitter: <FaXTwitter /> };
 const socials = SOCIAL_LINKS.map((s) => ({ ...s, icon: socialIcon[s.key] || <FaInstagram /> }));
 
 const Contact = () => {

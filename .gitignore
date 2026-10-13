@@ -61,3 +61,16 @@ server.err
 200 Hr YTTC Details.pdf
 
 
+
+# QA staging env + load artifacts (never commit)
+test-artifacts/staging/.env.staging
+
+# ── E2E evidence + local diagnostics (never deploy) ──
+.e2e-dir.txt
+diag-*.png
+evidence/
+reports/
+test-results/
+playwright-report/
+media-original/
+test-artifacts/

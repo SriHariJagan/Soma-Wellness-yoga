@@ -107,14 +107,41 @@ let _redisUnavailableLogged = false;
 export function isRedisReady() {
   return !!client && client.status === 'ready';
 }
+
+const REDIS_READY_POLL_MS = 25;
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 export async function pingRedis(timeoutMs = 1500) {
+  const deadline = Date.now() + Math.max(0, timeoutMs);
   try {
     const conn = getRedisConnection();
     if (conn.status === 'ready') return true;
-    // Wait briefly for ready, then try a ping with timeout
+
+    // The connection is created lazily, so right after
+    // getRedisConnection() the client is usually still "connecting".
+    // Because buildRedisOptions() sets `enableOfflineQueue: false` (so a
+    // dead Redis fails fast instead of queueing forever), issuing a command
+    // in that window throws immediately:
+    //   "Stream isn't writeable and enableOfflineQueue options is false"
+    // The previous implementation pinged straight away, so on any cold or
+    // slow boot this returned false even though Redis was healthy — and
+    // server.js then skipped startBullWorker(), startWebhookWorker() and
+    // notificationScheduler() for the entire process lifetime (no later
+    // re-check). Background notifications, webhook retries, reminders and
+    // bulk-email silently degraded on every cold start.
+    //
+    // Wait for 'ready' first, bounded by timeoutMs.
+    while (conn.status !== 'ready' && Date.now() < deadline) {
+      await sleep(REDIS_READY_POLL_MS);
+    }
+    if (conn.status !== 'ready') {
+      throw new Error('Redis connection did not become ready in time');
+    }
+
     const ping = conn.ping();
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Redis ping timed out')), timeoutMs),
+      setTimeout(() => reject(new Error('Redis ping timed out')), Math.max(0, deadline - Date.now())),
     );
     await Promise.race([ping, timeout]);
     return true;

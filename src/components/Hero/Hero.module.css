@@ -184,32 +184,32 @@
   pointer-events: none;
 }
 
-/* headline — cinematic */
+/* headline — cinematic editorial (Cormorant Garamond) */
 .headline {
   font-family: var(--font-display);
-  font-size: clamp(32px, 4.4vw, 62px);
-  font-weight: 300;
-  line-height: 0.88;
-  letter-spacing: -0.015em;
+  font-size: clamp(38px, 5vw, 72px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
   color: var(--soma-forest);
   margin: 0;
   position: relative;
   overflow: visible;
 }
 .headline em {
-  font-style: normal;
-  font-weight: 400;
+  font-style: italic;
+  font-weight: 500;
   color: var(--soma-primary);
   position: relative;
 }
 .headlineClip {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.06em;
-  margin-bottom: -0.04em;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.08em;
 }
 .headlineTo {
-  font-weight: 300;
+  font-weight: 500;
 }
 .word {
   will-change: transform, filter;
@@ -600,16 +600,21 @@
   fill: var(--soma-forest);
 }
 .sealCenter {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1a4d35 0%, #2E7D5B 60%, #3a9a73 100%);
-  color: #FFD54F;
+  background: linear-gradient(135deg, #FFF7E6 0%, #ffffff 60%, #FFF7E6 100%);
+  border: 1px solid rgba(244, 180, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 6px 18px rgba(24,61,45,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+  box-shadow: 0 6px 18px rgba(24, 61, 45, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.sealCenter img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
 }
 @keyframes sealSpin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {

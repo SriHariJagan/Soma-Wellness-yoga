@@ -183,7 +183,7 @@ const ITEM_RESOLVERS = {
     };
   },
 
-  async event(item) {
+  async event() {
     throw new PaymentInitiationError('Event payment flow not yet implemented');
   },
 

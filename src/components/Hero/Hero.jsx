@@ -414,7 +414,9 @@ const Hero = () => {
                   <textPath href="#somaSealCircle">Soma Wellness · Premium Wellness ·</textPath>
                 </text>
               </svg>
-              <span className={styles.sealCenter}>✦</span>
+              <span className={styles.sealCenter}>
+                <img src="/images/soma/logo-emblem.png" alt="" width="30" height="30" loading="lazy" />
+              </span>
             </div>
 
             {/* floating subtle y loop */}

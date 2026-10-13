@@ -15,9 +15,9 @@ describe('gallery categories (centralized)', () => {
 });
 
 describe('registration video config (single source of truth)', () => {
-  it('is enabled with a replaceable dummy url', () => {
+  it('is enabled with a replaceable url (remote or local optimized video)', () => {
     expect(REGISTRATION_VIDEO.enabled).toBe(true);
-    expect(REGISTRATION_VIDEO.url).toMatch(/^https?:\/\//);
+    expect(REGISTRATION_VIDEO.url).toMatch(/^https?:\/\/|^\//);
     expect(REGISTRATION_VIDEO.poster).toBeTruthy();
   });
 

@@ -549,7 +549,9 @@ export const RETIRED_SERVICE_NAMES = [
   "SOMA AMANI — Monthly Pass",
   "SOMA AMANI — Six-Month Pass",
   "SOMA AMANI — Annual Pass",
-  "SOMA 360",
+  "SOMA 360", // RETIRED membership pass. Do NOT reintroduce: the live KES
+               // 32,000 product is SOMA RESET (somaCatalog.js SOMA_RESET.price).
+               // KES 32,000 also appears as the JUA 3-month pay-ahead total.
   "SOMA FAMILY",
   "One-to-One Yoga, 60 min",
   "Couple Yoga, 60 min",

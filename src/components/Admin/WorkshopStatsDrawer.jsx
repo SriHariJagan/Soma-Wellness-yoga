@@ -263,7 +263,7 @@ export default function WorkshopStatsDrawer({ open, statsData, statsLoading, onC
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
               <h2 style={{
                 margin: 0, fontSize: 24, fontWeight: 800, color: C.dark,
-                fontFamily: "'Outfit', 'Inter', sans-serif", letterSpacing: '-0.02em',
+                fontFamily: "'Inter', sans-serif", letterSpacing: '-0.02em',
               }}>{wk.name}</h2>
               <StatusBadge wk={wk} />
             </div>

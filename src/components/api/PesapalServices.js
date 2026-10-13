@@ -72,6 +72,13 @@ export async function getPesapalConfig() {
   return request('/api/pesapal/config');
 }
 
+/**
+ * @deprecated Per-click key generation is exactly what caused DEF-006 (a new
+ * payment intent — and a new Pesapal order — for every retry/double-click).
+ * Use `getOrCreateIntentKey(signature)` from `lib/paymentIntentKey.js`, which
+ * returns a STABLE key per intended purchase. Kept only for callers that
+ * genuinely need a fresh, unrelated key.
+ */
 export function newIdempotencyKey(prefix = 'pay') {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }

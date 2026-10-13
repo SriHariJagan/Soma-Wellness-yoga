@@ -80,16 +80,25 @@ const PaymentSchema = new mongoose.Schema({
   source: { type: String, enum: PAYMENT_SOURCES, default: 'student' },
 
   // ── Provider-neutral fields (canonical for Pesapal; backfilled for history) ──
+  // The provider-field indexes are declared ONLY in the
+  // PaymentSchema.index() block below. Declaring the same index both here and
+  // there produces a Mongoose "Duplicate schema index" warning and leaves it
+  // ambiguous which definition is authoritative.
   payment_provider: { type: String, enum: PAYMENT_PROVIDERS, default: 'pesapal', index: true },
   payment_method: { type: String, default: 'pesapal' },
-  merchant_reference: { type: String, sparse: true, unique: true, index: true },
-  provider_order_id: { type: String, sparse: true, unique: true },
-  provider_transaction_id: { type: String, sparse: true, unique: true },
-  provider_checkout_id: { type: String, sparse: true, index: true },
+  merchant_reference: { type: String },
+  provider_order_id: { type: String },
+  provider_transaction_id: { type: String },
+  provider_checkout_id: { type: String },
   provider_status: { type: String, default: '' },
   failure_reason: { type: String, default: '' },
   callback_data: { type: mongoose.Schema.Types.Mixed, default: {} },
   provider_raw: { type: mongoose.Schema.Types.Mixed, default: {} },
+  // Pesapal redirect handed back on an idempotent replay of a pending order.
+  redirect_url: { type: String, default: '' },
+  // Set while a request owns the right to call Pesapal SubmitOrder for this
+  // intent. Cleared when the provider call fails so retries are still allowed.
+  providerSubmissionClaimedAt: { type: Date, default: null },
 
   // Legacy provider fields — retained for historical reads only.
   // New code must use merchant_reference / provider_* fields above.

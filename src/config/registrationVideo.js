@@ -7,15 +7,17 @@
 // ─────────────────────────────────────────────────────────
 export const REGISTRATION_VIDEO = {
   enabled: true,
-  // DUMMY placeholder — replace with the real Soma video URL.
-  url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  // Real Soma intro (optimized H.264, see src/config/introVideo.js).
+  url: '/videos/soma-intro-1080p.mp4',
   poster: '/images/headers/classes-memberships.webp',
   title: 'Welcome to Soma Wellness',
   caption: 'Watch a 60-second introduction before you create your account.',
   autoplayMuted: false,
   skippable: true,
   // Placement flags consumed by AuthCard + checkout preview.
-  showInRegister: true,
+  // NOTE: removed from signup — inline video broke the premium
+  // fit-to-viewport register layout. Keep checkout preview only.
+  showInRegister: false,
   showInCheckoutPreview: true,
 };
 

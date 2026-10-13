@@ -1,0 +1,527 @@
+/* ─────────────────────────────────────────────────────────
+   SomaIntroPlayer — full-screen intro ↔ floating mini player.
+   Palette: forest/primary base, sage support, gold progress +
+   accents, orange restrained, cream text. One <video> element
+   persists across modes so playback never restarts.
+   Layers: backdrop 600 / fullscreen 601 / pip 430 (above
+   chatbot 420, below toasts 500) / cta pill 430.
+   ───────────────────────────────────────────────────────── */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  background:
+    radial-gradient(80% 60% at 50% 0%, rgba(129, 178, 154, 0.16) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(12, 26, 20, 0.88) 0%, rgba(24, 61, 45, 0.92) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: introFade 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.layerFs {
+  position: fixed;
+  inset: 0;
+  z-index: 601;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 40px);
+  pointer-events: none;
+  overflow-y: auto;
+}
+
+.layerPip {
+  position: fixed;
+  right: clamp(12px, 2vw, 20px);
+  /* clears the chatbot bubble (420) + back-to-top cluster */
+  bottom: clamp(88px, 12vh, 110px);
+  z-index: 430;
+  pointer-events: none;
+}
+
+.stage {
+  pointer-events: auto;
+  background: linear-gradient(180deg, #12301f 0%, #183d2d 100%);
+  border: 1px solid rgba(255, 247, 230, 0.16);
+  border-radius: 20px;
+  box-shadow: 0 32px 80px rgba(6, 16, 12, 0.55), 0 8px 24px rgba(6, 16, 12, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  transition: width 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms ease;
+}
+
+.stageFs {
+  /* Fit BOTH axes: width caps the 16:9 video so video + topbar +
+     controls + caption always fit the viewport height — no scroll,
+     nothing clipped. 240px budgets the surrounding chrome. */
+  width: min(1020px, 94vw, calc((100vh - 240px) * 1.7778));
+  width: min(1020px, 94vw, calc((100dvh - 240px) * 1.7778));
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  animation: stageIn 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stagePip {
+  width: min(340px, calc(100vw - 24px));
+  border-radius: 14px;
+  animation: pipIn 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--soma-ivory);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #f4b400 0%, #ff7a00 100%);
+  box-shadow: 0 0 10px rgba(244, 180, 0, 0.55);
+}
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.chipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soma-ivory);
+  background: rgba(255, 247, 230, 0.1);
+  border: 1px solid rgba(255, 247, 230, 0.22);
+  border-radius: 9999px;
+  padding: 8px 14px;
+  transition: background var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.chipBtn:hover {
+  background: rgba(255, 247, 230, 0.2);
+  border-color: rgba(244, 180, 0, 0.55);
+  transform: translateY(-1px);
+}
+
+.skipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #183d2d;
+  background: linear-gradient(135deg, #f4b400 0%, #ffd54f 60%, #f4b400 100%);
+  border: none;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  box-shadow: 0 6px 18px rgba(244, 180, 0, 0.35);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+}
+
+.skipBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 10px 26px rgba(244, 180, 0, 0.45);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--soma-ivory);
+  background: rgba(255, 247, 230, 0.1);
+  border: 1px solid rgba(255, 247, 230, 0.22);
+  font-size: 14px;
+  line-height: 1;
+  transition: background var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: rgba(255, 247, 230, 0.22);
+  border-color: rgba(244, 180, 0, 0.55);
+  transform: translateY(-1px);
+}
+
+.screen {
+  position: relative;
+  background: #0c1a14;
+  aspect-ratio: 16 / 9;
+}
+
+.stagePip .screen {
+  aspect-ratio: 16 / 9;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  background: #0c1a14;
+}
+
+.spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.spinnerRing {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 247, 230, 0.25);
+  border-top-color: #f4b400;
+  animation: spin 0.9s linear infinite;
+}
+
+.bigPlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(12, 26, 20, 0.45);
+  border: none;
+  cursor: pointer;
+}
+
+.bigPlayIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  font-size: 26px;
+  color: #183d2d;
+  background: linear-gradient(135deg, #f4b400 0%, #ffd54f 60%, #ff7a00 130%);
+  box-shadow: 0 12px 32px rgba(244, 180, 0, 0.45);
+  transition: transform var(--transition-base);
+}
+
+.bigPlay:hover .bigPlayIcon {
+  transform: scale(1.06);
+}
+
+.bigPlayText {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--soma-ivory);
+}
+
+.unmutePill {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #183d2d;
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe9a8 100%);
+  border: none;
+  border-radius: 9999px;
+  padding: 8px 14px;
+  box-shadow: 0 8px 22px rgba(6, 16, 12, 0.4);
+  animation: pillPulse 2.4s ease-in-out infinite;
+}
+
+.endcard {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(12, 26, 20, 0.72) 0%, rgba(24, 61, 45, 0.86) 100%);
+  animation: introFade 400ms ease;
+}
+
+.endTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 500;
+  color: var(--soma-ivory);
+  max-width: 30ch;
+}
+
+.endActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #1a4d35 0%, #2e7d5b 50%, #3a9a73 100%);
+  border: 1px solid rgba(255, 247, 230, 0.25);
+  border-radius: 9999px;
+  padding: 10px 20px;
+  box-shadow: 0 8px 22px rgba(6, 16, 12, 0.4);
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 12px;
+}
+
+.stagePip .controls {
+  padding: 8px 10px 10px;
+  gap: 8px;
+}
+
+.stagePip .iconBtn {
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+}
+
+.time {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 247, 230, 0.85);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.seek {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #f4b400 var(--seek-fill, 0%), rgba(255, 247, 230, 0.25) var(--seek-fill, 0%));
+  outline-offset: 4px;
+  cursor: pointer;
+}
+
+.seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffd54f;
+  border: 2px solid #183d2d;
+  box-shadow: 0 0 8px rgba(244, 180, 0, 0.6);
+}
+
+.seek::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffd54f;
+  border: 2px solid #183d2d;
+}
+
+.caption {
+  margin: 0;
+  padding: 0 14px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255, 247, 230, 0.7);
+  text-align: center;
+}
+
+/* Reduced-motion opt-in pill (bottom-left, clear of chatbot) */
+.ctaPill {
+  position: fixed;
+  left: clamp(12px, 2vw, 20px);
+  bottom: clamp(88px, 12vh, 110px);
+  z-index: 430;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--soma-ivory);
+  background: linear-gradient(135deg, #1a4d35 0%, #2e7d5b 100%);
+  border: 1px solid rgba(255, 247, 230, 0.25);
+  border-radius: 9999px;
+  padding: 10px 16px;
+  box-shadow: 0 10px 28px rgba(6, 16, 12, 0.4);
+}
+
+.ctaDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f4b400, #ff7a00);
+}
+
+@keyframes introFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes stageIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pipIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pillPulse {
+  0%, 100% { box-shadow: 0 8px 22px rgba(6, 16, 12, 0.4), 0 0 0 0 rgba(244, 180, 0, 0.45); }
+  50% { box-shadow: 0 8px 22px rgba(6, 16, 12, 0.4), 0 0 0 8px rgba(244, 180, 0, 0); }
+}
+
+/* ── Mobile: near-full-width stage, compact chrome ── */
+@media (max-width: 640px) {
+  .layerFs {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .stageFs {
+    width: 100%;
+    width: min(100%, calc((100vh - 230px) * 1.7778));
+    width: min(100%, calc((100dvh - 230px) * 1.7778));
+    max-height: calc(100dvh - 20px);
+  }
+
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+
+  .chipBtn, .skipBtn {
+    padding: 7px 12px;
+    font-size: 10px;
+  }
+
+  .bigPlayIcon {
+    width: 62px;
+    height: 62px;
+    font-size: 22px;
+  }
+
+  .layerPip {
+    left: 12px;
+    right: 12px;
+    bottom: 86px;
+  }
+
+  .stagePip {
+    width: 100%;
+  }
+}
+
+/* ── Short viewports (landscape phones, short desktop windows):
+   slim the chrome + drop the caption so the video always fits ── */
+@media (max-height: 620px) {
+  .layerFs {
+    padding: 8px;
+  }
+
+  .topbar {
+    padding: 6px 10px;
+  }
+
+  .controls {
+    padding: 6px 10px 8px;
+  }
+
+  .caption {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop, .stageFs, .stagePip, .endcard {
+    animation: none;
+  }
+
+  .stage {
+    transition: none;
+  }
+
+  .unmutePill {
+    animation: none;
+  }
+
+  .spinnerRing {
+    animation-duration: 1.6s;
+  }
+}

@@ -283,7 +283,7 @@ export default function WorkshopsPage({ student, reload, workshopId: highlightId
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                       <div>
                         <h2 style={{
-                          fontFamily: "'Outfit', 'Inter', sans-serif",
+                          fontFamily: "'Inter', sans-serif",
                           fontSize: 22, fontWeight: 700, color: "#2D1406",
                           margin: 0, letterSpacing: "-0.02em",
                         }}>{detailData.name}</h2>
@@ -300,7 +300,7 @@ export default function WorkshopsPage({ student, reload, workshopId: highlightId
                             padding: "5px 12px", borderRadius: 20,
                             background: "rgba(46,125,91,0.12)", color: "#2E7D5B",
                             fontSize: 13, fontWeight: 700, whiteSpace: "nowrap",
-                            fontFamily: "'Outfit', 'Inter', sans-serif",
+                            fontFamily: "'Inter', sans-serif",
                           }}>
                             KES {detailData.price?.toLocaleString("en-KE")}
                           </span>

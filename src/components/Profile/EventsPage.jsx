@@ -224,7 +224,7 @@ export default function EventsPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                   <div>
                     <h2 style={{
-                      fontFamily: "'Outfit', 'Inter', sans-serif", fontSize: 22, fontWeight: 700,
+                      fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 700,
                       color: "#2D1406", margin: 0, letterSpacing: "-0.02em",
                     }}>{detail.title}</h2>
                     {detail.instructor && (

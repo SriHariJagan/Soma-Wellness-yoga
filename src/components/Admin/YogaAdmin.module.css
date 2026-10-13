@@ -57,8 +57,8 @@
   --r-lg: 18px;
   --r-xl: 24px;
 
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
 
   --sidebar-w: 274px;
   --sidebar-w-collapsed: 80px;

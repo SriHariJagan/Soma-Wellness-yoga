@@ -17,6 +17,7 @@ import { useAuth } from './context/AuthContext.jsx';
 //    fetched on demand so the initial bundle stays small. ──
 const ChatbotWidget = lazy(() => import('./components/chatbot/ChatbotWidget.jsx'));
 const MembershipPrompt = lazy(() => import('./components/soma/MembershipPrompt.jsx'));
+const SomaIntroPlayer = lazy(() => import('./components/soma/SomaIntroPlayer.jsx'));
 const About = lazy(() => import('./pages/About'));
 const Classes = lazy(() => import('./pages/Classes'));
 const Memberships = lazy(() => import('./pages/Memberships'));
@@ -141,7 +142,7 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
   // Hide the public chrome (navbar, footer, etc.) only on the actual dashboard
   // routes — not merely because a student/admin is logged in. This lets logged-in
   // users still navigate the public site; the Navbar adapts to show their account.
-  const dashboardRoutes = ["/yogaadmin", "/studentdashboard", "/reception", "/login", "/forgot-password", "/payment", "/payment/return"];
+  const dashboardRoutes = ["/yogaadmin", "/studentdashboard", "/reception", "/login", "/newuser", "/forgot-password", "/payment", "/payment/return"];
   const onDashboardRoute = dashboardRoutes.includes(location.pathname);
 
   return (
@@ -181,7 +182,12 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
             <Route path="/checkout" element={<Navigate to="/" replace />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/payment/return" element={<PaymentReturn />} />
-            <Route path="/newuser"          element={<NewUser />} />
+            <Route path="/newuser"          element={
+                isAdmin      ? <Navigate to="/yogaadmin"        replace /> :
+                isReception  ? <Navigate to="/reception"        replace /> :
+                isStudent    ? <Navigate to="/studentdashboard" replace /> :
+                               <NewUser />
+              } />
             <Route path="/forgot-password"  element={<ForgotPassword />} />
             <Route path="/reset-password"   element={<ResetPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -251,6 +257,14 @@ const AppShell = ({ user, isAdmin, isManager, isReception, isStudent, isDashboar
       {!onDashboardRoute && (
         <Suspense fallback={null}>
           <MembershipPrompt />
+        </Suspense>
+      )}
+      {/* Intro video: mounted once outside Routes so a minimized player
+          persists across route transitions; auto-open is home-only and
+          once-per-session inside the component. */}
+      {!onDashboardRoute && (
+        <Suspense fallback={null}>
+          <SomaIntroPlayer autoOpen={location.pathname === "/"} />
         </Suspense>
       )}
     </>

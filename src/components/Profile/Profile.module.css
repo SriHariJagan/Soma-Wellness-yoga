@@ -19,7 +19,7 @@
   --yp-radius-card: 28px;
   --yp-radius-md:   12px;
   --yp-radius-sm:   10px;
-  --yp-font-serif:  'Outfit', 'Segoe UI', sans-serif;
+  --yp-font-serif:  'Inter', system-ui, sans-serif;
   --yp-font-sans:   'Inter', system-ui, sans-serif;
   --yp-transition:  0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }

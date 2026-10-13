@@ -128,7 +128,11 @@ async function handleIpn(req, res) {
     });
     try {
       await enqueueWebhookRetry(`pesapal:${trackingId || merchantReference}`, err.message);
-    } catch {}
+    } catch (enqueueErr) {
+      // The retry queue is best-effort. If it is unavailable the IPN response
+      // below still tells Pesapal whether to redeliver, so swallow the error.
+      logger.error(MODULE, 'Webhook retry enqueue failed', { error: enqueueErr.message });
+    }
     const retryable = ['PROVIDER_PENDING', undefined].includes(err.code);
     return res.status(retryable ? 500 : 200).json({
       orderNotificationType: 'IPNCHANGE',

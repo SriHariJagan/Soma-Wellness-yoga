@@ -19,7 +19,7 @@ const MODULE = 'FulfillmentService';
 
 export class FulfillmentService {
   async activateItem(item, paymentId, userId, session) {
-    const { itemType, itemId, metadata } = item;
+    const { itemType } = item;
 
     switch (itemType) {
       case 'membership':
