@@ -25,21 +25,31 @@
 
 .inner { max-width: 1440px; margin: 0 auto; padding: 0 clamp(20px,4vw,40px); position: relative; z-index: 2; width: 100%; }
 
-.head { text-align: center; max-width: 760px; margin: 0 auto 36px; }
+.head { text-align: center; max-width: 780px; margin: 0 auto 44px; }
 .eyebrow {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--soma-primary);
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; color: #8a6d1c;
+  background: linear-gradient(135deg, rgba(244,180,0,0.14), rgba(249,115,22,0.10));
+  border: 1px solid rgba(244,180,0,0.32);
+  padding: 8px 18px; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(244,180,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
 }
-.eyebrowDot { width: 6px; height: 6px; border-radius: 50%; background: linear-gradient(135deg, #F4B400 0%, #FFD54F 100%); box-shadow: 0 0 8px rgba(244,180,0,0.30); flex-shrink: 0; }
-.eyebrowLine { width: 22px; height: 1px; background: var(--soma-primary); opacity: 0.40; display: inline-block; }
+.eyebrowDot { width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(135deg, #F4B400 0%, #FFD54F 100%); box-shadow: 0 0 10px rgba(244,180,0,0.55); flex-shrink: 0; animation: eyebrowPulse 2.6s ease-in-out infinite; }
+@keyframes eyebrowPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: 0.75; } }
+.eyebrowLine { width: 26px; height: 1.5px; background: linear-gradient(90deg, #B8912A, transparent); opacity: 0.7; display: inline-block; border-radius: 2px; }
 .title {
-  margin-top: 12px;
-  font-family: var(--font-display); font-size: clamp(34px, 4.4vw, 48px); font-weight: 500; line-height: 1.03; letter-spacing: -0.01em; color: var(--soma-forest);
+  margin-top: 18px;
+  font-family: var(--font-display); font-size: clamp(38px, 5vw, 58px); font-weight: 550; line-height: 1.04; letter-spacing: -0.02em; color: var(--soma-forest);
   position: relative; display: inline-block;
+  text-wrap: balance;
 }
-.title em { font-style: italic; font-weight: 500; color: var(--soma-primary); }
-.titleUnderline { position: absolute; left: 14%; right: 14%; bottom: 0.04em; height: 0.12em; background: linear-gradient(90deg, rgba(244,180,0,0.28) 0%, transparent 88%); transform-origin: center; border-radius: 2px; pointer-events: none; }
-.sub { margin-top: 12px; font-size: 14.5px; line-height: 1.6; color: #5a6b63; max-width: 52ch; margin-left: auto; margin-right: auto; }
+.title em {
+  font-style: italic; font-weight: 600;
+  background: linear-gradient(120deg, #2E7D5B 10%, #C9A227 55%, #F97316 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.titleUnderline { position: absolute; left: 18%; right: 18%; bottom: -0.06em; height: 0.09em; background: linear-gradient(90deg, transparent 0%, rgba(244,180,0,0.55) 30%, rgba(249,115,22,0.45) 65%, transparent 100%); transform-origin: center; border-radius: 3px; pointer-events: none; filter: blur(0.4px); }
+.sub { margin-top: 16px; font-size: 15.5px; line-height: 1.7; color: #4d5f57; max-width: 56ch; margin-left: auto; margin-right: auto; }
 
 .grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; align-items: start; }
 .card {
