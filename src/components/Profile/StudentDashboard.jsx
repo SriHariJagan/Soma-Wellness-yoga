@@ -145,6 +145,25 @@ export default function StudentDashboard({ onLogout }) {
     return () => window.removeEventListener("app-toast", handler);
   }, [showToast]);
 
+  // Warm the heaviest tab chunks while idle so first click is instant.
+  // (React.lazy would otherwise fetch + transform them on first navigation.)
+  const didPreload = useRef(false);
+  const preloadTabs = useCallback(() => {
+    if (didPreload.current) return;
+    didPreload.current = true;
+    const warm = () => {
+      void import("./PaymentsPage");
+      void import("./OrderHistoryPage");
+      void import("./ActivePlanPage");
+      void import("./BrowsePlansPage");
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      window.requestIdleCallback(warm, { timeout: 3000 });
+    } else {
+      setTimeout(warm, 1500);
+    }
+  }, []);
+
   async function loadProfile() {
       try {
         // ─── 1. SECURITY TIER GUARD ───
@@ -162,22 +181,32 @@ export default function StudentDashboard({ onLogout }) {
           return;
         }
 
-        // ─── 2. ATTEMPT SERVICE FETCH ───
+        // ─── 2. PROFILE FIRST (paints Payments/History immediately) ───
+        // Membership + cart follow in the background — no tab waits for them.
         try {
-          const [data, membership, cartCountData] = await Promise.all([
-            getStudentProfile(),
-            getActiveMembership(),
-            getCartCount().catch(() => ({ count: 0 })),
-          ]);
+          const data = await getStudentProfile();
           setStudent(data);
           setUnreadNotifs(data.unreadNotifications ?? 0);
-          setCartCount(cartCountData?.count ?? 0);
-          setActiveMembership(membership);
+          setLoading(false);
+          preloadTabs();
         } catch (apiErr) {
           // Fall back to the cached login session so the screen never crashes.
           console.warn("Profile fetch failed, using cached session:", apiErr.message);
           setStudent(savedUser);
           setUnreadNotifs(savedUser.unreadNotifications ?? 0);
+          setLoading(false);
+        }
+
+        // ─── 3. MEMBERSHIP + CART IN BACKGROUND ───
+        try {
+          const [membership, cartCountData] = await Promise.all([
+            getActiveMembership(),
+            getCartCount().catch(() => ({ count: 0 })),
+          ]);
+          setActiveMembership(membership);
+          setCartCount(cartCountData?.count ?? 0);
+        } catch (err) {
+          console.warn("Membership/cart background fetch failed:", err.message);
         }
       } catch (err) {
         console.error("Dashboard load error:", err);

@@ -11,6 +11,7 @@ import Workshop from '../models/Workshop.js';
 import Download from '../models/Download.js';
 import Consultation from '../models/Consultation.js';
 import NotificationRecipient from '../models/NotificationRecipient.js';
+import '../models/Notification.js'; // side-effect: registers the model for populate() — never rely on import order
 import Referral from '../models/Referral.js';
 import User from '../models/User.js';
 import { ATTENDANCE_STATUSES } from '../shared/constants/index.js';
@@ -70,13 +71,14 @@ function buildAttendanceCalendar(records, now = new Date()) {
 }
 
 export async function buildStudentDashboard(userId) {
-  const user = await User.findById(userId).lean();
-  if (!user) return null;
-
   const now = new Date();
-  const uid = user._id;
 
+  // The user lookup runs IN PARALLEL with the collections below (it used to
+  // be awaited first, costing a full extra Atlas round-trip on every load).
+  // Mongoose casts the raw userId for the `user:` filters; mapping uses the
+  // resolved doc's _id afterwards.
   const [
+    user,
     membership,
     attendanceDocs,
     payments,
@@ -90,26 +92,32 @@ export async function buildStudentDashboard(userId) {
     userServices,
     trial,
   ] = await Promise.all([
+    User.findById(userId).lean(),
     // Lean + projected: dashboard maps a fixed field set, so full Mongoose
     // docs (with attempts/audit/history arrays) are pure overhead here.
     // Virtuals are preserved via lean({ virtuals: true }) where used below.
-    Membership.findOne({ user: uid }).sort({ createdAt: -1 }).lean({ virtuals: true }),
-    Attendance.find({ user: uid }).select('date status').sort({ date: 1 }).lean(),
-    Payment.find({ user: uid }).select('label amount invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt').sort({ createdAt: -1 }).lean(),
+    Membership.findOne({ user: userId }).sort({ createdAt: -1 }).lean({ virtuals: true }),
+    Attendance.find({ user: userId }).select('date status').sort({ date: 1 }).lean(),
+    Payment.find({ user: userId }).select('label amount invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt').sort({ createdAt: -1 }).lean(),
     ClassSession.find({ date: { $gte: now }, status: 'upcoming' }).select('name mode time date zoomUrl enrolledUsers status').sort({ date: 1 }).limit(20).lean(),
     ClassSession.find({ status: 'completed', recordingUrl: { $ne: '' } }).select('name date recordingUrl').sort({ date: -1 }).limit(20).lean(),
     Workshop.find({}).select('name date startTime endTime duration price description instructor zoomLink image capacity registrations isPaid allowedPlans status isPublished archived').sort({ date: 1 }).lean(),
     Download.find({ visibility: { $in: ['all', 'plan'] } }).select('type name size url').sort({ createdAt: -1 }).lean(),
-    Consultation.find({ user: uid }).select('status date timeSlot duration doctor topic price paymentStatus meetingLink assignedGuru adminNotes').sort({ date: -1 }).lean(),
-    NotificationRecipient.find({ student: uid, deleted: false })
-      .populate('notification')
+    Consultation.find({ user: userId }).select('status date timeSlot duration doctor topic price paymentStatus meetingLink assignedGuru adminNotes').sort({ date: -1 }).lean(),
+    // Only the fields the dashboard renders — full Notification docs carry
+    // richMessage/templateData blobs that would bloat every load.
+    NotificationRecipient.find({ student: userId, deleted: false })
+      .populate('notification', 'title message channels')
       .sort({ createdAt: -1 })
       .limit(50)
       .lean(),
-    Referral.findOne({ user: uid }).lean(),
-    UserService.find({ user: uid }).select('service offering serviceName category mode status totalSessions usedSessions sessionsProgressPct expiryDate').sort({ createdAt: -1 }).lean({ virtuals: true }),
-    FreeTrial.findOne({ user: uid }).sort({ createdAt: -1 }).lean({ virtuals: true }),
+    Referral.findOne({ user: userId }).lean(),
+    UserService.find({ user: userId }).select('service offering serviceName category mode status totalSessions usedSessions sessionsProgressPct expiryDate').sort({ createdAt: -1 }).lean({ virtuals: true }),
+    FreeTrial.findOne({ user: userId }).sort({ createdAt: -1 }).lean({ virtuals: true }),
   ]);
+
+  if (!user) return null;
+  const uid = user._id;
 
   // ── Attendance ──
   const { attendanceRecords, attendanceMonth } = buildAttendanceCalendar(attendanceDocs, now);

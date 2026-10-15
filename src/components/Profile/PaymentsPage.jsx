@@ -46,14 +46,16 @@ export default function PaymentsPage({ student }) {
           />
         </Item>
 
-        <AnimatePresence mode="wait">
+        {/* Fast crossfade: enter starts immediately (no mode="wait" dead time),
+            rows use a short tween so switching tabs feels instant. */}
+        <AnimatePresence initial={false}>
           {tab === "history" && (
             <motion.div
               key="history"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
             >
               {payments.length === 0 ? (
                 <EmptyState icon="ti-receipt" title="No payments yet." />
@@ -66,9 +68,9 @@ export default function PaymentsPage({ student }) {
                         <motion.div
                           key={p._id || i}
                           className={styles.txn}
-                          initial={{ opacity: 0, x: -10 }}
+                          initial={{ opacity: 0, x: -6 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: Math.min(i, 8) * 0.05, type: "spring", stiffness: 300, damping: 26 }}
+                          transition={{ duration: 0.18, delay: Math.min(i, 5) * 0.025 }}
                         >
                           <span className={styles.txnIcon}><i className="ti ti-credit-card" aria-hidden="true" /></span>
                           <span className={styles.txnLabel}>{p.label}</span>
@@ -95,10 +97,10 @@ export default function PaymentsPage({ student }) {
           {tab === "invoices" && (
             <motion.div
               key="invoices"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
             >
               {invoiced.length === 0 ? (
                 <EmptyState
@@ -113,9 +115,9 @@ export default function PaymentsPage({ student }) {
                       <motion.div
                         key={p._id || i}
                         className={styles.txn}
-                        initial={{ opacity: 0, x: -10 }}
+                        initial={{ opacity: 0, x: -6 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: Math.min(i, 8) * 0.05, type: "spring", stiffness: 300, damping: 26 }}
+                        transition={{ duration: 0.18, delay: Math.min(i, 5) * 0.025 }}
                       >
                         <span className={styles.txnIcon}><i className="ti ti-file-invoice" aria-hidden="true" /></span>
                         <span className={styles.txnLabel}>{p.invoiceNo}</span>
