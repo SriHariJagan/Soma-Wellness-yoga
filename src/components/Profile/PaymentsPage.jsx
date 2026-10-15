@@ -30,8 +30,8 @@ export default function PaymentsPage({ student }) {
 
       <Stagger>
         <div className={w.statGrid}>
-          <StatCard tone="green" icon="ti-circle-check" label="Paid"    value={paidTotal}    format={fmtStat} prefix="KES " index={0} />
-          <StatCard tone="amber" icon="ti-clock"        label="Pending" value={pendingTotal} format={fmtStat} prefix="KES " index={1} />
+          <StatCard tone="green" icon="ti-circle-check" label="Paid"    value={paidTotal}    format={fmtStat} prefix="KES " index={0} countDuration={0.35} />
+          <StatCard tone="amber" icon="ti-clock"        label="Pending" value={pendingTotal} format={fmtStat} prefix="KES " index={1} countDuration={0.35} />
         </div>
 
         <Item>

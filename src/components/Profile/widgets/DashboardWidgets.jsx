@@ -76,6 +76,9 @@ export function StatCard({
   progress,
   tone = "neutral",
   index = 0,
+  // Override the counter sweep (default 1.3s). Pages where the numbers are
+  // the first thing users read (e.g. Payments) pass ~0.35 so values land fast.
+  countDuration = 1.3,
 }) {
   const reduced = usePrefersReducedMotion();
   const numeric = typeof value === "number";
@@ -105,7 +108,7 @@ export function StatCard({
       <div className={w.statValue}>
         {prefix}
         {numeric && !reduced ? (
-          <CountUp value={value} format={format} />
+          <CountUp value={value} format={format} duration={countDuration} />
         ) : (
           <span>{numeric ? (format ? format(value) : value.toLocaleString("en-KE")) : value}</span>
         )}
