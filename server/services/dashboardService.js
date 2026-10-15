@@ -98,7 +98,7 @@ export async function buildStudentDashboard(userId) {
     Payment.find({ user: uid }).select('label amount invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt').sort({ createdAt: -1 }).lean(),
     ClassSession.find({ date: { $gte: now }, status: 'upcoming' }).select('name mode time date zoomUrl enrolledUsers status').sort({ date: 1 }).limit(20).lean(),
     ClassSession.find({ status: 'completed', recordingUrl: { $ne: '' } }).select('name date recordingUrl').sort({ date: -1 }).limit(20).lean(),
-    Workshop.find({}).select('name date startTime endTime duration price description instructor zoomLink image capacity registrations isPaid allowedPlans status').sort({ date: 1 }).lean(),
+    Workshop.find({}).select('name date startTime endTime duration price description instructor zoomLink image capacity registrations isPaid allowedPlans status isPublished archived').sort({ date: 1 }).lean(),
     Download.find({ visibility: { $in: ['all', 'plan'] } }).select('type name size url').sort({ createdAt: -1 }).lean(),
     Consultation.find({ user: uid }).select('status date timeSlot duration doctor topic price paymentStatus meetingLink assignedGuru adminNotes').sort({ date: -1 }).lean(),
     NotificationRecipient.find({ student: uid, deleted: false })
@@ -129,7 +129,8 @@ export async function buildStudentDashboard(userId) {
     name: c.name,
     mode: c.mode,
     zoomUrl: c.zoomUrl,
-    enrolled: c.enrolledUsers.some((id) => id.equals(uid)),
+    // Legacy class docs may predate enrolledUsers — coerce, never throw.
+    enrolled: (c.enrolledUsers || []).some((id) => id.equals(uid)),
   }));
   const recordings = recordingSessions.map((c) => ({
     date: fmtDate(c.date),
@@ -142,7 +143,9 @@ export async function buildStudentDashboard(userId) {
   const registered = [];
   const available = [];
   for (const wk of workshops) {
-    // Skip workshops not published or archived
+    // Skip workshops not published or archived.
+    // (lean() returns raw DB docs, so legacy records may simply lack
+    // these fields — treat missing as unpublished to stay safe.)
     if (!wk.isPublished || wk.archived) continue;
 
     // Check plan eligibility: if allowedPlans is non-empty, user's plan must match
@@ -153,7 +156,9 @@ export async function buildStudentDashboard(userId) {
       if (!planMatch) continue;
     }
 
-    const totalRegs = wk.registrations.length;
+    // Legacy workshop docs may predate registrations — coerce, never throw.
+    const regs = wk.registrations || [];
+    const totalRegs = regs.length;
     const remainingSeats = Math.max(0, wk.capacity - totalRegs);
     const fmtTime = (t) => t || '';
     const workshopObj = {
@@ -177,7 +182,7 @@ export async function buildStudentDashboard(userId) {
       status: wk.status || 'available',
     };
 
-    const reg = wk.registrations.find((r) => r.user && r.user.equals(uid));
+    const reg = regs.find((r) => r.user && r.user.equals(uid));
     if (reg) {
       registered.push({
         ...workshopObj,

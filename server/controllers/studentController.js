@@ -261,12 +261,23 @@ export const getMembershipStatus = asyncHandler(async (req, res) => {
 // Paused memberships are included so the Active Plan page can
 // display pause state. Auto-resumes if pause allowance exhausted.
 export const getActiveMembership = asyncHandler(async (req, res) => {
-  const m = await Membership.findOne({
-    user: req.user._id,
-    status: { $in: ['active', 'paused'] },
-  }).sort({ createdAt: -1 })
-    .populate('plan')
-    .populate('invoice', 'label amount currency invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt');
+  // Legacy membership records (e.g. pre-ObjectId invoice refs) must never
+  // take this endpoint down — fall back to the unpopulated document.
+  let m = null;
+  try {
+    m = await Membership.findOne({
+      user: req.user._id,
+      status: { $in: ['active', 'paused'] },
+    }).sort({ createdAt: -1 })
+      .populate('plan')
+      .populate('invoice', 'label amount currency invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt');
+  } catch (err) {
+    logger.warn(MODULE, 'Membership populate failed, falling back to raw doc', { error: err.message });
+    m = await Membership.findOne({
+      user: req.user._id,
+      status: { $in: ['active', 'paused'] },
+    }).sort({ createdAt: -1 }).populate('plan');
+  }
 
   if (!m) {
     // No membership at all — still return Circle context so the dashboard

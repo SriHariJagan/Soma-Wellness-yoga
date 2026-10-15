@@ -4,6 +4,7 @@
 // expiry date has passed and marks it as expired in the database.
 // ============================================================
 import Membership from '../models/Membership.js';
+import User from '../models/User.js';
 import UserService from '../models/UserService.js';
 import { expireTrials } from '../controllers/freeTrialController.js';
 import { notify } from './notificationService.js';
@@ -24,6 +25,18 @@ export async function expireDueEnrollments() {
       m.history.push({ action: 'expired', note: 'Membership period ended', at: now });
     }
     await m.save();
+    // Clear the denormalized planMonths flag when no active membership
+    // remains, so admin/user views stop showing an active plan.
+    try {
+      const stillActive = await Membership.exists({
+        user: m.user,
+        status: 'active',
+        expiryDate: { $gt: now },
+      });
+      if (!stillActive) {
+        await User.updateOne({ _id: m.user }, { $set: { planMonths: 0 } });
+      }
+    } catch { /* non-blocking */ }
   }
   results.memberships = dueMemberships.length;
 

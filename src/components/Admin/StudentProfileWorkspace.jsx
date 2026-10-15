@@ -11,6 +11,8 @@ import {
 import RenewPlanModal from './RenewPlanModal';
 import UpgradePlanModal from './UpgradePlanModal';
 import PhoneInput from '../common/PhoneInput.jsx';
+import CountrySelect from '../common/CountrySelect.jsx';
+import { countryNameFor } from '../../data/countries.js';
 import { validatePhone, normalizePhone } from '../../lib/phone.js';
 import {
   LuX, LuUser, LuMail, LuPhone, LuMapPin, LuCalendar, LuDumbbell,
@@ -418,6 +420,14 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
         phone: editForm.phone ? normalizePhone(editForm.phone) : editForm.phone,
         emergencyContact: editForm.emergencyContact ? normalizePhone(editForm.emergencyContact) : editForm.emergencyContact,
       };
+      // Keep the country name in sync with the ISO country code so a
+      // profile showing the wrong country (e.g. India) can be corrected
+      // to Kenya (or any valid country) from this form.
+      if (payload.countryCode !== undefined) {
+        const code = String(payload.countryCode || '').trim().toUpperCase();
+        payload.countryCode = code;
+        if (code) payload.country = countryNameFor(code) || payload.country;
+      }
       await updateStudent(student._id, payload);
       flash('Profile updated successfully');
       setEditing(false);
@@ -542,7 +552,13 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
               <FormInput label="Gender" value={editForm.gender} onChange={e => setEditForm({ ...editForm, gender: e.target.value })} />
               <FormInput label="Date of Birth" type="date" value={editForm.dateOfBirth} onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
               <FormInput label="City" value={editForm.city} onChange={e => setEditForm({ ...editForm, city: e.target.value })} />
-              <FormInput label="Country of residency" value={editForm.countryCode ? `${editForm.country || ''} (${editForm.countryCode})` : (editForm.country || '')} onChange={e => setEditForm({ ...editForm, country: e.target.value, countryCode: e.target.value })} />
+              <div>
+                <CountrySelect
+                  value={editForm.countryCode || ''}
+                  onChange={(code) => setEditForm({ ...editForm, countryCode: code, country: countryNameFor(code) })}
+                  id="admin-edit-country"
+                />
+              </div>
               <FormInput label="Yoga Style" value={editForm.style} onChange={e => setEditForm({ ...editForm, style: e.target.value })} />
               <FormInput label="Level" value={editForm.level} onChange={e => setEditForm({ ...editForm, level: e.target.value })} />
             </div>

@@ -340,12 +340,12 @@ export default function ReceptionStaffManagement({ onFeedback }) {
                   </div>
                   <label className={s.fieldLabel}>
                     Full Name *
-                    <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Priya Sharma" required />
+                    <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Grace Wanjiru" required />
                   </label>
                   <label className={s.fieldLabel}>
                     Email *
                     <input
-                      type="email" value={form.email} placeholder="e.g. priya@somawellness.co.ke"
+                      type="email" value={form.email} placeholder="e.g. grace@somawellness.co.ke"
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       required disabled={isEdit} title={isEdit ? 'Email cannot be changed after creation' : undefined}
                     />

@@ -174,11 +174,13 @@ PaymentSchema.virtual('amountInRupees').get(function () {
 });
 
 PaymentSchema.virtual('itemCount').get(function () {
-  return this.items.length;
+  // Legacy/raw payment records may lack the items array — coerce, never throw
+  // (this virtual runs during res.json serialization).
+  return (this.items || []).length;
 });
 
 PaymentSchema.virtual('totalRefunded').get(function () {
-  return this.refunds
+  return (this.refunds || [])
     .filter((r) => r.status === 'processed')
     .reduce((sum, r) => sum + r.amount, 0);
 });

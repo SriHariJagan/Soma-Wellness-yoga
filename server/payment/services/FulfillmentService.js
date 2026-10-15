@@ -113,6 +113,18 @@ export class FulfillmentService {
       history: [{ action: 'created', note: isCircle ? 'Payment verified – SOMA Wellness Circle activated (1 year)' : 'Payment verified – membership activated', at: now }],
     }], { session });
 
+    // Keep the denormalized user.planMonths in sync — the admin Users table,
+    // cached login sessions and membership labels read it directly.
+    try {
+      await User.updateOne(
+        { _id: userId },
+        { $set: { planMonths: isCircle ? WELLNESS_CIRCLE.DURATION_MONTHS : (plan.durationMonths || 1) } },
+        { session },
+      );
+    } catch (err) {
+      logger.warn(MODULE, 'planMonths sync failed (non-blocking)', { userId: String(userId), error: err.message });
+    }
+
     logger.info(MODULE, 'Membership activated', {
       membershipId: String(membership[0]._id),
       userId: String(userId),
@@ -248,6 +260,16 @@ export class FulfillmentService {
         pauseDaysAllowed: 0,
         history: [{ action: 'created', note: `Payment verified – "${offering.name}" membership activated`, at: now }],
       }], { session });
+      // Keep the denormalized user.planMonths in sync (see _activateMembership).
+      try {
+        await User.updateOne(
+          { _id: userId },
+          { $set: { planMonths: Math.max(1, Math.round(validityMonths) || 1) } },
+          { session },
+        );
+      } catch (err) {
+        logger.warn(MODULE, 'planMonths sync failed (non-blocking)', { userId: String(userId), error: err.message });
+      }
       logger.info(MODULE, 'Offering membership activated', {
         membershipId: String(membership[0]._id), userId: String(userId), offering: offering.name,
       });

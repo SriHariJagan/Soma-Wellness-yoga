@@ -162,7 +162,7 @@ function validateRulePayload(body, { isUpdate = false } = {}) {
     data.status = b.status;
   }
 
-  if (b.country !== undefined) data.country = String(b.country).trim() || 'India';
+  if (b.country !== undefined) data.country = String(b.country).trim() || 'Kenya';
   if (b.states !== undefined) {
     data.states = Array.isArray(b.states) ? b.states.map((s) => String(s).trim()).filter(Boolean) : [];
     data.states = [...new Set(data.states)];
