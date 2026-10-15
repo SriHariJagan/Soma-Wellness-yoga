@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import p from "./ProfilePage.module.css";
 import { Stagger, Item, Panel, PrimaryButton, GhostButton, Pill } from "./widgets/DashboardWidgets";
 import { updateStudentProfile, getMyEnrollments } from "../api/StudentServices";
 import CountrySelect from "../common/CountrySelect.jsx";
+import { CitySelect } from "../common/LocationSelects.jsx";
 import { countryNameFor } from "../../data/countries.js";
 
 const ENROLLMENT_META = {
@@ -69,11 +70,24 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
     email: pData.email ?? "",
     phone: pData.phone ?? "",
     city:  pData.city  ?? "",
+    state: pData.state ?? "",
+    stateCode: pData.stateCode ?? "",
     country: pData.country ?? "",
     countryCode: pData.countryCode ?? "",
     style: pData.style ?? "",
     level: pData.level ?? "",
   });
+
+  // Location is Country → City only (states removed — the county list
+  // proved flaky and added no value over the per-country city list).
+  const handleCountryChange = useCallback((code) => {
+    setFormData((prev) => ({
+      ...prev,
+      countryCode: code,
+      country: countryNameFor(code),
+      city: "",
+    }));
+  }, []);
 
   useEffect(() => {
     if (student) {
@@ -82,6 +96,8 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
         email: student.email ?? "",
         phone: student.phone ?? "",
         city:  student.city  ?? "",
+        state: student.state ?? "",
+        stateCode: student.stateCode ?? "",
         country: student.country ?? "",
         countryCode: student.countryCode ?? "",
         style: student.style ?? "",
@@ -112,6 +128,8 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
       email: pData.email ?? "",
       phone: pData.phone ?? "",
       city:  pData.city  ?? "",
+      state: pData.state ?? "",
+      stateCode: pData.stateCode ?? "",
       country: pData.country ?? "",
       countryCode: pData.countryCode ?? "",
       style: pData.style ?? "",
@@ -145,8 +163,8 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
     { icon: "ti-user",      label: "Name",  name: "name",  type: "text"  },
     { icon: "ti-mail",      label: "Email", name: "email", type: "email" },
     { icon: "ti-phone",     label: "Phone", name: "phone", type: "tel"   },
-    { icon: "ti-map-pin",   label: "City",  name: "city",  type: "text"  },
     { icon: "ti-flag",      label: t("auth.countryOfResidency", "Country of residency"), name: "countryCode", type: "country"  },
+    { icon: "ti-map-pin",   label: "City",  name: "city",  type: "city"  },
     { icon: "ti-yoga",      label: "Style", name: "style", type: "text"  },
     { icon: "ti-chart-bar", label: "Level", name: "level", type: "text"  },
   ];
@@ -155,13 +173,17 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
   const studentName = pData.name || pData.email?.split("@")[0] || "User";
   const initials = studentName.split(" ").map((x) => x[0]).join("").slice(0, 2).toUpperCase();
 
+  // Hero membership chip — mirrors the member's live plan state.
+  const heroPlanActive = !!memProg && (memProg.isActive || memProg.computedStatus === "active");
+  const heroPlanName = memProg?.planType || "";
+
   const courses = myEnrollments.filter((e) => e.type === "course");
   const yttc = myEnrollments.filter((e) => e.type === "yttc");
 
   return (
     <Stagger>
       {/* ── Hero ── */}
-      <Item className={p.hero} as="header">
+      <Item className={`${p.hero} ${p.heroDark}`} as="header">
         <div className={p.heroDeco} aria-hidden="true">
           <span className={p.heroOrb} />
           <span className={p.heroOrb2} />
@@ -173,25 +195,39 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
             <span className={p.heroAvatarDot} aria-hidden="true" />
           </div>
           <div className={p.heroText}>
+            <span className={p.heroEyebrow}>
+              <span className={p.heroEyebrowDot} aria-hidden="true" />
+              {isEditing ? "Editing profile" : "Member profile"}
+            </span>
             <h1 className={p.heroName}>{pData.name || studentName}</h1>
-            {pData.email && <p className={p.heroEmail}><i className="ti ti-mail" aria-hidden="true" />{pData.email}</p>}
+            {pData.email && <p className={p.heroEmail} style={{ margin: "7px 0 0" }}><i className="ti ti-mail" aria-hidden="true" />{pData.email}</p>}
             <div className={p.heroPills}>
               {pData.level && <Pill tone="orange" icon="ti-chart-bar">{pData.level}</Pill>}
               {pData.style && <Pill tone="neutral" icon="ti-yoga">{pData.style}</Pill>}
+              {pData.state && <Pill tone="neutral" icon="ti-map">{pData.state}</Pill>}
               {pData.city  && <Pill tone="neutral" icon="ti-map-pin">{pData.city}</Pill>}
             </div>
           </div>
         </div>
 
         <div className={p.heroAction}>
+          {heroPlanName || heroPlanActive ? (
+            <span className={p.heroStatus} data-tone={heroPlanActive ? "green" : "muted"}>
+              <i className={`ti ${heroPlanActive ? "ti-circle-check" : "ti-clock"}`} aria-hidden="true" />
+              {heroPlanActive ? (heroPlanName || "Active plan") : (heroPlanName || "No active plan")}
+            </span>
+          ) : null}
           {!isEditing ? (
-            <PrimaryButton icon="ti-edit" onClick={handleEdit}>Edit</PrimaryButton>
+            <PrimaryButton icon="ti-edit" onClick={handleEdit}>Edit profile</PrimaryButton>
           ) : (
             <>
-              <GhostButton icon="ti-x" onClick={handleCancel} disabled={isSubmitting}>Cancel</GhostButton>
-              <PrimaryButton icon="ti-check" onClick={handleSave} disabled={isSubmitting}>
-                {isSubmitting ? "Saving…" : "Save"}
-              </PrimaryButton>
+              <span className={p.heroNote}>Review your details, then save.</span>
+              <div className={p.heroActionRow}>
+                <GhostButton icon="ti-x" onClick={handleCancel} disabled={isSubmitting}>Cancel</GhostButton>
+                <PrimaryButton icon="ti-check" onClick={handleSave} disabled={isSubmitting}>
+                  {isSubmitting ? "Saving…" : "Save"}
+                </PrimaryButton>
+              </div>
             </>
           )}
         </div>
@@ -268,10 +304,15 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
       )}
 
       {/* ── Personal details ── */}
-      <Panel title="Personal details" icon="ti-id-badge-2">
+      <Panel title="Personal details" icon="ti-id-badge-2" className={isEditing ? p.panelEditing : ""}>
         <div className={p.fieldGrid}>
-          {personalDetailsFields.map(({ icon, label, name, type }) => (
-            <div className={`${p.field} ${isEditing ? p.fieldEditing : ""}`} key={name}>
+          {personalDetailsFields.map(({ icon, label, name, type }) => {
+            return (
+            <Fragment key={name}>
+            {isEditing && name === "countryCode" && (
+              <div className={p.groupLabel} aria-hidden="true">Location</div>
+            )}
+            <div className={`${p.field} ${isEditing ? p.fieldEditing : ""}`} data-field={name}>
               <span className={p.fieldIcon}><i className={`ti ${icon}`} aria-hidden="true" /></span>
               <div className={p.fieldBody}>
                 <span className={p.fieldLabel}>{label}</span>
@@ -279,8 +320,17 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
                   type === "country" ? (
                     <CountrySelect
                       value={formData.countryCode}
-                      onChange={(code) => setFormData((prev) => ({ ...prev, countryCode: code, country: countryNameFor(code) }))}
+                      onChange={handleCountryChange}
                       id="profile-country"
+                      hideLabel
+                    />
+                  ) : type === "city" ? (
+                    <CitySelect
+                      key={`ct-${formData.countryCode}`}
+                      countryCode={formData.countryCode}
+                      value={formData.city}
+                      onChange={(city) => setFormData((prev) => ({ ...prev, city }))}
+                      inputClassName={p.fieldInput}
                     />
                   ) : (
                   <input
@@ -306,7 +356,9 @@ export default function ProfilePage({ student, onUpdateSuccess }) {
                 <span className={p.fieldLock} title="Email cannot be edited"><i className="ti ti-lock" aria-hidden="true" /></span>
               )}
             </div>
-          ))}
+            </Fragment>
+            );
+          })}
         </div>
       </Panel>
     </Stagger>

@@ -96,6 +96,18 @@ async function checkAndSendCompletionReminder(trial, sessionCount) {
 
 // ── Student endpoints ──
 
+// A trial is only for students with NO live plan. "Live" means an
+// unexpired membership that is active OR paused — a paused plan keeps its
+// days and resumes afterwards, so it blocks the trial exactly like an
+// active one. Cancelled/expired plans never block.
+async function findBlockingMembership(userId) {
+  return Membership.findOne({
+    user: userId,
+    status: { $in: ['active', 'paused'] },
+    expiryDate: { $gt: new Date() },
+  }).select('_id planType status expiryDate').lean();
+}
+
 export const checkTrialEligibility = asyncHandler(async (req, res) => {
   const user = req.user;
 
@@ -115,7 +127,7 @@ export const checkTrialEligibility = asyncHandler(async (req, res) => {
     }
   }
 
-  const activeMembership = await Membership.findOne({ user: user._id, status: 'active', expiryDate: { $gt: new Date() } });
+  const activeMembership = await findBlockingMembership(user._id);
 
   const hasActivePlan = !!activeMembership;
   const eligible = !hasActivePlan && !hasUsedTrial && !hasActiveTrial;
@@ -141,7 +153,7 @@ export const startTrial = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'You have already used your free trial. Free trial can only be activated once per account.' });
   }
 
-  const activeMembership = await Membership.findOne({ user: user._id, status: 'active', expiryDate: { $gt: new Date() } });
+  const activeMembership = await findBlockingMembership(user._id);
   if (activeMembership) {
     return res.status(400).json({ message: 'You already have an active membership. Free trial is only available for students without an active plan.' });
   }

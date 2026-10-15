@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import Membership from '../models/Membership.js';
 import FreeTrial from '../models/FreeTrial.js';
 import ClassInvite from '../models/ClassInvite.js';
+import Course from '../models/Course.js';
 import { PaymentRepository } from '../payment/repository/PaymentRepository.js';
 import { notify } from './notificationService.js';
 import { isSingleSessionService, SINGLE_SESSION_VALIDITY_DAYS } from '../utils/serviceHelpers.js';
@@ -371,7 +372,7 @@ export async function getServiceAnalytics() {
 export async function buildAllEnrollments(userId) {
   const now = new Date();
 
-  const [userServices, memberships, trials, invites] = await Promise.all([
+  const [userServices, memberships, trials, invites, paidCourses] = await Promise.all([
     UserService.find({ user: userId })
       .populate('instructor', 'name avatar')
       .populate('payment', 'amount status method transactionId invoiceNo')
@@ -382,9 +383,53 @@ export async function buildAllEnrollments(userId) {
       'recipients.user': userId,
       entityType: { $in: ['course', 'workshop', 'yttc'] },
     }).sort({ date: -1 }),
+    // Direct course purchases (fulfillment writes Course.enrolledUsers).
+    // Courses carry no expiry — a paid course is the student's own ACTIVE
+    // enrollment, never auto-archived. Without this, a paid course only
+    // surfaced via a class invite — i.e. as "archived" once its date passed.
+    Course.find({ 'enrolledUsers.user': userId })
+      .select('title duration mode price category')
+      .lean(),
   ]);
 
   const enrollments = [];
+
+  const enrolledCourseIds = new Set();
+  for (const c of paidCourses) {
+    const rec = (c.enrolledUsers || []).find((e) => String(e.user) === String(userId));
+    enrolledCourseIds.add(String(c._id));
+    enrollments.push({
+      _id: c._id,
+      type: 'course',
+      typeLabel: 'Course',
+      name: c.title,
+      status: 'active',
+      computedStatus: 'active',
+      isActive: true,
+      paymentStatus: null,
+      progressPct: 0,
+      activationDate: rec?.enrolledAt || c.createdAt,
+      expiryDate: null,
+      purchaseDate: rec?.enrolledAt || c.createdAt,
+      daysLeft: null,
+      category: c.category || null,
+      typeMeta: null,
+      mode: c.mode || null,
+      instructorName: null,
+      scheduleDays: [],
+      scheduleTime: null,
+      price: c.price,
+      totalSessions: null,
+      usedSessions: null,
+      remainingSessions: null,
+      transactionId: null,
+      invoiceNo: null,
+      payment: null,
+      history: [],
+      createdAt: rec?.enrolledAt || c.createdAt,
+      updatedAt: c.updatedAt,
+    });
+  }
 
   for (const us of userServices) {
     const e = formatService(us);
@@ -465,6 +510,10 @@ export async function buildAllEnrollments(userId) {
   for (const invite of invites) {
     const recipient = invite.recipients.find((r) => r.user.toString() === userId.toString());
     if (!recipient) continue;
+    // A directly-purchased course is already listed above as the student's
+    // own active enrollment — skip its invite copy so it never shows twice
+    // (and never as "archived" just because a session date passed).
+    if (invite.entityType === 'course' && invite.entityId && enrolledCourseIds.has(String(invite.entityId))) continue;
     const key = `${invite.entityType}-${invite.entityId || invite._id}`;
     if (seenEntities.has(key)) continue;
     seenEntities.add(key);

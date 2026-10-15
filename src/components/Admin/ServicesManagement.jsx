@@ -445,17 +445,10 @@ export default function ServicesManagement({ onChanged } = {}) {
               }} className={`${s.btn} ${s.btnSm}`} title="Push all service edits to the public Services page" style={{ border: '1px solid #2E7D5B', borderRadius: 8, background: '#2E7D5B', cursor: 'pointer', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12 }}>
                 <LuRefreshCw size={13} /> Push to Website
               </button>
-              <button type="button" onClick={async () => {
-                try {
-                  await servicesApi.syncOfficial();
-                  flash('Official services synced.');
-                  fetchAll();
-                } catch (err) {
-                  flash(err.message || 'Sync failed', 'error');
-                }
-              }} className={`${s.btn} ${s.btnSm}`} style={{ border: '1px solid #E7D7BE', borderRadius: 8, background: '#fff', cursor: 'pointer', color: '#6B5E4E', display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12 }}>
-                <LuRefreshCw size={13} /> Sync Official
-              </button>
+              {/* NOTE: "Sync Official" is intentionally hidden for now. The backend
+              endpoint (POST /api/admin/services/sync-official) and the
+              `servicesApi.syncOfficial()` helper are kept as-is — to re-enable,
+              restore the button below. */}
             </span>
           </h3>
           {loading ? (

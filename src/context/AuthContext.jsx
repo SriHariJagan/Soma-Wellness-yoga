@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { touchActivity, clearActivity, isSessionIdle, forceLogout, guardActiveSession } from '../lib/session.js';
 
 const AuthContext = createContext(null);
 
@@ -55,6 +56,8 @@ export function AuthProvider({ children }) {
   const login = useCallback((token, userPayload) => {
     if (token) localStorage.setItem(STORAGE_TOKEN, token);
     if (userPayload) localStorage.setItem(STORAGE_USER, JSON.stringify(userPayload));
+    // A fresh login starts a fresh 4h inactivity window.
+    touchActivity(true);
     setUser(userPayload || null);
   }, []);
 
@@ -73,6 +76,7 @@ export function AuthProvider({ children }) {
   // changes become visible without forcing a logout/login.
   const refreshProfile = useCallback(async () => {
     try {
+      guardActiveSession();
       const token = localStorage.getItem(STORAGE_TOKEN);
       if (!token) return null;
       const API_URL = import.meta.env.VITE_API_URL || '';
@@ -123,7 +127,28 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(STORAGE_USER);
     localStorage.removeItem(STORAGE_TOKEN);
     clearPendingIntent();
+    clearActivity();
     setUser(null);
+  }, []);
+
+  // ── 4h inactivity auto-logout ──────────────────────────────────
+  // Any interaction stamps activity (throttled); the interval enforces the
+  // limit even with zero API traffic, e.g. a tab left open on a dashboard.
+  useEffect(() => {
+    const onActivity = () => touchActivity();
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach((e) => window.addEventListener(e, onActivity, { passive: true }));
+    const timer = setInterval(() => {
+      try {
+        if (isSessionIdle()) forceLogout('idle');
+      } catch {
+        /* timer must never throw */
+      }
+    }, 60 * 1000);
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, onActivity));
+      clearInterval(timer);
+    };
   }, []);
 
   const value = useMemo(() => ({

@@ -32,6 +32,10 @@ const UserSchema = new mongoose.Schema(
     // country prefix. Empty for historical/OAuth accounts until completed.
     country:         { type: String, default: '' },
     countryCode:     { type: String, default: '', uppercase: true, trim: true, index: true },
+    // ── State / county of residency (ISO 3166-2 code where available).
+    // Selected after the country; city is then picked within the state.
+    state:           { type: String, default: '' },
+    stateCode:       { type: String, default: '', uppercase: true, trim: true },
     style:           { type: String, default: 'Hatha' },
     level:           { type: String, default: 'Beginner' },
     avatar:          { type: String, default: '' },

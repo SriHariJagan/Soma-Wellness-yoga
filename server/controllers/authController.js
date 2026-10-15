@@ -80,6 +80,8 @@ function publicUser(user, memoStatus) {
     city: user.city || "",
     country: user.country || "",
     countryCode: user.countryCode || "",
+    state: user.state || "",
+    stateCode: user.stateCode || "",
     style: user.style || "",
     level: user.level || "",
     planMonths: user.planMonths || 0,
@@ -500,13 +502,15 @@ export const getProfile = asyncHandler(async (req, res) => {
 
 // ── PUT /api/auth/profile ────────────────────────────────────
 export const updateProfile = asyncHandler(async (req, res) => {
-  const { name, phone, city, country, countryCode, style, level, bio, newPassword, currentPassword } = req.body;
+  const { name, phone, city, country, countryCode, state, stateCode, style, level, bio, newPassword, currentPassword } = req.body;
   const updates = {};
   if (name !== undefined) updates.name = name.trim();
   if (phone !== undefined) updates.phone = phone;
   if (city !== undefined) updates.city = city;
   if (country !== undefined) updates.country = country;
   if (countryCode !== undefined) updates.countryCode = String(countryCode || "").toUpperCase();
+  if (state !== undefined) updates.state = state;
+  if (stateCode !== undefined) updates.stateCode = String(stateCode || "").toUpperCase();
   if (style !== undefined) updates.style = style;
   if (level !== undefined) updates.level = level;
   if (bio !== undefined) updates.bio = bio;

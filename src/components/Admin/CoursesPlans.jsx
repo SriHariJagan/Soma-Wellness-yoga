@@ -36,6 +36,7 @@ const EMPTY_PLAN = {
   name: '', description: '', price: '', currency: 'KES', durationMonths: '', pauseDays: '',
   benefits: '', badge: '', isPopular: false, isRecommended: false,
   visibility: 'public', active: true, displayOrder: '', tier: '', originalPrice: '',
+  memberDiscountPct: '',
 };
 
 export default function CoursesPlans({ onChanged } = {}) {
@@ -63,7 +64,6 @@ export default function CoursesPlans({ onChanged } = {}) {
   const [planFilterVis, setPlanFilterVis] = useState('all');
   const [planView, setPlanView] = useState('grid');
   const [savingPlan, setSavingPlan] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
   const flash = (message, type = 'success') => {
@@ -234,6 +234,7 @@ export default function CoursesPlans({ onChanged } = {}) {
         displayOrder: String(plan.displayOrder ?? ''),
         tier: plan.tier || '',
         originalPrice: String(plan.originalPrice ?? ''),
+        memberDiscountPct: plan.memberDiscountPct != null ? String(Number(plan.memberDiscountPct) * 100) : '5',
       });
     } else {
       setEditingPlan(null);
@@ -265,6 +266,11 @@ export default function CoursesPlans({ onChanged } = {}) {
         displayOrder: planForm.displayOrder ? Number(planForm.displayOrder) : 0,
         tier: planForm.tier || null,
         originalPrice: planForm.originalPrice ? Number(planForm.originalPrice) : null,
+        // Member discount on other services, stored as a fraction (5 → 0.05).
+        // Read live everywhere the Circle benefit applies.
+        memberDiscountPct: planForm.memberDiscountPct === ''
+          ? 0.05
+          : Math.min(90, Math.max(0, Number(planForm.memberDiscountPct) || 0)) / 100,
       };
       let data;
       if (editingPlan) {
@@ -303,6 +309,7 @@ export default function CoursesPlans({ onChanged } = {}) {
         currency: plan.currency, durationMonths: plan.durationMonths, pauseDays: plan.pauseDays,
         benefits: plan.benefits, badge: '', isPopular: false, isRecommended: false,
         visibility: 'hidden', active: false, displayOrder: 0, tier: plan.tier,
+        memberDiscountPct: plan.memberDiscountPct ?? 0.05,
       });
       setPlans(prev => [data, ...prev]);
       flash(`Plan duplicated as "${data.title || data.name}".`);
@@ -317,17 +324,10 @@ export default function CoursesPlans({ onChanged } = {}) {
     } catch (err) { flash(err.message || 'Failed to toggle.', 'error'); }
   };
 
-  const handleSyncOfficial = async () => {
-    if (!window.confirm('Reset to official 4 plans? Custom plans will be removed.')) return;
-    setSyncing(true);
-    try {
-      const result = await membershipPlansApi.syncOfficial();
-      setPlans(result.plans || []);
-      flash(`Synced ${result.plans?.length || 0} official plans.`);
-      onChanged?.();
-    } catch (err) { flash(err.message || 'Sync failed.', 'error'); }
-    finally { setSyncing(false); }
-  };
+  // NOTE: "Sync Official" is intentionally hidden for now. The backend
+  // endpoint (POST /api/admin/membership-plans/sync-official) and the
+  // `membershipPlansApi.syncOfficial()` helper are kept as-is — to re-enable,
+  // restore `handleSyncOfficial` below and render the button again.
 
   const fmtPrice = (n, cur = 'KES') => `${cur} ${Number(n || 0).toLocaleString('en-KE')}`;
 
@@ -498,7 +498,6 @@ export default function CoursesPlans({ onChanged } = {}) {
                 <option value="private">Private</option>
                 <option value="hidden">Hidden</option>
               </select>
-              <button type="button" className={`${s.btn} ${s.btnSmall}`} onClick={handleSyncOfficial} disabled={syncing} title="Reset to official plans"><LuRefreshCw size={12} className={syncing ? 'spin' : ''} /> {syncing ? 'Syncing…' : 'Sync Official'}</button>
               <div className={s.viewToggle}>
                 <button type="button" className={`${s.viewBtn} ${planView === 'grid' ? s.viewBtnActive : ''}`} onClick={() => setPlanView('grid')}><LuLayoutGrid size={14} /></button>
                 <button type="button" className={`${s.viewBtn} ${planView === 'table' ? s.viewBtnActive : ''}`} onClick={() => setPlanView('table')}><LuTable size={14} /></button>
@@ -768,6 +767,11 @@ export default function CoursesPlans({ onChanged } = {}) {
                   <div className={s.formField}>
                     <label className={s.formLabel}>Display Order</label>
                     <input className={s.formInput} type="number" placeholder="e.g. 3" value={planForm.displayOrder} onChange={e=>setPlanForm({...planForm, displayOrder:e.target.value})} />
+                  </div>
+                  <div className={s.formField}>
+                    <label className={s.formLabel}>Member service discount %</label>
+                    <input className={s.formInput} type="number" min="0" max="90" step="0.5" placeholder="e.g. 5" value={planForm.memberDiscountPct} onChange={e=>setPlanForm({...planForm, memberDiscountPct:e.target.value})} />
+                    <span className={s.formHelper}>Member saving on other services — reflects on the website instantly</span>
                   </div>
                 </div>
               </div>

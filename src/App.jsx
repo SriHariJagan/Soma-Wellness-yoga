@@ -72,12 +72,28 @@ const App = () => {
     const onAuthLogin = (e) => {
       if (e.detail?.user) setSyncedUser(e.detail.user);
     };
+    // Session died (idle 4h+ or refresh revoked/expired): drop UI state and
+    // send the user to login. Fired by the session lib, same-tab + cross-tab.
+    const onAuthLogout = async () => {
+      try {
+        await logout();
+      } catch {}
+      setSyncedUser(null);
+      try {
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
+      } catch {}
+    };
     window.addEventListener('storage', onStorage);
     window.addEventListener('auth-login', onAuthLogin);
+    window.addEventListener('auth-logout', onAuthLogout);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('auth-login', onAuthLogin);
+      window.removeEventListener('auth-logout', onAuthLogout);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLoginSuccess = (token, userPayload) => {

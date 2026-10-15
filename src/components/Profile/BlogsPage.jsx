@@ -97,7 +97,7 @@ function BlogCard({ blog, onRead, onRefresh }) {
   const authorName = blog.author?.name || "Unknown";
   const authorAvatar = blog.author?.avatar || "";
   const initials = authorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  const isAdmin = blog.author?.role === "admin";
+  const isAdmin = blog.isAdminPost || blog.author?.role === "admin";
 
   return (
     <motion.div
@@ -114,7 +114,18 @@ function BlogCard({ blog, onRead, onRefresh }) {
             {isAdmin && <span className={bs.verified}><i className="ti ti-circle-check" /></span>}
           </div>
           <div className={bs.authorMeta}>
-            <span className={bs.authorName}>{authorName}</span>
+            <span className={bs.authorName}>
+              {authorName}
+              {isAdmin && (
+                <span style={{
+                  marginLeft: 7, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em",
+                  padding: "2px 8px", borderRadius: 20, verticalAlign: "middle",
+                  background: "linear-gradient(135deg, #2E7D5B, #F97316)", color: "#fff",
+                }}>
+                  ADMIN
+                </span>
+              )}
+            </span>
             <span className={bs.publishDate}>
               {timeAgo(blog.publishedAt || blog.createdAt)}
               {blog.isEdited && <span className={bs.edited}>(edited)</span>}
@@ -201,6 +212,7 @@ export default function BlogsPage({ student, reload, onNavigate }) {
   const [hasMore, setHasMore] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
+  const [feedType, setFeedType] = useState("website"); // 'website' (admin posts) | 'internal' (approved user posts)
   const [activeTab, setActiveTab] = useState("feed");
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [error, setError] = useState("");
@@ -212,7 +224,7 @@ export default function BlogsPage({ student, reload, onNavigate }) {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
       setError("");
-      const data = await getBlogs({ page: pageNum, limit: 10, search, sort });
+      const data = await getBlogs({ page: pageNum, limit: 10, search, sort, by: feedType === "internal" ? "users" : "admin" });
       const list = data.blogs || [];
       if (append) setBlogs(prev => [...prev, ...list]);
       else setBlogs(list);
@@ -223,7 +235,7 @@ export default function BlogsPage({ student, reload, onNavigate }) {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [search, sort]);
+  }, [search, sort, feedType]);
 
   const fetchTrending = useCallback(async () => {
     try {
@@ -272,6 +284,25 @@ export default function BlogsPage({ student, reload, onNavigate }) {
     <div>
       <div className={s.pageTitle}>Blogs & Articles</div>
 
+      {/* Website (admin posts) vs Internal (approved community posts) */}
+      <div className={bs.sortGroup} style={{ marginBottom: 12 }} role="tablist" aria-label="Blog source">
+        {[
+          { value: "website", label: "Website" },
+          { value: "internal", label: "Internal" },
+        ].map((t) => (
+          <button
+            key={t.value}
+            role="tab"
+            aria-selected={feedType === t.value}
+            className={`${bs.sortBtn} ${feedType === t.value ? bs.sortActive : ""}`}
+            onClick={() => { setFeedType(t.value); setPage(1); fetchBlogs(1); }}
+            title={t.value === "website" ? "Official posts from the studio" : "Community posts approved by admin"}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className={bs.toolbar}>
         <form className={bs.searchBox} onSubmit={handleSearch}>
           <i className="ti ti-search" />
@@ -314,7 +345,12 @@ export default function BlogsPage({ student, reload, onNavigate }) {
       {blogs.length === 0 && !loading ? (
         <div className={s.emptyState}>
           <i className="ti ti-article-off" />
-          <p>No blogs found.</p>
+          <p>{feedType === "internal" ? "No community posts yet." : "No blogs found."}</p>
+          {feedType === "internal" && (
+            <p style={{ fontSize: 12, color: "var(--color-text-muted)", marginTop: 4 }}>
+              Member posts appear here once approved by the admin.
+            </p>
+          )}
         </div>
       ) : (
         <div className={bs.feed}>

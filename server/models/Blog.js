@@ -35,6 +35,14 @@ const BlogSchema = new mongoose.Schema({
   categories:   [{ type: String, lowercase: true, trim: true }],
   status:       { type: String, enum: BLOG_STATUSES, default: 'draft', index: true },
   visibility:   { type: String, enum: BLOG_VISIBILITY, default: 'public' },
+  // ── Provenance + moderation ───────────────────────────────
+  // Admin-authored posts appear on the public website AND in every user's
+  // dashboard feed (with an "Admin" tag). User-authored posts appear in
+  // dashboards only AFTER admin approval, never on the public site.
+  isAdminPost:      { type: Boolean, default: false, index: true },
+  moderationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending', index: true },
+  moderatedBy:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  moderatedAt:      { type: Date, default: null },
   publishedAt:  { type: Date, default: null },
   editedAt:     { type: Date, default: null },
   isEdited:     { type: Boolean, default: false },

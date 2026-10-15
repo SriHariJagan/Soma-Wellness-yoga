@@ -15,8 +15,10 @@ import {
 const router = Router();
 
 // ── Public routes (no auth required) ──
-router.get('/', listBlogs);
-router.get('/trending', trendingBlogs);
+// listBlogs uses optionalAuth: anonymous readers get admin posts only,
+// logged-in users get every approved post.
+router.get('/', optionalAuth, listBlogs);
+router.get('/trending', optionalAuth, trendingBlogs);
 
 // ── Specific auth routes (MUST come before /:id) ──
 router.get('/my/stats', requireAuth, getMyBlogStats);

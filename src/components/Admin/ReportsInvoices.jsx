@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
 import { createPortal } from 'react-dom';
 import s from './YogaAdmin.module.css';
 import Badge from './Badge';
@@ -79,34 +79,52 @@ const PAGE_LIMIT = 15;
 // status in `paymentStatus` (captured/pending/initiated/failed/...),
 // date in `createdAt`. Charts/KPIs need major units + canonical status.
 // Already-normalised shapes ({status, date, major amount}) pass through.
+//
+// PERF: picks only the fields the KPIs/charts/exports read — the old
+// `{...p}` spread copied attempts/auditTrail/webhookEvents/provider_raw
+// blobs per row — and parses each date ONCE (year/month cached as ints)
+// so the buckets/years/stats loops below never construct Dates.
 const PAY_STATUS_MAP = {
   captured: 'paid', pending: 'pending', initiated: 'pending',
   failed: 'failed', expired: 'failed', refunded: 'refunded', refunding: 'pending',
 };
 function normalizePayments(list = []) {
-  return (list || []).map((p) => {
+  const out = new Array(list.length);
+  for (let i = 0; i < list.length; i++) {
+    const p = list[i] || {};
     const isRaw = p.paymentStatus !== undefined || p.merchant_reference !== undefined;
-    return {
-      ...p,
-      date: p.date || p.createdAt || null,
+    const date = p.date || p.createdAt || null;
+    const t = date ? new Date(date).getTime() : NaN;
+    let year = 0, month = -1;
+    if (!Number.isNaN(t)) {
+      const d = new Date(t);
+      year = d.getFullYear();
+      month = d.getMonth();
+    }
+    out[i] = {
+      _id: p._id,
+      date,
+      year,
+      month,
       status: p.status || PAY_STATUS_MAP[p.paymentStatus] || p.paymentStatus || 'pending',
       amount: isRaw ? (Number(p.amount) || 0) / 100 : (Number(p.amount) || 0),
     };
-  });
+  }
+  return out;
 }
 
 function monthlyBuckets(payments = []) {
   const buckets = {};
   for (const p of payments) {
-    if (!p.date) continue;
-    const d = new Date(p.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    if (!buckets[key]) buckets[key] = { total: 0, count: 0, paid: 0 };
+    if (!p.year || p.month < 0) continue;
+    const key = `${p.year}-${String(p.month + 1).padStart(2, '0')}`;
+    let b = buckets[key];
+    if (!b) b = buckets[key] = { total: 0, count: 0, paid: 0 };
     if (p.status === 'paid') {
-      buckets[key].total += p.amount || 0;
-      buckets[key].paid += 1;
+      b.total += p.amount || 0;
+      b.paid += 1;
     }
-    buckets[key].count += 1;
+    b.count += 1;
   }
   return buckets;
 }
@@ -148,6 +166,62 @@ function Toast({ message, type, onClose }) {
   );
 }
 
+// Memoized ledger row: typing in the search box (or KPI updates from the
+// payments prop) re-renders the table shell constantly — rows only re-render
+// when their own order object or open state changes, so 15 rows don't redo
+// their whole subtree per keystroke.
+const OrderRow = memo(function OrderRow({ o, opening, onOpen }) {
+  const items = o.items || [];
+  const firstItem = items[0];
+  const restCount = items.length - 1;
+  const invoiceNo = o.payment?.invoiceNo || '—';
+  return (
+    <tr style={{ cursor: 'pointer' }} onClick={() => onOpen(o._id)}>
+      <td>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#1f2937' }}>#{invoiceNo}</div>
+        <div style={{ fontSize: 10.5, color: '#9ca3af', fontFamily: 'monospace', marginTop: 1 }}>{o.orderNumber || ''}</div>
+      </td>
+      <td><div className={s.cellUser}><Avatar name={o.student?.name || '—'} size={s.avatarSm} /><div><div style={{ fontSize: 12.5, fontWeight: 600 }}>{o.student?.name || '—'}</div><div style={{ fontSize: 10.5, color: '#9ca3af' }}>{o.student?.email || ''}</div></div></div></td>
+      <td>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {firstItem && <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{firstItem.name} <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4, fontSize: 11 }}>({TYPE_LABELS[firstItem.itemType] || firstItem.itemType})</span></span>}
+          {restCount > 0 && <span style={{ fontSize: 11, color: '#2E7D5B', fontWeight: 600 }}>+{restCount} more</span>}
+          {items.length === 0 && <span style={{ fontSize: 11, color: '#9ca3af' }}>{o.itemCount || 0} item(s)</span>}
+        </div>
+      </td>
+      <td>{o.couponCode ? <span style={{ fontSize: 11, fontWeight: 600, color: '#2E7D5B', background: 'rgba(46,125,91,0.1)', padding: '2px 8px', borderRadius: 12 }}>{o.couponCode}</span> : <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>}</td>
+      <td style={{ fontWeight: 700, fontSize: 13 }}>{fmtPrice(o.total)}</td>
+      <td><span style={{ fontSize: 11, color: '#6b7280' }}>{o.paymentMethod || 'Manual'}</span></td>
+      <td className={s.tdMuted} style={{ fontSize: 11 }}>{fmtDate(o.createdAt)}</td>
+      <td><Badge label={o.status === 'completed' ? 'Completed' : o.status} /></td>
+      <td onClick={(e) => e.stopPropagation()}>
+        <button type="button" onClick={() => onOpen(o._id)} disabled={opening}
+          style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: opening ? '#f3f4f6' : '#fff', fontSize: 11, cursor: opening ? 'wait' : 'pointer', color: '#6b7280', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <LuExternalLink size={12} /> {opening ? 'Opening…' : 'View'}
+        </button>
+      </td>
+    </tr>
+  );
+});
+
+// Layout-stable skeleton: same 9-column shape as a data row, shown ONLY on
+// the very first load (no rows yet). Refreshes keep old rows on screen.
+function LedgerSkeleton() {
+  const bar = (wpx) => (
+    <div style={{ width: wpx, maxWidth: '100%', height: 12, borderRadius: 6, background: '#eef1f0' }} />
+  );
+  return (
+    <>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <tr key={`skel-${i}`} aria-hidden="true">
+          <td>{bar(110)}</td><td>{bar(150)}</td><td>{bar(170)}</td><td>{bar(50)}</td>
+          <td>{bar(80)}</td><td>{bar(70)}</td><td>{bar(60)}</td><td>{bar(70)}</td><td>{bar(52)}</td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
 export default function ReportsInvoices({ payments = [], metrics = {}, onViewStudent }) {
   const currentYear = new Date().getFullYear();
   const [reportYear, setReportYear] = useState(currentYear);
@@ -159,7 +233,7 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
   const availableYears = useMemo(() => {
     const years = new Set([currentYear]);
     for (const p of normPayments) {
-      if (p.date) years.add(new Date(p.date).getFullYear());
+      if (p.year) years.add(p.year);
     }
     return [...years].sort((a, b) => b - a);
   }, [normPayments, currentYear]);
@@ -231,7 +305,13 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
     }
   }, []);
 
+  // Stale-while-revalidate ledger: in-flight requests are aborted when
+  // filters change, late responses are ignored via request id, and the
+  // previous page stays visible (dimmed) while the next one loads — the
+  // table never blanks to "Loading orders…" on every keystroke/page flip.
+  const ordersReqId = useRef(0);
   const fetchOrders = useCallback(async () => {
+    const id = ++ordersReqId.current;
     setLoading(true);
     setLoadError('');
     try {
@@ -246,19 +326,35 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
         if (df.dateTo) params.dateTo = df.dateTo;
       }
       const res = await getAdminOrders(params);
+      if (ordersReqId.current !== id) return; // superseded by a newer fetch
       setOrders(res.orders || []);
       setTotalOrders(res.total || 0);
       setPages(res.pages || 0);
     } catch (err) {
-      setOrders([]);
+      if (ordersReqId.current !== id) return;
+      // Aborted superseded requests land here — never wipe the table for them.
+      if (err?.name === 'AbortError') return;
       setLoadError(err?.message || 'Could not load orders.');
     } finally {
-      setLoading(false);
+      if (ordersReqId.current === id) setLoading(false);
     }
   }, [page, search, typeFilter, statusFilter, pmFilter, dateRange, buildDateFilter]);
 
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
-  useEffect(() => { setPage(1); }, [search, typeFilter, statusFilter, pmFilter, dateRange]);
+  // Single ledger driver (replaces the old fetch-every-render pair).
+  // Coalesce filter changes with the page reset: when filters change while
+  // paged beyond 1, jump to page 1 WITHOUT firing the stale-page request —
+  // the page=1 run below then fetches exactly once. Previously every such
+  // change fired two requests (stale page + page 1).
+  const filtersKey = `${search}|${typeFilter}|${statusFilter}|${pmFilter}|${dateRange}`;
+  const lastLedgerKey = useRef(filtersKey);
+  useEffect(() => {
+    if (lastLedgerKey.current !== filtersKey) {
+      lastLedgerKey.current = filtersKey;
+      if (page !== 1) { setPage(1); return; }
+    }
+    fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchOrders, filtersKey]);
 
   // Escape closes the topmost layer. NOTE: body scroll-lock lives ONLY in
   // QuickDrawer — a second locker here raced it on unmount (child restores
@@ -278,10 +374,11 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
   }, [selectedOrder, detailLoading, showInvoice]);
 
   // Debounce the ledger search so typing doesn't hammer the API on every
-  // keystroke. Matches invoice no, order no, transaction / payment ref,
-  // student name + email, item name and coupon (backend listAllOrders).
+  // keystroke (250ms keeps it feeling instant). Matches invoice no,
+  // order no, transaction / payment ref, student name + email, item name
+  // and coupon (backend listAllOrders).
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput.trim()), 400);
+    const t = setTimeout(() => setSearch(searchInput.trim()), 250);
     return () => clearTimeout(t);
   }, [searchInput]);
 
@@ -289,8 +386,10 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
   // Instant-open: paint the modal immediately from the ledger row (it already
   // carries orderNumber, total, status, student, items and payment), then
   // enrich with coupon/enrollments/timeline when the detail API resolves.
-  // The popup never sits on an empty "Loading…" card again.
-  const openDetail = async (orderId) => {
+  // The popup never sits on an empty "Loading…" card again. Wrapped in
+  // useCallback (stable identity) so memoized ledger rows don't re-render
+  // when the parent re-renders on search keystrokes or KPI updates.
+  const openDetail = useCallback(async (orderId) => {
     const row = orders.find((o) => String(o._id) === String(orderId));
     if (row) setSelectedOrder(row);
     setOpeningId(orderId);
@@ -305,7 +404,7 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
       setDetailLoading(false);
       setOpeningId(null);
     }
-  };
+  }, [orders]);
 
   const closeDetail = () => { setSelectedOrder(null); setShowInvoice(false); };
 
@@ -381,11 +480,7 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
             showToast(`Annual report ${reportYear} exported`);
           } else {
             const mi = Number(reportMonth);
-            const rows = normPayments.filter((p) => {
-              if (!p.date) return false;
-              const d = new Date(p.date);
-              return d.getFullYear() === reportYear && d.getMonth() === mi;
-            });
+            const rows = normPayments.filter((p) => p.year === reportYear && p.month === mi);
             downloadCsv(`soma-monthly-report-${reportYear}-${String(mi + 1).padStart(2, '0')}.csv`, [
               ['Date', 'Status', 'Amount (KES)'],
               ...rows.map((p) => [p.date ? new Date(p.date).toLocaleDateString('en-KE') : '', p.status || '', p.amount || 0]),
@@ -500,10 +595,11 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
           </select>
         </div>
 
-        {(!loading && (search || typeFilter || statusFilter || pmFilter || dateRange)) && (
+        {((search || typeFilter || statusFilter || pmFilter || dateRange)) && (
           <div style={{ padding: '8px 20px 0', fontSize: 11.5, color: '#6b7280' }}>
             {totalOrders} result{totalOrders === 1 ? '' : 's'}
             {search && <> for <strong style={{ color: '#1f2937' }}>“{search}”</strong></>}
+            {loading && <span style={{ marginLeft: 8, color: '#2E7D5B' }}>Updating…</span>}
             <button type="button" onClick={() => { setSearchInput(''); setSearch(''); setTypeFilter(''); setStatusFilter(''); setPmFilter(''); setDateRange(''); }}
               style={{ marginLeft: 10, padding: '2px 10px', borderRadius: 20, border: '1px solid #e5e7eb', background: '#fff', fontSize: 11, cursor: 'pointer', color: '#6b7280' }}>
               Clear all
@@ -516,9 +612,9 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
             <thead>
               <tr><th>Invoice</th><th>Student</th><th>Products Purchased</th><th>Coupon</th><th>Final Amount</th><th>Payment Method</th><th>Date</th><th>Status</th><th>Actions</th></tr>
             </thead>
-            <tbody>
-              {loading && <tr><td colSpan={9} className={s.tdMuted} style={{ textAlign: 'center', padding: 36 }}><span style={{ fontSize: 13 }}>Loading orders…</span></td></tr>}
-              {!loading && loadError && (
+            <tbody style={loading && orders.length > 0 ? { opacity: 0.55 } : undefined}>
+              {loading && orders.length === 0 && !loadError && <LedgerSkeleton />}
+              {loadError && orders.length === 0 && (
                 <tr><td colSpan={9} style={{ textAlign: 'center', padding: '44px 20px' }}>
                   <div style={{ fontSize: 15, fontWeight: 700, color: '#B91C1C', marginBottom: 4 }}>Couldn't load orders</div>
                   <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 12 }}>{loadError}</div>
@@ -528,45 +624,15 @@ export default function ReportsInvoices({ payments = [], metrics = {}, onViewStu
                   </button>
                 </td></tr>
               )}
-              {!loading && !loadError && orders.length === 0 && (
+              {!loadError && !loading && orders.length === 0 && (
                 <tr><td colSpan={9} style={{ textAlign: 'center', padding: '44px 20px' }}>
                   <div style={{ fontSize: 15, fontWeight: 700, color: '#374151', marginBottom: 4 }}>No orders found</div>
                   <div style={{ fontSize: 12, color: '#9ca3af' }}>{search ? `Nothing matches “${search}” — try an invoice #, order #, email or item name.` : 'Orders will appear here once students check out.'}</div>
                 </td></tr>
               )}
-              {!loading && orders.map((o) => {
-                const items = o.items || [];
-                const firstItem = items[0];
-                const restCount = items.length - 1;
-                const invoiceNo = o.payment?.invoiceNo || '—';
-                return (
-                  <tr key={o._id} style={{ cursor: 'pointer' }} onClick={() => openDetail(o._id)}>
-                    <td>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#1f2937' }}>#{invoiceNo}</div>
-                      <div style={{ fontSize: 10.5, color: '#9ca3af', fontFamily: 'monospace', marginTop: 1 }}>{o.orderNumber || ''}</div>
-                    </td>
-                    <td><div className={s.cellUser}><Avatar name={o.student?.name || '—'} size={s.avatarSm} /><div><div style={{ fontSize: 12.5, fontWeight: 600 }}>{o.student?.name || '—'}</div><div style={{ fontSize: 10.5, color: '#9ca3af' }}>{o.student?.email || ''}</div></div></div></td>
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {firstItem && <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{firstItem.name} <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4, fontSize: 11 }}>({TYPE_LABELS[firstItem.itemType] || firstItem.itemType})</span></span>}
-                        {restCount > 0 && <span style={{ fontSize: 11, color: '#2E7D5B', fontWeight: 600 }}>+{restCount} more</span>}
-                        {items.length === 0 && <span style={{ fontSize: 11, color: '#9ca3af' }}>{o.itemCount || 0} item(s)</span>}
-                      </div>
-                    </td>
-                    <td>{o.couponCode ? <span style={{ fontSize: 11, fontWeight: 600, color: '#2E7D5B', background: 'rgba(46,125,91,0.1)', padding: '2px 8px', borderRadius: 12 }}>{o.couponCode}</span> : <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>}</td>
-                    <td style={{ fontWeight: 700, fontSize: 13 }}>{fmtPrice(o.total)}</td>
-                    <td><span style={{ fontSize: 11, color: '#6b7280' }}>{o.paymentMethod || 'Manual'}</span></td>
-                    <td className={s.tdMuted} style={{ fontSize: 11 }}>{fmtDate(o.createdAt)}</td>
-                    <td><Badge label={o.status === 'completed' ? 'Completed' : o.status} /></td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <button type="button" onClick={() => openDetail(o._id)} disabled={openingId === o._id}
-                        style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: openingId === o._id ? '#f3f4f6' : '#fff', fontSize: 11, cursor: openingId === o._id ? 'wait' : 'pointer', color: '#6b7280', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <LuExternalLink size={12} /> {openingId === o._id ? 'Opening…' : 'View'}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {orders.map((o) => (
+                <OrderRow key={o._id} o={o} opening={openingId === o._id} onOpen={openDetail} />
+              ))}
             </tbody>
           </table>
         </div>

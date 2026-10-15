@@ -47,18 +47,23 @@ router.get('/plans', publicCache, asyncHandler(async (req, res) => {
   const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
   res.json(await Plan.find({ active: true, visibility: { $ne: 'hidden' }, name: { $in: WELLNESS_CIRCLE.ALIASES } }).sort({ displayOrder: 1 }).lean());
 }));
-// Public SOMA Wellness Circle details (price authoritative on backend).
+// Public SOMA Wellness Circle details. Price, discount, benefits and duration
+// come from the LIVE plan document (admin-editable) — the config values are
+// only fallbacks for a missing plan.
 router.get('/wellness-circle', publicCache, asyncHandler(async (req, res) => {
   const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
+  const { getCircleDiscountPct } = await import('../services/circleService.js');
   const plan = await Plan.findOne({ active: true, name: { $in: WELLNESS_CIRCLE.ALIASES } }).sort({ displayOrder: 1 }).lean();
   res.json({
-    name: WELLNESS_CIRCLE.NAME,
+    name: plan?.name || WELLNESS_CIRCLE.NAME,
     subtitle: WELLNESS_CIRCLE.SUBTITLE,
     tagline: WELLNESS_CIRCLE.TAGLINE,
     price: plan?.price ?? WELLNESS_CIRCLE.PRICE,
+    originalPrice: plan?.originalPrice ?? null,
+    memberDiscountPct: await getCircleDiscountPct(),
     currency: WELLNESS_CIRCLE.CURRENCY,
-    durationMonths: WELLNESS_CIRCLE.DURATION_MONTHS,
-    benefits: WELLNESS_CIRCLE.BENEFITS,
+    durationMonths: plan?.durationMonths ?? WELLNESS_CIRCLE.DURATION_MONTHS,
+    benefits: plan?.benefits?.length ? plan.benefits : WELLNESS_CIRCLE.BENEFITS,
     notIncluded: WELLNESS_CIRCLE.NOT_INCLUDED,
     whyJoin: WELLNESS_CIRCLE.WHY_JOIN,
     positioning: WELLNESS_CIRCLE.POSITIONING,

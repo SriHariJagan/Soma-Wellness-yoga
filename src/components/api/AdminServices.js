@@ -4,6 +4,7 @@
 // access token, transparently refreshes it on a 401, and returns
 // parsed JSON (throwing a clean Error on failure).
 // ─────────────────────────────────────────────────────────
+import { guardActiveSession, forceLogout } from "../../lib/session.js";
 
 const API_DOMAIN = import.meta.env.VITE_API_URL || "";
 const ADMIN_URL = `${API_DOMAIN}/api/admin`;
@@ -56,6 +57,8 @@ async function tryRefresh() {
 }
 
 async function request(path, { method = "GET", body, base = ADMIN_URL } = {}) {
+  // Idle sessions (4h+) are torn down here — never refreshed back to life.
+  guardActiveSession();
   const resolvedBase = resolveBase(path, base);
   const unreachable = () =>
     new Error(`Cannot reach the server (${resolvedBase}). Make sure the backend is running, then press Refresh.`);
@@ -79,9 +82,11 @@ async function request(path, { method = "GET", body, base = ADMIN_URL } = {}) {
     }
   }
 
-  // If still 401 after refresh attempt, auto-expire the token.
+  // If still 401 after refresh attempt, the session is dead (revoked or
+  // refresh expired) — tear it down fully so the user lands on login,
+  // instead of lingering half-logged-in.
   if (res.status === 401 && localStorage.getItem("token") && !((await tryRefresh()))) {
-    localStorage.removeItem("token");
+    await forceLogout("expired");
     window.dispatchEvent(new Event("storage"));
   }
 
@@ -130,6 +135,7 @@ export const updatePaymentStatus = (id, status) => request(`/payments/${id}/stat
 // ── Pesapal payments (provider-neutral admin ops) ────────────
 const PAYMENTS_URL = `${API_DOMAIN}/api/admin/payments`;
 async function paymentsRequest(path, { method = "GET", body } = {}) {
+  guardActiveSession();
   const token = localStorage.getItem("token");
   const res = await fetch(`${PAYMENTS_URL}${path}`, {
     method,
@@ -318,6 +324,7 @@ export const somaCatalogAdminApi = {
 // ── Unified Offering Catalog ────────────────────────────────
 const OFFERING_URL = `${API_DOMAIN}/api/offerings`;
 async function offeringRequest(path, { method = "GET", body } = {}) {
+  guardActiveSession();
   const opts = {
     method,
     headers: authHeaders(),
@@ -443,6 +450,8 @@ export const blogsAdminApi = {
     if (params.limit) q.set("limit", params.limit);
     if (params.status) q.set("status", params.status);
     if (params.search) q.set("search", params.search);
+    if (params.moderation) q.set("moderation", params.moderation);
+    if (params.author) q.set("author", params.author);
     const qs = q.toString();
     return request(`/blogs/admin/all${qs ? `?${qs}` : ""}`, { base: ROOT_URL });
   },
@@ -665,6 +674,11 @@ export const receptionApi = {
   events: {
     list: () => request("/events", { base: `${API_DOMAIN}/api/reception` }),
     registrations: (id) => request(`/events/${id}/registrations`, { base: `${API_DOMAIN}/api/reception` }),
+    register: (id, userId) => request(`/events/${id}/register`, { method: "POST", body: { userId }, base: `${API_DOMAIN}/api/reception` }),
+  },
+  workshops: {
+    list: () => request("/workshops", { base: `${API_DOMAIN}/api/reception` }),
+    registrations: (id) => request(`/workshops/${id}/registrations`, { base: `${API_DOMAIN}/api/reception` }),
   },
   classes: {
     list: () => request("/classes", { base: `${API_DOMAIN}/api/reception` }),

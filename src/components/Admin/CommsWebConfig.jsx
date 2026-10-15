@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import s from './YogaAdmin.module.css';
 import FeedbackBanner from './FeedbackBanner';
 import { PageHeader } from './ui/Primitives';
@@ -674,7 +675,13 @@ export default function CommsWebConfig({ feedback: parentFeedback }) {
                           fontSize: 13,
                         }}>
                           <div style={{ fontWeight: 600, color: '#2D1406', marginBottom: 4 }}>{selectedNotifDetail.notification?.title}</div>
-                          <p style={{ color: '#6B5E4E', margin: '0 0 8px', fontSize: 12.5 }}>{selectedNotifDetail.notification?.message}</p>
+                          {/* Complete message — rendered as sanitized HTML with
+                              whitespace preserved, so formatted/longer messages
+                              show in full instead of raw tags or one clipped line. */}
+                          <div
+                            style={{ color: '#2D1406', margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedNotifDetail.notification?.message || '') }}
+                          />
 
                           {selectedNotifDetail.stats && (
                             <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>

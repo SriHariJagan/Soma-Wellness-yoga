@@ -20,15 +20,21 @@ const fmtPrice = (n) => `KES ${Number(n || 0).toLocaleString("en-KE")}`;
 
 function ServiceRow({ svc, busy, enrolled, onEnroll }) {
   const navigate = useNavigate();
+  // Member pricing comes server-resolved from the catalog (Circle 5% off
+  // regular-priced services — the same figure checkout charges).
+  const hasMemberPrice =
+    svc.circleApplied && svc.memberPrice != null && Number(svc.memberPrice) < Number(svc.price);
+  const memberPct = hasMemberPrice ? Math.round(Number(svc.memberDiscountPct || 0.05) * 100) : 0;
+  const shownPrice = hasMemberPrice ? svc.memberPrice : svc.price;
   const priceLabel =
     svc.pricingModel === "contact"
       ? "Price on request"
-      : svc.price > 0
-        ? fmtPrice(svc.price)
+      : shownPrice > 0
+        ? fmtPrice(shownPrice)
         : "Free";
   const perSession =
-    svc.pricingModel !== "contact" && svc.price > 0 && svc.totalSessions > 1
-      ? `KES ${Math.round(svc.price / svc.totalSessions).toLocaleString("en-KE")} / session`
+    svc.pricingModel !== "contact" && shownPrice > 0 && svc.totalSessions > 1
+      ? `KES ${Math.round(shownPrice / svc.totalSessions).toLocaleString("en-KE")} / session`
       : svc.sessionDuration > 0
         ? `${svc.sessionDuration} min`
         : "";
@@ -39,6 +45,7 @@ function ServiceRow({ svc, busy, enrolled, onEnroll }) {
         <span className={styles.cardName}>{svc.name}</span>
         <span className={styles.cardBadges}>
           {svc.mode && <span className={styles.cardMode}>{svc.mode}</span>}
+          {hasMemberPrice && <Pill tone="green">Member {memberPct}% off</Pill>}
           {svc.isPopular && <Pill tone="amber">Popular</Pill>}
           {svc.featured && <Pill tone="green">Featured</Pill>}
         </span>
@@ -57,6 +64,11 @@ function ServiceRow({ svc, busy, enrolled, onEnroll }) {
       </div>
       <div className={styles.cardFoot}>
         <div className={styles.cardPrice}>
+          {hasMemberPrice && (
+            <span className={styles.priceValue} style={{ textDecoration: "line-through", opacity: 0.55, fontSize: "0.85em" }}>
+              {fmtPrice(svc.price)}
+            </span>
+          )}
           <span className={styles.priceValue}>{priceLabel}</span>
           {perSession && <span className={styles.priceLabel}>{perSession}</span>}
         </div>
@@ -70,7 +82,7 @@ function ServiceRow({ svc, busy, enrolled, onEnroll }) {
           </div>
         ) : (
 <CheckoutGate
-              intent={{ name: svc.name, price: svc.price ? fmtPrice(svc.price) : "Free", sub: svc.category, type: "service", itemType: "service", itemId: svc._id }}
+              intent={{ name: svc.name, price: shownPrice ? fmtPrice(shownPrice) : "Free", sub: svc.category, type: "service", itemType: "service", itemId: svc._id }}
               onProceed={async () => {
                 // Add to cart first (may throw if already in cart), then open the cart.
                 await onEnroll(svc._id);

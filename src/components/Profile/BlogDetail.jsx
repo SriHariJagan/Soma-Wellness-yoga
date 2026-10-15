@@ -316,7 +316,7 @@ export default function BlogDetail({ blogId, student, onNavigate, reload, isAdmi
 
   const authorName = blog.author?.name || "Unknown";
   const initials = authorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  const authorIsAdmin = blog.author?.role === "admin";
+  const authorIsAdmin = blog.isAdminPost || blog.author?.role === "admin";
 
   return (
     <div>
@@ -336,7 +336,18 @@ export default function BlogDetail({ blogId, student, onNavigate, reload, isAdmi
               {authorIsAdmin && <span className={ds.verified}><i className="ti ti-circle-check" /></span>}
             </div>
             <div>
-              <div className={ds.authorName}>{authorName}</div>
+              <div className={ds.authorName}>
+                {authorName}
+                {authorIsAdmin && (
+                  <span style={{
+                    marginLeft: 8, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em",
+                    padding: "2px 8px", borderRadius: 20, verticalAlign: "middle",
+                    background: "linear-gradient(135deg, #2E7D5B, #F97316)", color: "#fff",
+                  }}>
+                    ADMIN
+                  </span>
+                )}
+              </div>
               <div className={ds.meta}>
                 {timeAgo(blog.publishedAt || blog.createdAt)}
                 {blog.isEdited && <span className={ds.edited}>(edited)</span>}

@@ -5,7 +5,7 @@ import { receptionApi } from '../api/AdminServices';
 import { LuFlower2,
   LuLayoutDashboard, LuUsers, LuCalendarCheck, LuMail, LuBookOpen,
   LuLogOut, LuChevronsLeft, LuChevronsRight, LuArrowLeft,
-  LuMenu, LuCalendarDays, LuGraduationCap,
+  LuMenu, LuCalendarDays, LuGraduationCap, LuAward,
 } from 'react-icons/lu';
 import s from '../Admin/YogaAdmin.module.css';
 import LanguageSwitcher from '../common/LanguageSwitcher.jsx';
@@ -25,6 +25,7 @@ const NAV_CONFIG = [
   { id: 'class-invites', label: 'Class Invites',      icon: <LuMail size={18} />,            requiredPerms: ['bookings.view', 'sections.view'],      section: 'Operations' },
   { id: 'attendance',    label: 'Attendance',         icon: <LuCalendarCheck size={18} />,   requiredPerms: ['attendance.view', 'classes.attendance'], section: 'Operations' },
   { id: 'events',        label: 'Events',             icon: <LuCalendarDays size={18} />,    requiredPerms: ['courses.view'],                         section: 'Operations' },
+  { id: 'workshops',     label: 'Workshops',          icon: <LuAward size={18} />,          requiredPerms: ['courses.view'],                         section: 'Operations' },
 ];
 
 export default function ReceptionDashboard({ onLogout = () => {} }) {
@@ -114,6 +115,7 @@ export default function ReceptionDashboard({ onLogout = () => {} }) {
   const ClassInvitesTab = lazy(() => import('./tabs/ClassInvitesTab'));
   const CoursesTab = lazy(() => import('./tabs/CoursesTab'));
   const EventsTab = lazy(() => import('./tabs/EventsTab'));
+  const WorkshopsTab = lazy(() => import('./tabs/WorkshopsTab'));
 
   return (
     <div className={`${s.shell} ${collapsed ? s.shellCollapsed : ''}`}>
@@ -218,6 +220,7 @@ export default function ReceptionDashboard({ onLogout = () => {} }) {
             {activeTab === 'class-invites' && <ClassInvitesTab />}
             {activeTab === 'courses' && <CoursesTab />}
             {activeTab === 'events' && <EventsTab />}
+            {activeTab === 'workshops' && <WorkshopsTab />}
           </Suspense>
         </main>
       </div>

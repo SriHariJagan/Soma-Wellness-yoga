@@ -98,11 +98,15 @@ export async function buildStudentDashboard(userId) {
     // Virtuals are preserved via lean({ virtuals: true }) where used below.
     Membership.findOne({ user: userId }).sort({ createdAt: -1 }).lean({ virtuals: true }),
     Attendance.find({ user: userId }).select('date status').sort({ date: 1 }).lean(),
-    Payment.find({ user: userId }).select('label amount invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt').sort({ createdAt: -1 }).lean(),
+    // Capped: the Payments tab only renders the latest rows; unbounded history
+    // (with attempts/audit arrays) used to bloat every dashboard load.
+    Payment.find({ user: userId, isDeleted: { $ne: true } }).select('label amount invoiceNo merchant_reference provider_transaction_id paymentStatus createdAt').sort({ createdAt: -1 }).limit(200).lean(),
     ClassSession.find({ date: { $gte: now }, status: 'upcoming' }).select('name mode time date zoomUrl enrolledUsers status').sort({ date: 1 }).limit(20).lean(),
     ClassSession.find({ status: 'completed', recordingUrl: { $ne: '' } }).select('name date recordingUrl').sort({ date: -1 }).limit(20).lean(),
-    Workshop.find({}).select('name date startTime endTime duration price description instructor zoomLink image capacity registrations isPaid allowedPlans status isPublished archived').sort({ date: 1 }).lean(),
-    Download.find({ visibility: { $in: ['all', 'plan'] } }).select('type name size url').sort({ createdAt: -1 }).lean(),
+    // Filtered in Mongo (not in JS): unpublished/archived workshops used to be
+    // shipped to every student on every load, then discarded.
+    Workshop.find({ isPublished: true, archived: { $ne: true } }).select('name date startTime endTime duration price description instructor zoomLink image capacity registrations isPaid allowedPlans status isPublished archived').sort({ date: 1 }).limit(50).lean(),
+    Download.find({ visibility: { $in: ['all', 'plan'] } }).select('type name size url').sort({ createdAt: -1 }).limit(50).lean(),
     Consultation.find({ user: userId }).select('status date timeSlot duration doctor topic price paymentStatus meetingLink assignedGuru adminNotes').sort({ date: -1 }).lean(),
     // Only the fields the dashboard renders — full Notification docs carry
     // richMessage/templateData blobs that would bloat every load.
@@ -316,6 +320,8 @@ export async function buildStudentDashboard(userId) {
     city: user.city || '',
     country: user.country || '',
     countryCode: user.countryCode || '',
+    state: user.state || '',
+    stateCode: user.stateCode || '',
     style: user.style || '',
     level: user.level || '',
     avatar: user.avatar || '',

@@ -40,7 +40,7 @@ const ITEM_RESOLVERS = {
     const service = await Service.findById(item.itemId).lean();
     if (!service) throw new PaymentInitiationError(`Service not found: ${item.itemId}`);
     const base = Math.round(Number(service.price) || 0);
-    // Circle 5%: only for active members + regular-priced + no coupon. Never stacks.
+    // Circle benefit: only for active members + regular-priced + no coupon. Never stacks.
     let unitKes = base;
     let circleApplied = false;
     let circleDiscountAmount = 0;
@@ -48,6 +48,7 @@ const ITEM_RESOLVERS = {
       const { resolveCircleServicePrice } = await import('../../services/circleService.js');
       const r = resolveCircleServicePrice(base, {
         circleActive: true,
+        discountPct: ctx.circleDiscountPct,
         hasCouponDiscount: !!ctx.hasCouponDiscount,
         isPromotional: !!service.isPromotional,
         originalPrice: service.originalPrice,
@@ -162,6 +163,7 @@ const ITEM_RESOLVERS = {
       const { resolveCircleServicePrice } = await import('../../services/circleService.js');
       const r = resolveCircleServicePrice(base, {
         circleActive: true,
+        discountPct: ctx.circleDiscountPct,
         hasCouponDiscount: !!ctx.hasCouponDiscount,
         isPromotional: false,
         originalPrice: offering.originalPrice,
@@ -201,17 +203,28 @@ const ITEM_RESOLVERS = {
 };
 
 export class OrderService {
-  // ctx: { userId, circleActive, hasCouponDiscount, skipCircleDiscount }
+  // ctx: { userId, circleActive, circleDiscountPct, hasCouponDiscount, skipCircleDiscount }
   // circleActive is resolved by the caller (PaymentService/cart) so this
   // stays a pure pricing function. Prices always come from the DB.
+  // circleDiscountPct is the live admin-set member fraction; when omitted
+  // with an active circle it is read once here from the Circle plan.
   async resolveItems(items, ctx = {}) {
+    let context = ctx;
+    if (context.circleActive && context.circleDiscountPct === undefined) {
+      try {
+        const { getCircleDiscountPct } = await import('../../services/circleService.js');
+        context = { ...ctx, circleDiscountPct: await getCircleDiscountPct() };
+      } catch {
+        /* fall through — resolvers default to the config fraction */
+      }
+    }
     const resolved = [];
     for (const item of items) {
       const resolver = ITEM_RESOLVERS[item.itemType];
       if (!resolver) {
         throw new PaymentInitiationError(`Unknown item type: ${item.itemType}`);
       }
-      const resolvedItem = await resolver(item, ctx);
+      const resolvedItem = await resolver(item, context);
       const totalPrice = resolvedItem.unitPrice * resolvedItem.quantity;
       resolved.push({
         itemType: item.itemType,

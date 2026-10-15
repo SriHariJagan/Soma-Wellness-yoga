@@ -173,7 +173,27 @@ export default function MyBlogsPage({ student, onNavigate, reload }) {
                 exit={{ opacity: 0, y: -10 }}
               >
                 <div className={ms.itemMain}>
-                  <h3 className={ms.itemTitle}>{blog.title}</h3>
+                  <h3 className={ms.itemTitle}>
+                    {blog.title}
+                    {blog.moderationStatus === "pending" && (
+                      <span style={{
+                        marginLeft: 8, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.05em",
+                        padding: "2px 8px", borderRadius: 20, verticalAlign: "middle",
+                        background: "rgba(217,119,6,0.12)", color: "#92400e",
+                      }}>
+                        PENDING REVIEW
+                      </span>
+                    )}
+                    {blog.moderationStatus === "rejected" && (
+                      <span style={{
+                        marginLeft: 8, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.05em",
+                        padding: "2px 8px", borderRadius: 20, verticalAlign: "middle",
+                        background: "rgba(220,38,38,0.1)", color: "#DC2626",
+                      }}>
+                        REJECTED
+                      </span>
+                    )}
+                  </h3>
                   <div className={ms.itemMeta}>
                     <span><i className="ti ti-eye" /> {blog.viewCount || 0}</span>
                     <span><i className="ti ti-heart" /> {blog.likeCount || 0}</span>

@@ -7,6 +7,7 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
   archiveNotification,
+  unarchiveNotification,
   deleteNotification,
 } from "../api/StudentServices.js";
 
@@ -14,6 +15,7 @@ const FILTERS = [
   { id: "all",          label: "All" },
   { id: "unread",       label: "Unread" },
   { id: "read",         label: "Read" },
+  { id: "archived",     label: "Archived" },
   { id: "payment",      label: "Payment" },
   { id: "membership",   label: "Membership" },
   { id: "courses",      label: "Courses" },
@@ -69,7 +71,10 @@ export default function NotificationsPage({ student, reload }) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [expanded, setExpanded] = useState(null);
+  // Full-message reader: clicking a row opens a modal that renders the
+  // COMPLETE message with no clamping (line-clamp toggles proved unreliable
+  // across browsers, leaving long messages cut even when "expanded").
+  const [reading, setReading] = useState(null);
 
   const LIMIT = 20;
 
@@ -89,6 +94,7 @@ export default function NotificationsPage({ student, reload }) {
 
       if (filter === "unread") params.status = "unread";
       else if (filter === "read") params.status = "read";
+      else if (filter === "archived") params.status = "archived";
       else if (filter !== "all") params.type = filterTypeMap[filter] || filter;
 
       const data = await getNotifications(params);
@@ -102,7 +108,7 @@ export default function NotificationsPage({ student, reload }) {
     }
   }, [activeFilter]);
 
-  useEffect(() => { fetchNotifs(activeFilter, 1); setPage(1); setExpanded(null); }, [activeFilter]);
+  useEffect(() => { fetchNotifs(activeFilter, 1); setPage(1); setReading(null); }, [activeFilter]);
 
   const handleFilterChange = (filterId) => {
     setActiveFilter(filterId);
@@ -138,6 +144,15 @@ export default function NotificationsPage({ student, reload }) {
     } catch { /* non-fatal */ }
   }
 
+  async function handleUnarchive(n) {
+    try {
+      await unarchiveNotification(n._id);
+      setNotifs((prev) => prev.filter((x) => x._id !== n._id));
+      setTotal((t) => Math.max(0, t - 1));
+      await reload?.();
+    } catch { /* non-fatal */ }
+  }
+
   async function handleDelete(id) {
     try {
       await deleteNotification(id);
@@ -147,12 +162,8 @@ export default function NotificationsPage({ student, reload }) {
     } catch { /* non-fatal */ }
   }
 
-  const handleToggleExpand = async (n) => {
-    if (expanded === n._id) {
-      setExpanded(null);
-      return;
-    }
-    setExpanded(n._id);
+  const handleOpenMessage = async (n) => {
+    setReading(n);
     if (!n.isRead) await handleMarkRead(n);
   };
 
@@ -220,7 +231,6 @@ export default function NotificationsPage({ student, reload }) {
               {notifs.map((n, i) => {
                 const meta = typeMap(n.type);
                 const pc = PRIORITY_COLORS[n.priority] || PRIORITY_COLORS.normal;
-                const isExpanded = expanded === n._id;
 
                 return (
                   <motion.div
@@ -231,7 +241,8 @@ export default function NotificationsPage({ student, reload }) {
                     transition={{ duration: 0.2 }}
                   >
                     <div
-                      onClick={() => handleToggleExpand(n)}
+                      onClick={() => handleOpenMessage(n)}
+                      title="Open full message"
                       style={{
                         borderLeft: `3px solid ${!n.isRead ? pc.border : "transparent"}`,
                         background: n.isRead ? "#fff" : "rgba(249,115,22,0.03)",
@@ -267,8 +278,8 @@ export default function NotificationsPage({ student, reload }) {
 
                           <p style={{
                             fontSize: 12.5, color: "var(--color-text-secondary)", lineHeight: 1.5, margin: 0,
-                            display: "-webkit-box", WebkitLineClamp: isExpanded ? "unset" : 2,
-                            WebkitBoxOrient: "vertical", overflow: isExpanded ? "visible" : "hidden",
+                            display: "-webkit-box", WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical", overflow: "hidden",
                           }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(n.message || '') }} />
 
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
@@ -288,50 +299,16 @@ export default function NotificationsPage({ student, reload }) {
                           </div>
 
                           {/* Expanded actions */}
-                          {isExpanded && (
-                            <div style={{ display: "flex", gap: 8, marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--color-border-light)" }}>
-                              {!n.isRead && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleMarkRead(n); }}
-                                  style={{
-                                    display: "inline-flex", alignItems: "center", gap: 4,
-                                    padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600,
-                                    border: "1px solid #E7D7BE", background: "#fff", color: "#F97316",
-                                    cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                                  }}
-                                >
-                                  <i className="ti ti-check" /> Mark Read
-                                </button>
-                              )}
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleArchive(n); }}
-                                style={{
-                                  display: "inline-flex", alignItems: "center", gap: 4,
-                                  padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 500,
-                                  border: "1px solid #E7D7BE", background: "#fff", color: "#6B5E4E",
-                                  cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                                }}
-                              >
-                                <i className="ti ti-archive" /> Archive
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleDelete(n._id); }}
-                                style={{
-                                  display: "inline-flex", alignItems: "center", gap: 4,
-                                  padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 500,
-                                  border: "none", background: "rgba(220,38,38,0.08)", color: "#DC2626",
-                                  cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                                }}
-                              >
-                                <i className="ti ti-trash" /> Delete
-                              </button>
-                            </div>
-                          )}
+                          <div style={{ display: "flex", gap: 8, marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--color-border-light)" }}>
+                            <span style={{ fontSize: 11, color: "var(--color-text-muted)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                              <i className="ti ti-arrows-maximize" /> Click to read the full message
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Expand indicator */}
+                        {/* Open indicator */}
                         <div style={{ color: "var(--color-text-muted)", flexShrink: 0, marginTop: 2 }}>
-                          <i className={`ti ${isExpanded ? "ti-chevron-up" : "ti-chevron-down"}`} style={{ fontSize: 14 }} />
+                          <i className="ti ti-arrows-maximize" style={{ fontSize: 14 }} />
                         </div>
                       </div>
                     </div>
@@ -364,6 +341,120 @@ export default function NotificationsPage({ student, reload }) {
           )}
         </div>
       )}
+
+      {/* ── Full-message reader ── */}
+      {reading && (() => {
+        const meta = typeMap(reading.type);
+        const pc = PRIORITY_COLORS[reading.priority] || PRIORITY_COLORS.normal;
+        return (
+          <div
+            style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(45,20,6,0.55)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+            }}
+            onClick={() => setReading(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-label={reading.title || "Notification"}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#fff", borderRadius: 18, maxWidth: 560, width: "100%",
+                maxHeight: "86vh", overflowY: "auto", padding: "26px 26px 22px",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.28)",
+                borderTop: `4px solid ${pc.border}`,
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 6 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
+                  display: "grid", placeItems: "center", fontSize: 18,
+                  background: meta.bg, color: meta.color,
+                }}>
+                  <i className={meta.icon} aria-hidden="true" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: "var(--color-dark)", lineHeight: 1.35 }}>
+                    {reading.title}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, color: "var(--color-text-muted)", display: "inline-flex", alignItems: "center", gap: 3 }}>
+                      <i className="ti ti-clock" style={{ fontSize: 10 }} />
+                      {relativeTime(reading.createdAt)}
+                    </span>
+                    <span style={{
+                      fontSize: 9.5, fontWeight: 600, padding: "2px 7px", borderRadius: 12,
+                      background: pc.bg, color: pc.badge,
+                    }}>
+                      {reading.priority?.charAt(0).toUpperCase() + reading.priority?.slice(1) || "Normal"}
+                    </span>
+                    <span style={{ fontSize: 10, color: "var(--color-text-muted)" }}>
+                      {reading.sender || "Soma Wellness"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* Complete message — never clamped, whitespace preserved */}
+              <div
+                style={{ fontSize: 13.5, color: "var(--color-dark)", lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word", margin: "14px 0 4px" }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(reading.message || '') }}
+              />
+              <div style={{ display: "flex", gap: 8, marginTop: 18, paddingTop: 14, borderTop: "1px solid var(--color-border-light)", flexWrap: "wrap" }}>
+                {activeFilter !== "archived" ? (
+                  <button
+                    onClick={() => { handleArchive(reading); setReading(null); }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500,
+                      border: "1px solid #E7D7BE", background: "#fff", color: "#6B5E4E",
+                      cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    <i className="ti ti-archive" /> Archive
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { handleUnarchive(reading); setReading(null); }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                      border: "1px solid #E7D7BE", background: "#fff", color: "#F97316",
+                      cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    <i className="ti ti-inbox" /> Move to inbox
+                  </button>
+                )}
+                <button
+                  onClick={() => { handleDelete(reading._id); setReading(null); }}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500,
+                    border: "none", background: "rgba(220,38,38,0.08)", color: "#DC2626",
+                    cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  <i className="ti ti-trash" /> Delete
+                </button>
+                <span style={{ flex: 1 }} />
+                <button
+                  onClick={() => setReading(null)}
+                  style={{
+                    padding: "7px 18px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                    border: "none", background: "linear-gradient(135deg, #2E7D5B, #F97316)", color: "#fff",
+                    cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

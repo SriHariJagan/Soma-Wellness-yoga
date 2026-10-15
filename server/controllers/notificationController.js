@@ -499,6 +499,21 @@ export const archiveStudentNotification = asyncHandler(async (req, res) => {
 });
 
 /**
+ * PATCH /api/student/notifications/:id/unarchive
+ * Moves an archived notification back to the normal list.
+ */
+export const unarchiveStudentNotification = asyncHandler(async (req, res) => {
+  const recipient = await NotificationRecipient.findOneAndUpdate(
+    { _id: req.params.id, student: req.user._id },
+    { archived: false },
+    { new: true },
+  );
+  if (!recipient) throw ApiError.notFound('Notification not found');
+
+  res.json({ success: true });
+});
+
+/**
  * DELETE /api/student/notifications/:id (soft delete)
  */
 export const deleteStudentNotification = asyncHandler(async (req, res) => {

@@ -15,6 +15,22 @@ export async function getCirclePlan() {
   return plan;
 }
 
+/**
+ * Live member-discount fraction (e.g. 0.05 = 5%) from the Circle plan doc —
+ * this is what the admin edits. Falls back to the config default when the
+ * plan is missing or carries an invalid value, so pricing never breaks.
+ */
+export async function getCircleDiscountPct() {
+  try {
+    const plan = await getCirclePlan();
+    const pct = Number(plan?.memberDiscountPct);
+    if (Number.isFinite(pct) && pct >= 0 && pct <= 0.9) return pct;
+  } catch {
+    /* fall through to default */
+  }
+  return WELLNESS_CIRCLE.DISCOUNT_PCT;
+}
+
 /** Find the user's active Circle membership (date-validated, not cron-dependent). */
 export async function getActiveCircleMembership(userId, session = null) {
   if (!userId) return null;
@@ -47,7 +63,9 @@ export async function hasActiveCircle(userId) {
   return (await getActiveCircleMembership(userId)) != null;
 }
 
-export function circleStatusPayload(membership) {
+export function circleStatusPayload(membership, discountPct = WELLNESS_CIRCLE.DISCOUNT_PCT) {
+  const pct = Number(discountPct);
+  const pctText = Number.isFinite(pct) && pct > 0 ? `${Math.round(pct * 100)}%` : '5%';
   if (!membership) {
     return {
       active: false,
@@ -57,7 +75,7 @@ export function circleStatusPayload(membership) {
       durationMonths: WELLNESS_CIRCLE.DURATION_MONTHS,
       memberSince: null,
       validUntil: null,
-      benefit: `5% off eligible regular-priced SOMA services`,
+      benefit: `${pctText} off eligible regular-priced SOMA services`,
     };
   }
   return {
@@ -69,7 +87,7 @@ export function circleStatusPayload(membership) {
     memberSince: membership.startDate || membership.purchaseDate || null,
     validUntil: membership.expiryDate || null,
     membershipId: membership._id,
-    benefit: `5% off eligible regular-priced SOMA services`,
+    benefit: `${pctText} off eligible regular-priced SOMA services`,
   };
 }
 
@@ -90,6 +108,8 @@ export function circleDiscountEligibility({
   circleDiscountEligible = true,
   category = '',
   itemType = '',
+  // Live admin-set fraction (getCircleDiscountPct). Defaults to config.
+  discountPct = WELLNESS_CIRCLE.DISCOUNT_PCT,
 } = {}) {
   if (!circleActive) return { eligible: false, reason: 'no_active_circle', discountPct: 0 };
   if (excludeCircleDiscount) return { eligible: false, reason: 'excluded_service', discountPct: 0 };
@@ -107,16 +127,21 @@ export function circleDiscountEligibility({
     return { eligible: false, reason: 'is_membership', discountPct: 0 };
   if (!Number(basePrice) || Number(basePrice) <= 0)
     return { eligible: false, reason: 'invalid_price', discountPct: 0 };
-  return { eligible: true, reason: 'eligible', discountPct: WELLNESS_CIRCLE.DISCOUNT_PCT };
+  const pct = Number(discountPct);
+  if (!Number.isFinite(pct) || pct <= 0 || pct > 0.9)
+    return { eligible: false, reason: 'no_discount', discountPct: 0 };
+  return { eligible: true, reason: 'eligible', discountPct: pct };
 }
 
-/** Apply 5% to a regular price (rounded to whole KES). */
-export function applyCircleDiscount(basePrice) {
+/** Apply the member fraction to a regular price (rounded to whole KES). */
+export function applyCircleDiscount(basePrice, discountPct = WELLNESS_CIRCLE.DISCOUNT_PCT) {
   const base = Math.round(Number(basePrice) || 0);
-  const discountAmount = Math.round(base * WELLNESS_CIRCLE.DISCOUNT_PCT);
+  const pct = Number(discountPct);
+  const safePct = Number.isFinite(pct) && pct > 0 && pct <= 0.9 ? pct : 0;
+  const discountAmount = Math.round(base * safePct);
   return {
     base,
-    discountPct: WELLNESS_CIRCLE.DISCOUNT_PCT,
+    discountPct: safePct,
     discountAmount,
     finalPrice: base - discountAmount,
   };
@@ -124,23 +149,26 @@ export function applyCircleDiscount(basePrice) {
 
 /** Resolve a service/offering price with Circle rules (no-stack). */
 export function resolveCircleServicePrice(basePrice, opts = {}) {
-  const check = circleDiscountEligibility({ basePrice, ...opts });
+  const { discountPct = WELLNESS_CIRCLE.DISCOUNT_PCT, ...rest } = opts;
+  const check = circleDiscountEligibility({ basePrice, discountPct, ...rest });
   if (!check.eligible) {
     const base = Math.round(Number(basePrice) || 0);
     return {
       finalPrice: base,
       discountApplied: 0,
       discountAmount: 0,
+      discountPct: 0,
       circleApplied: false,
       reason: check.reason,
       breakdown: { base, afterDiscount: base },
     };
   }
-  const applied = applyCircleDiscount(basePrice);
+  const applied = applyCircleDiscount(basePrice, check.discountPct);
   return {
     finalPrice: applied.finalPrice,
     discountApplied: applied.discountPct,
     discountAmount: applied.discountAmount,
+    discountPct: applied.discountPct,
     circleApplied: true,
     reason: 'circle_5pct',
     breakdown: { base: applied.base, afterDiscount: applied.finalPrice },

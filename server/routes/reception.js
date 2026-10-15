@@ -107,9 +107,17 @@ router.get('/class-invites/:id', requirePermission('bookings.view', 'sections.vi
 router.patch('/class-invites/:id/cancel', requirePermission('bookings.cancel'), staffWriteLimiter, inviteCtrl.cancelInvite);
 router.post('/class-invites/:id/resend', requirePermission('bookings.create'), staffWriteLimiter, inviteCtrl.resendInvite);
 
-// ── Events (view only) ───────────────────────────────────────
+// ── Events (view + book users) ───────────────────────────────
 router.get('/events', requirePermission('courses.view'), ev.adminGetEvents);
 router.get('/events/:id/registrations', requirePermission('courses.view'), ev.adminGetEventRegistrations);
+router.post('/events/:id/register', requirePermission('bookings.create', 'sections.booking'), staffWriteLimiter, sales.registerUserForEvent);
+
+// ── Workshops (view + book users) ────────────────────────────
+// Admin-hosted workshops surface here so the desk can book users in.
+// Paid bookings go through counter sales (POST /students/:id/purchases
+// with kind 'workshop'); registration lists are read-only here.
+router.get('/workshops', requirePermission('courses.view'), sales.getWorkshops);
+router.get('/workshops/:id/registrations', requirePermission('courses.view'), a.adminGetWorkshopRegistrations);
 
 // ── Courses (view) ───────────────────────────────────────────
 router.get('/courses', requirePermission('courses.view'), asyncHandler(async (req, res) => {

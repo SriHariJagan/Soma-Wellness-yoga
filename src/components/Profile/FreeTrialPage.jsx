@@ -37,10 +37,16 @@ export default function FreeTrialPage({ student, reload }) {
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
   const [usedTrial, setUsedTrial] = useState(false);
+  // Server-authoritative plan block (eligibility API). Falls back to the
+  // dashboard flags when the eligibility call fails.
+  const [blockedByPlan, setBlockedByPlan] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const pollRef = useRef();
 
-  const hasActivePlan = student?.planActive && (student?.planMonths || 0) > 0;
+  // Dashboard flags go stale (e.g. plan bought in another tab, or a paused
+  // plan which keeps its days). A paused plan blocks the trial exactly like
+  // an active one.
+  const dashboardHasPlan = (student?.planActive || student?.planPaused) && (student?.planMonths || 0) > 0;
 
   const fetchTrial = useCallback(async (isInitial) => {
     if (isInitial) setInitialLoading(true);
@@ -54,6 +60,7 @@ export default function FreeTrialPage({ student, reload }) {
         checkTrialEligibility().catch(() => null),
       ]);
       if (elig && elig.hasUsedTrial && !elig.hasActiveTrial) setUsedTrial(true);
+      if (elig) setBlockedByPlan(!!elig.hasActivePlan);
       const trialData = t?.trial || t || null;
       if (trialData && trialData.status === 'none') {
         setTrial(null);
@@ -116,8 +123,8 @@ export default function FreeTrialPage({ student, reload }) {
   }
 
   if (!trial) {
-    const showPlanBlocked = hasActivePlan;
-    const showUsedBlocked = !hasActivePlan && usedTrial;
+    const showPlanBlocked = blockedByPlan || dashboardHasPlan;
+    const showUsedBlocked = !showPlanBlocked && usedTrial;
 
     return (
       <Stagger>

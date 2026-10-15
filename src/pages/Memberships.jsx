@@ -21,6 +21,7 @@ const FALLBACK = {
   subtitle: "Annual Privilege Membership",
   tagline: "Your year of wellness, inspiration and member-only privileges.",
   price: 36500,
+  memberDiscountPct: 0.05,
   durationMonths: 12,
   benefits: [
     "5% saving on regular-priced SOMA services.*",
@@ -67,6 +68,8 @@ const Memberships = () => {
               subtitle: data.subtitle || FALLBACK.subtitle,
               tagline: data.tagline || FALLBACK.tagline,
               price: Number(data.price) || FALLBACK.price,
+              originalPrice: Number(data.originalPrice) || null,
+              memberDiscountPct: Number(data.memberDiscountPct) || 0.05,
               durationMonths: Number(data.durationMonths) || 12,
               benefits: Array.isArray(data.benefits) && data.benefits.length ? data.benefits : FALLBACK.benefits,
               notIncluded: Array.isArray(data.notIncluded) && data.notIncluded.length ? data.notIncluded : FALLBACK.notIncluded,
@@ -127,6 +130,8 @@ const Memberships = () => {
   };
 
   const alreadyActive = !!(status && status.active);
+  // Live admin-set member saving (e.g. 5) — falls back to 5%.
+  const memberPct = Math.round(Number(circle.memberDiscountPct || 0.05) * 100);
   const validUntil = status?.validUntil ? new Date(status.validUntil).toLocaleDateString("en-KE", { day: "2-digit", month: "2-digit", year: "numeric" }) : null;
 
   const cta = (label = "BECOME A SOMA MEMBER") => {
@@ -213,6 +218,12 @@ const Memberships = () => {
               <span className={styles.priceCur}>KES / Day</span>
               <span className={styles.perMonth}>
                 {formatKES(priceDisplay(circle.price, { durationMonths: circle.durationMonths }).displayMonthlyPrice)}/month · Billed annually at {formatKES(circle.price)}
+                {Number(circle.originalPrice) > Number(circle.price) && (
+                  <>
+                    {' '}<span style={{ textDecoration: 'line-through', opacity: 0.6 }}>{formatKES(circle.originalPrice)}</span>
+                    {' '}<span style={{ color: '#16A34A', fontWeight: 700 }}>Save {formatKES(Number(circle.originalPrice) - Number(circle.price))}</span>
+                  </>
+                )}
               </span>
             </div>
 
@@ -228,7 +239,7 @@ const Memberships = () => {
               </div>
               <div className={styles.heroStatDiv} aria-hidden="true" />
               <div className={styles.heroStat}>
-                <span className={styles.heroStatNum}>5%</span>
+                <span className={styles.heroStatNum}>{memberPct}%</span>
                 <span className={styles.heroStatLabel}>member saving</span>
               </div>
             </div>
@@ -351,7 +362,7 @@ const Memberships = () => {
             <div className={styles.bottomCtaOrbs} aria-hidden="true" />
             <div className={styles.bottomCtaEyebrow}>Your year of wellness awaits</div>
             <div className={styles.bottomCtaPrice}>{formatKES(priceDisplay(circle.price, { durationMonths: circle.durationMonths }).displayMonthlyPrice)} <span>/ Month</span></div>
-            <div className={styles.bottomCtaPer}>Billed annually at {formatKES(circle.price)} · 5% member saving included</div>
+            <div className={styles.bottomCtaPer}>Billed annually at {formatKES(circle.price)} · {memberPct}% member saving included</div>
             <div className={styles.cardActions} style={{ maxWidth: 420, margin: "14px auto 0" }}>
               {cta()}
             </div>
@@ -360,7 +371,7 @@ const Memberships = () => {
 
         <div className={styles.finePrint}>
           Spring Valley, Nairobi · All prices in KES, VAT included · Membership activates only after verified payment ·
-          Valid for 1 year from payment date · 5% saving applies to regular-priced services only and does not stack with discounted packages or promotions.
+          Valid for 1 year from payment date · {memberPct}% saving applies to regular-priced services only and does not stack with discounted packages or promotions.
         </div>
       </section>
 

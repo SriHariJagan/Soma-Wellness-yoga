@@ -478,6 +478,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
     setEditForm({
       name: sDetail.name || '', email: sDetail.email || '',
       phone: sDetail.phone || '', city: sDetail.city || '',
+      state: sDetail.state || '', stateCode: sDetail.stateCode || '',
       country: sDetail.country || '', countryCode: sDetail.countryCode || '',
       style: sDetail.style || '', level: sDetail.level || '',
       gender: sDetail.gender || '', dateOfBirth: sDetail.dateOfBirth ? sDetail.dateOfBirth.slice(0, 10) : '',
@@ -555,10 +556,11 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
               <div>
                 <CountrySelect
                   value={editForm.countryCode || ''}
-                  onChange={(code) => setEditForm({ ...editForm, countryCode: code, country: countryNameFor(code) })}
+                  onChange={(code) => setEditForm({ ...editForm, countryCode: code, country: countryNameFor(code), state: '', stateCode: '', city: '' })}
                   id="admin-edit-country"
                 />
               </div>
+              <FormInput label="State" value={editForm.state} onChange={e => setEditForm({ ...editForm, state: e.target.value, stateCode: '' })} />
               <FormInput label="Yoga Style" value={editForm.style} onChange={e => setEditForm({ ...editForm, style: e.target.value })} />
               <FormInput label="Level" value={editForm.level} onChange={e => setEditForm({ ...editForm, level: e.target.value })} />
             </div>
@@ -587,6 +589,7 @@ export default function StudentProfileWorkspace({ student, onClose, onRefresh })
             <InfoRow icon={<LuActivity size={14} />} label="Status" value={sDetail.status || 'active'} />
             <InfoRow icon={<LuMapPin size={14} />} label="City" value={sDetail.city || '—'} />
             <InfoRow icon={<LuMapPin size={14} />} label="Country of residency" value={sDetail.countryCode ? `${sDetail.country || ''} (${sDetail.countryCode})`.trim() : (sDetail.country || '—')} />
+            <InfoRow icon={<LuMapPin size={14} />} label="State" value={sDetail.state || '—'} />
           </div>
         </SectionCard>
 

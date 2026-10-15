@@ -46,10 +46,13 @@ export async function finalizePurchase(userId, payment, session) {
     });
   }
 
-  // 2 — Remove purchased items from the cart (abandoned checkouts keep theirs)
+  // 2 — Remove purchased items from the cart (abandoned checkouts keep theirs).
+  // NOTE: direct membership purchases record itemType 'membership' while the
+  // cart stores the same plan as 'plan' — normalize so a bought Circle never
+  // lingers in the cart (previously it stayed put, coupon still "applied").
   const purchased = items
     .filter((i) => i.itemId && !['other', 'order'].includes(i.itemType))
-    .map((i) => ({ itemType: i.itemType, itemId: String(i.itemId) }));
+    .map((i) => ({ itemType: i.itemType === 'membership' ? 'plan' : i.itemType, itemId: String(i.itemId) }));
   if (purchased.length > 0) {
     const cart = await Cart.findOne({ student: userId }).session(session).lean();
     if (cart) {

@@ -33,23 +33,67 @@ async function getOrCreateCart(userId) {
   return cart;
 }
 
+/* A coupon valid at apply-time can expire, be deactivated, or hit its
+   usage limit while still sitting on cart items. Every read/checkout path
+   must revalidate — never trust the stored CartItem.coupon blindly.
+   Returns { ok: true, coupon } or { ok: false, reason }. */
+async function validateCartCoupon(couponId, userId) {
+  const coupon = await Coupon.findById(couponId).lean();
+  if (!coupon) return { ok: false, reason: 'Coupon no longer exists' };
+  if (!coupon.active) return { ok: false, reason: `Coupon ${coupon.code} is no longer active` };
+  if (coupon.expiryDate && new Date() > coupon.expiryDate) return { ok: false, reason: `Coupon ${coupon.code} has expired` };
+  if (coupon.startDate && new Date() < coupon.startDate) return { ok: false, reason: `Coupon ${coupon.code} is not yet valid` };
+  if (coupon.usageLimit > 0 && coupon.usageCount >= coupon.usageLimit) return { ok: false, reason: `Coupon ${coupon.code} usage limit reached` };
+  if (coupon.usagePerUser > 0) {
+    const userUsage = await CouponUsage.countDocuments({ coupon: coupon._id, user: userId });
+    if (userUsage >= coupon.usagePerUser) return { ok: false, reason: `Coupon ${coupon.code} already used the maximum number of times` };
+  }
+  return { ok: true, coupon };
+}
+
+/* Clear any coupon + discount off all items in the cart. */
+async function stripCouponFromCart(cartId) {
+  const items = await CartItem.find({ cart: cartId, coupon: { $ne: null } }).lean();
+  for (const item of items) {
+    await CartItem.findByIdAndUpdate(item._id, { discount: 0, finalPrice: Math.round(item.price * item.quantity * 100) / 100, coupon: null });
+  }
+}
+
 /* ── GET /api/student/cart ── */
 export const getCart = asyncHandler(async (req, res) => {
   const cart = await getOrCreateCart(req.user._id);
-  const items = await CartItem.find({ cart: cart._id }).lean();
+  let items = await CartItem.find({ cart: cart._id }).lean();
+  // Self-heal: a plan left in the cart while the membership is already
+  // active (e.g. bought via the Plans page with a coupon sitting in the
+  // cart) is removed so it never shows as purchasable/applied again.
+  let planRemoved = '';
+  if (items.some((i) => i.itemType === 'plan')) {
+    const { getActiveCircleMembership } = await import('../services/circleService.js');
+    if (await getActiveCircleMembership(req.user._id)) {
+      await CartItem.deleteMany({ cart: cart._id, itemType: 'plan' });
+      items = await CartItem.find({ cart: cart._id }).lean();
+      planRemoved = 'Your membership is already active — the plan was removed from your cart.';
+    }
+  }
+  // Self-heal: a coupon that died after being applied (expired, deactivated,
+  // usage limit hit) is stripped here so refresh never shows it as applied.
+  let couponRemoved = '';
+  const appliedCoupon = items.find((i) => i.coupon);
+  let couponCode = '';
+  if (appliedCoupon) {
+    const check = await validateCartCoupon(appliedCoupon.coupon, req.user._id);
+    if (check.ok) {
+      couponCode = check.coupon.code;
+    } else {
+      await stripCouponFromCart(cart._id);
+      items = await CartItem.find({ cart: cart._id }).lean();
+      couponRemoved = check.reason;
+    }
+  }
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const totalDiscount = items.reduce((s, i) => s + i.discount * i.quantity, 0);
   const total = items.reduce((s, i) => s + i.finalPrice, 0);
-  const appliedCoupon = items.find((i) => i.coupon);
-  let couponCode = '';
-  let couponDiscount = 0;
-  if (appliedCoupon) {
-    const coupon = await Coupon.findById(appliedCoupon.coupon).lean();
-    if (coupon) {
-      couponCode = coupon.code;
-      couponDiscount = totalDiscount;
-    }
-  }
+  const couponDiscount = couponCode ? totalDiscount : 0;
   res.json({
     cart: { _id: cart._id },
     items,
@@ -58,6 +102,8 @@ export const getCart = asyncHandler(async (req, res) => {
       discount: totalDiscount,
       couponCode,
       couponDiscount,
+      couponRemoved,
+      planRemoved,
       tax: 0,
       total,
       itemCount: items.length,
@@ -88,6 +134,13 @@ export const addToCart = asyncHandler(async (req, res) => {
       const plan = await Plan.findById(itemId).lean();
       if (!plan) throw ApiError.notFound('Plan not found');
       if (!plan.active || plan.visibility === 'hidden') throw ApiError.badRequest('This plan is not available');
+      // A live Circle already covers the student — adding it again would
+      // leave a stale plan + coupon sitting in the cart after purchase.
+      // (Mirrors POST /membership/purchase, which also rejects overlaps.)
+      const { getActiveCircleMembership } = await import('../services/circleService.js');
+      if (await getActiveCircleMembership(req.user._id)) {
+        throw ApiError.badRequest('You already have an active SOMA Wellness Circle membership.');
+      }
       itemName = plan.name;
       itemPrice = plan.price || 0;
       break;
@@ -96,6 +149,10 @@ export const addToCart = asyncHandler(async (req, res) => {
       const service = await Service.findById(itemId).lean();
       if (!service) throw ApiError.notFound('Service not found');
       if (!service.active) throw ApiError.badRequest('This service is not available');
+      // Website parity: a booking switch turned off on the same-named
+      // offering blocks dashboard purchases too (not just the public site).
+      const { isServiceBookingEnabled } = await import('../services/serviceBooking.js');
+      if (!(await isServiceBookingEnabled(service))) throw ApiError.badRequest('Booking is not enabled for this service');
       itemName = service.name;
       itemPrice = service.price || 0;
       itemImage = service.image || '';
@@ -162,23 +219,26 @@ export const addToCart = asyncHandler(async (req, res) => {
       throw ApiError.badRequest('Invalid item type');
   }
 
-  // ── SOMA Wellness Circle 5% (service/offering, regular-priced only) ──
+  // ── SOMA Wellness Circle member discount (service/offering, regular-priced only) ──
   // Applied server-side at add time; re-validated authoritatively at checkout
   // and payment initiation, so expiry/coupons/promotions can never stack.
+  // The % itself is admin-editable on the Circle plan (read live here).
   let circleDiscount = 0;
   if ((itemType === 'service' || itemType === 'offering') && itemPrice > 0) {
     try {
-      const [{ getActiveCircleMembership, resolveCircleServicePrice }, OfferingMod] = await Promise.all([
+      const [{ getActiveCircleMembership, getCircleDiscountPct, resolveCircleServicePrice }, OfferingMod] = await Promise.all([
         import('../services/circleService.js'),
         itemType === 'offering' ? import('../models/Offering.js') : Promise.resolve(null),
       ]);
       const circleActive = (await getActiveCircleMembership(req.user._id)) != null;
       if (circleActive) {
+        const discountPct = await getCircleDiscountPct();
         if (itemType === 'service') {
           const svc = await Service.findById(itemId).lean();
           if (svc) {
             const r = resolveCircleServicePrice(Number(svc.price) || 0, {
               circleActive: true,
+              discountPct,
               hasCouponDiscount: false,
               isPromotional: !!svc.isPromotional,
               originalPrice: svc.originalPrice,
@@ -195,6 +255,7 @@ export const addToCart = asyncHandler(async (req, res) => {
           if (off && off.category !== 'membership' && off.category !== 'academy') {
             const r = resolveCircleServicePrice(Number(off.price) || 0, {
               circleActive: true,
+              discountPct,
               hasCouponDiscount: false,
               originalPrice: off.originalPrice,
               currentPrice: off.price,
@@ -303,16 +364,13 @@ export const applyCoupon = asyncHandler(async (req, res) => {
   const { code } = req.body;
   if (!code) throw ApiError.badRequest('Coupon code is required');
 
-  const coupon = await Coupon.findOne({ code: code.toUpperCase().trim() });
-  if (!coupon) throw ApiError.notFound('Coupon not found');
-  if (!coupon.active) throw ApiError.badRequest('This coupon is no longer active');
-  if (coupon.expiryDate && new Date() > coupon.expiryDate) throw ApiError.badRequest('Coupon expired');
-  if (coupon.startDate && new Date() < coupon.startDate) throw ApiError.badRequest('Coupon is not yet valid');
-  if (coupon.usageLimit > 0 && coupon.usageCount >= coupon.usageLimit) throw ApiError.badRequest('Coupon usage limit reached');
-  if (coupon.usagePerUser > 0) {
-    const userUsage = await CouponUsage.countDocuments({ coupon: coupon._id, user: req.user._id });
-    if (userUsage >= coupon.usagePerUser) throw ApiError.badRequest('You have already used this coupon the maximum number of times');
-  }
+  const couponDoc = await Coupon.findOne({ code: code.toUpperCase().trim() });
+  if (!couponDoc) throw ApiError.notFound('Coupon not found');
+  // Shared revalidation (active / dates / usage limits) — same rules that
+  // getCart and checkout enforce on already-applied coupons.
+  const check = await validateCartCoupon(couponDoc._id, req.user._id);
+  if (!check.ok) throw ApiError.badRequest(check.reason);
+  const coupon = check.coupon;
 
   const cart = await getOrCreateCart(req.user._id);
   let items = await CartItem.find({ cart: cart._id }).lean();
@@ -390,10 +448,7 @@ export const removeCoupon = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ student: req.user._id });
   if (!cart) throw ApiError.notFound('Cart not found');
 
-  const items = await CartItem.find({ cart: cart._id, coupon: { $ne: null } }).lean();
-  for (const item of items) {
-    await CartItem.findByIdAndUpdate(item._id, { discount: 0, finalPrice: Math.round(item.price * item.quantity * 100) / 100, coupon: null });
-  }
+  await stripCouponFromCart(cart._id);
 
   const updatedItems = await CartItem.find({ cart: cart._id }).lean();
   const subtotal = updatedItems.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -433,8 +488,11 @@ export const checkout = asyncHandler(async (req, res) => {
   if (items.length === 0) throw ApiError.badRequest('Cart is empty');
 
   // ── Authoritative Circle status (single lookup for the whole basket) ──
-  const { getActiveCircleMembership, resolveCircleServicePrice, WELLNESS_CIRCLE } = await import('../services/circleService.js');
+  // The member % is admin-editable on the Circle plan — read live once here
+  // so every recompute below uses the current figure.
+  const { getActiveCircleMembership, getCircleDiscountPct, resolveCircleServicePrice, WELLNESS_CIRCLE } = await import('../services/circleService.js');
   const circleActive = (await getActiveCircleMembership(userId)) != null;
+  const circlePct = circleActive ? await getCircleDiscountPct() : undefined;
 
   const appliedCouponPre = items.find((i) => i.coupon);
   let couponId = null;
@@ -442,11 +500,13 @@ export const checkout = asyncHandler(async (req, res) => {
   let couponDiscount = 0;
 
   if (appliedCouponPre) {
-    const coupon = await Coupon.findById(appliedCouponPre.coupon);
-    if (coupon) {
-      couponId = coupon._id;
-      couponCode = coupon.code;
-    }
+    // Revalidate: the coupon may have expired (or been deactivated / hit
+    // its usage limit) after it was applied. Never discount on a dead coupon —
+    // fail loudly so the user removes it and retries at the correct total.
+    const check = await validateCartCoupon(appliedCouponPre.coupon, userId);
+    if (!check.ok) throw ApiError.badRequest(`${check.reason}. Please remove it and try again.`);
+    couponId = check.coupon._id;
+    couponCode = check.coupon.code;
   }
   /* ── Validate all items are still purchasable + recompute Circle pricing ──
      Backend is authoritative: fresh DB prices win over stored CartItem values.
@@ -491,6 +551,7 @@ export const checkout = asyncHandler(async (req, res) => {
         const hasCoupon = !!item.coupon;
         const r = resolveCircleServicePrice(base, {
           circleActive,
+          discountPct: circlePct,
           hasCouponDiscount: hasCoupon,
           isPromotional: !!service.isPromotional,
           originalPrice: service.originalPrice,
@@ -545,6 +606,7 @@ export const checkout = asyncHandler(async (req, res) => {
           const hasCoupon = !!item.coupon;
           const r = resolveCircleServicePrice(base, {
             circleActive,
+            discountPct: circlePct,
             hasCouponDiscount: hasCoupon,
             originalPrice: offering.originalPrice,
             currentPrice: offering.price,

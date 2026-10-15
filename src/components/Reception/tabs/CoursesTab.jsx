@@ -2,13 +2,15 @@
 import ReceptionModal from '../Modal.jsx';
 import { useAuth } from '../../../context/AuthContext';
 import { receptionApi } from '../../api/AdminServices';
+import PaymentFields from './PaymentFields.jsx';
+import { isPaymentComplete } from './paymentMethods.js';
 import { LuLock, LuCheck, LuTriangleAlert,
   LuGraduationCap, LuRefreshCw, LuSearch, LuX, LuEye,
   LuShoppingBag, LuBadgeCheck, LuClock, LuTag, LuSparkles, LuTicket,
 } from 'react-icons/lu';
 import s from '../../Admin/YogaAdmin.module.css';
 
-const EMPTY_SALE = { studentId: '', method: 'Cash' };
+const EMPTY_SALE = { studentId: '', method: 'Cash', reference: '', note: '' };
 
 const KIND_META = {
   course: { label: 'Courses', singular: 'Course', icon: <LuGraduationCap size={14} /> },
@@ -115,6 +117,8 @@ export default function CoursesTab() {
         kind,
           itemId: selling._id,
           paymentMethod: sale.method,
+          paymentReference: sale.reference.trim(),
+          note: sale.note.trim(),
         });
       // Payment.amount is stored in minor units (cents) — display KES.
       const paidKES = (res?.payment?.amount ?? (selling.price ?? 0) * 100) / 100;
@@ -123,6 +127,7 @@ export default function CoursesTab() {
         student: res?.student?.name || 'customer',
         amount: paidKES,
         method: sale.method,
+        reference: res?.payment?.paymentReference || sale.reference.trim(),
       });
       setFeedback({ type: 'success', message: `"${itemTitle(kind, selling)}" sold to ${res?.student?.name || 'customer'} — ${formatKES(paidKES)}.` });
     } catch (err) {
@@ -260,9 +265,13 @@ export default function CoursesTab() {
                             <LuEye size={14} /> Details
                           </button>
                           {canSell && (
-                            <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnPrimary}`} onClick={() => openSell(it)} title={`Sell this ${meta.singular.toLowerCase()} to a customer`}>
-                              <LuShoppingBag size={14} /> Sell
-                            </button>
+                            it.bookingEnabled === false ? (
+                              <span style={{ fontSize: 11.5, fontWeight: 600, color: '#B45309' }} title="Booking disabled by admin">Booking disabled</span>
+                            ) : (
+                              <button type="button" className={`${s.btn} ${s.btnSm} ${s.btnPrimary}`} onClick={() => openSell(it)} title={`Sell this ${meta.singular.toLowerCase()} to a customer`}>
+                                <LuShoppingBag size={14} /> Sell
+                              </button>
+                            )
                           )}
                         </div>
                       </td>
@@ -293,7 +302,7 @@ export default function CoursesTab() {
           onClose={() => setDetail(null)}
           footer={(
             <>
-              {canSell && (
+              {canSell && detail.bookingEnabled !== false && (
                 <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => { const it = detail; setDetail(null); openSell(it); }}>
                   <LuShoppingBag size={15} /> Sell this {KIND_META[kind].singular.toLowerCase()}
                 </button>
@@ -348,7 +357,9 @@ export default function CoursesTab() {
                   <strong>{sold.student}</strong> is now enrolled in <strong>{sold.item}</strong>
                 </div>
                 <div style={{ fontSize: 20, fontWeight: 800 }}>{formatKES(sold.amount)}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-2)' }}>Paid via {sold.method}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-2)' }}>
+                  Paid via {sold.method}{sold.reference ? ` · Ref ${sold.reference}` : ''}
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
                   <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => { setSelling(null); setSold(null); }}>Done</button>
                 </div>
@@ -376,19 +387,19 @@ export default function CoursesTab() {
                     />
                   </label>
                 )}
-                <label className={s.fieldLabel}>
-                  Payment method
-                  <select value={sale.method} onChange={(e) => setSale({ ...sale, method: e.target.value })}>
-                    {paymentMethods.map((m) => <option key={m} value={m}>{m}</option>)}
-                  </select>
-                </label>
-                <div className={s.recPriceBox}>
-                  <div className={s.recPriceLabel}>{itemTitle(kind, selling)}{itemSubtitle(kind, selling) ? ` · ${itemSubtitle(kind, selling)}` : ''}</div>
-                  <div className={s.recPriceValue}>{formatKES(selling.price)}</div>
-                </div>
+                <PaymentFields
+                  amountText={`${formatKES(selling.price)} · ${itemTitle(kind, selling)}${itemSubtitle(kind, selling) ? ` · ${itemSubtitle(kind, selling)}` : ''}`}
+                  methods={paymentMethods}
+                  method={sale.method}
+                  onMethodChange={(m) => setSale({ ...sale, method: m, reference: '' })}
+                  reference={sale.reference}
+                  onReferenceChange={(v) => setSale({ ...sale, reference: v })}
+                  note={sale.note}
+                  onNoteChange={(v) => setSale({ ...sale, note: v })}
+                />
                 <div className={s.modalActions}>
                   <button type="button" className={s.btn} onClick={() => { setSelling(null); setSold(null); }}>Cancel</button>
-                  <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={sellingNow || (!sale.studentId && !manualId.trim())}>
+                  <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={sellingNow || (!sale.studentId && !manualId.trim()) || !isPaymentComplete(sale.method, sale.reference)}>
                     {sellingNow ? 'Processing…' : <><LuBadgeCheck size={15} /> Confirm sale · {formatKES(selling.price)}</>}
                   </button>
                 </div>

@@ -93,22 +93,25 @@ export class FulfillmentService {
       ? circleExpiryFrom(now)
       : (() => { const e = new Date(now); e.setMonth(e.getMonth() + (plan.durationMonths || 1)); return e; })();
 
-    // Backend is authoritative for Circle price — never trust item amounts.
-    const authoritativePrice = isCircle ? WELLNESS_CIRCLE.PRICE : plan.price;
+    // Snapshot the LIVE plan document — never hardcoded config values. An
+    // admin discount (price), duration, benefits or pause-days edit is what
+    // the member record, invoice email and dashboard must reflect. The charge
+    // itself was already resolved from the same live plan at checkout.
+    const authoritativePrice = Math.round(Number(plan.price) || 0);
 
     const membership = await Membership.create([{
       user: userId,
       plan: plan._id,
       invoice: paymentId,
-      planType: isCircle ? WELLNESS_CIRCLE.NAME : plan.name,
-      planMonths: isCircle ? WELLNESS_CIRCLE.DURATION_MONTHS : (plan.durationMonths || 1),
+      planType: plan.name,
+      planMonths: plan.durationMonths || 1,
       price: authoritativePrice,
       purchaseDate: now,
       status: 'active',
       startDate: now,
       expiryDate,
-      benefits: isCircle ? WELLNESS_CIRCLE.BENEFITS : (plan.benefits || []),
-      pauseDaysAllowed: isCircle ? 0 : (plan.pauseDays || 0),
+      benefits: plan.benefits || [],
+      pauseDaysAllowed: plan.pauseDays || 0,
       currency: 'KES',
       history: [{ action: 'created', note: isCircle ? 'Payment verified – SOMA Wellness Circle activated (1 year)' : 'Payment verified – membership activated', at: now }],
     }], { session });
@@ -118,7 +121,7 @@ export class FulfillmentService {
     try {
       await User.updateOne(
         { _id: userId },
-        { $set: { planMonths: isCircle ? WELLNESS_CIRCLE.DURATION_MONTHS : (plan.durationMonths || 1) } },
+        { $set: { planMonths: plan.durationMonths || 1 } },
         { session },
       );
     } catch (err) {

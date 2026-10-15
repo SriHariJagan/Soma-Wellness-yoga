@@ -5,6 +5,7 @@
 // the refresh token is used transparently to obtain a new access
 // token before retrying once.
 // ─────────────────────────────────────────────────────────
+import { guardActiveSession, forceLogout } from "../../lib/session.js";
 
 const API_DOMAIN = import.meta.env.VITE_API_URL || "";
 const AUTH_URL = `${API_DOMAIN}/api/auth`;
@@ -41,6 +42,8 @@ async function tryRefresh() {
 // Core fetch wrapper: injects auth, retries once after refresh, and
 // surfaces a clean Error with the server message.
 async function api(path, { method = "GET", body, base = STUDENT_URL } = {}) {
+  // Idle sessions (4h+) are torn down here — never refreshed back to life.
+  guardActiveSession();
   const opts = {
     method,
     headers: authHeaders(),
@@ -58,10 +61,11 @@ async function api(path, { method = "GET", body, base = STUDENT_URL } = {}) {
     res = await fetch(`${base}${path}`, opts);
   }
 
-  // If still 401 after refresh attempt, auto-expire the token so the
-  // user is effectively logged out (isAuthenticated becomes false).
+  // If still 401 after refresh attempt, the session is dead (revoked or
+  // refresh expired) — tear it down fully so the user lands on login,
+  // instead of lingering half-logged-in.
   if (res.status === 401 && localStorage.getItem("token") && !((await tryRefresh()))) {
-    localStorage.removeItem("token");
+    await forceLogout("expired");
     window.dispatchEvent(new Event("storage"));
   }
 
@@ -131,10 +135,12 @@ export const getUnreadNotificationCount = () => api("/notifications/unread-count
 export const markNotificationRead = (id) => api(`/notifications/${id}/read`, { method: "PATCH" });
 export const markAllNotificationsRead = () => api("/notifications/read-all", { method: "PATCH" });
 export const archiveNotification = (id) => api(`/notifications/${id}/archive`, { method: "PATCH" });
+export const unarchiveNotification = (id) => api(`/notifications/${id}/unarchive`, { method: "PATCH" });
 export const deleteNotification = (id) => api(`/notifications/${id}`, { method: "DELETE" });
 
 // ── Payment Status — Pesapal (backend-verified canonical status) ────
 export const verifyPayment = (payload) => {
+  guardActiveSession();
   const API_DOMAIN = import.meta.env.VITE_API_URL || "";
   const token = localStorage.getItem("token");
   const merchantReference = payload.merchantReference || payload.merchant_reference || payload.ref || null;
@@ -183,6 +189,9 @@ export const getMyOrders = (params = {}) => {
   return api(`/orders?${q.toString()}`);
 };
 export const getMyOrderDetail = (id) => api(`/orders/${id}`);
+
+// ── Payments (lightweight list — renders History/Invoices instantly) ──
+export const getMyPayments = () => api("/payments");
 
 // ── Referral ───────────────────────────────────────────────
 export const getReferral = () => api("/referral");
@@ -253,6 +262,7 @@ export const getAllEnrollments = () => api("/all-enrollments");
 const BLOG_URL = `${API_DOMAIN}/api/blogs`;
 
 async function blogApi(path, opts = {}) {
+  guardActiveSession();
   const base = opts.base || BLOG_URL;
   const authHeadersVal = () => {
     const token = localStorage.getItem("token");
@@ -273,7 +283,7 @@ async function blogApi(path, opts = {}) {
 
   // If still 401 after refresh attempt, auto-expire the token.
   if (res.status === 401 && localStorage.getItem("token") && !((await tryRefresh()))) {
-    localStorage.removeItem("token");
+    await forceLogout("expired");
     window.dispatchEvent(new Event("storage"));
   }
   const text = await res.text();
@@ -298,6 +308,7 @@ export const getBlogs = (params = {}) => {
   if (params.tag) q.set("tag", params.tag);
   if (params.category) q.set("category", params.category);
   if (params.author) q.set("author", params.author);
+  if (params.by) q.set("by", params.by);
   if (params.sort) q.set("sort", params.sort);
   const qs = q.toString();
   return blogApi(`/${qs ? `?${qs}` : ""}`);
@@ -353,6 +364,7 @@ export const deleteComment = (id) =>
   blogApi(`/comments/${id}`, { method: "DELETE" });
 
 export const uploadMedia = async (files) => {
+  guardActiveSession();
   const token = localStorage.getItem("token");
   const formData = new FormData();
   for (const f of files) formData.append("files", f);

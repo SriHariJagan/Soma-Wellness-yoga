@@ -29,6 +29,10 @@ const PlanSchema = new mongoose.Schema(
     foundingMonthly:   { type: Number, default: null },
     termPricing:       { type: mongoose.Schema.Types.Mixed, default: {} }, // {1:12000,3:32000...}
     originalPrice:     { type: Number, default: null },
+    // ── Member discount on other services (fraction, e.g. 0.05 = 5%).
+    // Edited from Admin → Courses & Membership; read live everywhere the
+    // Circle benefit applies so it reflects on services instantly.
+    memberDiscountPct: { type: Number, default: 0.05, min: 0, max: 0.9 },
   },
   { timestamps: true }
 );

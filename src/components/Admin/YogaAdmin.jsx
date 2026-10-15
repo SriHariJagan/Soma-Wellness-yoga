@@ -87,10 +87,15 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
 
   const loadAll = useCallback(async () => {
     const safe = (p) => p.then((v) => v).catch(() => null);
-    const [ov, st, ld, bt, co, pl, cp, dl, pay, cons] = await Promise.all([
+    // Payments feed the Revenue/Invoices KPIs — resolve them the moment they
+    // arrive instead of waiting for the slowest of the batch (assets, leads,
+    // consultations…) so the ledger cards paint early.
+    safe(getPayments()).then((pay) => { if (pay) setPayments(pay); });
+    safe(getConsultations()).then((cons) => { if (cons) setConsultations(cons); });
+    const [ov, st, ld, bt, co, pl, cp, dl] = await Promise.all([
       safe(getOverview()), safe(getStudents()), safe(getLeads()), safe(getBatches()),
       safe(coursesApi.list()), safe(membershipPlansApi.list()), safe(couponsApi.list()),
-      safe(assetsApi.list()), safe(getPayments()), safe(getConsultations()),
+      safe(assetsApi.list()),
     ]);
     if (ov) setOverview(ov);
     if (st) setStudents(st);
@@ -100,8 +105,6 @@ export default function YogaAdmin({ onLogout = () => {}, isManager = false }) {
     if (pl) setPlans(pl);
     if (cp) setCoupons(cp);
     if (dl) setContentItems(dl);
-    if (pay) setPayments(pay);
-    if (cons) setConsultations(cons);
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);

@@ -76,7 +76,15 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
       setLoading(true);
       const data = await getCart();
       setCartData(data);
-      setCouponMsg({ text: "", type: "" });
+      // The backend strips coupons that died after being applied (expired,
+      // deactivated, usage limit hit) — and plans whose membership is
+      // already active — tell the user instead of silently changing totals.
+      const notice = data?.summary?.couponRemoved || data?.summary?.planRemoved;
+      if (notice) {
+        setCouponMsg({ text: notice, type: "error" });
+      } else {
+        setCouponMsg({ text: "", type: "" });
+      }
     } catch { setCartData(null); }
     finally { setLoading(false); }
   }, []);
@@ -171,6 +179,11 @@ export default function CartPage({ onNavigate, reload: reloadParent }) {
         : msg;
       setCouponMsg({ text: friendly, type: "error" });
       setCheckingOut(false);
+      // A dead coupon blocks checkout — reload so the backend strips it and
+      // the cart shows the correct total (the notice comes from fetchCart).
+      if (/coupon/i.test(msg)) {
+        await refreshCartAndKey().catch(() => {});
+      }
     }
   }
 

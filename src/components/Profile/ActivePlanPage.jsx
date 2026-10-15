@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import styles from "./ActivePlanPage.module.css";
 import w from "./widgets/DashboardWidgets.module.css";
 import { Stagger, Item, Panel, ProgressRing, Pill, PrimaryButton, GhostButton, PageHeader } from "./widgets/DashboardWidgets";
-import { getActiveMembership, getEnrollmentProgress, cancelMembership, pauseMembership, resumeMembership } from "../api/StudentServices.js";
+import { getActiveMembership, getEnrollmentProgress, pauseMembership, resumeMembership } from "../api/StudentServices.js";
 import InvoiceView from "../shared/InvoiceView.jsx";
 
 const fmtDate = (d) =>
@@ -85,20 +85,10 @@ export default function ActivePlanPage({ reload }) {
     }
   }
 
-  async function handleCancel() {
-    setBusy("cancel");
-    setMsg("");
-    try {
-      await cancelMembership();
-      await reload?.();
-      setMembership(null);
-      setMsg(t("activePlan.cancelSuccess"));
-    } catch (err) {
-      setMsg(err.message || "Failed to cancel membership.");
-    } finally {
-      setBusy("");
-    }
-  }
+  // NOTE: member-initiated cancellation is intentionally hidden for now.
+  // The backend endpoint (POST /api/student/membership/cancel) and the
+  // `cancelMembership` API helper are kept as-is — to re-enable, restore
+  // `handleCancel` below and render the "Cancel Membership" button again.
 
   if (loading) {
     return (
@@ -504,11 +494,7 @@ export default function ActivePlanPage({ reload }) {
                 No Pause Days Left
               </GhostButton>
             )}
-            {isActive && (
-              <GhostButton icon="ti-x" onClick={handleCancel} disabled={!!busy}>
-                {busy === "cancel" ? "Cancelling…" : "Cancel Membership"}
-              </GhostButton>
-            )}
+            {/* Cancel Membership is hidden for now (see note above). */}
           </div>
         </Panel>
       </Stagger>

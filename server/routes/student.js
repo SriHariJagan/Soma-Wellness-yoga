@@ -84,6 +84,7 @@ router.get('/notifications/unread-count', notif.getUnreadCount);
 router.patch('/notifications/read-all', notif.markAllStudentNotificationsRead);
 router.patch('/notifications/:id/read', notif.markStudentNotificationRead);
 router.patch('/notifications/:id/archive', notif.archiveStudentNotification);
+router.patch('/notifications/:id/unarchive', notif.unarchiveStudentNotification);
 router.delete('/notifications/:id', notif.deleteStudentNotification);
 
 // Referral

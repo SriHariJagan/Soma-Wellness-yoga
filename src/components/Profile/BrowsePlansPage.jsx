@@ -101,11 +101,14 @@ export default function BrowsePlansPage({ student, reload }) {
 
   const hasActivePlan = activeMembership && activeMembership.isActive;
 
+  // Header reflects the LIVE plan price (admin-editable), not a hardcoded figure.
+  const headlinePrice = plans.length > 0 ? Number(plans[0].price) || 0 : 0;
+
   return (
     <div>
       <PageHeader
         title="SOMA Wellness Circle"
-        sub="Your year of wellness, inspiration and member-only privileges — KES 36,500 / Year"
+        sub={`Your year of wellness, inspiration and member-only privileges — ${headlinePrice > 0 ? `KES ${headlinePrice.toLocaleString("en-KE")} / Year` : "priced annually"}`}
       />
 
       {msg.text && (
@@ -121,6 +124,8 @@ export default function BrowsePlansPage({ student, reload }) {
           const badge = plan.badge || (plan.isPopular ? "Most Popular" : plan.isRecommended ? "Recommended" : "");
           const badgeTone = BADGE_TONE[badge] || "neutral";
           const accent = TIER_ACCENT[plan.name] || null;
+          // Admin-set discount (Original Price field) — strikethrough + savings.
+          const hasDiscount = Number(plan.originalPrice) > Number(plan.price);
 
           return (
             <Item
@@ -146,6 +151,12 @@ export default function BrowsePlansPage({ student, reload }) {
                   <span className={styles.planPrice}>{fmtPrice(plan.price)}</span>
                   <span className={styles.planDuration}>/ {plan.durationMonths} month{plan.durationMonths > 1 ? "s" : ""}</span>
                 </div>
+                {hasDiscount && (
+                  <div style={{ fontSize: 12, marginTop: 2 }}>
+                    <span style={{ textDecoration: "line-through", opacity: 0.6 }}>{fmtPrice(plan.originalPrice)}</span>
+                    {" "}<span style={{ color: "#16A34A", fontWeight: 700 }}>Save {fmtPrice(Number(plan.originalPrice) - Number(plan.price))}</span>
+                  </div>
+                )}
                 {plan.durationMonths > 1 && (
                   <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginTop: -2 }}>
                     {fmtPrice(perMonth(plan))} per month

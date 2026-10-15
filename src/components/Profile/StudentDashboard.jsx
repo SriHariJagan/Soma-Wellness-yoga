@@ -84,13 +84,13 @@ const PAGE_MAP = {
   blogDetail:    BlogDetail,
 };
 
-// Snappy page transitions: every sidebar navigation previously waited out a
-// 0.2s exit + 0.4s enter (+1.3s counters) before content settled. Keep the
-// crossfade subtle so tab switches feel instant.
+// Snappy page transitions: no exit-wait — the incoming tab starts painting
+// immediately instead of idling through the outgoing tab's exit first.
+// Durations stay subtle so switches (e.g. Payments) feel instant.
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.18, ease: [0.22, 1, 0.36, 1] } },
-  exit:    { opacity: 0, y: -6, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } },
+  exit:    { opacity: 0, y: -6, transition: { duration: 0.08, ease: [0.22, 1, 0.36, 1] } },
 };
 
 export default function StudentDashboard({ onLogout }) {
@@ -409,7 +409,7 @@ export default function StudentDashboard({ onLogout }) {
 
       <main className={styles.main}>
         <div className={styles.mainInner}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence initial={false}>
             <motion.div
               key={activePage}
               variants={pageVariants}

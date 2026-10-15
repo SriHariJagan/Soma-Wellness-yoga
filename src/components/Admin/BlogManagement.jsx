@@ -38,10 +38,16 @@ export default function BlogManagement({ onChanged }) {
   const [blogHasMore, setBlogHasMore] = useState(false);
   const [blogSearch, setBlogSearch] = useState("");
   const [blogStatus, setBlogStatus] = useState("");
+  const [blogModeration, setBlogModeration] = useState("");
+  const [blogAuthor, setBlogAuthor] = useState("");
   const [reportPage, setReportPage] = useState(1);
   const [reportStatus, setReportStatus] = useState("pending");
   const [expandedBlog, setExpandedBlog] = useState(null);
   const [feedback, setFeedback] = useState({ message: "", type: "" });
+  // Approvals queue: user posts awaiting review before they reach everyone.
+  const [pendingBlogs, setPendingBlogs] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [pendingLoading, setPendingLoading] = useState(false);
   const [editingBlogId, setEditingBlogId] = useState(null);
   const [viewingBlogId, setViewingBlogId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -61,7 +67,7 @@ export default function BlogManagement({ onChanged }) {
   const fetchBlogs = useCallback(async (pageNum = 1, append = false) => {
     setLoading(pageNum === 1);
     try {
-      const data = await blogsAdminApi.list({ page: pageNum, limit: 10, status: blogStatus || undefined, search: blogSearch || undefined });
+      const data = await blogsAdminApi.list({ page: pageNum, limit: 10, status: blogStatus || undefined, search: blogSearch || undefined, moderation: blogModeration || undefined, author: blogAuthor || undefined });
       const list = data.blogs || [];
       if (append) setBlogs(prev => [...prev, ...list]);
       else setBlogs(list);
@@ -70,7 +76,7 @@ export default function BlogManagement({ onChanged }) {
       if (!append) setBlogs([]);
     }
     setLoading(false);
-  }, [blogStatus, blogSearch]);
+  }, [blogStatus, blogSearch, blogModeration, blogAuthor]);
 
   const fetchReports = useCallback(async (pageNum = 1) => {
     try {
@@ -79,15 +85,49 @@ export default function BlogManagement({ onChanged }) {
     } catch {}
   }, [reportStatus]);
 
+  const fetchPending = useCallback(async () => {
+    setPendingLoading(true);
+    try {
+      const data = await blogsAdminApi.list({ moderation: "pending", limit: 20 });
+      setPendingBlogs(data.blogs || []);
+      setPendingCount(data.pagination?.total ?? (data.blogs || []).length);
+    } catch {
+      setPendingBlogs([]);
+    }
+    setPendingLoading(false);
+  }, []);
+
   useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
   useEffect(() => { fetchBlogs(1); }, [fetchBlogs]);
   useEffect(() => { fetchReports(1); }, [fetchReports]);
+  useEffect(() => { fetchPending(); }, [fetchPending]);
+
+  const handleApprove = async (id) => {
+    try {
+      await blogsAdminApi.moderate(id, "approve");
+      flash("Blog approved — now visible to all users");
+      fetchPending();
+      fetchBlogs(1);
+      fetchAnalytics();
+    } catch (err) { flash(err.message, "error"); }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await blogsAdminApi.moderate(id, "reject");
+      flash("Blog rejected — stays hidden");
+      fetchPending();
+      fetchBlogs(1);
+    } catch (err) { flash(err.message, "error"); }
+  };
 
   const handleModerate = async (id, action) => {
     try {
       await blogsAdminApi.moderate(id, action);
-      flash(`Blog ${action}ed successfully`);
+      const past = { approved: "approved", rejected: "rejected", featured: "featured", pinned: "pinned", hide: "archived", restore: "restored" };
+      flash(`Blog ${past[action] || action + "ed"} successfully`);
       fetchBlogs(1);
+      fetchPending();
       fetchAnalytics();
     } catch (err) { flash(err.message, "error"); }
   };
@@ -119,6 +159,7 @@ export default function BlogManagement({ onChanged }) {
 
   const TABS = [
     { id: "overview", label: "Overview", icon: "ti ti-dashboard" },
+    { id: "approvals", label: "Approvals", icon: "ti ti-clock" },
     { id: "write", label: "Write", icon: "ti ti-pencil" },
     { id: "myBlogs", label: "My Blogs", icon: "ti ti-article" },
     { id: "blogs", label: "All Blogs", icon: "ti ti-layout-list" },
@@ -138,6 +179,9 @@ export default function BlogManagement({ onChanged }) {
               <i className={t.icon} /> {t.label}
               {t.id === "reports" && analytics?.pendingReports > 0 && (
                 <span className={s.badgeDanger}>{analytics.pendingReports}</span>
+              )}
+              {t.id === "approvals" && pendingCount > 0 && (
+                <span className={s.badgeDanger}>{pendingCount}</span>
               )}
             </button>
           ))}
@@ -171,48 +215,207 @@ export default function BlogManagement({ onChanged }) {
             <KpiCard icon={<i className="ti ti-message" />} label="Total Comments" value={analytics?.totalComments || 0} accent="green" spark={trendSeed("comments")} />
           </div>
 
+          {/* ── Attention spotlight ── */}
+          <div style={{
+            borderRadius: 18, padding: "22px 24px", marginTop: 20, color: "#fff",
+            background: "linear-gradient(135deg, #1A0F0A 0%, #2D1B10 55%, #5A3A22 100%)",
+            position: "relative", overflow: "hidden",
+            boxShadow: "0 12px 32px rgba(45,20,6,0.25)",
+          }}>
+            <div style={{ position: "absolute", right: -60, top: -60, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(200,149,108,0.35) 0%, transparent 70%)" }} />
+            <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, #C8956C, #F97316, transparent)" }} />
+            <div style={{ fontSize: 10.5, letterSpacing: 3, textTransform: "uppercase", color: "#C8956C", fontWeight: 800 }}>Needs your review</div>
+            {(pendingCount > 0 || (analytics?.pendingReports || 0) > 0) ? (
+              <div style={{ display: "flex", gap: 26, flexWrap: "wrap", marginTop: 14, alignItems: "center" }}>
+                {pendingCount > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 40, fontWeight: 700, lineHeight: 1 }}>{pendingCount}</div>
+                    <div>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#F5EDE4" }}>member post{pendingCount !== 1 ? "s" : ""} awaiting approval</div>
+                      <div style={{ fontSize: 11.5, color: "rgba(232,220,207,0.75)", marginTop: 2 }}>Approve to publish to all users</div>
+                    </div>
+                    <button type="button" onClick={() => setActiveTab("approvals")}
+                      style={{ padding: "8px 18px", borderRadius: 9, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #C8956C, #F97316)", color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
+                      Review now
+                    </button>
+                  </div>
+                )}
+                {(analytics?.pendingReports || 0) > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 40, fontWeight: 700, lineHeight: 1 }}>{analytics.pendingReports}</div>
+                    <div>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#F5EDE4" }}>reported item{(analytics.pendingReports !== 1) ? "s" : ""}</div>
+                      <div style={{ fontSize: 11.5, color: "rgba(232,220,207,0.75)", marginTop: 2 }}>Flagged by the community</div>
+                    </div>
+                    <button type="button" onClick={() => setActiveTab("reports")}
+                      style={{ padding: "8px 18px", borderRadius: 9, border: "1.5px solid rgba(200,149,108,0.6)", cursor: "pointer", background: "transparent", color: "#F5EDE4", fontSize: 12.5, fontWeight: 700 }}>
+                      View reports
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
+                <span style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(74,222,128,0.15)", color: "#4ADE80", display: "grid", placeItems: "center", fontSize: 18 }}>
+                  <i className="ti ti-check" />
+                </span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#F5EDE4" }}>All caught up</div>
+                  <div style={{ fontSize: 12, color: "rgba(232,220,207,0.75)" }}>No pending approvals or reports. New member posts will appear here.</div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className={s.chartCard} style={{ marginTop: 20 }}>
             <div className={s.chartHead}>
-              <div>
-                <div className={s.chartTitle}>Moderation Queue</div>
-                <div className={s.chartSub}>Pending reports requiring attention</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{
+                  width: 42, height: 42, borderRadius: 13, flexShrink: 0,
+                  background: "linear-gradient(135deg, rgba(220,38,38,0.14), rgba(249,115,22,0.14))",
+                  color: "#DC2626", display: "grid", placeItems: "center", fontSize: 19,
+                }}>
+                  <i className="ti ti-shield-exclamation" />
+                </span>
+                <div>
+                  <div className={s.chartTitle}>Moderation Queue</div>
+                  <div className={s.chartSub}>Pending reports requiring attention</div>
+                </div>
               </div>
+              <button type="button" onClick={() => setActiveTab("reports")}
+                style={{ padding: "8px 18px", borderRadius: 9, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #2E7D5B, #F97316)", color: "#fff", fontSize: 12, fontWeight: 700 }}>
+                Open reports
+              </button>
             </div>
-            <div className={s.reportMetrics}>
-              <div className={s.reportMetric} style={{ borderLeft: "3px solid #DC2626" }}>
-                <span className={s.reportMetricNum}>{analytics?.pendingReports || 0}</span>
-                <span className={s.reportMetricLbl}>Total Pending</span>
-              </div>
-              <div className={s.reportMetric} style={{ borderLeft: "3px solid #2E7D5B" }}>
-                <span className={s.reportMetricNum}>{analytics?.reportedBlogs || 0}</span>
-                <span className={s.reportMetricLbl}>Reported Blogs</span>
-              </div>
-              <div className={s.reportMetric} style={{ borderLeft: "3px solid #D97706" }}>
-                <span className={s.reportMetricNum}>{analytics?.reportedComments || 0}</span>
-                <span className={s.reportMetricLbl}>Reported Comments</span>
-              </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
+              {[
+                { n: analytics?.pendingReports || 0, l: "Total Pending", icon: "ti-clock", fg: "#DC2626", bg: "rgba(220,38,38,0.10)", bd: "rgba(220,38,38,0.22)" },
+                { n: analytics?.reportedBlogs || 0, l: "Reported Blogs", icon: "ti-article", fg: "#2E7D5B", bg: "rgba(46,125,91,0.10)", bd: "rgba(46,125,91,0.22)" },
+                { n: analytics?.reportedComments || 0, l: "Reported Comments", icon: "ti-message", fg: "#D97706", bg: "rgba(217,119,6,0.12)", bd: "rgba(217,119,6,0.25)" },
+              ].map((m) => (
+                <div key={m.l} style={{ borderRadius: 14, padding: "16px 16px 14px", background: m.bg, border: `1px solid ${m.bd}`, display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ width: 38, height: 38, borderRadius: 11, background: "#fff", color: m.fg, display: "grid", placeItems: "center", fontSize: 17, flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                    <i className={`ti ${m.icon}`} />
+                  </span>
+                  <span>
+                    <span style={{ display: "block", fontSize: 24, fontWeight: 800, color: "#2D1406", lineHeight: 1 }}>{m.n}</span>
+                    <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#7C6A58", marginTop: 3 }}>{m.l}</span>
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
           {analytics?.topAuthors?.length > 0 && (
             <div className={s.chartCard} style={{ marginTop: 16 }}>
               <div className={s.chartHead}>
-                <div>
-                  <div className={s.chartTitle}>Top Writers</div>
-                  <div className={s.chartSub}>Most active blog authors</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{
+                    width: 42, height: 42, borderRadius: 13, flexShrink: 0,
+                    background: "linear-gradient(135deg, rgba(201,162,39,0.16), rgba(249,115,22,0.16))",
+                    color: "#B45309", display: "grid", placeItems: "center", fontSize: 19,
+                  }}>
+                    <i className="ti ti-trophy" />
+                  </span>
+                  <div>
+                    <div className={s.chartTitle}>Top Writers</div>
+                    <div className={s.chartSub}>Most active blog authors</div>
+                  </div>
                 </div>
               </div>
-              <div className={s.authorList}>
-                {analytics.topAuthors.map((a, i) => (
-                  <div key={i} className={s.authorRow}>
-                    <span className={s.authorRank}>#{i + 1}</span>
-                    <span className={s.authorName}>{a.author?.name || "Unknown"}</span>
-                    <span className={s.authorStat}>{a.blogCount} blogs</span>
-                    <span className={s.authorStat}>{a.totalViews} views</span>
-                    <span className={s.authorStat}>{a.totalLikes} likes</span>
-                  </div>
-                ))}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {(() => {
+                  const maxBlogs = Math.max(1, ...analytics.topAuthors.map((a) => a.blogCount || 0));
+                  const medal = ["#C9A227", "#9CA3AF", "#B45309"];
+                  return analytics.topAuthors.map((a, i) => {
+                    const nm = a.author?.name || "Unknown";
+                    const initials = nm.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+                    return (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, background: i === 0 ? "rgba(201,162,39,0.07)" : "transparent", border: i === 0 ? "1px solid rgba(201,162,39,0.25)" : "1px solid transparent" }}>
+                        <span style={{
+                          width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
+                          display: "grid", placeItems: "center", fontSize: 12, fontWeight: 800, color: "#fff",
+                          background: i < 3 ? `linear-gradient(135deg, ${medal[i]}, ${medal[i]}88)` : "#9C8E7C",
+                        }}>
+                          {i + 1}
+                        </span>
+                        <span style={{
+                          width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                          background: "linear-gradient(135deg, #2E7D5B, #81B29A)", color: "#fff",
+                          display: "grid", placeItems: "center", fontSize: 13, fontWeight: 800,
+                        }}>
+                          {initials}
+                        </span>
+                        <span style={{ minWidth: 110 }}>
+                          <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: "#2D1406" }}>{nm}</span>
+                          <span style={{ display: "block", fontSize: 10.5, color: "var(--text-3)" }}>
+                            {a.totalViews} views · {a.totalLikes} likes
+                          </span>
+                        </span>
+                        <span style={{ flex: 1, minWidth: 60 }}>
+                          <span style={{ display: "block", height: 7, borderRadius: 99, background: "rgba(34,34,34,0.07)", overflow: "hidden" }}>
+                            <span style={{ display: "block", height: "100%", width: `${Math.round(((a.blogCount || 0) / maxBlogs) * 100)}%`, borderRadius: 99, background: "linear-gradient(90deg, #2E7D5B, #F97316)" }} />
+                          </span>
+                          <span style={{ display: "block", fontSize: 10.5, color: "var(--text-3)", marginTop: 3 }}>{a.blogCount} blog{a.blogCount !== 1 ? "s" : ""}</span>
+                        </span>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "approvals" && (
+        <div>
+          <div style={{ marginBottom: 12, fontSize: 13, color: "var(--text-3)" }}>
+            Member posts waiting for review — approving makes them visible to all users in their blogs page.
+          </div>
+          {pendingLoading ? (
+            <div className={s.loadingState}>Loading approvals...</div>
+          ) : pendingBlogs.length === 0 ? (
+            <div className={s.emptyState}>
+              <i className="ti ti-circle-check" />
+              <p>Nothing awaiting review</p>
+            </div>
+          ) : (
+            <div className={s.tableWrap}>
+              <table className={s.table}>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingBlogs.map((blog) => (
+                    <tr key={blog._id}>
+                      <td className={s.titleCell}>
+                        <div className={s.blogTitle}>{blog.title?.slice(0, 60)}</div>
+                      </td>
+                      <td>{blog.author?.name || "Unknown"}</td>
+                      <td>{blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : "-"}</td>
+                      <td>
+                        <div className={s.actionGroup}>
+                          <button className={s.iconBtn} onClick={() => setViewingBlogId(blog._id)} title="Review content">
+                            <i className="ti ti-eye" />
+                          </button>
+                          <button className={s.iconBtn} onClick={() => handleApprove(blog._id)} title="Approve — visible to all users">
+                            <i className="ti ti-check" />
+                          </button>
+                          <button className={s.iconBtnDanger} onClick={() => handleReject(blog._id)} title="Reject — stays hidden">
+                            <i className="ti ti-x" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -233,6 +436,17 @@ export default function BlogManagement({ onChanged }) {
               <option value="published">Published</option>
               <option value="draft">Draft</option>
               <option value="archived">Archived</option>
+            </select>
+            <select value={blogModeration} onChange={e => { setBlogModeration(e.target.value); setBlogPage(1); }} className={s.filterSelect} title="Review queue">
+              <option value="">All Reviews</option>
+              <option value="pending">Pending review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <select value={blogAuthor} onChange={e => { setBlogAuthor(e.target.value); setBlogPage(1); }} className={s.filterSelect} title="Author type">
+              <option value="">All Authors</option>
+              <option value="admin">Admin posts</option>
+              <option value="users">User posts</option>
             </select>
           </div>
 
@@ -272,6 +486,9 @@ export default function BlogManagement({ onChanged }) {
                           <div className={s.blogTitle}>{blog.title?.slice(0, 60)}</div>
                           {blog.featured && <span className={s.badgeOrange}>Featured</span>}
                           {blog.pinned && <span className={s.badgeBlue}>Pinned</span>}
+                          {blog.isAdminPost && <span className={s.badgeGreen}>Admin</span>}
+                          {blog.moderationStatus === "pending" && <span className={s.badgeAmber}>Pending review</span>}
+                          {blog.moderationStatus === "rejected" && <span className={s.badgeRed}>Rejected</span>}
                         </td>
                         <td>{blog.author?.name || "Unknown"}</td>
                         <td>
@@ -285,6 +502,16 @@ export default function BlogManagement({ onChanged }) {
                         <td>{blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : "-"}</td>
                         <td>
                           <div className={s.actionGroup}>
+                            {blog.moderationStatus === "pending" && (
+                              <>
+                                <button className={s.iconBtn} onClick={() => handleModerate(blog._id, "approve")} title="Approve — visible to all users">
+                                  <i className="ti ti-check" />
+                                </button>
+                                <button className={s.iconBtnDanger} onClick={() => handleModerate(blog._id, "reject")} title="Reject — stays hidden">
+                                  <i className="ti ti-x" />
+                                </button>
+                              </>
+                            )}
                             <button className={s.iconBtn} onClick={() => handleModerate(blog._id, "feature")} title={blog.featured ? "Unfeature" : "Feature"}>
                               <i className={`ti ${blog.featured ? "ti-star-filled" : "ti-star"}`} />
                             </button>

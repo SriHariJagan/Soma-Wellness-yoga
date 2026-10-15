@@ -99,6 +99,11 @@ export const createBlog = asyncHandler(async (req, res) => {
     status: status || 'draft',
     visibility: visibility || 'public',
     readingTime: readingTime(title, content),
+    // Provenance: admin posts are pre-approved and appear on the website;
+    // everyone else's posts need admin approval before anyone can see them.
+    isAdminPost: req.user?.role === 'admin',
+    moderationStatus: req.user?.role === 'admin' ? 'approved' : 'pending',
+    ...(req.user?.role === 'admin' ? { moderatedBy: req.userId, moderatedAt: new Date() } : {}),
   });
 
   await BlogAnalytics.create({ blog: blog._id, dailyViews: [], dailyLikes: [], dailyComments: [], referrers: [] });
@@ -128,6 +133,15 @@ export const updateBlog = asyncHandler(async (req, res) => {
   blog.editedAt = new Date();
   blog.isEdited = true;
   blog.readingTime = readingTime(blog.title, blog.content);
+
+  // Re-review: a non-admin editing an approved post sends it back to pending.
+  // Admin edits never touch moderation state.
+  if (req.user.role !== 'admin' && blog.moderationStatus === 'approved' &&
+      (req.body.title !== undefined || req.body.content !== undefined)) {
+    blog.moderationStatus = 'pending';
+    blog.moderatedBy = null;
+    blog.moderatedAt = null;
+  }
 
   if (blog.isModified('status') && blog.status === 'published' && !blog.publishedAt) {
     blog.publishedAt = new Date();
@@ -174,6 +188,10 @@ export const getBlog = asyncHandler(async (req, res) => {
   if (blog.status !== 'published' && !isAuthor && !isAdmin) {
     throw ApiError.notFound('Blog not found');
   }
+  // Unapproved posts are visible only to their author and admins.
+  if (blog.moderationStatus !== 'approved' && !isAuthor && !isAdmin) {
+    throw ApiError.notFound('Blog not found');
+  }
 
   // Enforce visibility
   const isAuth = !!req.userId;
@@ -196,8 +214,15 @@ export const getBlog = asyncHandler(async (req, res) => {
 });
 
 export const listBlogs = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, search, tag, category, author, sort, status: filterStatus } = req.query;
-  const query = { deletedAt: null, status: 'published', visibility: 'public' };
+  const { page = 1, limit = 10, search, tag, category, author, sort, status: filterStatus, by } = req.query;
+  // Only approved, published, public posts are listable. Anonymous callers
+  // (public website) additionally see ONLY admin posts; logged-in users see
+  // every approved post (admin posts carry the isAdminPost tag client-side).
+  // `by=admin|users` narrows to either side explicitly (feed type switch).
+  const query = { deletedAt: null, status: 'published', visibility: 'public', moderationStatus: 'approved' };
+  if (!req.userId) query.isAdminPost = true;
+  else if (by === 'admin') query.isAdminPost = true;
+  else if (by === 'users') query.isAdminPost = false;
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
 
@@ -244,7 +269,7 @@ export const trendingBlogs = asyncHandler(async (req, res) => {
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000);
 
   const blogs = await Blog.aggregate([
-    { $match: { deletedAt: null, status: 'published', visibility: 'public', publishedAt: { $gte: sevenDaysAgo } } },
+    { $match: { deletedAt: null, status: 'published', visibility: 'public', moderationStatus: 'approved', publishedAt: { $gte: sevenDaysAgo } } },
     { $addFields: {
       engagementScore: {
         $add: [
@@ -602,6 +627,16 @@ export const moderateBlog = asyncHandler(async (req, res) => {
   if (!blog) throw ApiError.notFound('Blog not found');
 
   switch (action) {
+    case 'approve':
+      blog.moderationStatus = 'approved';
+      blog.moderatedBy = req.userId;
+      blog.moderatedAt = new Date();
+      break;
+    case 'reject':
+      blog.moderationStatus = 'rejected';
+      blog.moderatedBy = req.userId;
+      blog.moderatedAt = new Date();
+      break;
     case 'feature':
       blog.featured = !blog.featured;
       break;
@@ -709,12 +744,15 @@ export const resolveReport = asyncHandler(async (req, res) => {
 
 export const getAdminBlogs = asyncHandler(async (req, res) => {
   if (req.user.role !== 'admin') throw ApiError.forbidden('Admin only');
-  const { page = 1, limit = 20, status, search } = req.query;
+  const { page = 1, limit = 20, status, search, moderation, author } = req.query;
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
 
   const query = { deletedAt: null };
   if (status) query.status = status;
+  if (moderation) query.moderationStatus = moderation;
+  if (author === 'admin') query.isAdminPost = true;
+  else if (author === 'users') query.isAdminPost = false;
   if (search) {
     const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query.$or = [

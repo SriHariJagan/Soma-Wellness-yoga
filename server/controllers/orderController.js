@@ -108,7 +108,10 @@ export const listAllOrders = asyncHandler(async (req, res) => {
   const [orders, total] = await Promise.all([
     Order.find(filter)
       .populate('student', 'name email phone')
-      .populate('payment')
+      // Projected: the ledger only renders invoiceNo + refs. Hydrating full
+      // Payment docs (attempts / auditTrail / provider_raw) per row used to
+      // make every page of the table wait on megabytes of JSON.
+      .populate('payment', 'invoiceNo merchant_reference provider_transaction_id paymentStatus amount capturedAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -116,12 +119,21 @@ export const listAllOrders = asyncHandler(async (req, res) => {
     Order.countDocuments(filter),
   ]);
 
-  const ordersWithItems = await Promise.all(
-    orders.map(async (o) => {
-      const items = await OrderItem.find({ order: o._id }).lean();
-      return { ...o, items };
-    }),
-  );
+  // Batched: one OrderItem query per page instead of N (was N+1 per page).
+  const orderIds = orders.map((o) => o._id);
+  const allItems = orderIds.length
+    ? await OrderItem.find({ order: { $in: orderIds } }).lean()
+    : [];
+  const itemsByOrder = new Map();
+  for (const it of allItems) {
+    const key = String(it.order);
+    if (!itemsByOrder.has(key)) itemsByOrder.set(key, []);
+    itemsByOrder.get(key).push(it);
+  }
+  const ordersWithItems = orders.map((o) => ({
+    ...o,
+    items: itemsByOrder.get(String(o._id)) || [],
+  }));
 
   res.json({ orders: ordersWithItems, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
 });
@@ -132,7 +144,7 @@ export const getOrderDetail = asyncHandler(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) throw ApiError.notFound('Order not found');
   const order = await Order.findById(req.params.id)
     .populate('student', 'name email phone')
-    .populate('payment')
+    .populate('payment', 'invoiceNo merchant_reference provider_transaction_id paymentStatus amount capturedAt')
     .lean();
   if (!order) throw ApiError.notFound('Order not found');
 

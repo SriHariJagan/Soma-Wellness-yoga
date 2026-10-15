@@ -14,6 +14,8 @@ import Plan from '../models/Plan.js';
 import Service from '../models/Service.js';
 import Membership from '../models/Membership.js';
 import UserService from '../models/UserService.js';
+import Workshop from '../models/Workshop.js';
+import Event from '../models/Event.js';
 import Payment from '../payment/models/Payment.js';
 import { FulfillmentService } from '../payment/services/FulfillmentService.js';
 import ActivityLog from '../models/ActivityLog.js';
@@ -28,6 +30,7 @@ const KINDS = {
   course: { model: Course, itemType: 'course', label: 'Course' },
   plan: { model: Plan, itemType: 'plan', label: 'Membership plan' },
   service: { model: Service, itemType: 'service', label: 'Service' },
+  workshop: { model: Workshop, itemType: 'workshop', label: 'Workshop' },
 };
 
 const PAYMENT_METHODS = ['Cash', 'M-Pesa', 'Card', 'Bank transfer'];
@@ -39,7 +42,7 @@ function itemName(kind, doc) {
 
 // ── GET /api/reception/catalog ───────────────────────────────
 export const getCatalog = asyncHandler(async (req, res) => {
-  const [courses, plans, services] = await Promise.all([
+  const [courses, plans, services, workshops] = await Promise.all([
     Course.find({ active: { $ne: false } })
       .select('title price duration mode description hours earlyPrice currency category')
       .sort({ price: 1 })
@@ -54,8 +57,96 @@ export const getCatalog = asyncHandler(async (req, res) => {
       .select('name price category mode')
       .sort({ price: 1 })
       .lean(),
+    // Workshops the desk may book users into: admin-published, not archived.
+    Workshop.find({ isPublished: true, archived: { $ne: true } })
+      .select('name price date startTime capacity')
+      .sort({ date: 1 })
+      .lean(),
   ]);
-  res.json({ courses, plans, services, paymentMethods: PAYMENT_METHODS });
+  // Website parity for the desk too: flag services whose bookings the admin
+  // disabled on the same-named offering, so Sell can be gated in the UI
+  // (the sale endpoint enforces it regardless).
+  const { getBookingDisabledMap } = await import('../services/serviceBooking.js');
+  const disabledByName = await getBookingDisabledMap(services.map((s) => s.name));
+  res.json({
+    courses,
+    plans,
+    services: services.map((s) => ({ ...s, bookingEnabled: disabledByName.get(s.name) ? false : true })),
+    workshops,
+    paymentMethods: PAYMENT_METHODS,
+  });
+});
+
+// ── GET /api/reception/workshops ─────────────────────────────
+// Admin-hosted workshops visible to the front desk (published only).
+export const getWorkshops = asyncHandler(async (req, res) => {
+  const workshops = await Workshop.find({ isPublished: true, archived: { $ne: true } })
+    .select('name date startTime endTime duration price description instructor location zoomLink image capacity registrations isPaid status')
+    .sort({ date: 1 })
+    .lean();
+  res.json(workshops.map((w) => {
+    const total = (w.registrations || []).length;
+    const out = { ...w };
+    delete out.registrations;
+    out.totalRegistrations = total;
+    out.remainingSeats = Math.max(0, (w.capacity || 0) - total);
+    return out;
+  }));
+});
+
+// ── POST /api/reception/events/:id/register ──────────────────
+// Front desk books a user into an admin-hosted event. Mirrors the
+// student self-register rules, but targets the chosen student, with two
+// deliberate desk differences:
+//  • Past EVENTS never take registrations (the event already happened).
+//  • A passed registration DEADLINE does not block the desk — the deadline
+//    is the online cutoff; walk-ins at the counter are the late channel.
+//    Late bookings are flagged in the activity log + response.
+export const registerUserForEvent = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) throw ApiError.badRequest('userId is required');
+
+  const ev = await Event.findById(req.params.id);
+  if (!ev) throw ApiError.notFound('Event not found');
+  if (!ev.isPublished || ev.status !== 'available') {
+    throw ApiError.badRequest('Registration is not open for this event');
+  }
+  const dayStart = new Date();
+  dayStart.setHours(0, 0, 0, 0);
+  if (ev.date && new Date(ev.date) < dayStart) {
+    throw ApiError.badRequest('This event has already taken place');
+  }
+  const late = !!(ev.registrationDeadline && new Date(ev.registrationDeadline) < new Date());
+
+  const student = await User.findById(userId);
+  if (!student) throw ApiError.notFound('Student not found');
+  if (student.role !== 'student') throw ApiError.badRequest('Only student accounts can be registered');
+  if (student.status === 'banned') throw ApiError.forbidden('Cannot register a suspended account');
+
+  if (ev.registrations.some((r) => r.user && String(r.user) === String(student._id))) {
+    return res.json({ success: true, msg: `${student.name} is already registered` });
+  }
+  if (ev.capacity > 0 && ev.registrations.length >= ev.capacity) {
+    throw ApiError.badRequest('This event is full');
+  }
+
+  ev.registrations.push({ user: student._id, name: student.name || '', email: student.email || '' });
+  await ev.save();
+
+  ActivityLog.create({
+    action: 'event_registration',
+    performedBy: req.user._id,
+    targetUser: student._id,
+    meta: { eventId: String(ev._id), title: ev.title, ...(late ? { lateRegistration: true } : {}) },
+  }).catch(() => {});
+
+  res.status(201).json({
+    success: true,
+    late,
+    msg: late
+      ? `${student.name} registered for ${ev.title} (late registration — deadline had passed)`
+      : `${student.name} registered for ${ev.title}`,
+  });
 });
 
 // ── GET /api/reception/students/:id/purchases ────────────────
@@ -78,9 +169,13 @@ export const getStudentPurchases = asyncHandler(async (req, res) => {
 });
 
 // ── POST /api/reception/students/:id/purchases ───────────────
-// Body: { kind: 'course'|'plan'|'service', itemId, paymentMethod }
+// Body: { kind: 'course'|'plan'|'service'|'workshop', itemId, paymentMethod,
+//         paymentReference, note }
+// Cash needs no proof; every electronic method must carry its transaction /
+// reference ID (M-Pesa code, card auth code, bank reference) so the sale is
+// reconcilable like a real checkout.
 export const recordPurchase = asyncHandler(async (req, res) => {
-  const { kind, itemId, paymentMethod = 'Cash' } = req.body;
+  const { kind, itemId, paymentMethod = 'Cash', paymentReference = '', note = '' } = req.body;
 
   if (!kind || !KINDS[kind]) {
     throw ApiError.badRequest(`kind must be one of: ${Object.keys(KINDS).join(', ')}`);
@@ -89,6 +184,13 @@ export const recordPurchase = asyncHandler(async (req, res) => {
   if (!PAYMENT_METHODS.includes(paymentMethod)) {
     throw ApiError.badRequest(`paymentMethod must be one of: ${PAYMENT_METHODS.join(', ')}`);
   }
+  let reference = String(paymentReference || '').trim();
+  if (paymentMethod === 'M-Pesa') reference = reference.toUpperCase();
+  if (paymentMethod !== 'Cash' && !reference) {
+    throw ApiError.badRequest(`${paymentMethod} payments require a transaction / reference ID`);
+  }
+  if (reference.length > 40) throw ApiError.badRequest('Transaction / reference ID is too long (max 40 characters)');
+  const saleNote = String(note || '').trim().slice(0, 200);
 
   const student = await User.findById(req.params.id);
   if (!student) throw ApiError.notFound('Student not found');
@@ -99,6 +201,12 @@ export const recordPurchase = asyncHandler(async (req, res) => {
   const item = await model.findById(itemId).lean();
   if (!item) throw ApiError.notFound(`${label} not found`);
   if (item.active === false) throw ApiError.badRequest(`${label} is not currently on sale`);
+  // Website parity: the desk honors the booking switch on the same-named
+  // offering, exactly like the student dashboard does.
+  if (kind === 'service') {
+    const { isServiceBookingEnabled } = await import('../services/serviceBooking.js');
+    if (!(await isServiceBookingEnabled(item))) throw ApiError.badRequest('Booking is not enabled for this service');
+  }
 
   // Single-membership world: the counter may sell ONLY the visible
   // SOMA Wellness Circle — never hidden monthly tiers, passes, or DAILY.
@@ -127,6 +235,28 @@ export const recordPurchase = asyncHandler(async (req, res) => {
     }).lean();
     if (active) throw ApiError.conflict(`${student.name} already has an active "${item.name}" membership`);
   }
+  if (kind === 'workshop') {
+    // Same booking rules as student self-registration: published, seats
+    // left, no duplicate, and the student's membership must unlock it.
+    if (item.archived || !item.isPublished) throw ApiError.badRequest(`"${name}" is not currently on sale`);
+    if ((item.registrations || []).some((r) => String(r.user) === String(student._id))) {
+      throw ApiError.conflict(`${student.name} is already registered for "${name}"`);
+    }
+    if (item.capacity > 0 && (item.registrations || []).length >= item.capacity) {
+      throw ApiError.badRequest(`"${name}" is full`);
+    }
+    if (item.allowedPlans && item.allowedPlans.length > 0) {
+      const membership = await Membership.findOne({
+        user: student._id,
+        status: 'active',
+        expiryDate: { $gt: new Date() },
+      }).sort({ createdAt: -1 }).lean();
+      const eligible = membership && item.allowedPlans.some(
+        (ap) => ap.toLowerCase() === membership.planType.toLowerCase()
+      );
+      if (!eligible) throw ApiError.forbidden(`${student.name}'s current membership plan does not have access to this workshop`);
+    }
+  }
 
   const now = new Date();
   // Payment.amount convention is minor units (cents) everywhere else in the
@@ -140,13 +270,18 @@ export const recordPurchase = asyncHandler(async (req, res) => {
     quantity: 1,
     unitPrice: amountCents,
     totalPrice: amountCents,
-    metadata: { paymentMethod, soldBy: String(req.user._id) },
+    metadata: {
+      paymentMethod,
+      ...(reference ? { paymentReference: reference } : {}),
+      ...(saleNote ? { note: saleNote } : {}),
+      soldBy: String(req.user._id),
+    },
   };
 
   const payment = await Payment.create({
     user: student._id,
     label: name,
-    description: `Counter sale (${paymentMethod}) by ${req.user.name || req.user.email}`,
+    description: `Counter sale (${paymentMethod}${reference ? ` ${reference}` : ''}) by ${req.user.name || req.user.email}${saleNote ? ` — ${saleNote}` : ''}`,
     items: [paymentItem],
     amount: amountCents,
     currency: 'KES',
@@ -206,7 +341,7 @@ export const recordPurchase = asyncHandler(async (req, res) => {
     action: 'counter_sale',
     performedBy: req.user._id,
     targetUser: student._id,
-    meta: { kind, itemId: String(item._id), name, price, paymentMethod, paymentId: String(payment._id) },
+    meta: { kind, itemId: String(item._id), name, price, paymentMethod, ...(reference ? { paymentReference: reference } : {}), paymentId: String(payment._id) },
   }).catch(() => {});
 
   notificationService.send(student._id, {
@@ -235,6 +370,8 @@ export const recordPurchase = asyncHandler(async (req, res) => {
       amount: payment.amount,
       paymentStatus: payment.paymentStatus,
       fulfillmentStatus: payment.fulfillmentStatus,
+      paymentMethod,
+      ...(reference ? { paymentReference: reference } : {}),
       capturedAt: payment.capturedAt,
     },
     fulfillment,

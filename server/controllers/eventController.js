@@ -96,6 +96,9 @@ export const adminGetEventRegistrations = asyncHandler(async (req, res) => {
   if (!ev) throw ApiError.notFound('Event not found');
   const registrations = ev.registrations.map((r) => ({
     _id: r._id,
+    // User id included (additive — lets the desk match a picked student to
+    // show "already registered" inside the booking modal).
+    user: r.user?._id || r.user || null,
     name: r.user?.name || r.name || '—',
     email: r.user?.email || r.email || '—',
     phone: r.user?.phone || '',

@@ -38,6 +38,7 @@ import Settings from '../models/Settings.js';
 import TimeSlot from '../models/TimeSlot.js';
 import UserService from '../models/UserService.js';
 import FreeTrial from '../models/FreeTrial.js';
+import Course from '../models/Course.js';
 import Service from '../models/Service.js';
 import { isSingleSessionService } from '../utils/serviceHelpers.js';
 import { buildStudentServices, buildAllEnrollments } from '../services/serviceService.js';
@@ -131,7 +132,7 @@ export const getMembershipPlans = asyncHandler(async (req, res) => {
 // Focused Circle status for dashboard/account display + purchase gating.
 export const getCircleStatus = asyncHandler(async (req, res) => {
   const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
-  const { getActiveCircleMembership, circleStatusPayload } = await import('../services/circleService.js');
+  const { getActiveCircleMembership, getCircleDiscountPct, circleStatusPayload } = await import('../services/circleService.js');
   const m = await Membership.findOne({
     user: req.user._id,
     planType: { $in: WELLNESS_CIRCLE.ALIASES },
@@ -139,11 +140,14 @@ export const getCircleStatus = asyncHandler(async (req, res) => {
   }).sort({ createdAt: -1 }).populate('plan');
   if (m) await maybeAutoResume(m);
   const active = await getActiveCircleMembership(req.user._id);
+  // Benefits come from the LIVE plan doc (admin-editable), not hardcoded config.
+  const Plan = (await import('../models/Plan.js')).default;
+  const livePlan = await Plan.findOne({ name: { $in: WELLNESS_CIRCLE.ALIASES } }).select('benefits durationMonths price originalPrice').lean();
   res.json({
-    ...circleStatusPayload(active),
+    ...circleStatusPayload(active, await getCircleDiscountPct()),
     membership: active,
     display: m,
-    benefits: WELLNESS_CIRCLE.BENEFITS,
+    benefits: livePlan?.benefits?.length ? livePlan.benefits : WELLNESS_CIRCLE.BENEFITS,
     notIncluded: WELLNESS_CIRCLE.NOT_INCLUDED,
     whyJoin: WELLNESS_CIRCLE.WHY_JOIN,
     positioning: WELLNESS_CIRCLE.POSITIONING,
@@ -284,9 +288,9 @@ export const getActiveMembership = asyncHandler(async (req, res) => {
     // can render the join CTA without a second round-trip.
     try {
       const { WELLNESS_CIRCLE } = await import('../config/wellnessCircle.js');
-      const { getActiveCircleMembership, circleStatusPayload } = await import('../services/circleService.js');
+      const { getActiveCircleMembership, getCircleDiscountPct, circleStatusPayload } = await import('../services/circleService.js');
       const active = await getActiveCircleMembership(req.user._id);
-      return res.json({ circle: circleStatusPayload(active), circleBenefits: WELLNESS_CIRCLE.BENEFITS });
+      return res.json({ circle: circleStatusPayload(active, await getCircleDiscountPct()), circleBenefits: WELLNESS_CIRCLE.BENEFITS });
     } catch {
       return res.json(null);
     }
@@ -296,8 +300,8 @@ export const getActiveMembership = asyncHandler(async (req, res) => {
 
   let circle = null;
   try {
-    const { getActiveCircleMembership, circleStatusPayload } = await import('../services/circleService.js');
-    circle = circleStatusPayload(await getActiveCircleMembership(req.user._id));
+    const { getActiveCircleMembership, getCircleDiscountPct, circleStatusPayload } = await import('../services/circleService.js');
+    circle = circleStatusPayload(await getActiveCircleMembership(req.user._id), await getCircleDiscountPct());
   } catch {}
 
   res.json({
@@ -484,7 +488,7 @@ export const getMyEnrollments = asyncHandler(async (req, res) => {
   const uid = req.user._id;
   const now = new Date();
 
-  const [membership, userServices, trial, courses, workshops, yttcInvites] = await Promise.all([
+  const [membership, userServices, trial, courses, workshops, yttcInvites, paidCourses] = await Promise.all([
     Membership.findOne({ user: uid, status: 'active', expiryDate: { $gt: now } }).sort({ createdAt: -1 }),
     UserService.find({ user: uid, status: 'active' }).sort({ createdAt: -1 }),
     FreeTrial.findOne({ user: uid, status: 'active' }).sort({ createdAt: -1 }),
@@ -503,6 +507,9 @@ export const getMyEnrollments = asyncHandler(async (req, res) => {
       entityType: 'yttc',
       status: { $ne: 'cancelled' },
     }).sort({ date: -1 }),
+    // Direct course purchases — the student's own enrollment, shown Active
+    // (courses carry no expiry and are never auto-archived).
+    Course.find({ 'enrolledUsers.user': uid }).select('title duration mode price').lean(),
   ]);
 
   const result = [];
@@ -549,8 +556,23 @@ export const getMyEnrollments = asyncHandler(async (req, res) => {
     });
   }
 
-  // De-duplicate courses using a Set by entityId
+  // De-duplicate courses using a Set by entityId. Directly purchased
+  // courses come first — they are the student's own active enrollment.
   const seenCourses = new Set();
+  for (const c of paidCourses) {
+    seenCourses.add(c._id.toString());
+    result.push({
+      _id: c._id,
+      type: 'course',
+      typeLabel: 'Course',
+      label: c.title,
+      name: c.title,
+      icon: 'ti-books',
+      color: '#8B5CF6',
+      totalSessions: null,
+      completedSessions: 0,
+    });
+  }
   for (const invite of courses) {
     if (invite.entityId && !seenCourses.has(invite.entityId.toString())) {
       seenCourses.add(invite.entityId.toString());
@@ -673,9 +695,35 @@ export const getEnrollmentAttendance = asyncHandler(async (req, res) => {
 });
 
 // ── Payments ─────────────────────────────────────────────────
+// Lightweight list for the Payments tab: lean + projected + capped so the
+// cards/history paint fast even for long-lived accounts. Returns the same
+// customer-facing shape as the dashboard aggregator.
 export const getPayments = asyncHandler(async (req, res) => {
-  const payments = await Payment.find({ user: req.user._id }).sort({ createdAt: -1 });
-  res.json(payments);
+  const docs = await Payment.find({ user: req.user._id, isDeleted: { $ne: true } })
+    .select('label amount invoiceNo merchant_reference receiptUrl paymentStatus createdAt')
+    .sort({ createdAt: -1 })
+    .limit(200)
+    .lean();
+  res.set('Cache-Control', 'private, max-age=30');
+  res.json(docs.map((p) => {
+    const raw = p.paymentStatus || 'pending';
+    const status = raw === 'captured' || raw === 'paid' ? 'paid'
+      : raw === 'failed' || raw === 'expired' ? 'failed'
+      : raw === 'refunded' ? 'refunded'
+      : raw === 'refunding' ? 'refunding'
+      : 'pending';
+    return {
+      _id: p._id,
+      label: p.label,
+      amount: p.amount,
+      status,
+      paymentStatus: p.paymentStatus,
+      invoiceNo: p.invoiceNo || '',
+      merchantReference: p.merchant_reference || '',
+      receiptUrl: p.receiptUrl || '',
+      createdAt: p.createdAt,
+    };
+  }));
 });
 
 // ── YTTC ─────────────────────────────────────────────────────
@@ -1378,6 +1426,20 @@ export const getServiceCatalog = asyncHandler(async (req, res) => {
   const userEnrollments = await UserService.find({ user: req.user._id })
     .select('service status serviceName');
 
+  // Booking parity with the public website: the website reads the Offering
+  // catalog (which owns the booking switch), the dashboard reads Services.
+  // Same-named offerings that are booking-disabled / hidden / unavailable
+  // disable booking here too.
+  const { getBookingDisabledMap } = await import('../services/serviceBooking.js');
+  const bookingDisabledByName = await getBookingDisabledMap(services.map((s) => s.name));
+
+  // Member pricing: Circle members see their discount right on the listing
+  // (the charge itself was always server-resolved — this only fixes display).
+  // The % is admin-editable on the Circle plan — read live once here.
+  const { getActiveCircleMembership, getCircleDiscountPct, resolveCircleServicePrice } = await import('../services/circleService.js');
+  const circleActive = (await getActiveCircleMembership(req.user._id)) != null;
+  const circlePct = circleActive ? await getCircleDiscountPct() : undefined;
+
   const enrolledServiceIds = new Set();
   const activeEnrolledServiceIds = new Set();
   for (const e of userEnrollments) {
@@ -1396,6 +1458,20 @@ export const getServiceCatalog = asyncHandler(async (req, res) => {
       alreadyEnrolled = enrolledServiceIds.has(s._id.toString());
     }
 
+    // Same no-stack rules as checkout (OrderService): regular-priced only,
+    // never on promo/excluded/membership items.
+    const memberPrice = resolveCircleServicePrice(Number(s.price) || 0, {
+      circleActive,
+      discountPct: circlePct,
+      isPromotional: !!s.isPromotional,
+      originalPrice: s.originalPrice,
+      currentPrice: s.price,
+      excludeCircleDiscount: !!s.excludeCircleDiscount,
+      circleDiscountEligible: s.circleDiscountEligible !== false,
+      category: s.category,
+      itemType: 'service',
+    });
+
     return {
       _id: s._id,
       name: s.name,
@@ -1410,6 +1486,14 @@ export const getServiceCatalog = asyncHandler(async (req, res) => {
       instructors: (s.instructors || []).map(i => i ? { _id: i._id, name: i.name, avatar: i.avatar } : null).filter(Boolean),
       timeSlots: s.timeSlots || [],
       price: s.price,
+      // False when the admin disabled bookings on the website (the booking
+      // switch lives on the same-named offering). The dashboard card then
+      // renders "Booking not enabled" instead of Add to Cart.
+      bookingEnabled: bookingDisabledByName.get(s.name) ? false : true,
+      memberPrice: memberPrice.circleApplied ? memberPrice.finalPrice : null,
+      circleApplied: memberPrice.circleApplied,
+      circleDiscountAmount: memberPrice.discountAmount || 0,
+      memberDiscountPct: memberPrice.discountPct || 0,
       pricingModel: s.pricingModel || 'flat',
       contactEmail: s.contactEmail || '',
       totalSessions: s.totalSessions,
@@ -1440,6 +1524,9 @@ export const enrollService = asyncHandler(async (req, res) => {
   const service = await Service.findById(serviceId).populate('instructor', 'name');
   if (!service) throw ApiError.notFound('Service not found');
   if (!service.active) throw ApiError.badRequest('This service is not available');
+  // Website parity: honors the booking switch on the same-named offering.
+  const { isServiceBookingEnabled } = await import('../services/serviceBooking.js');
+  if (!(await isServiceBookingEnabled(service))) throw ApiError.badRequest('Booking is not enabled for this service');
 
   const existing = await UserService.findOne({
     user: req.user._id,

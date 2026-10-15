@@ -295,6 +295,18 @@ export default function BlogEditor({ blogId, student, onNavigate, reload }) {
 
         {error && <div className={es.error}>{error}</div>}
 
+        {student?.role !== "admin" && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8, marginBottom: 12,
+            padding: "9px 14px", borderRadius: 10, fontSize: 12.5,
+            background: "rgba(217,119,6,0.08)", border: "1px solid rgba(217,119,6,0.22)",
+            color: "#92400e",
+          }}>
+            <i className="ti ti-info-circle" />
+            Publishing sends your post for admin review — it appears to everyone once approved.
+          </div>
+        )}
+
         {/* ── Title ── */}
         <input
           type="text"

@@ -8,11 +8,13 @@ import { LuLock, LuCheck, LuTriangleAlert,
   LuShoppingBag, LuReceipt, LuBadgeCheck, LuBookOpen, LuKey,
 } from 'react-icons/lu';
 import s from '../../Admin/YogaAdmin.module.css';
+import PaymentFields from './PaymentFields.jsx';
+import { isPaymentComplete } from './paymentMethods.js';
 import PhoneInput from '../../common/PhoneInput.jsx';
 import { validatePhone, normalizePhone } from '../../../lib/phone.js';
 
 const EMPTY_FORM = { name: '', email: '', phone: '', city: '', password: '' };
-const EMPTY_PURCHASE = { kind: 'course', itemId: '', method: 'Cash' };
+const EMPTY_PURCHASE = { kind: 'course', itemId: '', method: 'Cash', reference: '', note: '' };
 
 function initials(name) {
   return (name || '?').trim().charAt(0).toUpperCase();
@@ -200,19 +202,26 @@ export default function CustomersTab({ createSignal = 0 }) {
       setFeedback({ type: 'error', message: 'Select an item to sell.' });
       return;
     }
+    if (!isPaymentComplete(purchase.method, purchase.reference)) {
+      setFeedback({ type: 'error', message: `${purchase.method} payments require a transaction / reference ID.` });
+      return;
+    }
     setPurchasing(true);
     try {
       const res = await receptionApi.purchases.create(enrolling._id, {
         kind: purchase.kind,
         itemId: purchase.itemId,
         paymentMethod: purchase.method,
+        paymentReference: purchase.reference.trim(),
+        note: purchase.note.trim(),
       });
       setEnrolling(null);
       // Payment.amount is stored in minor units (cents) — display KES.
       const paidKES = (res?.payment?.amount ?? (selectedItem?.price ?? 0) * 100) / 100;
+      const ref = res?.payment?.paymentReference || purchase.reference.trim();
       setFeedback({
         type: 'success',
-        message: `${res?.fulfillment ? 'Enrolled' : 'Sold'} "${selectedItem?.title || selectedItem?.name || 'item'}" to ${enrolling.name} — ${formatKES(paidKES)}.`,
+        message: `${res?.fulfillment ? 'Enrolled' : 'Sold'} "${selectedItem?.title || selectedItem?.name || 'item'}" to ${enrolling.name} — ${formatKES(paidKES)} via ${purchase.method}${ref ? ` · Ref ${ref}` : ''}.`,
       });
     } catch (err) {
       setFeedback({ type: 'error', message: err.message || 'Failed to record purchase.' });
@@ -616,7 +625,7 @@ export default function CustomersTab({ createSignal = 0 }) {
           footer={(
             <>
               <button type="button" className={s.btn} onClick={() => setEnrolling(null)}>Cancel</button>
-              <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={purchasing || !purchase.itemId}>
+              <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={purchasing || !purchase.itemId || !isPaymentComplete(purchase.method, purchase.reference)}>
                 {purchasing ? 'Processing…' : <><LuBadgeCheck size={15} /> Confirm sale{selectedItem ? ` · ${formatKES(selectedItem.price)}` : ''}</>}
               </button>
             </>
@@ -631,38 +640,35 @@ export default function CustomersTab({ createSignal = 0 }) {
                   <div className={s.grid2}>
                     <label className={s.fieldLabel}>
                       Item type
-                      <select value={purchase.kind} onChange={(e) => setPurchase({ ...EMPTY_PURCHASE, kind: e.target.value, method: purchase.method })}>
+                      <select value={purchase.kind} onChange={(e) => setPurchase({ ...EMPTY_PURCHASE, kind: e.target.value, method: purchase.method, reference: purchase.reference, note: purchase.note })}>
                         <option value="course">Course</option>
                         <option value="plan">Membership plan</option>
                         <option value="service">Service</option>
                       </select>
                     </label>
                     <label className={s.fieldLabel}>
-                      Payment method
-                      <select value={purchase.method} onChange={(e) => setPurchase({ ...purchase, method: e.target.value })}>
-                        {(catalog?.paymentMethods || ['Cash', 'M-Pesa', 'Card', 'Bank transfer']).map((m) => (
-                          <option key={m} value={m}>{m}</option>
+                      {purchase.kind === 'course' ? 'Course' : purchase.kind === 'plan' ? 'Plan' : 'Service'} *
+                      <select value={purchase.itemId} onChange={(e) => setPurchase({ ...purchase, itemId: e.target.value })} required>
+                        <option value="">Select…</option>
+                        {catalogItems.map((it) => (
+                          <option key={it._id} value={String(it._id)}>
+                            {it.title || it.name} — {formatKES(it.price)}{purchase.kind === 'plan' && it.durationMonths ? ` — ${it.durationMonths}mo` : ''}
+                          </option>
                         ))}
                       </select>
                     </label>
                   </div>
-                  <label className={s.fieldLabel}>
-                    {purchase.kind === 'course' ? 'Course' : purchase.kind === 'plan' ? 'Plan' : 'Service'} *
-                    <select value={purchase.itemId} onChange={(e) => setPurchase({ ...purchase, itemId: e.target.value })} required>
-                      <option value="">Select…</option>
-                      {catalogItems.map((it) => (
-                        <option key={it._id} value={String(it._id)}>
-                          {it.title || it.name} — {formatKES(it.price)}{purchase.kind === 'plan' && it.durationMonths ? ` — ${it.durationMonths}mo` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
                   {selectedItem && (
-                    <div className={s.recPriceBox}>
-                      <div className={s.recPriceLabel}>{selectedItem.title || selectedItem.name}</div>
-                      <div className={s.recPriceValue}>{formatKES(selectedItem.price)}</div>
-                      <div className={s.recPriceSub}>Paying by {purchase.method}</div>
-                    </div>
+                    <PaymentFields
+                      amountText={`${formatKES(selectedItem.price)} · ${selectedItem.title || selectedItem.name}`}
+                      methods={catalog?.paymentMethods || ['Cash', 'M-Pesa', 'Card', 'Bank transfer']}
+                      method={purchase.method}
+                      onMethodChange={(m) => setPurchase({ ...purchase, method: m, reference: '' })}
+                      reference={purchase.reference}
+                      onReferenceChange={(v) => setPurchase({ ...purchase, reference: v })}
+                      note={purchase.note}
+                      onNoteChange={(v) => setPurchase({ ...purchase, note: v })}
+                    />
                   )}
                 </>
               )}

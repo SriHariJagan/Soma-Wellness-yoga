@@ -187,13 +187,15 @@ export const createAppointment = asyncHandler(async (req, res) => {
     surchargePct = sp;
   }
   const pricing = resolveServicePrice(Number(basePrice) || 0, { tierKey, surchargePct });
-  // SOMA Wellness Circle 5% (regular-priced only, best-single — never stacks
-  // with tier discounts; surcharge still applies after discounts).
+  // SOMA Wellness Circle member discount (regular-priced only, best-single —
+  // never stacks with tier discounts; surcharge still applies after discounts).
+  // The % is admin-editable on the Circle plan — read live.
   try {
-    const { getActiveCircleMembership, resolveCircleServicePrice } = await import('../services/circleService.js');
+    const { getActiveCircleMembership, getCircleDiscountPct, resolveCircleServicePrice } = await import('../services/circleService.js');
     if ((await getActiveCircleMembership(userId)) != null) {
       const circle = resolveCircleServicePrice(Number(basePrice) || 0, {
         circleActive: true,
+        discountPct: await getCircleDiscountPct(),
         itemType: 'service',
         category: '',
       });

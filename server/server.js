@@ -355,6 +355,7 @@ const OFFICIAL_PLANS = [
     price: 36500,
     durationMonths: 12,
     pauseDays: 0,
+    memberDiscountPct: 0.05, // default member saving on services (admin-editable)
     displayOrder: 0,
     benefits: [
       "5% saving on regular-priced SOMA services.*",
@@ -390,11 +391,15 @@ async function seedDefaultPlans() {
   ];
   await Plan.deleteMany({ name: { $in: OLD_DEMO_NAMES } });
 
-  // Upsert each official plan
+  // Ensure the Circle exists — but NEVER overwrite admin edits on boot.
+  // Price, benefits, badge, duration, pause days, visibility, ordering, etc.
+  // are managed from Admin → Courses & Membership. $setOnInsert applies the
+  // official values only when the document is first created; every restart
+  // after that leaves the admin's live values untouched.
   for (const plan of OFFICIAL_PLANS) {
     await Plan.findOneAndUpdate(
       { name: plan.name },
-      { $set: plan },
+      { $setOnInsert: plan },
       { upsert: true, returnDocument: "after" },
     );
   }
